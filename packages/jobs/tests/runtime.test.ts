@@ -33,6 +33,7 @@ describe('durable job runtime', () => {
   });
 
   it('validates typed payloads, deduplicates enqueue requests, and records a fenced run', async () => {
+    let claimedFencingToken: number | undefined;
     const unregister = registerJobHandler({
       name: 'test.echo',
       version: 1,
@@ -47,6 +48,7 @@ describe('durable job runtime', () => {
         return { message: payload.message };
       },
       async run(payload, context) {
+        claimedFencingToken = context.fencingToken;
         return {
           message: payload.message.toUpperCase(),
           companyId: context.env.context.companyId,
@@ -69,6 +71,7 @@ describe('durable job runtime', () => {
       );
       expect(secondId).toBe(firstId);
       expect(await runOneJob({ workerId: 'worker-a' })).toBe(true);
+      expect(claimedFencingToken).toBe(1);
       expect(await Job.query().findById(firstId)).toMatchObject({
         status: 'succeeded',
         attempts: 1,

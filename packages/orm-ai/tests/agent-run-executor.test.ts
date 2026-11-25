@@ -16,6 +16,7 @@ import {
   computeExecutionFingerprint,
   loadTrustedRunSnapshot,
   runDurableAgentRun,
+  type TrustedRunSnapshot,
 } from '../src/agent-run-executor.js';
 import { sha256Canonical } from '@moonwitness/ai-runtime/canonical-json.js';
 import { setCloudAgentEffect } from '../src/cloud-agent-effect-factory.js';
@@ -57,9 +58,19 @@ vi.mock('@moonwitness/jobs', async (importOriginal) => {
 });
 
 type Row = Record<string, unknown>;
+type FakeFilter = Row | ((row: Row) => boolean);
+type FakeWhere = Row | ((builder: FakeQueryBuilder) => void);
+type FakeCondition =
+  [FakeWhere] | [key: string, value: unknown] | [key: string, operator: '<', value: unknown];
+
+interface FakeQueryBuilder {
+  where(...args: FakeCondition): FakeQueryBuilder;
+  orWhere(...args: FakeCondition): FakeQueryBuilder;
+}
+
 interface PatchRecord {
   readonly table: string;
-  readonly where: Row;
+  readonly where: FakeFilter | undefined;
   readonly patch: Row;
 }
 
@@ -75,18 +86,58 @@ const rows: Record<string, Row[]> = {
 };
 const patches: PatchRecord[] = [];
 
-function matches(row: Row, where: Row): boolean {
-  return Object.entries(where).every(([key, value]) => row[key] === value);
+function matches(row: Row, filter: FakeFilter): boolean {
+  if (typeof filter === 'function') return filter(row);
+  return Object.entries(filter).every(([key, value]) => row[key] === value);
+}
+
+function compileCondition(args: FakeCondition): FakeFilter {
+  if (typeof args[0] === 'string') {
+    if (args.length === 3) {
+      const [key, , value] = args as [string, '<', unknown];
+      return (row) => Number(row[key]) < Number(value);
+    }
+    const [key, value] = args as [string, unknown];
+    return (row) => row[key] === value;
+  }
+  const where = args[0];
+  if (typeof where !== 'function') return where;
+
+  const clauses: Array<{ filter: FakeFilter; or: boolean }> = [];
+  const builder: FakeQueryBuilder = {
+    where(...condition) {
+      clauses.push({ filter: compileCondition(condition), or: false });
+      return builder;
+    },
+    orWhere(...condition) {
+      clauses.push({ filter: compileCondition(condition), or: true });
+      return builder;
+    },
+  };
+  where(builder);
+  return (row) => {
+    let matched = false;
+    clauses.forEach((clause, index) => {
+      const clauseMatches = matches(row, clause.filter);
+      matched =
+        index === 0
+          ? clauseMatches
+          : clause.or
+            ? matched || clauseMatches
+            : matched && clauseMatches;
+    });
+    return matched;
+  };
 }
 
 /** Minimal Objection-style query stub: enough for the executor's reads/writes. */
 function fakeQuery(table: string, list: Row[]) {
-  let filters: Row[] = [];
+  let filters: FakeFilter[] = [];
   const query = {
     findOne: async (where: Row) => list.find((row) => matches(row, where)) ?? undefined,
     findById: async (id: unknown) => list.find((row) => Number(row.id) === Number(id)) ?? undefined,
-    where(where: Row) {
-      filters.push(where);
+    where(...args: FakeCondition) {
+      filters.push(compileCondition(args));
       return query;
     },
     andWhere(key: string, value: unknown) {
@@ -101,7 +152,7 @@ function fakeQuery(table: string, list: Row[]) {
     patch: async (patch: Row) => {
       const matched = list.filter((row) => filters.every((filter) => matches(row, filter)));
       for (const row of matched) Object.assign(row, patch);
-      patches.push({ table, where: { ...filters.at(-1) }, patch: { ...patch } });
+      patches.push({ table, where: filters.at(-1), patch: { ...patch } });
       filters = [];
       return matched.length;
     },
@@ -200,6 +251,7 @@ beforeEach(() => {
 const payload = { agentRunId: 42, companyId: 3 };
 const context = {
   jobId: 99,
+  fencingToken: 8,
   companyId: 3,
   attempt: 1,
   idempotencyKey: 'idem-1',
@@ -281,6 +333,131 @@ describe('runDurableAgentRun approval fingerprint', () => {
     expect(result.status).toBe('completed');
     expect(rows.AgentRun[0]!.execution_fingerprint).toBe(snapshot!.fingerprint);
   });
+});
+
+describe('runDurableAgentRun fencing and recovery', () => {
+  it('fails closed without a valid claimed job fencing token', async () => {
+    const execute = vi.fn(async () => ({ executedBy: 'test' }));
+
+    for (const fencingToken of [undefined, 0, -1, 1.5, Number.NaN, '8']) {
+      const invalidContext = {
+        ...context,
+        fencingToken,
+      } as unknown as typeof context;
+      await expect(runDurableAgentRun(payload, invalidContext, { execute })).rejects.toMatchObject({
+        name: 'StaleFencingError',
+        code: 'STALE_FENCING_TOKEN',
+      });
+    }
+
+    expect(execute).not.toHaveBeenCalled();
+    expect(patches).toEqual([]);
+  });
+
+  it('rejects a newer job token or a run token newer than the claim', async () => {
+    const execute = vi.fn(async () => ({ executedBy: 'test' }));
+    rows.Job[0]!.fencing_token = 9;
+
+    await expect(runDurableAgentRun(payload, context, { execute })).rejects.toMatchObject({
+      name: 'StaleFencingError',
+      code: 'STALE_FENCING_TOKEN',
+    });
+
+    rows.Job[0]!.fencing_token = 8;
+    rows.AgentRun[0]!.fencing_token = 9;
+    await expect(runDurableAgentRun(payload, context, { execute })).rejects.toMatchObject({
+      name: 'StaleFencingError',
+      code: 'STALE_FENCING_TOKEN',
+    });
+    expect(execute).not.toHaveBeenCalled();
+    expect(patches).toEqual([]);
+  });
+
+  it('preserves terminal replay without executing effects', async () => {
+    rows.AgentRun[0]!.status = 'completed';
+    rows.Job[0]!.fencing_token = 99;
+    const execute = vi.fn(async () => ({ executedBy: 'test' }));
+
+    await expect(runDurableAgentRun(payload, context, { execute })).resolves.toMatchObject({
+      status: 'replayed',
+      agentRunId: payload.agentRunId,
+      fingerprint: expect.any(String),
+    });
+    expect(execute).not.toHaveBeenCalled();
+    expect(patches).toEqual([]);
+  });
+
+  it('reclaims a crashed running claim with the higher token and executes that snapshot', async () => {
+    const originalStartedAt = '2026-11-01T10:00:00.000Z';
+    const approved = await loadTrustedRunSnapshot(payload.agentRunId, payload.companyId);
+    Object.assign(rows.AgentRun[0]!, {
+      status: 'running',
+      fencing_token: 7,
+      started_at: originalStartedAt,
+      execution_fingerprint: approved!.fingerprint,
+    });
+    const execute = vi.fn(async (claimed: TrustedRunSnapshot) => {
+      expect(claimed.run).toMatchObject({
+        status: 'running',
+        fencing_token: 8,
+        started_at: originalStartedAt,
+        execution_fingerprint: claimed.fingerprint,
+      });
+      return { executedBy: 'recovery' };
+    });
+
+    await expect(runDurableAgentRun(payload, context, { execute })).resolves.toMatchObject({
+      status: 'completed',
+      agentRunId: payload.agentRunId,
+    });
+    expect(execute).toHaveBeenCalledOnce();
+    expect(rows.AgentRun[0]).toMatchObject({
+      status: 'completed',
+      fencing_token: 8,
+      started_at: originalStartedAt,
+      execution_fingerprint: approved!.fingerprint,
+      step_count: 1,
+    });
+    expect(
+      patches.find((entry) => entry.table === 'AgentRun' && entry.patch.status === 'running')?.patch
+    ).toMatchObject({ fencing_token: 8, started_at: originalStartedAt });
+  });
+
+  it('does not re-execute a running claim that already has the same token', async () => {
+    Object.assign(rows.AgentRun[0]!, { status: 'running', fencing_token: 8 });
+    const execute = vi.fn(async () => ({ executedBy: 'duplicate' }));
+
+    await expect(runDurableAgentRun(payload, context, { execute })).resolves.toMatchObject({
+      status: 'replayed',
+      agentRunId: payload.agentRunId,
+    });
+    expect(execute).not.toHaveBeenCalled();
+    expect(rows.AgentRun[0]).toMatchObject({ status: 'running', fencing_token: 8 });
+  });
+
+  it.each(['completed', 'failed'] as const)(
+    'prevents a stale lower-token %s from overwriting a recovered run',
+    async (effectStatus) => {
+      const recovered: Row = {
+        status: 'running',
+        fencing_token: 9,
+        started_at: '2026-11-01T11:00:00.000Z',
+        checkpoint_json: '{"recovery":"newer-claim"}',
+        finished_at: null,
+      };
+      const execute = vi.fn(async () => {
+        rows.Job[0]!.fencing_token = 9;
+        Object.assign(rows.AgentRun[0]!, recovered);
+        if (effectStatus === 'failed') throw new Error('stale effect failed');
+        return { status: 'completed' };
+      });
+
+      await expect(runDurableAgentRun(payload, context, { execute })).rejects.toThrow();
+      expect(execute).toHaveBeenCalledOnce();
+      expect(rows.AgentRun[0]).toMatchObject(recovered);
+      expect(rows.Job[0]!.fencing_token).toBe(9);
+    }
+  );
 });
 
 describe('runDurableAgentRun effect status mapping', () => {

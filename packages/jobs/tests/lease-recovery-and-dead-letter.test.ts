@@ -41,6 +41,7 @@ describe('lease recovery and dead-letter adversarial cases (CF-015)', () => {
       releaseFirst = resolve;
     });
     const invocations: string[] = [];
+    const fencingTokens: number[] = [];
     const unregister = registerJobHandler({
       name: 'test.stale-completion',
       version: 1,
@@ -50,6 +51,7 @@ describe('lease recovery and dead-letter adversarial cases (CF-015)', () => {
         return { run: true };
       },
       async run(_payload, context) {
+        fencingTokens.push(context.fencingToken);
         if (context.attempt === 1) {
           invocations.push('stale');
           firstStarted();
@@ -93,6 +95,7 @@ describe('lease recovery and dead-letter adversarial cases (CF-015)', () => {
       // The stale worker's late commit must not overwrite the recovered result.
       await expect(stale).rejects.toThrow(LeaseLostError);
       expect(invocations).toEqual(['stale', 'recovery']);
+      expect(fencingTokens).toEqual([1, 2]);
       expect(await Job.query().findById(jobId)).toMatchObject({
         status: 'succeeded',
         attempts: 2,

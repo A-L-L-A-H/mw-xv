@@ -183,6 +183,7 @@ export async function assertCurrentFencing(params: {
   readonly run: Record<string, unknown>;
   readonly jobId: number | undefined;
   readonly companyId: number;
+  readonly expectedFencingToken?: number;
 }): Promise<number> {
   const runJobId = Number(params.run.job_id ?? 0);
   if (!Number.isSafeInteger(runJobId) || runJobId < 1 || runJobId !== params.jobId) {
@@ -193,9 +194,18 @@ export async function assertCurrentFencing(params: {
     throw new StaleFencingError('Job lease is missing or belongs to another company');
   }
   const runToken = Number(params.run.fencing_token ?? 0);
+  const expectedFencingToken = params.expectedFencingToken ?? runToken;
   const jobToken = Number((job as unknown as Record<string, unknown>).fencing_token ?? 0);
-  if (!Number.isSafeInteger(runToken) || !Number.isSafeInteger(jobToken) || jobToken < runToken) {
-    throw new StaleFencingError('Stale job fencing token for this agent run');
+  if (
+    !Number.isSafeInteger(runToken) ||
+    runToken < 0 ||
+    !Number.isSafeInteger(expectedFencingToken) ||
+    expectedFencingToken < 0 ||
+    runToken > expectedFencingToken ||
+    !Number.isSafeInteger(jobToken) ||
+    jobToken !== expectedFencingToken
+  ) {
+    throw new StaleFencingError('Job fencing token does not exactly match the claimed lease');
   }
   return jobToken;
 }
@@ -229,7 +239,7 @@ function parseCheckpoint(value: unknown): Record<string, unknown> {
  */
 export async function runDurableAgentRun(
   payload: { agentRunId: number; companyId: number },
-  context: Pick<JobContext, 'jobId' | 'companyId' | 'signal'>,
+  context: Pick<JobContext, 'jobId' | 'fencingToken' | 'companyId' | 'signal'>,
   effects: DurableRunEffects
 ): Promise<DurableRunResult> {
   if (context.companyId !== payload.companyId) {
@@ -258,10 +268,15 @@ export async function runDurableAgentRun(
       fingerprint: snapshot.fingerprint,
     };
   }
+  const expectedFencingToken = context.fencingToken;
+  if (!Number.isSafeInteger(expectedFencingToken) || expectedFencingToken < 1) {
+    throw new StaleFencingError('A valid claimed job fencing token is required');
+  }
   await assertCurrentFencing({
     run: snapshot.run,
     jobId: context.jobId,
     companyId: payload.companyId,
+    expectedFencingToken,
   });
 
   if (context.signal.aborted || status === 'cancelled') {
@@ -284,25 +299,47 @@ export async function runDurableAgentRun(
     return { status: 'cancelled', agentRunId: snapshot.runId, fingerprint: snapshot.fingerprint };
   }
 
-  const startedAt = new Date().toISOString();
+  const startedAt =
+    typeof snapshot.run.started_at === 'string'
+      ? snapshot.run.started_at
+      : new Date().toISOString();
   const claimed = await AgentRun.query()
-    .where({ id: snapshot.runId, company_id: payload.companyId, status: 'pending' })
+    .where({ id: snapshot.runId, company_id: payload.companyId })
+    .where((query) =>
+      query
+        .where({ status: 'pending' })
+        .orWhere((running) =>
+          running.where({ status: 'running' }).where('fencing_token', '<', expectedFencingToken)
+        )
+    )
     .patch({
       status: 'running',
+      fencing_token: expectedFencingToken,
       started_at: startedAt,
       execution_fingerprint: snapshot.fingerprint,
     });
   if (claimed !== 1) {
     return { status: 'replayed', agentRunId: snapshot.runId, fingerprint: snapshot.fingerprint };
   }
+  const claimedSnapshot: TrustedRunSnapshot = {
+    ...snapshot,
+    run: {
+      ...snapshot.run,
+      status: 'running',
+      fencing_token: expectedFencingToken,
+      started_at: startedAt,
+      execution_fingerprint: snapshot.fingerprint,
+    },
+  };
 
   try {
     await assertCurrentFencing({
-      run: { ...snapshot.run, status: 'running' },
+      run: claimedSnapshot.run,
       jobId: context.jobId,
       companyId: payload.companyId,
+      expectedFencingToken,
     });
-    const effectResult = await effects.execute(snapshot, context.signal);
+    const effectResult = await effects.execute(claimedSnapshot, context.signal);
     // Effects may report a non-throwing terminal status. Only an explicit
     // failure/cancellation (or an exhausted budget) is terminal-failure; an
     // effect with no status stays backward compatible as 'completed'.
@@ -319,7 +356,7 @@ export async function runDurableAgentRun(
         ? (effectResult.error as Record<string, unknown>)
         : undefined;
     const checkpoint = {
-      ...parseCheckpoint(snapshot.run.checkpoint_json),
+      ...parseCheckpoint(claimedSnapshot.run.checkpoint_json),
       fingerprint: snapshot.fingerprint,
       lastEffect: effectResult,
     };
@@ -334,7 +371,7 @@ export async function runDurableAgentRun(
     } = {
       status: terminalStatus,
       finished_at: new Date().toISOString(),
-      step_count: Number(snapshot.run.step_count ?? 0) + 1,
+      step_count: Number(claimedSnapshot.run.step_count ?? 0) + 1,
       checkpoint_json: JSON.stringify(checkpoint),
       checkpoint_cursor: snapshot.fingerprint,
     };
@@ -345,7 +382,12 @@ export async function runDurableAgentRun(
       ).slice(0, 2_000);
     }
     const committed = await AgentRun.query()
-      .where({ id: snapshot.runId, company_id: payload.companyId, status: 'running' })
+      .where({
+        id: snapshot.runId,
+        company_id: payload.companyId,
+        status: 'running',
+        fencing_token: expectedFencingToken,
+      })
       .patch(patch);
     if (committed !== 1) {
       throw new StaleFencingError('Run changed while effects were executing');
@@ -358,7 +400,12 @@ export async function runDurableAgentRun(
   } catch (error) {
     const code = error instanceof Error ? error.name : 'EXECUTION_FAILED';
     await AgentRun.query()
-      .where({ id: snapshot.runId, company_id: payload.companyId, status: 'running' })
+      .where({
+        id: snapshot.runId,
+        company_id: payload.companyId,
+        status: 'running',
+        fencing_token: expectedFencingToken,
+      })
       .patch({
         status: 'failed',
         error_code: code.slice(0, 64),

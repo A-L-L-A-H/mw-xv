@@ -29,6 +29,7 @@ export interface EnqueueOptions {
 
 export interface JobContext {
   jobId: number;
+  fencingToken: number;
   attempt: number;
   idempotencyKey: string;
   companyId?: number;
@@ -509,6 +510,7 @@ async function createJobContext(job: JobRecord, signal: AbortSignal): Promise<Jo
   }
   return {
     jobId: job.id,
+    fencingToken: job.fencing_token,
     attempt: job.attempts,
     idempotencyKey: job.idempotency_key ?? `job:${job.id}`,
     companyId,
