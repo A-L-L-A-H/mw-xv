@@ -101,7 +101,7 @@
 
 ---
 
-## - [ ] T10 — Implement Split-Authority Field-Plane Reconciler (`src/core/authority.ts`)
+## - [x] T10 — Implement Split-Authority Field-Plane Reconciler (`src/core/authority.ts`)
 
 - **Owner File(s):** `packages/plan-taskos/src/core/authority.ts`
   - `packages/plan-taskos/src/core/authority.ts` (CREATE)

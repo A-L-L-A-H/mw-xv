@@ -60,7 +60,7 @@ Execute strictly **1 micro-task (`Txx`) per cycle** without asking the user any 
 - [x] **T07** — Implement AJV Schema + 1:1 `specs/*.md` ID parity + invariant path-matcher validator in `src/core/validator.ts`
 - [x] **T08** — Implement Compile-Time Disjoint Write-Ownership Prover `src/core/disjoint-prover.ts` (transitive `depends_on` closure + POSIX glob intersection proof)
 - [x] **T09** — Implement DAG engine `src/core/dag.ts` (cycle detection, topological depth, `ready`/`active`/`blocked`/`done` frontier, Boss Critical Path, swarm wave partitioning)
-- [ ] **T10** — Implement Split-Authority Field-Plane Reconciler `src/core/authority.ts` (per-plane ownership merger + normalized SHA-256 no-op fence)
+- [x] **T10** — Implement Split-Authority Field-Plane Reconciler `src/core/authority.ts` (per-plane ownership merger + normalized SHA-256 no-op fence)
 - [ ] **T11** — Add Wave 1 unit tests (`loader-validator.test.ts`, `disjoint-prover.test.ts`, `dag-authority.test.ts`) & pass Wave 1 gate
 
 ### Wave 2 — Embedded SQLite Cognitive Brain, Knowledge Graph & Memory (`wave-2-cognitive-brain-and-memory.md`)
@@ -113,7 +113,7 @@ Execute strictly **1 micro-task (`Txx`) per cycle** without asking the user any 
 | Wave | Task Range | Completed Tasks | Last Commit SHA | Latest Verification Evidence |
 |---|---|---|---|---|
 | Wave 0 | `T01`–`T05` | `5 / 5` | 8c45fbbb | `bun --filter @moonwitness/plan-taskos typecheck` exit 0 |
-| Wave 1 | `T06`–`T11` | `4 / 6` | 55024b93 | `bun --filter @moonwitness/plan-taskos typecheck` exit 0 |
+| Wave 1 | `T06`–`T11` | `5 / 6` | cb133e05 | `bun --filter @moonwitness/plan-taskos typecheck` exit 0 |
 | Wave 2 | `T12`–`T18` | `0 / 7` | — | — |
 | Wave 3 | `T19`–`T23` | `0 / 5` | — | — |
 | Wave 4 | `T24`–`T30` | `0 / 7` | — | — |
