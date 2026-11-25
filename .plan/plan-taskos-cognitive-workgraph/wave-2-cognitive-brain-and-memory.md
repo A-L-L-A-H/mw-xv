@@ -121,7 +121,7 @@
 
 ---
 
-## - [ ] T17 — Implement RFC 6962 DAG-Merkle Proof Ledger (`src/brain/merkle-dag.ts`)
+## - [x] T17 — Implement RFC 6962 DAG-Merkle Proof Ledger (`src/brain/merkle-dag.ts`)
 
 - **Owner File(s):** `packages/plan-taskos/src/brain/merkle-dag.ts`
   - `packages/plan-taskos/src/brain/merkle-dag.ts` (CREATE)
