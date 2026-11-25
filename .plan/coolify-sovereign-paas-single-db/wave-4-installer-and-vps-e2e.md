@@ -9,7 +9,7 @@
 
 ## Wave 4 — Zero-Domain, Zero-SQLite `deploy/vps/install.sh` (`M52`–`M55`)
 
-### - [ ] M52 — Update `install.sh` CLI Flags, Auto-Docker Install, IPv4 Detect, & Secrets
+### - [x] M52 — Update `install.sh` CLI Flags, Auto-Docker Install, IPv4 Detect, & Secrets
 
 - **Owner File (MODIFY):** `deploy/vps/install.sh`
 - **Depends On:** `M15`, `M38`, `M51`

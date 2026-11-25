@@ -11,7 +11,10 @@ set -euo pipefail
 # Control-plane stays 100% private on the EasyTier mesh (never exposed publicly on :3003 or :3004).
 
 REINSTALL="false"
-MW_BASE_DOMAIN="${MW_BASE_DOMAIN:-apps.moonwitness.biz.id}"
+MW_BASE_DOMAIN="${MW_BASE_DOMAIN:-}"
+MW_PUBLIC_PORT="${MW_PUBLIC_PORT:-8000}"
+UNLOCK_PORT="false"
+WIPE_TLS="false"
 MW_INSTALL_DIR="${MW_INSTALL_DIR:-/opt/moonwitness-xv}"
 MW_WA_DIR="${MW_WA_DIR:-/opt/moonwitness-whatsapp}"
 MW_REPO_URL="${MW_REPO_URL:-https://github.com/A-L-L-A-H/mw-xv.git}"
@@ -36,6 +39,18 @@ while [ "$#" -gt 0 ]; do
       MW_BASE_DOMAIN="${2:?--domain requires a value}"
       shift 2
       ;;
+    --port)
+      MW_PUBLIC_PORT="${2:?--port requires a value}"
+      shift 2
+      ;;
+    --unlock-port)
+      UNLOCK_PORT="true"
+      shift
+      ;;
+    --wipe-tls)
+      WIPE_TLS="true"
+      shift
+      ;;
     --source-tarball)
       MW_SOURCE_TARBALL="${2:?--source-tarball requires a path}"
       shift 2
@@ -56,9 +71,33 @@ while [ "$#" -gt 0 ]; do
 done
 
 [ "${EUID:-$(id -u)}" -eq 0 ] || { echo "ERROR: Run as root." >&2; exit 1; }
-command -v docker >/dev/null 2>&1 || { echo "ERROR: docker required." >&2; exit 1; }
-docker compose version >/dev/null 2>&1 || { echo "ERROR: docker compose v2 required." >&2; exit 1; }
+
+# Auto-install Docker Engine + Compose v2 when missing.
+if ! command -v docker >/dev/null 2>&1; then
+  echo "[moonwitness-install] Docker not found; installing Docker Engine..."
+  curl -fsSL https://get.docker.com | sh
+fi
+systemctl enable --now docker >/dev/null 2>&1 || true
+if ! docker compose version >/dev/null 2>&1; then
+  echo "[moonwitness-install] Installing Docker Compose v2 plugin..."
+  mkdir -p /usr/local/lib/docker/cli-plugins
+  curl -fsSL "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/lib/docker/cli-plugins/docker-compose
+  chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+fi
 command -v openssl >/dev/null 2>&1 || { echo "ERROR: openssl required." >&2; exit 1; }
+
+detect_public_ipv4() {
+  local detected=""
+  detected="$(curl -fsS --max-time 5 https://api.ipify.org 2>/dev/null || true)"
+  [ -n "$detected" ] || detected="$(curl -fsS --max-time 5 https://ifconfig.me 2>/dev/null || true)"
+  [ -n "$detected" ] || detected="$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src") {print $(i+1); exit}}')"
+  printf '%s' "$detected"
+}
+
+if [ -z "${MW_PUBLIC_IPV4:-}" ]; then
+  MW_PUBLIC_IPV4="$(detect_public_ipv4)"
+fi
+[ -n "$MW_PUBLIC_IPV4" ] || { echo "ERROR: could not detect public IPv4; set MW_PUBLIC_IPV4 explicitly." >&2; exit 1; }
 
 log() { printf '[moonwitness-install] %s\n' "$*"; }
 
@@ -174,8 +213,9 @@ configure_secrets_and_env() {
   local cp_env="${MW_ETC_DIR}/control-plane.env"
   local mesh_env="${MW_ETC_DIR}/mesh.env"
 
-  local pg_pass jwt_secret metrics_tok obs_tok sandbox_tok super_pass wa_user wa_pass
+  local pg_pass jwt_secret metrics_tok obs_tok sandbox_tok super_pass wa_user wa_pass setup_token
   pg_pass="$(get_env "$app_env" "POSTGRES_PASSWORD")"; [ -n "$pg_pass" ] || pg_pass="$(generate_secret 20)"
+  setup_token="$(get_env "$app_env" "MW_SETUP_TOKEN")"; [ -n "$setup_token" ] || setup_token="$(generate_secret 24)"
   jwt_secret="$(get_env "$app_env" "JWT_SECRET")"; [ -n "$jwt_secret" ] || jwt_secret="$(generate_secret 32)"
   metrics_tok="$(get_env "$app_env" "METRICS_TOKEN")"; [ -n "$metrics_tok" ] || metrics_tok="$(generate_secret 20)"
   obs_tok="$(get_env "$app_env" "OBSERVABILITY_INGEST_TOKEN")"; [ ${#obs_tok} -ge 32 ] || obs_tok="$(generate_secret 24)"
@@ -196,6 +236,9 @@ configure_secrets_and_env() {
   upsert_env "$app_env" "SUPERADMIN_LOGIN" "superadmin"
   upsert_env "$app_env" "SUPERADMIN_INITIAL_PASSWORD" "$super_pass"
   upsert_env "$app_env" "SUPERADMIN_PASSWORD" "$super_pass"
+  upsert_env "$app_env" "MW_SETUP_TOKEN" "$setup_token"
+  upsert_env "$app_env" "TRUST_PROXY_HOPS" "2"
+  upsert_env "$app_env" "MW_PUBLIC_IPV4" "${MW_PUBLIC_IPV4}"
   upsert_env "$app_env" "ATTACHMENT_STORAGE_DRIVER" "local"
   upsert_env "$app_env" "ATTACHMENT_STORAGE_DIR" "/var/lib/moonwitness/attachments"
   upsert_env "$app_env" "WHATSAPP_GATEWAY_URL" "http://whatsapp:3000"
