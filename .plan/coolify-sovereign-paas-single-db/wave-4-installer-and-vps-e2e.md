@@ -187,7 +187,7 @@
 
 ---
 
-### - [ ] M64 — Verify `install.sh --unlock-port` PostgreSQL Recovery + Create Backup Dump (Prep Dirty State for `M65`)
+### - [x] M64 — Verify `install.sh --unlock-port` PostgreSQL Recovery + Create Backup Dump (Prep Dirty State for `M65`)
 
 - **Depends On:** `M63`
 - **Acceptance Criteria:**
