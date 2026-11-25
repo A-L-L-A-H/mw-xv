@@ -1,6 +1,6 @@
 # Generated model and addon reference
 
-Source fingerprint: `01f9a5e2958e3d21b2fc71b4e23b8ae403b6df4daac7c10e8677c420874ba60b`. Seed values and field defaults are intentionally omitted.
+Source fingerprint: `0d433c28ee6a2e7932fa4cd1271fdd171206d7e547e1b942af46865c02f37f6a`. Seed values and field defaults are intentionally omitted.
 
 ## Addon `auth`
 
@@ -577,7 +577,7 @@ Models: 3; declared views: 3; menu entries: 3; seed rows: 9.
 
 Version: `1.0.0`; dependencies: none.
 
-Models: 5; declared views: 0; menu entries: 0; seed rows: 1.
+Models: 5; declared views: 0; menu entries: 0; seed rows: 0.
 
 | Model                                   | Table                         | Field            | Kind    | Required | Optional | Default    | Relation |
 | --------------------------------------- | ----------------------------- | ---------------- | ------- | -------- | -------- | ---------- | -------- |
@@ -621,8 +621,6 @@ Models: 5; declared views: 0; menu entries: 0; seed rows: 1.
 
 | Menu model | Label | Group | Sequence | Visibility |
 | ---------- | ----- | ----- | -------: | ---------- |
-
-- Seed coverage: `observability.telemetry_state` has 1 declared seed row(s); seed values are not included.
 
 ## Addon `organization`
 

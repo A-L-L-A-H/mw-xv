@@ -742,7 +742,7 @@
       "db:migrate": "bun --filter @moonwitness/api db:migrate",
       "dependency:candidate": "node scripts/dependency-candidate.mjs",
       "dependency:plan": "node scripts/dependency-update-plan.mjs",
-      "desktop:build": "bun --filter @moonwitness/desktop... build && bun --filter @moonwitness/desktop build:web",
+      "desktop:build": "bun --filter @moonwitness/types build && bun --filter @moonwitness/desktop... build && bun --filter @moonwitness/desktop build:web",
       "desktop:mcp": "node apps/desktop/dist/cli.js mcp",
       "desktop:test": "bun --filter @moonwitness/ai-mcp test && bun --filter @moonwitness/desktop test",
       "desktop:ui:check": "node --test scripts/check-desktop-non-overlap.test.mjs && node scripts/check-desktop-non-overlap.mjs",
@@ -6814,9 +6814,7 @@
       ],
       "menus": [],
       "views": [],
-      "seeds": {
-        "observability.telemetry_state": 1
-      },
+      "seeds": {},
       "accessRules": []
     },
     {
@@ -10488,5 +10486,5 @@
       "path": "/whatsapp/readyz"
     }
   ],
-  "generatedFromSha256": "01f9a5e2958e3d21b2fc71b4e23b8ae403b6df4daac7c10e8677c420874ba60b"
+  "generatedFromSha256": "0d433c28ee6a2e7932fa4cd1271fdd171206d7e547e1b942af46865c02f37f6a"
 }
