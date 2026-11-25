@@ -191,7 +191,7 @@
 
 ---
 
-## - [ ] M23 — Fix RAM MB Casing & Add Stateless `/agent/*` Client Helpers (`moonwitness-mesh.ts`)
+## - [x] M23 — Fix RAM MB Casing & Add Stateless `/agent/*` Client Helpers (`moonwitness-mesh.ts`)
 
 - **Owner Files (MODIFY):**
   - `packages/orm-cloud/src/providers/moonwitness-mesh.ts`

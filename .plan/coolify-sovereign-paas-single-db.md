@@ -75,7 +75,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 - [x] **M20** — `packages/orm-cloud/src/coolify-compose-compiler.ts`: full YAML transformer (volume prefixing, top-level `volumes:`, networks/aliases, inline `content:` files)
 - [x] **M21** — `packages/orm-cloud/src/paas-state.ts`: NULL-safe `base_config_parameters` upsert + `readPaasInstanceSettings` / `savePaasInstanceSettings`
 - [x] **M22** — `packages/orm-cloud/src/paas-state.ts`: `allocatePreviewPort`, `buildDeclarativeCaddySpec`, `reconcileCaddyWithAgent`, `promotePreviewAppsToWildcard`
-- [ ] **M23** — `packages/orm-cloud/src/providers/moonwitness-mesh.ts` + `index.ts`: fix RAM MB casing + add stateless `/agent/*` client helpers
+- [x] **M23** — `packages/orm-cloud/src/providers/moonwitness-mesh.ts` + `index.ts`: fix RAM MB casing + add stateless `/agent/*` client helpers
 - [ ] **M24** — `packages/orm-cloud/src/http.ts`: wire `GET /settings`, `POST /settings/verify-dns`, `POST /settings/apply` (with strict TLS lockdown gate)
 - [ ] **M25** — `packages/orm-cloud/src/http.ts`: wire `POST /settings/promote-wildcard`, `GET /mesh/status`, & `onReady` boot reconciliation hook
 - [ ] **M26** — `packages/orm-cloud/src/http.ts`: wire 390+ template endpoints (`GET /templates`, `GET /templates/:id`, `POST /templates/deploy`)
@@ -134,7 +134,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 |---|---|---|---|---|
 | Wave 0 | `M01`–`M03` | `3 / 3` | — | `M03 OK` — frozen-lockfile dry-run exit 0 (zero drift, `bun.lock` unchanged); orm-cloud build exit 0; manifest test pass 10 / fail 0 |
 | Wave 1 | `M04`–`M15` | `12 / 12` | `177580ee` | `M15 OK` — `CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build` exit 0; binary size `18,091,490` bytes (> 10MB) |
-| Wave 2 | `M16`–`M38` | `7 / 23` | — | `M22 OK` — `@moonwitness/orm-cloud build` exit 0; `allocatePreviewPort`, `buildDeclarativeCaddySpec` (skips `.local`/non-PaaS fixtures), `reconcileCaddyWithAgent`, `promotePreviewAppsToWildcard` added |
+| Wave 2 | `M16`–`M38` | `8 / 23` | — | `M23 OK` — `@moonwitness/orm-cloud build` exit 0; vitest moonwitness-mesh.test.ts 15/15 passed; RAM MB parses camelCase & uppercase MB, publicIpv4 included, 9 /agent/* client helpers added |
 | Wave 3 | `M39`–`M51` | `0 / 13` | — | — |
 | Wave 4 | `M52`–`M55` | `0 / 4` | — | — |
 | Wave 5 | `M56`–`M66` | `0 / 11` | — | — |
