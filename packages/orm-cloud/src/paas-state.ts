@@ -200,11 +200,18 @@ interface PaasAppRecord {
   env_vars?: Record<string, unknown> | null;
   ingress_routes?: Array<{ domain?: string; upstream?: string }> | null;
   deploy_mode?: string;
+  tenant_id?: string;
 }
 
 export interface CaddySpecRoute {
   domain: string;
   upstream: string;
+  /** App slug used by the stateless agent CaddyRoute contract. */
+  slug?: string;
+  /** Tenant id used by the stateless agent CaddyRoute contract. */
+  tenantId?: string;
+  /** Port used by the stateless agent CaddyRoute contract. */
+  port?: number;
 }
 
 export interface CaddyPreviewListener {
@@ -253,19 +260,31 @@ export async function buildDeclarativeCaddySpec(options: BuildDeclarativeCaddySp
   const routes: CaddySpecRoute[] = [];
   const seenDomains = new Set<string>();
 
-  const addRoute = (domain: string, upstream: string): void => {
+  const addRoute = (
+    domain: string,
+    upstream: string,
+    meta: { slug?: string; tenantId?: string; port?: number } = {}
+  ): void => {
     if (!domain || !isValidPublicDomain(domain) || seenDomains.has(domain)) {
       return;
     }
     seenDomains.add(domain);
-    routes.push({ domain, upstream });
+    routes.push({ domain, upstream, ...meta });
   };
 
   if (options.includeInstance !== false && settings.instanceDomain) {
-    addRoute(settings.instanceDomain, 'moonwitness_board:8080');
+    addRoute(settings.instanceDomain, 'moonwitness_board:8080', {
+      slug: 'board',
+      tenantId: 'default',
+      port: 8080,
+    });
   }
   if (options.includeWhatsapp !== false && settings.whatsappDomain) {
-    addRoute(settings.whatsappDomain, 'moonwitness_whatsapp:3000');
+    addRoute(settings.whatsappDomain, 'moonwitness_whatsapp:3000', {
+      slug: 'whatsapp',
+      tenantId: 'default',
+      port: 3000,
+    });
   }
 
   for (const app of apps) {
@@ -273,15 +292,16 @@ export async function buildDeclarativeCaddySpec(options: BuildDeclarativeCaddySp
     const slug = a.slug ?? a.name;
     const port = typeof a.port === 'number' ? a.port : 8080;
     const upstream = `mw-paas-${slug}:${port}`;
+    const meta = { slug, tenantId: a.tenant_id ?? 'default', port };
     if (a.domain && isValidPublicDomain(a.domain)) {
-      addRoute(a.domain, upstream);
+      addRoute(a.domain, upstream, meta);
     }
     if (Array.isArray(a.ingress_routes)) {
       for (const ir of a.ingress_routes) {
         const d = ir?.domain;
         const u = ir?.upstream ?? upstream;
         if (d && isValidPublicDomain(d)) {
-          addRoute(d, u);
+          addRoute(d, u, meta);
         }
       }
     }
@@ -315,14 +335,31 @@ export interface ReconcileCaddyWithAgentParams {
 export async function reconcileCaddyWithAgent(params: ReconcileCaddyWithAgentParams = {}): Promise<void> {
   try {
     const spec = await buildDeclarativeCaddySpec();
+    // Map to the stateless agent's CaddyRoute contract (slug/tenantId/domain/port/upstreamHost).
+    const agentRoutes = (params.routes ?? spec.routes).map((route) => {
+      const separator = route.upstream.lastIndexOf(':');
+      const upstreamHost = separator > 0 ? route.upstream.slice(0, separator) : route.upstream;
+      const parsedPort = separator > 0 ? Number(route.upstream.slice(separator + 1)) : NaN;
+      return {
+        slug: route.slug ?? 'app',
+        tenantId: route.tenantId ?? 'default',
+        domain: route.domain,
+        port: route.port ?? (Number.isFinite(parsedPort) ? parsedPort : 8080),
+        upstreamHost,
+      };
+    });
     const body = {
       publicPort: params.bootstrap?.port ?? 8000,
       publicPortEnabled: params.bootstrap?.enabled ?? true,
       bootstrapUpstream: params.bootstrap?.upstream ?? 'moonwitness_board:8080',
       previewListeners: params.previews ?? spec.previewListeners,
-      routes: params.routes ?? spec.routes,
+      routes: agentRoutes,
     };
-    const endpoint = (params.endpoint ?? 'http://127.0.0.1:3003').replace(/\/+$/, '');
+    const endpoint = (
+      params.endpoint ??
+      process.env.MW_CONTROL_PLANE_URL ??
+      'http://127.0.0.1:3003'
+    ).replace(/\/+$/, '');
     const fetchFn = params.fetchImpl ?? globalThis.fetch;
     if (typeof fetchFn === 'function') {
       await fetchFn(`${endpoint}/agent/caddy/reconcile`, {
