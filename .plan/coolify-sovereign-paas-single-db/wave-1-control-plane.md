@@ -203,7 +203,7 @@
 
 ---
 
-## - [ ] M11 — Add `POST /agent/compose/up` with Path-Confined Inline File Materialization
+## - [x] M11 — Add `POST /agent/compose/up` with Path-Confined Inline File Materialization
 
 - **Owner Files (MODIFY):**
   - `apps/control-plane/agent_stateless.go`

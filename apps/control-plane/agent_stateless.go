@@ -8,8 +8,11 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
+	"regexp"
 	"runtime"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -210,47 +213,52 @@ func (m *PaasManager) handleAgentContainers() http.HandlerFunc {
 			return
 		}
 
-		containers := make([]AgentContainerInfo, 0)
-		for _, line := range strings.Split(out, "\n") {
-			line = strings.TrimRight(line, "\r")
-			if strings.TrimSpace(line) == "" {
-				continue
-			}
-			parts := strings.SplitN(line, "\t", 6)
-			if len(parts) < 4 {
-				continue
-			}
-			name := strings.TrimSpace(parts[0])
-			cid := strings.TrimSpace(parts[1])
-			image := strings.TrimSpace(parts[2])
-			state := strings.TrimSpace(parts[3])
-			status := ""
-			if len(parts) >= 5 {
-				status = strings.TrimSpace(parts[4])
-			}
-			var rawLabels string
-			if len(parts) >= 6 {
-				rawLabels = parts[5]
-			}
-			labels := parseDockerLabels(rawLabels)
-			containers = append(containers, AgentContainerInfo{
-				Name:        name,
-				ContainerID: cid,
-				Image:       image,
-				State:       state,
-				Status:      status,
-				Slug:        labels["mw.paas.app"],
-				Service:     labels["mw.paas.service"],
-				TenantID:    labels["mw.paas.tenant"],
-				Managed:     strings.EqualFold(labels["mw.paas.managed"], "true"),
-				Labels:      labels,
-			})
-		}
+		containers := parseDockerPsOutput(out)
 
 		writePaasJSON(w, http.StatusOK, map[string]any{
 			"containers": containers,
 		})
 	}
+}
+
+func parseDockerPsOutput(out string) []AgentContainerInfo {
+	containers := make([]AgentContainerInfo, 0)
+	for _, line := range strings.Split(out, "\n") {
+		line = strings.TrimRight(line, "\r")
+		if strings.TrimSpace(line) == "" {
+			continue
+		}
+		parts := strings.SplitN(line, "\t", 6)
+		if len(parts) < 4 {
+			continue
+		}
+		name := strings.TrimSpace(parts[0])
+		cid := strings.TrimSpace(parts[1])
+		image := strings.TrimSpace(parts[2])
+		state := strings.TrimSpace(parts[3])
+		status := ""
+		if len(parts) >= 5 {
+			status = strings.TrimSpace(parts[4])
+		}
+		var rawLabels string
+		if len(parts) >= 6 {
+			rawLabels = parts[5]
+		}
+		labels := parseDockerLabels(rawLabels)
+		containers = append(containers, AgentContainerInfo{
+			Name:        name,
+			ContainerID: cid,
+			Image:       image,
+			State:       state,
+			Status:      status,
+			Slug:        labels["mw.paas.app"],
+			Service:     labels["mw.paas.service"],
+			TenantID:    labels["mw.paas.tenant"],
+			Managed:     strings.EqualFold(labels["mw.paas.managed"], "true"),
+			Labels:      labels,
+		})
+	}
+	return containers
 }
 
 func (m *PaasManager) handleAgentContainerRun() http.HandlerFunc {
@@ -585,4 +593,300 @@ func (m *PaasManager) handleAgentContainerAction(w http.ResponseWriter, r *http.
 		"action": action,
 		"status": nextStatus,
 	})
+}
+
+const (
+	maxInlineComposeFiles     = 20
+	maxInlineComposeFileBytes = 256 * 1024
+)
+
+var (
+	composeSourceFieldPattern      = regexp.MustCompile(`(?i)^\s*source\s*:\s*(.+?)\s*$`)
+	composeShortVolumeEntryPattern = regexp.MustCompile(`^\s*-\s*["']?([^"'\s:#]+):([^"'\s#]+)(?::[^"'\s#]+)?["']?\s*$`)
+)
+
+// AgentComposeUpRequest is the payload for POST /agent/compose/up.
+type AgentComposeUpRequest struct {
+	Slug        string            `json:"slug"`
+	ComposeSpec string            `json:"composeSpec"`
+	Env         map[string]string `json:"env,omitempty"`
+	Files       map[string]string `json:"files,omitempty"`
+}
+
+func validateAndNormalizeInlineFiles(stackDir string, files map[string]string) (map[string]string, map[string]bool, error) {
+	if len(files) > maxInlineComposeFiles {
+		return nil, nil, fmt.Errorf("too many inline files (max %d)", maxInlineComposeFiles)
+	}
+	normalized := make(map[string]string, len(files))
+	allowed := make(map[string]bool, len(files))
+
+	for rawPath, content := range files {
+		if len(content) > maxInlineComposeFileBytes {
+			return nil, nil, fmt.Errorf("inline file %q exceeds %d bytes", rawPath, maxInlineComposeFileBytes)
+		}
+		if strings.ContainsRune(content, 0) {
+			return nil, nil, fmt.Errorf("inline file %q must not contain NUL bytes", rawPath)
+		}
+		for _, r := range rawPath {
+			if r < 0x20 || r == 0x7f {
+				return nil, nil, fmt.Errorf("inline file path contains control characters: %q", rawPath)
+			}
+		}
+		if strings.Contains(rawPath, `\`) {
+			return nil, nil, fmt.Errorf("inline file path must use forward slashes only: %q", rawPath)
+		}
+		trimmed := strings.TrimPrefix(rawPath, "./")
+		if trimmed == "" || strings.HasPrefix(trimmed, "/") || strings.HasPrefix(trimmed, "~") || strings.Contains(trimmed, "..") {
+			return nil, nil, fmt.Errorf("inline file path must be relative within stack directory: %q", rawPath)
+		}
+		if len(trimmed) >= 2 && trimmed[1] == ':' {
+			return nil, nil, fmt.Errorf("inline file path must not contain a drive letter: %q", rawPath)
+		}
+		cleaned := path.Clean(trimmed)
+		if cleaned == "." || cleaned == ".." || strings.HasPrefix(cleaned, "../") || strings.HasPrefix(cleaned, "/") {
+			return nil, nil, fmt.Errorf("inline file path escapes stack directory: %q", rawPath)
+		}
+		lowerBase := strings.ToLower(cleaned)
+		if lowerBase == "docker-compose.yml" || lowerBase == "docker-compose.yaml" || lowerBase == ".env" {
+			return nil, nil, fmt.Errorf("inline file path cannot overwrite %q", cleaned)
+		}
+
+		target := filepath.Join(stackDir, filepath.FromSlash(cleaned))
+		rel, err := filepath.Rel(stackDir, target)
+		if err != nil || rel == "." || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) || filepath.IsAbs(rel) {
+			return nil, nil, fmt.Errorf("inline file path escapes stack directory: %q", rawPath)
+		}
+		if _, dup := normalized[cleaned]; dup {
+			return nil, nil, fmt.Errorf("duplicate inline file path %q", cleaned)
+		}
+		normalized[cleaned] = content
+		allowed[cleaned] = true
+	}
+
+	return normalized, allowed, nil
+}
+
+func stripYAMLQuotes(raw string) string {
+	s := strings.TrimSpace(raw)
+	if len(s) >= 2 {
+		if (s[0] == '"' && s[len(s)-1] == '"') || (s[0] == '\'' && s[len(s)-1] == '\'') {
+			return s[1 : len(s)-1]
+		}
+	}
+	return s
+}
+
+func isAllowedRelativeInlinePath(rawSource string, allowedRelPaths map[string]bool) bool {
+	s := stripYAMLQuotes(rawSource)
+	if s == "" || strings.Contains(s, `\`) || strings.Contains(s, "..") || strings.HasPrefix(s, "/") || strings.HasPrefix(s, "~") {
+		return false
+	}
+	if len(s) >= 2 && s[1] == ':' {
+		return false
+	}
+	if !strings.HasPrefix(s, "./") {
+		return false
+	}
+	cleaned := path.Clean(strings.TrimPrefix(s, "./"))
+	return allowedRelPaths[cleaned]
+}
+
+// ValidateComposeSpecWithAllowedFiles enforces all fail-closed Compose security
+// policies while permitting relative bind mounts ONLY when their path matches
+// an inline file materialized inside the stack directory.
+func ValidateComposeSpecWithAllowedFiles(spec string, allowedRelPaths map[string]bool) error {
+	if strings.TrimSpace(spec) == "" {
+		return errors.New("composeSpec is required")
+	}
+	if len(spec) > maxComposeSpecBytes {
+		return fmt.Errorf("composeSpec exceeds %d bytes", maxComposeSpecBytes)
+	}
+	if strings.ContainsRune(spec, 0) {
+		return errors.New("composeSpec must not contain NUL bytes")
+	}
+
+	sawBindType := false
+	sawAllowedBindSource := false
+
+	for _, rawLine := range strings.Split(spec, "\n") {
+		line := strings.TrimRight(rawLine, "\r")
+		trimmed := strings.TrimSpace(line)
+		if trimmed == "" || strings.HasPrefix(trimmed, "#") {
+			continue
+		}
+		if idx := strings.Index(line, " #"); idx >= 0 {
+			line = line[:idx]
+			trimmed = strings.TrimSpace(line)
+		}
+		if composeDockerSockPattern.MatchString(line) {
+			return errors.New("composeSpec must not mount docker.sock")
+		}
+		if composePrivilegedPattern.MatchString(line) {
+			return errors.New("composeSpec must not set privileged: true")
+		}
+		if composeHostModePattern.MatchString(line) {
+			return errors.New("composeSpec must not use host namespace modes")
+		}
+		if composeDangerousCapRegexp.MatchString(line) {
+			return errors.New("composeSpec must not request dangerous Linux capabilities")
+		}
+		if strings.Contains(trimmed, "..") && (strings.Contains(trimmed, ":") || strings.Contains(trimmed, "source")) {
+			return errors.New("composeSpec volume path must not contain traversal")
+		}
+
+		if composeBindTypePattern.MatchString(line) {
+			if len(allowedRelPaths) == 0 {
+				return errors.New("composeSpec must not use host bind mounts")
+			}
+			sawBindType = true
+			continue
+		}
+
+		if m := composeSourceFieldPattern.FindStringSubmatch(line); len(m) == 2 {
+			if composeBindSourcePattern.MatchString(line) || !isAllowedRelativeInlinePath(m[1], allowedRelPaths) {
+				return errors.New("composeSpec must not use host bind mounts")
+			}
+			sawAllowedBindSource = true
+			continue
+		}
+
+		if m := composeShortVolumeEntryPattern.FindStringSubmatch(line); len(m) == 3 {
+			src := m[1]
+			if strings.HasPrefix(src, "./") {
+				if !isAllowedRelativeInlinePath(src, allowedRelPaths) {
+					return errors.New("composeSpec bind mount target is not in allowed inline files")
+				}
+				continue
+			}
+			if composeVolumeBindPattern.MatchString(line) || strings.HasPrefix(src, "/") || strings.HasPrefix(src, "~") || strings.Contains(src, "..") || strings.Contains(src, `\`) {
+				return errors.New("composeSpec must not use host bind mounts")
+			}
+			continue
+		}
+
+		if composeBindSourcePattern.MatchString(line) || composeVolumeBindPattern.MatchString(line) {
+			return errors.New("composeSpec must not use host bind mounts")
+		}
+	}
+
+	if sawBindType && !sawAllowedBindSource {
+		return errors.New("composeSpec bind mount requires an allowed inline source file")
+	}
+	return nil
+}
+
+func (m *PaasManager) handleAgentComposeUp() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			writePaasJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
+			return
+		}
+
+		var req AgentComposeUpRequest
+		dec := json.NewDecoder(io.LimitReader(r.Body, 4*1024*1024))
+		if err := dec.Decode(&req); err != nil {
+			writePaasJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid request JSON: " + err.Error()})
+			return
+		}
+
+		if err := ValidatePaasSlug(req.Slug); err != nil {
+			writePaasJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+			return
+		}
+		for k, v := range req.Env {
+			if !paasEnvKeyPattern.MatchString(k) {
+				writePaasJSON(w, http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("invalid env key: %q", k)})
+				return
+			}
+			if strings.ContainsRune(v, 0) {
+				writePaasJSON(w, http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("env value for %q must not contain NUL bytes", k)})
+				return
+			}
+		}
+
+		stackDir := m.composeStackDir(req.Slug)
+		normalizedFiles, allowedRelPaths, err := validateAndNormalizeInlineFiles(stackDir, req.Files)
+		if err != nil {
+			writePaasJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+			return
+		}
+		if err := ValidateComposeSpecWithAllowedFiles(req.ComposeSpec, allowedRelPaths); err != nil {
+			writePaasJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+			return
+		}
+
+		if err := os.MkdirAll(stackDir, 0o750); err != nil {
+			writePaasJSON(w, http.StatusInternalServerError, map[string]string{"error": fmt.Sprintf("create stack dir: %v", err)})
+			return
+		}
+
+		// Write inline config files atomically (0644) in sorted path order.
+		filePaths := make([]string, 0, len(normalizedFiles))
+		for relPath := range normalizedFiles {
+			filePaths = append(filePaths, relPath)
+		}
+		sort.Strings(filePaths)
+		for _, relPath := range filePaths {
+			target := filepath.Join(stackDir, filepath.FromSlash(relPath))
+			if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
+				writePaasJSON(w, http.StatusInternalServerError, map[string]string{"error": fmt.Sprintf("create inline file dir: %v", err)})
+				return
+			}
+			if err := writeFileAtomic(target, []byte(normalizedFiles[relPath]), 0o644); err != nil {
+				writePaasJSON(w, http.StatusInternalServerError, map[string]string{"error": fmt.Sprintf("write inline file %s: %v", relPath, err)})
+				return
+			}
+		}
+
+		composeFile := filepath.Join(stackDir, "docker-compose.yml")
+		if err := writeFileAtomic(composeFile, []byte(req.ComposeSpec), 0o600); err != nil {
+			writePaasJSON(w, http.StatusInternalServerError, map[string]string{"error": fmt.Sprintf("write compose file: %v", err)})
+			return
+		}
+
+		envPath := filepath.Join(stackDir, ".env")
+		if len(req.Env) > 0 {
+			envKeys := make([]string, 0, len(req.Env))
+			for k := range req.Env {
+				envKeys = append(envKeys, k)
+			}
+			sort.Strings(envKeys)
+			var envBuf strings.Builder
+			for _, k := range envKeys {
+				val := strings.NewReplacer("\r", "", "\n", "").Replace(req.Env[k])
+				envBuf.WriteString(k)
+				envBuf.WriteByte('=')
+				envBuf.WriteString(val)
+				envBuf.WriteByte('\n')
+			}
+			if err := writeFileAtomic(envPath, []byte(envBuf.String()), 0o600); err != nil {
+				writePaasJSON(w, http.StatusInternalServerError, map[string]string{"error": fmt.Sprintf("write compose env file: %v", err)})
+				return
+			}
+		} else {
+			_ = os.Remove(envPath)
+		}
+
+		ctx, cancel := context.WithTimeout(r.Context(), 2*time.Minute)
+		defer cancel()
+
+		project := PaasContainerName(req.Slug)
+		if _, err := m.runner(ctx, m.dockerBin, "compose", "-p", project, "-f", composeFile, "up", "-d", "--remove-orphans"); err != nil {
+			writePaasJSON(w, http.StatusInternalServerError, map[string]string{
+				"error": RedactPaasText(err.Error(), collectEnvSecrets(req.Env)...),
+			})
+			return
+		}
+
+		containers := make([]AgentContainerInfo, 0)
+		if out, psErr := m.runner(ctx, m.dockerBin, "ps", "-a", "--filter", "label=com.docker.compose.project="+project, "--format", "{{.Names}}\t{{.ID}}\t{{.Image}}\t{{.State}}\t{{.Status}}\t{{.Labels}}"); psErr == nil {
+			containers = parseDockerPsOutput(out)
+		}
+
+		writePaasJSON(w, http.StatusCreated, map[string]any{
+			"ok":         true,
+			"slug":       req.Slug,
+			"containers": containers,
+		})
+	}
 }
