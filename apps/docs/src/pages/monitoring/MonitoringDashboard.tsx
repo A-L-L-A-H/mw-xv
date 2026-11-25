@@ -1,18 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router';
-import {
-  Badge,
-  Button,
-  LineChart,
-  MetricTile,
-  Panel,
-  StatusBar,
-  Table,
-  Tabs,
-  TabList,
-  Tab,
-  TabPanel,
-} from '@moonwitness/ui';
+import { Badge } from '@moonwitness/ui/components/badge';
+import { Button } from '@moonwitness/ui/components/button';
+import { LineChart } from '@moonwitness/ui/components/line-chart';
+import { MetricTile } from '@moonwitness/ui/components/metric-tile';
+import { Panel } from '@moonwitness/ui/components/panel';
+import { StatusBar } from '@moonwitness/ui/components/status-bar';
+import { Table } from '@moonwitness/ui/components/table';
+import { Tabs, TabList, Tab, TabPanel } from '@moonwitness/ui/components/tabs';
 
 type FleetMember = {
   id: string;
