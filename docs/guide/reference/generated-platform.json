@@ -66,7 +66,15 @@
       "name": "@moonwitness/docs",
       "version": "1.0.0-rc.1",
       "directory": "apps/docs",
-      "scripts": ["dev", "portal:build", "portal:build:built", "preview", "test", "typecheck"]
+      "scripts": [
+        "dev",
+        "portal:build",
+        "portal:build:built",
+        "portal:build:cf",
+        "preview",
+        "test",
+        "typecheck"
+      ]
     },
     {
       "name": "@moonwitness/isp",
@@ -468,6 +476,7 @@
       "dev": "vite",
       "portal:build": "bun --filter @moonwitness/ui-catalog build && node ../../scripts/docs/build-guide.mjs && tsc -p tsconfig.json && vite build && node scripts/copy-404.mjs && node scripts/copy-ui-catalog.mjs && node scripts/verify-build.mjs",
       "portal:build:built": "tsc -p tsconfig.json && vite build && node scripts/copy-404.mjs && node scripts/copy-ui-catalog.mjs && node scripts/verify-build.mjs",
+      "portal:build:cf": "bun --filter @moonwitness/ui-catalog build && node ../../scripts/docs/build-guide.mjs && tsc -p tsconfig.json && vite build && node scripts/copy-ui-catalog.mjs && node scripts/verify-build.mjs",
       "preview": "vite preview",
       "test": "playwright test",
       "typecheck": "tsc -p tsconfig.json"
@@ -6847,9 +6856,7 @@
       ],
       "menus": [],
       "views": [],
-      "seeds": {
-        "observability.telemetry_state": 1
-      },
+      "seeds": {},
       "accessRules": []
     },
     {
@@ -10521,5 +10528,5 @@
       "path": "/whatsapp/readyz"
     }
   ],
-  "generatedFromSha256": "7fbde6a21aad1e77ee78aaac16875a8231494dee8eb8332be2754d9c6f9a372c"
+  "generatedFromSha256": "277acfa308a27ef3bd48083688d792832fc0a999d34bfdc4979ec551c1161446"
 }
