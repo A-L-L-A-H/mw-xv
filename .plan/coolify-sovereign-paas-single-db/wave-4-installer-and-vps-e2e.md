@@ -222,7 +222,7 @@
 
 ---
 
-### - [ ] M66 — Remove `/tmp/*` Staging Files & Close Plan
+### - [x] M66 — Remove `/tmp/*` Staging Files & Close Plan
 
 - **Depends On:** `M65`
 - **Actions:**
