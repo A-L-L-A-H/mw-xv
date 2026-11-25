@@ -137,4 +137,4 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 | Wave 2 | `M16`–`M38` | `23 / 23` | `7de3a496` | `M38 OK` — full Wave 2 gate green: auth 18/18, client 25/25, orm-cloud 137/137, api setup-claim 3/3, api build exit 0, api:addon:check 4/4; setup-status/claim lifecycle + conditional HSTS verified |
 | Wave 3 | `M39`–`M51` | `13 / 13` | `0de765f7` | `M51 OK` — full board gate green: typecheck 0; ui:check 0 findings; build exit 0 (28/28 pages incl /setup); board:budget all routes pass |
 | Wave 4 | `M52`–`M55` | `4 / 4` | `7a94fa11` | `M55 OK` — `git push origin dev` succeeded (`c0c19311..7a94fa11`); all pre-push static/UI/doc/gitleaks/TaskOS gates green; dev in sync with origin/dev |
-| Wave 5 | `M56`–`M66` | `11 / 11` | TBD | `M66 OK` — /tmp staging clean; http://163.61.134.104:8000/setup 200; /readyz 200; setupRequired true; ALL 66 TASKS COMPLETE |
+| Wave 5 | `M56`–`M66` | `11 / 11` | `82def12b` | `M66 OK` — /tmp staging clean; http://163.61.134.104:8000/setup 200; /readyz 200; setupRequired true; ALL 66 TASKS COMPLETE |
