@@ -323,7 +323,7 @@
 
 ---
 
-## - [ ] M29 — Add `POST /apps/deploy-git` & `POST /webhooks/github/:slug`
+## - [x] M29 — Add `POST /apps/deploy-git` & `POST /webhooks/github/:slug`
 
 - **Owner File (MODIFY):** `packages/orm-cloud/src/http.ts`
 - **Depends On:** `M28`

@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import {
   parsePositiveId,
@@ -25,7 +25,7 @@ import {
 } from './providers/coolify.js';
 import {
   controlMeshPaasApp,
-  deployViaMoonWitnessMesh,
+  deployAgentGit,
   fetchAgentMeshStatus,
   fetchMeshNodeMetrics,
   listAgentContainers,
@@ -1868,6 +1868,245 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
               [resolvedToken, ...Object.values(env ?? {})],
               'Compose deploy failed'
             ),
+          });
+        }
+      }
+    );
+
+    fastify.post<{ Body: { slug?: string; tenantId?: string; gitRepo?: string; branch?: string; dockerfilePath?: string; domain?: string; port?: number; env?: Record<string, string> } }>(
+      '/api/cloud/paas/apps/deploy-git',
+      async (req, reply) => {
+        const rule = ruleFor('/api/cloud/paas/apps/deploy-git');
+        const ctx = requireAuthorizedModelAccess(req, reply, rule);
+        if (!ctx) return;
+        if (!requireFeature(reply, rule)) return;
+        if (!requireToken(reply, rule)) return;
+
+        const { slug, tenantId, gitRepo, branch, dockerfilePath, domain, port, env } = req.body ?? {};
+        if (!slug || !gitRepo) {
+          mark(rule.operation, 'invalid');
+          return reply.code(400).send({ success: false, error: 'slug and gitRepo are required' });
+        }
+        if (!PAAS_SLUG_PATTERN.test(slug)) {
+          mark(rule.operation, 'invalid');
+          return reply.code(400).send({ success: false, error: 'Invalid slug format' });
+        }
+        if (!/^https:\/\/[^\s]+$/iu.test(gitRepo)) {
+          mark(rule.operation, 'invalid');
+          return reply.code(400).send({ success: false, error: 'gitRepo must be a valid HTTPS URL' });
+        }
+
+        const resolvedDomain =
+          typeof domain === 'string' && domain.trim() ? domain.trim() : undefined;
+        let previewPort: number | undefined;
+        if (!resolvedDomain) {
+          previewPort = (await allocatePreviewPort()) ?? undefined;
+        }
+        const targetPort = typeof port === 'number' && Number.isInteger(port) ? port : 3000;
+
+        try {
+          assertProbeTarget(defaultAgentUrl, requestPolicy);
+
+          // Generate webhook secret only on initial creation
+          const existingApp = await CloudApp.query().findOne({ name: slug });
+          const isNewApp = !existingApp;
+          const webhookSecret = existingApp?.webhook_secret ?? randomBytes(24).toString('hex');
+
+          const result = await deployAgentGit({
+            endpoint: defaultAgentUrl,
+            token: resolvedToken,
+            slug,
+            tenantId: tenantId ?? `company-${ctx.companyId}`,
+            gitRepo,
+            ...(branch ? { branch } : {}),
+            ...(dockerfilePath ? { dockerfilePath } : {}),
+            port: targetPort,
+            domain: resolvedDomain,
+            env,
+            fetchImpl,
+            timeoutMs: 120_000,
+          });
+
+          // Find or create deployment target for the company
+          let target = await CloudDeploymentTarget.query()
+            .where({ company_id: ctx.companyId, is_active: true })
+            .first();
+          if (!target) {
+            target = await CloudDeploymentTarget.query()
+              .where({ company_id: ctx.companyId })
+              .first();
+          }
+          if (!target) {
+            target = await CloudDeploymentTarget.query().first();
+          }
+          if (!target) {
+            target = await CloudDeploymentTarget.query().insertAndFetch({
+              company_id: ctx.companyId,
+              name: 'default-paas-target',
+              environment: 'production',
+              api_url: defaultAgentUrl,
+              is_active: true,
+            });
+          }
+
+          let cloudApp = await CloudApp.query().findOne({ name: slug });
+          if (cloudApp) {
+            cloudApp = await CloudApp.query().patchAndFetchById(cloudApp.id, {
+              company_id: ctx.companyId,
+              deployment_target_id: target.id,
+              image: result.image,
+              port: targetPort,
+              domain: resolvedDomain,
+              host_port: previewPort ?? null,
+              env_vars: env ?? {},
+              compose_spec: '',
+              git_repo: gitRepo,
+              git_branch: branch ?? null,
+              dockerfile_path: dockerfilePath ?? null,
+              webhook_secret: webhookSecret,
+              managed_by: 'paas',
+              deploy_mode: 'git',
+              is_active: true,
+              active: true,
+            });
+          } else {
+            cloudApp = await CloudApp.query().insertAndFetch({
+              company_id: ctx.companyId,
+              deployment_target_id: target.id,
+              name: slug,
+              image: result.image,
+              port: targetPort,
+              domain: resolvedDomain,
+              host_port: previewPort ?? null,
+              env_vars: env ?? {},
+              compose_spec: '',
+              git_repo: gitRepo,
+              git_branch: branch ?? null,
+              dockerfile_path: dockerfilePath ?? null,
+              webhook_secret: webhookSecret,
+              managed_by: 'paas',
+              deploy_mode: 'git',
+              is_active: true,
+              active: true,
+            });
+          }
+
+          await CloudDeployment.query().insert({
+            company_id: ctx.companyId,
+            app_id: cloudApp.id,
+            version: result.commitSha || 'latest',
+            image_tag: 'latest',
+            status: 'running',
+            container_id: result.containerId,
+            trigger: 'agent',
+            log: `Git deploy from ${gitRepo} (${result.branch || branch || 'default'}@${result.commitSha || 'HEAD'})`,
+            started_at: new Date().toISOString(),
+          });
+
+          await reconcileCaddyWithAgent({});
+
+          mark(rule.operation, 'success');
+          // Return webhookUrl & webhookSecret ONLY on initial creation
+          const baseData: Record<string, unknown> = {
+            slug,
+            image: result.image,
+            domain: resolvedDomain,
+            previewPort,
+            commitSha: result.commitSha,
+          };
+          if (isNewApp) {
+            baseData.webhookUrl = `/api/cloud/paas/webhooks/github/${slug}`;
+            baseData.webhookSecret = webhookSecret;
+          }
+          return reply.code(201).send({ success: true, data: baseData });
+        } catch (error) {
+          mark(rule.operation, 'failed', 'mesh');
+          return reply.code(502).send({
+            success: false,
+            error: safeErrorText(
+              error,
+              [resolvedToken, ...Object.values(env ?? {})],
+              'Git deploy failed'
+            ),
+          });
+        }
+      }
+    );
+
+    fastify.post<{ Params: { slug: string }; Headers: { 'x-hub-signature-256'?: string }; Body: unknown }>(
+      '/api/cloud/paas/webhooks/github/:slug',
+      async (req, reply) => {
+        const rule = ruleFor('/api/cloud/paas/webhooks/github/:slug');
+        const ctx = requireAuthorizedModelAccess(req, reply, rule);
+        if (!ctx) return;
+        if (!requireFeature(reply, rule)) return;
+
+        const slug = req.params.slug.trim();
+        if (!PAAS_SLUG_PATTERN.test(slug)) {
+          mark(rule.operation, 'invalid');
+          return reply.code(400).send({ success: false, error: 'Invalid slug format' });
+        }
+
+        const cloudApp = await CloudApp.query().findOne({ name: slug });
+        if (!cloudApp || !cloudApp.webhook_secret || !cloudApp.git_repo) {
+          mark(rule.operation, 'invalid');
+          return reply.code(404).send({ success: false, error: `App ${slug} not found or not configured for git deploys` });
+        }
+
+        // Constant-time HMAC-SHA256 verification against stored webhook_secret
+        const signatureHeader = req.headers['x-hub-signature-256'];
+        if (typeof signatureHeader !== 'string' || !signatureHeader.startsWith('sha256=')) {
+          mark(rule.operation, 'denied');
+          return reply.code(401).send({ success: false, error: 'Missing or invalid signature' });
+        }
+        const rawBody = typeof req.body === 'string' ? req.body : JSON.stringify(req.body ?? {});
+        const expected = createHmac('sha256', cloudApp.webhook_secret).update(rawBody).digest('hex');
+        const received = signatureHeader.slice('sha256='.length);
+        const expectedBuf = Buffer.from(expected, 'utf8');
+        const receivedBuf = Buffer.from(received, 'utf8');
+        if (
+          expectedBuf.length !== receivedBuf.length ||
+          !timingSafeEqual(expectedBuf, receivedBuf)
+        ) {
+          mark(rule.operation, 'denied');
+          return reply.code(401).send({ success: false, error: 'Invalid signature' });
+        }
+
+        try {
+          assertProbeTarget(defaultAgentUrl, requestPolicy);
+          const result = await deployAgentGit({
+            endpoint: defaultAgentUrl,
+            token: resolvedToken,
+            slug,
+            tenantId: `company-${cloudApp.company_id}`,
+            gitRepo: cloudApp.git_repo,
+            ...(cloudApp.git_branch ? { branch: cloudApp.git_branch } : {}),
+            ...(cloudApp.dockerfile_path ? { dockerfilePath: cloudApp.dockerfile_path } : {}),
+            port: cloudApp.port ?? 3000,
+            domain: cloudApp.domain ?? undefined,
+            fetchImpl,
+            timeoutMs: 120_000,
+          });
+
+          await CloudDeployment.query().insert({
+            company_id: cloudApp.company_id,
+            app_id: cloudApp.id,
+            version: result.commitSha || 'latest',
+            image_tag: 'latest',
+            status: 'running',
+            container_id: result.containerId,
+            trigger: 'webhook',
+            log: `Webhook-triggered git deploy from ${cloudApp.git_repo} (${result.commitSha || 'HEAD'})`,
+            started_at: new Date().toISOString(),
+          });
+
+          mark(rule.operation, 'success');
+          return { success: true, data: { slug, commitSha: result.commitSha, status: 'deployed' } };
+        } catch (error) {
+          mark(rule.operation, 'failed', 'mesh');
+          return reply.code(502).send({
+            success: false,
+            error: safeErrorText(error, [resolvedToken, cloudApp.webhook_secret], 'Webhook git deploy failed'),
           });
         }
       }
