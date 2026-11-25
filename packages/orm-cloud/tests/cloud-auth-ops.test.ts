@@ -1441,18 +1441,20 @@ describe('cloud auth and operations hardening', () => {
         NEW_VAR: '[REDACTED]',
       });
 
-      // Verify the actual stored value is preserved by checking detail endpoint
-      const detailRes = await harness.app.inject({
-        method: 'GET',
-        url: '/api/cloud/paas/apps/secret-test',
+      const storedApp = await CloudApp.query().findOne({
+        company_id: 1,
+        name: 'secret-test',
+        managed_by: 'paas',
+        is_active: true,
       });
-      expect(detailRes.statusCode).toBe(200);
-      // The detail endpoint should also redact values
-      expect(detailRes.json().data.env_vars).toEqual({
-        MY_SECRET: '[REDACTED]',
-        PUBLIC_VAR: '[REDACTED]',
-        NEW_VAR: '[REDACTED]',
+      expect(storedApp?.env_vars).toEqual({
+        MY_SECRET: 'super-secret-value',
+        PUBLIC_VAR: 'updated-public',
+        NEW_VAR: 'new-value',
       });
+      expect(updateRes.body).not.toContain('super-secret-value');
+      expect(updateRes.body).not.toContain('updated-public');
+      expect(updateRes.body).not.toContain('new-value');
     });
   });
 
