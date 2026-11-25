@@ -96,7 +96,7 @@
 
 ## Wave 5 — Live VPS E2E & Full Clean DB-Wipe Proof (`M56`–`M66`)
 
-### - [ ] M56 — Archive Tarball & Upload Staging Artifacts to `moonwitness-vps`
+### - [x] M56 — Archive Tarball & Upload Staging Artifacts to `moonwitness-vps`
 
 - **Depends On:** `M55`
 - **Actions:**
