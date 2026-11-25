@@ -43,7 +43,7 @@
 
 ---
 
-## - [ ] M40 — Create `apps/board/src/board-pages/setup-page.tsx` — Step 1 (Claim Root Superadmin)
+## - [x] M40 — Create `apps/board/src/board-pages/setup-page.tsx` — Step 1 (Claim Root Superadmin)
 
 - **Owner File (CREATE):** `apps/board/src/board-pages/setup-page.tsx`
 - **Depends On:** `M35`, `M39`
