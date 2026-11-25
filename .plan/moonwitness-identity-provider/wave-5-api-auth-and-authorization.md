@@ -52,9 +52,9 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
-#### - [ ] I52 — Replace API-local JWT signing with Identity token verification
+#### - [ ] I52 — Implement strict Identity access-token verification for API
 
-- **Owner File(s):** apps/api/src/plugins/auth.plugin.ts; apps/api/src/plugins/identity-verifier.plugin.ts; apps/api/src/plugins/identity-verifier.plugin.test.ts; apps/api/src/app.ts
+- **Owner File(s):** apps/api/src/plugins/identity-verifier.plugin.ts; apps/api/src/plugins/identity-verifier.plugin.test.ts
 - **Depends On:** I12, I36, I51
 - **Effort:** S
 - **Exact Spec:**
@@ -154,7 +154,7 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
 #### - [ ] I57 — Remove API-owned human login/register/password routes
 
 - **Owner File(s):** apps/api/src/routes/auth.routes.ts; apps/api/src/routes/auth.routes.test.ts; apps/api/src/plugins/auth.plugin.ts; apps/api/src/app.ts; apps/api/src/server.ts
-- **Depends On:** I56, I61, I64
+- **Depends On:** I56, I62, I65
 - **Effort:** S
 - **Exact Spec:**
   - After Board and Desktop OIDC flows have passed their integration tests, remove human login, register, refresh, logout and password-change route handlers from API.

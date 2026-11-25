@@ -134,7 +134,7 @@ Task dependencies are declared inside each playbook. Follow them exactly; the fi
 ### Wave 5 — API authentication and authorization
 - [ ] **I50** — Scaffold packages/identity-sdk
 - [ ] **I51** — Implement strict issuer/audience/JWKS access-token verifier
-- [ ] **I52** — Replace API-local JWT signing with Identity token verification
+- [ ] **I52** — Implement strict Identity access-token verification for API
 - [ ] **I53** — Resolve verified token subject to the local business principal
 - [ ] **I54** — Preserve auth-cache invalidation and revocation behavior
 - [ ] **I55** — Remove implicit global system/superadmin data bypass
