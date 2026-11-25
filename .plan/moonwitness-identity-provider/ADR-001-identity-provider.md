@@ -1,16 +1,16 @@
 # ADR-001 — MoonWitness Identity Provider and Business Authorization Boundary
 
-- **Status:** Proposed baseline for implementation
+- **Status:** Accepted — ownership boundary frozen by I01 inventory evidence
 - **Plan:** .plan/moonwitness-identity-provider.md
 - **Context branch:** dev
-- **Decision context:** The repository contains human credential authentication in packages/auth, API JWT handling in apps/api, business users in packages/orm-base, and business authorization in API policies/rules. The repository owner confirms the deployment databases are empty.
+- **Decision context:** The repository contains human credential authentication in packages/auth, API JWT handling in apps/api, business users in packages/orm-base, and business authorization in API policies/rules. The repository owner confirms the deployment databases are empty. The full current-state audit is documented in `docs/architecture/identity/legacy-auth-inventory.md`.
 
 ## Decision
 
 1. Create apps/id as the only human Identity Provider and OIDC issuer.
 2. Create a dedicated Identity database with a separate IDENTITY_DATABASE_URL and separate database credentials. The same PostgreSQL server may host both databases initially.
 3. Create packages/orm-identity for Identity-owned persistence. Do not register its models in the API business addon registry.
-4. Keep base.user.id as the business principal primary key. Add a unique opaque identity_subject mapping to the OIDC sub claim.
+4. Keep base.user.id as the business principal primary key. Add a future unique opaque identity_subject mapping to the OIDC sub claim. Never substitute an identity UUID as a business primary key.
 5. Keep base.partner as a business/CRM profile. It is not the credential or login authority.
 6. Keep CompanyMembership, AccessGroup, GroupMembership, ModelAccess and record rules in the Business database and enforce them in API.
 7. Create packages/identity-sdk for token verification and first-party OIDC client helpers. Never include credentials or private signing keys in this package.
@@ -31,12 +31,25 @@
 | Password and MFA credentials | Identity DB |
 | Login sessions and refresh-token families | Identity DB |
 | OAuth clients, authorization grants and signing-key metadata | Identity DB |
-| Business user integer ID and business profile mapping | Business DB |
+| Business user integer ID (`base.user.id`) and business foreign keys | Business DB |
+| Opaque `identity_subject` mapping (future column on `base.user`) | Business DB |
+| Email recovery and verification provider contracts | Identity DB |
 | CRM contact, person/company relationship and contact details | Business DB |
-| Tenant membership and group membership | Business DB |
-| Model CRUD grants and row-level record rules | Business DB + API |
+| Tenant membership (`CompanyMembership`) | Business DB + API enforcement |
+| Group membership (`GroupMembership`) | Business DB + API enforcement |
+| Model CRUD grants (`ModelAccess`) | Business DB + API enforcement |
+| Row-level record rules | Business DB + API enforcement |
 | Machine client identity and secret verifier | Identity DB |
 | Machine client allowed scopes | Identity DB registration plus API enforcement |
+| Provisioning/lifecycle events | Identity DB outbox + Business DB consumer |
+| Refresh-token replay detection and revocation | Identity DB |
+| OIDC session state and logout | Identity DB |
+| Signing-key material and rotation | Identity DB |
+| Access-token verification (issuer/audience/JWKS) | apps/api via packages/identity-sdk |
+
+### Owner-provided database context
+
+The repository owner confirms the deployment databases are empty. This is owner-provided context, not independently inspected production fact. No user-data backfill is planned. Schema migrations must still support clean install, repeatability and upgrade checks.
 
 ## Security requirements
 
@@ -49,6 +62,10 @@
 - Never auto-link an Identity account to a business user or partner solely by matching email.
 - Secret values are redacted from logs, errors, snapshots and telemetry.
 - Fail closed when issuer/JWKS verification or required business-principal resolution fails.
+- Never auto-link an Identity account to a business user or partner solely by matching email.
+- Token claims alone do not grant business authorization; API re-evaluates membership, groups, model grants and record rules.
+- No implicit global superadmin/system bypass for tenant row rules.
+- x-company-id header is never treated as membership or authorization proof without verifying CompanyMembership.
 
 ## Alternatives rejected
 

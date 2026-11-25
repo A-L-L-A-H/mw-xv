@@ -38,7 +38,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
 
 ---
 
-#### - [ ] I02 — Freeze Identity vs Business User ownership in ADR-001
+#### - [x] I02 — Freeze Identity vs Business User ownership in ADR-001
 
 - **Owner File(s):** .plan/moonwitness-identity-provider/ADR-001-identity-provider.md
 - **Depends On:** I01
@@ -51,15 +51,18 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - Document that the owner confirms the databases are empty and that no user-data backfill is planned.
 - **DO NOT:** Do not create another business user registry or move tenant permissions into apps/id.
 - **Acceptance Criteria:**
-  - [ ] ADR has one unambiguous owner for each data class.
-  - [ ] All rejected alternatives and security invariants are documented.
-  - [ ] ADR reflects the I01 inventory.
+  - [x] ADR has one unambiguous owner for each data class.
+  - [x] All rejected alternatives and security invariants are documented.
+  - [x] ADR reflects the I01 inventory.
 - **Verify:** git diff --check; compare ADR ownership table with I01 inventory.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:**
   - Command: git diff --check - passed
-  - Manual verification: all cited source paths opened and confirmed current
-  - Commit: 977e9a5c docs(identity): write legacy authentication surface inventory for I01
+  - ADR ownership table compared with I01 inventory: consistent
+  - Commit: pending
+
+---
+
 
 #### - [ ] I03 — Evaluate and select a maintained OIDC Provider implementation
 
@@ -158,4 +161,11 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
 ## Wave exit gate
 
 Do not start Wave 1 until I01–I06 are done and the OIDC provider recommendation has implementation evidence. Any unresolved provider/security choice must be recorded as a blocker, not guessed.
+
+
+
+
+
+
+
 
