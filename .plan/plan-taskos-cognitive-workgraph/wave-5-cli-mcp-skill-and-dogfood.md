@@ -103,7 +103,7 @@
 
 ---
 
-## - [ ] T35 — Add Root `package.json` Convenience Scripts for `plan-taskos`
+## - [x] T35 — Add Root `package.json` Convenience Scripts for `plan-taskos`
 
 - **Owner File(s):** `package.json`
   - `package.json` (MODIFY — `scripts` only)
