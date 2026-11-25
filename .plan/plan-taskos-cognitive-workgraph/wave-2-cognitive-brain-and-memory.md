@@ -143,7 +143,7 @@
 
 ---
 
-## - [ ] T18 — Add Wave 2 Unit Tests & Pass Wave 2 Brain Gate
+## - [x] T18 — Add Wave 2 Unit Tests & Pass Wave 2 Brain Gate
 
 - **Owner File(s):** `packages/plan-taskos/tests/brain-sqlite.test.ts`, `packages/plan-taskos/tests/knowledge-graph.test.ts`, `packages/plan-taskos/tests/memory-sleep.test.ts`, `packages/plan-taskos/tests/merkle-dag.test.ts`
   - `packages/plan-taskos/tests/brain-sqlite.test.ts` (CREATE)

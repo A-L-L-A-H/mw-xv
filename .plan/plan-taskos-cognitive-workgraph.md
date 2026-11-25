@@ -70,7 +70,7 @@ Execute strictly **1 micro-task (`Txx`) per cycle** without asking the user any 
 - [x] **T15** — Implement Hybrid BM25 + optional loopback Ollama embedding recall (`src/brain/hybrid-recall.ts`, automatic offline `lexical_only` fallback)
 - [x] **T16** — Implement Episodic Memory store (`src/brain/episodic-memory.ts`: redacted `.plan/memory/episodes.jsonl` sync + Non-REM decay & clustering + Protected-Gate Invariant Synthesizer with `automatedPromotionAllowed: false`)
 - [x] **T17** — Implement RFC 6962 DAG-Merkle Proof Ledger (`src/brain/merkle-dag.ts`: parent-hash DAG proofs + `0x00`/`0x01` domain-separated wave/plan root + tamper verification)
-- [ ] **T18** — Add Wave 2 unit tests (`brain-sqlite.test.ts`, `knowledge-graph.test.ts`, `memory-sleep.test.ts`, `merkle-dag.test.ts`) & pass Wave 2 gate
+- [x] **T18** — Add Wave 2 unit tests (`brain-sqlite.test.ts`, `knowledge-graph.test.ts`, `memory-sleep.test.ts`, `merkle-dag.test.ts`) & pass Wave 2 gate
 
 ### Wave 3 — Proof-Carrying Runner, Micro-Brief Compiler & TTL Leases (`wave-3-proof-runner-and-briefs.md`)
 - [ ] **T19** — Implement `O(1)` Cognitive Micro-Brief compiler (`src/runner/brief-compiler.ts`: 1 task + `owner_files` + `specs/*.md` slice + 2-hop neighbors + matched `INV-*` + top-3 episodic pitfalls)
