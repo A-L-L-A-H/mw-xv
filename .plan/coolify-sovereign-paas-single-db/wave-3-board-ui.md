@@ -226,7 +226,7 @@
 
 ---
 
-## - [ ] M48 — Remove Hardcoded `a-l-l-a-h.com` Mock Data from `MeshTopologyPanel`
+## - [x] M48 — Remove Hardcoded `a-l-l-a-h.com` Mock Data from `MeshTopologyPanel`
 
 - **Owner File (MODIFY):** `apps/board/src/components/cloud/mesh-topology-panel.tsx`
 - **Depends On:** `M25`

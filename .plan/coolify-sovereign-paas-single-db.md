@@ -102,7 +102,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 - [x] **M45** — `apps/board/src/components/cloud/paas-template-catalog.tsx`: paginated server-side 390+ search + category filter + compatibility badges
 - [x] **M46** — `apps/board/src/components/cloud/paas-template-catalog.tsx`: Configure & Deploy panel/modal (slug, domain/preview, editable env, secret badges)
 - [x] **M47** — `apps/board/src/components/cloud/paas-app-drawer.tsx`: 4-tab per-app management drawer (Overview/Stats, Env Vault, Domain, History/SSE Logs)
-- [ ] **M48** — `apps/board/src/components/cloud/mesh-topology-panel.tsx`: remove hardcoded `a-l-l-a-h.com` mock, wire authenticated live `/mesh/status`
+- [x] **M48** — `apps/board/src/components/cloud/mesh-topology-panel.tsx`: remove hardcoded `a-l-l-a-h.com` mock, wire authenticated live `/mesh/status`
 - [ ] **M49** — `apps/board/src/components/cloud/paas-studio-panel.tsx`: wire `InstanceDomainsPanel`, `PaasAppDrawer`, `PaasTemplateCatalog`, `MeshTopologyPanel`
 - [ ] **M50** — `apps/board/src/components/cloud/paas-studio-panel.tsx`: 3-tab Deploy panel (`Docker Image` | `Git Repository` | `Docker Compose`)
 - [ ] **M51** — Pass full Board gate (`typecheck`, `ui:check`, `build`, `board:budget`)
@@ -135,6 +135,6 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 | Wave 0 | `M01`–`M03` | `3 / 3` | — | `M03 OK` — frozen-lockfile dry-run exit 0 (zero drift, `bun.lock` unchanged); orm-cloud build exit 0; manifest test pass 10 / fail 0 |
 | Wave 1 | `M04`–`M15` | `12 / 12` | `177580ee` | `M15 OK` — `CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build` exit 0; binary size `18,091,490` bytes (> 10MB) |
 | Wave 2 | `M16`–`M38` | `23 / 23` | `7de3a496` | `M38 OK` — full Wave 2 gate green: auth 18/18, client 25/25, orm-cloud 137/137, api setup-claim 3/3, api build exit 0, api:addon:check 4/4; setup-status/claim lifecycle + conditional HSTS verified |
-| Wave 3 | `M39`–`M51` | `9 / 13` | — | `M47 OK` — typecheck exit 0; board:ui:check pass 6/6; PaasAppDrawer with stats/env vault/domain/logs tabs |
+| Wave 3 | `M39`–`M51` | `10 / 13` | — | `M48 OK` — typecheck exit 0; board:ui:check pass 6/6; zero a-l-l-a-h mock; live /mesh/status with skeleton/offline states |
 | Wave 4 | `M52`–`M55` | `0 / 4` | — | — |
 | Wave 5 | `M56`–`M66` | `0 / 11` | — | — |
