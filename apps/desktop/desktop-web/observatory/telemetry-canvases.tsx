@@ -253,7 +253,6 @@ export function ActivitySpectrogramCanvas({
         if (errH > 0) {
           ctx.fillStyle = pal.error;
           ctx.fillRect(bx, cy - errH, barW, errH);
-          cy -= errH;
         }
         if (isHot) {
           ctx.strokeStyle = pal.yellow;
