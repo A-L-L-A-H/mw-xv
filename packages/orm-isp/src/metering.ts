@@ -48,7 +48,7 @@ export async function meterSessionsToSubscriptionInvoices(
     const billableGb = totalOctets > 0 ? Math.ceil(totalOctets / BYTES_PER_GB) : 0;
     const subtotalMinor = billableGb * pricePerGbMinor;
 
-    const inserted = await SubscriptionInvoiceLine.query()
+    const inserted = (await SubscriptionInvoiceLine.query()
       .insert({
         subscription_id: subscription.id,
         name: lineName,
@@ -62,8 +62,12 @@ export async function meterSessionsToSubscriptionInvoices(
       })
       .onConflict(['subscription_id', 'name'])
       .ignore()
-      .returning('id');
-    if (inserted.length === 0) continue;
+      .returning('id')) as unknown as
+      | { id: number }
+      | { id: number }[]
+      | undefined;
+    const insertedRows = Array.isArray(inserted) ? inserted : inserted ? [inserted] : [];
+    if (insertedRows.length === 0) continue;
 
     createdInvoiceLines += 1;
     totalAmountMinor += subtotalMinor;
