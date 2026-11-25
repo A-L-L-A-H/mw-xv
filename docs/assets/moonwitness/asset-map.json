@@ -4,7 +4,7 @@
   "generatedFrom": "packages/assets/manifest.json and packages/ui/src/styles/tokens.css",
   "sources": {
     "assetManifest": "manifest.json",
-    "assetManifestSha256": "b9adc31dbd1bad749fe35f767274e6518d9197b9b022c16ed278a2832a8f8d93",
+    "assetManifestSha256": "adef7a58348b5f2b0c1300841fa082a26aee352edc8b9dd57bd974881fbcde94",
     "tokens": "packages/ui/src/styles/tokens.css",
     "tokensSha256": "42872eed742d9542837547c7d01d287e7859d6cc0cba13eca12d003a78f0465d"
   },
@@ -561,6 +561,78 @@
       "sha256": "12ae6b97604ccb2759ca718832918939afe92fcf8fee11538b8990f4ff3fe724"
     },
     {
+      "source": "packages/assets/brand/moonwitness-youtube-banner.dark.svg",
+      "output": "docs/assets/moonwitness/brand/moonwitness-youtube-banner.dark.svg",
+      "kind": "youtube",
+      "format": "svg",
+      "width": 2560,
+      "height": 1440,
+      "sha256": "b01cf52cf0a4adad4a68073aa23c7079e160cdff3bb7a40e1ae40a796495fbb2"
+    },
+    {
+      "source": "packages/assets/brand/moonwitness-youtube-banner.svg",
+      "output": "docs/assets/moonwitness/brand/moonwitness-youtube-banner.svg",
+      "kind": "youtube",
+      "format": "svg",
+      "width": 2560,
+      "height": 1440,
+      "sha256": "715692dae3f7464bbfd12b4917417c008bb35806d190770384304c67a33df014"
+    },
+    {
+      "source": "packages/assets/brand/moonwitness-youtube-logo.dark.svg",
+      "output": "docs/assets/moonwitness/brand/moonwitness-youtube-logo.dark.svg",
+      "kind": "youtube",
+      "format": "svg",
+      "width": 800,
+      "height": 800,
+      "sha256": "7790c8b1b9766f94ad1c234bbad5da021dcdf5f0c6e2e28da0de643500473989"
+    },
+    {
+      "source": "packages/assets/brand/moonwitness-youtube-logo.svg",
+      "output": "docs/assets/moonwitness/brand/moonwitness-youtube-logo.svg",
+      "kind": "youtube",
+      "format": "svg",
+      "width": 800,
+      "height": 800,
+      "sha256": "c6556791774e530512c04ba67cac02ea684d9e112150284daadff7bf62be5784"
+    },
+    {
+      "source": "packages/assets/brand/moonwitness-youtube-thumbnail-template.dark.svg",
+      "output": "docs/assets/moonwitness/brand/moonwitness-youtube-thumbnail-template.dark.svg",
+      "kind": "youtube",
+      "format": "svg",
+      "width": 1280,
+      "height": 720,
+      "sha256": "582978a8377be6513dac24fc9036f5f137f128232eaa18bd1c0001ad9c36dafa"
+    },
+    {
+      "source": "packages/assets/brand/moonwitness-youtube-thumbnail-template.svg",
+      "output": "docs/assets/moonwitness/brand/moonwitness-youtube-thumbnail-template.svg",
+      "kind": "youtube",
+      "format": "svg",
+      "width": 1280,
+      "height": 720,
+      "sha256": "3b0f5294b5dd818bfac5c2d501867b4a54a72469b25d8658d19992185927fb57"
+    },
+    {
+      "source": "packages/assets/brand/moonwitness-youtube-watermark.dark.svg",
+      "output": "docs/assets/moonwitness/brand/moonwitness-youtube-watermark.dark.svg",
+      "kind": "youtube",
+      "format": "svg",
+      "width": 150,
+      "height": 150,
+      "sha256": "9118c4f4690dad4d8df37806bdcfbbc8b4c61f23fc515702c0eb6002722e2a86"
+    },
+    {
+      "source": "packages/assets/brand/moonwitness-youtube-watermark.svg",
+      "output": "docs/assets/moonwitness/brand/moonwitness-youtube-watermark.svg",
+      "kind": "youtube",
+      "format": "svg",
+      "width": 150,
+      "height": 150,
+      "sha256": "5433465e5317041c10cf0edef98d78068e4dc8a794d2b08e1d3364c143fdc3d3"
+    },
+    {
       "source": "packages/assets/brand/readme-banner.svg",
       "output": "docs/assets/moonwitness/brand/readme-banner.svg",
       "kind": "readme-banner",
@@ -568,6 +640,24 @@
       "width": 1280,
       "height": 320,
       "sha256": "149d84c0c6c3024a9c247281312d20f9a4671c621f0d57ea35b37fb77cadde66"
+    },
+    {
+      "source": "packages/assets/brand/social-card.dark.png",
+      "output": "docs/assets/moonwitness/brand/social-card.dark.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 1200,
+      "height": 630,
+      "sha256": "d417fe2cb54c13dbc6f2e1b9f12f8d0f0864998d22b431f011451a187e13855a"
+    },
+    {
+      "source": "packages/assets/brand/social-card.dark.svg",
+      "output": "docs/assets/moonwitness/brand/social-card.dark.svg",
+      "kind": "social-card",
+      "format": "svg",
+      "width": 1200,
+      "height": 630,
+      "sha256": "8cbe2f0cc283121b9207479eae38cfe519f565c6bec17db6ccc7a26d9220c570"
     },
     {
       "source": "packages/assets/brand/social-card.png",

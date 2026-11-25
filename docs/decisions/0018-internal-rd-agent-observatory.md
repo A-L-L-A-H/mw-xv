@@ -1,18 +1,22 @@
-# ADR 0018: Internal R&D Multi-Agent Observatory (`tools/agent-observatory`)
+# ADR 0018: Internal R&D Observatory, Discovery & Monitoring Lab (`tools/agent-observatory`)
 
 - **Status:** Accepted
 - **Date:** 2026-11-25
-- **Audience & Distribution Scope:** **INTERNAL R&D WORKSTATION ONLY** (non-product developer tooling; never deployed to end-users, production SaaS, or packaged apps).
+- **Audience & Distribution Scope:** **INTERNAL R&D WORKSTATION LAB ONLY** (non-product developer workbench for live observability, discovery, monitoring, and rapid R&D prototyping; never deployed to end-users, production SaaS, or packaged apps).
 - **Decision owners:** MoonWitness maintainers
 - **Related:** [ADR 0006](0006-mandatory-addon-thin-api.md), [ADR 0007](0007-ai-corporation-addon-first-architecture.md), [ADR 0016](0016-single-authority-interactive-coding-sessions.md), [ADR 0017](0017-single-authority-swarm-observability.md), and learned invariants `INV-004`, `INV-007`, `INV-009`, `INV-014`.
 
-## Scope & Internal R&D Boundary
+## Scope & Internal R&D Lab Charter
 
-This ADR governs the standalone local workstation visualizer at [`tools/agent-observatory/`](../../tools/agent-observatory/README.md) (`v5`).
+This ADR governs the standalone local workstation workbench at [`tools/agent-observatory/`](../../tools/agent-observatory/README.md) (`v6`).
 
-**Strict Classification:**
+**Strict Classification & Charter:**
 
-- `tools/agent-observatory/` is strictly an **Internal R&D developer workbench tool** for MoonWitness engineers running multiple local coding agents in parallel on a single workstation.
+- `tools/agent-observatory/` is MoonWitness's **Internal R&D Multi-Domain Lab** — a single local loopback sandbox combining:
+  1. **Observatory:** Live multi-runtime coding-agent visualization (p5.js Warzone Cinema, Plan DAG Quest Map, OTel GenAI span waterfalls).
+  2. **Discovery:** Auto-discovery of workspace apps, packages, ADRs (`docs/decisions/`), agent skills (`.agents/skills/`), deploy compose topologies (`deploy/compose/`), and local Magpie Memory Vault card counts with live read-only markdown inspection.
+  3. **Monitoring:** Real-time host CPU/RAM oscilloscope, Magpie gateway `:3425` latency (`p50`/avg/TTFT) & `429` tracking, SSRF-guarded VPS/localhost probes, 6-signal MAST/TrajAD/AgentDiet trajectory health, and multi-agent file-collision alerts.
+  4. **Internal R&D Prototyping ("Anything Lab"):** Safe, zero-product-impact playground for engineers to prototype experimental visualizations, telemetry heuristics, and diagnostic tools before any vetted concept is formally promoted into an ORM addon under [ADR 0017](0017-single-authority-swarm-observability.md).
 - It is **NOT** a product application, **NOT** an operator console for customer deployments, and **NOT** an execution, scheduling, queue, or persistence authority.
 - Production observability and operator UI remain exclusively under the single authority defined in [ADR 0017](0017-single-authority-swarm-observability.md):
   `apps/board -> apps/api -> packages/orm-observability -> PostgreSQL`.

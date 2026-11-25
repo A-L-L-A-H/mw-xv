@@ -1,12 +1,12 @@
-# MoonWitness Riot Agent Observatory (`tools/agent-observatory`)
+# MoonWitness Internal R&D Lab — Observatory, Discovery & Monitoring (`tools/agent-observatory`)
 
-> **INTERNAL R&D ONLY — NOT A PRODUCT APPLICATION**
+> **INTERNAL R&D WORKSTATION LAB ONLY — NOT A PRODUCT APPLICATION**
 >
-> This tool is a **local-only, read-only internal R&D workstation observatory** for MoonWitness maintainers debugging parallel AI coding agents during development.
+> This tool is MoonWitness's **local-only, read-only internal R&D lab** for **Observatory, Discovery, Monitoring, and experimental diagnostics** during multi-agent engineering.
 >
 > - **Never** deploy publicly, publish in production Docker/Compose/Workers/desktop releases, or import from `apps/*` or `packages/*`.
 > - **Zero execution authority:** it observes local files/telemetry only and never mutates `.plan/`, `.git/`, SQLite databases, jobs, or running agents.
-> - Production telemetry and operator UI belong exclusively to the single authority defined in [ADR 0017](../../docs/decisions/0017-single-authority-swarm-observability.md). Architectural scope and invariants for this tool are codified in [ADR 0018](../../docs/decisions/0018-internal-rd-agent-observatory.md).
+> - Production telemetry and operator UI belong exclusively to the single authority defined in [ADR 0017](../../docs/decisions/0017-single-authority-swarm-observability.md). Full R&D Lab charter and invariants are codified in [ADR 0018](../../docs/decisions/0018-internal-rd-agent-observatory.md).
 
 ---
 
