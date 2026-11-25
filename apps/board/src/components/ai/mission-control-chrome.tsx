@@ -3,15 +3,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { Badge } from '@moonwitness/ui/components/badge';
-import { Button } from '@moonwitness/ui/components/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@moonwitness/ui/components/dialog';
+import { ConfirmDialog } from '@moonwitness/ui/components/confirm-dialog';
 import { PageHeader } from '@moonwitness/ui/components/page-header';
 import { WarningIcon } from '@moonwitness/ui/icons';
 import { Breadcrumbs } from '@/components/layout/breadcrumbs';
@@ -173,46 +165,18 @@ export function EmergencyConfirmModal({
   onConfirm,
 }: EmergencyConfirmModalProps) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent aria-label={title}>
-        <DialogHeader>
-          <DialogTitle className="font-display text-xl uppercase">{title}</DialogTitle>
-          <DialogDescription className="text-sm text-ink-soft">{consequence}</DialogDescription>
-        </DialogHeader>
-
-        <div className="border-2 border-ink bg-paper-raised p-3 font-mono text-xs text-ink">
-          Non-optimistic execution: UI state updates only after the server confirms persistence and
-          audit logging.
-        </div>
-
-        {errorAlert ? (
-          <div
-            role="alert"
-            className="border-2 border-ink bg-destructive/15 p-3 font-mono text-xs text-ink"
-          >
-            {errorAlert}
-          </div>
-        ) : null}
-
-        <DialogFooter>
-          <Button
-            type="button"
-            variant="outline"
-            disabled={isPending}
-            onClick={() => onOpenChange(false)}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            variant="destructive"
-            disabled={isPending}
-            onClick={() => void onConfirm()}
-          >
-            {isPending ? 'Awaiting Server…' : 'Confirm & Proceed'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <ConfirmDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={title}
+      description={consequence}
+      warningBanner="Non-optimistic execution: UI state updates only after the server confirms persistence and audit logging."
+      error={errorAlert ?? undefined}
+      destructive
+      busy={isPending}
+      confirmLabel={isPending ? 'Awaiting Server…' : 'Confirm & Proceed'}
+      cancelLabel="Cancel"
+      onConfirm={() => void onConfirm()}
+    />
   );
 }

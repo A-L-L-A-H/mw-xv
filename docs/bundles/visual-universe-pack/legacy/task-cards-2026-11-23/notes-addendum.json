@@ -1,0 +1,18 @@
+{
+  "snapshot": "visual-universe-task-card-notes-addendum/2026-11-23",
+  "sourceSnapshot": "docs/bundles/visual-universe-pack/legacy/task-cards-2026-11-23/manifest.json",
+  "entries": [
+    {
+      "taskId": "W1-001",
+      "sourcePath": "docs/bundles/visual-universe-pack/tasks/W1/W1-001.md",
+      "sourceBlobSha": "74b510d170dd12c640f1ffb1e734ae5293187dcc",
+      "text": "Human approval required only for canonical style lock. Continue other independent audit work while waiting."
+    },
+    {
+      "taskId": "W5-012",
+      "sourcePath": "docs/bundles/visual-universe-pack/tasks/W5/W5-012.md",
+      "sourceBlobSha": "fe2364614cf7ddfe550e26bbbcea2dcc8a5cf79f",
+      "text": "May be skipped with documented reason; do not block the baseline world runtime."
+    }
+  ]
+}

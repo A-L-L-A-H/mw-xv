@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type SendIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function SendIcon({ size = 24, title, ...props }: SendIconProps) {
+const SendIcon = forwardRef<SVGSVGElement, SendIconProps>(function SendIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -27,4 +31,8 @@ export function SendIcon({ size = 24, title, ...props }: SendIconProps) {
       <path d="m10.5 13.5 5-5" />
     </svg>
   );
-}
+});
+
+SendIcon.displayName = 'SendIcon';
+
+export { SendIcon };

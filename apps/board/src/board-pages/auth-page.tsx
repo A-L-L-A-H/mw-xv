@@ -113,7 +113,13 @@ export function AuthPage({ mode }: { mode: Mode }) {
 
       <main className="auth-shadow-main">
         <section className="auth-shadow-form-side" aria-labelledby="auth-title">
-          <Panel surface="ink" frame="grunge" density="comfortable" className="auth-shadow-card">
+          <Panel
+            surface="ink"
+            frame="grunge"
+            density="spacious"
+            contentClassName="auth-shadow-card-content"
+            className="auth-shadow-card"
+          >
             <div className="auth-shadow-eyebrow">
               <span className="auth-shadow-eyebrow-mark" aria-hidden="true" />
               MoonWitness access // {isLogin ? 'Sign in' : 'Create account'}

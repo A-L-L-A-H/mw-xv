@@ -44,16 +44,19 @@ export function DialogContent({
       <Primitive.Content
         data-slot="dialog-content"
         className={cn(
-          'mw-ui-dialog-content fixed top-[50%] left-[50%] grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-none border-4 border-ink bg-paper p-6 text-ink shadow-ink-lg duration-200 outline-none data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 sm:max-w-lg',
+          'mw-ui-dialog-content fixed top-[50%] left-[50%] grid max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 grid-rows-[minmax(0,1fr)_auto] gap-4 overflow-hidden rounded-none border-4 border-ink bg-paper p-6 text-ink shadow-ink-lg duration-200 outline-none data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 sm:max-w-lg',
           className
         )}
         {...props}
       >
-        {children}
+        <div className="mw-ui-dialog-body min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          {children}
+        </div>
         {showCloseButton && (
           <Primitive.Close
+            type="button"
             data-slot="dialog-close"
-            className="mw-ui-dialog-close absolute top-4 right-4 border-2 border-ink bg-paper p-1 text-ink transition-transform hover:-translate-y-0.5 hover:bg-[var(--mw-magenta)] hover:text-[var(--mw-on-magenta)] shadow-[2px_2px_0_0_var(--ink)] disabled:pointer-events-none [&_svg]:size-4"
+            className="mw-ui-dialog-close absolute top-4 right-4 border-2 border-ink bg-paper p-1 text-ink transition-transform hover:-translate-y-0.5 hover:bg-[var(--mw-magenta)] hover:text-[var(--mw-on-magenta)] shadow-[2px_2px_0_0_var(--mw-ink)] disabled:pointer-events-none [&_svg]:size-4"
           >
             <span aria-hidden="true">×</span>
             <span className="mw-ui-visually-hidden">Close</span>
@@ -90,7 +93,9 @@ export function DialogFooter({
       {children}
       {showCloseButton && (
         <Primitive.Close asChild>
-          <Button variant="outline">Close</Button>
+          <Button type="button" variant="outline">
+            Close
+          </Button>
         </Primitive.Close>
       )}
     </div>

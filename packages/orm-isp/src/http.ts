@@ -1,14 +1,20 @@
 import { randomBytes } from 'node:crypto';
-import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import type { AddonHttpPlugin } from '@moonwitness/orm';
+import type { FastifyInstance } from 'fastify';
+import {
+  parsePositiveId,
+  requireAuthorizedModelAccess,
+  type AddonHttpPlugin,
+} from '@moonwitness/orm';
 import { AuditLog } from '@moonwitness/orm-base';
 import { Subscription } from '@moonwitness/orm-subscription';
+import { DEFAULT_ISP_SERVICE_URL } from '@moonwitness/types';
 import { ispAuthHeaders, resolveIspAdminToken } from './auth.js';
 import { meterSessionsToSubscriptionInvoices } from './metering.js';
 import {
   probeIspNasHealth,
   processIspRadiusOutbox,
   syncIspRuntimeSessions,
+  trimTrailingSlashes,
   type NasHealthStatus,
 } from './reconcile.js';
 import {
@@ -19,21 +25,6 @@ import {
   ISPSubscriber,
 } from './models/index.js';
 
-interface GroupGrant {
-  readonly model_name: string;
-  readonly read: boolean;
-  readonly create: boolean;
-  readonly write: boolean;
-  readonly unlink: boolean;
-}
-
-interface RequestAuth {
-  readonly userId: number;
-  readonly role: string;
-  readonly companyId?: number;
-  readonly groupPermissions?: readonly GroupGrant[];
-}
-
 export interface IspHttpPluginOptions {
   readonly ispServiceUrl?: string;
   readonly adminToken?: string;
@@ -41,59 +32,12 @@ export interface IspHttpPluginOptions {
   readonly fetchImpl?: typeof fetch;
 }
 
-function requestAuth(req: FastifyRequest): RequestAuth | null {
-  const auth = (req as { auth?: RequestAuth | null }).auth;
-  return auth && typeof auth.userId === 'number' ? auth : null;
-}
-
-function parsePositiveId(raw: string): number | null {
-  const id = Number(raw);
-  return Number.isSafeInteger(id) && id > 0 ? id : null;
-}
-
-function hasModelAccess(
-  auth: RequestAuth,
-  modelName: string,
-  op: 'read' | 'create' | 'write' | 'unlink'
-): boolean {
-  if (auth.role === 'system' || auth.role === 'superadmin') return true;
-  if (auth.role !== 'user') return false;
-  return (auth.groupPermissions ?? []).some((g) => g.model_name === modelName && g[op] === true);
-}
-
-function requireAuthorizedModelAccess(
-  req: FastifyRequest,
-  reply: FastifyReply,
-  modelNames: readonly string[],
-  op: 'read' | 'create' | 'write' | 'unlink'
-): { auth: RequestAuth; companyId: number } | null {
-  const auth = requestAuth(req);
-  if (!auth) {
-    void reply.code(401).send({ success: false, error: 'Authentication required' });
-    return null;
-  }
-  if (!auth.companyId) {
-    void reply.code(403).send({ success: false, error: 'Active company context required' });
-    return null;
-  }
-  const allowed = modelNames.some((modelName) => hasModelAccess(auth, modelName, op));
-  if (!allowed) {
-    void reply
-      .code(403)
-      .send({ success: false, error: `Access denied for ${modelNames.join('|')}:${op}` });
-    return null;
-  }
-  return { auth, companyId: auth.companyId };
-}
-
 export function createIspHttpPlugin(options: IspHttpPluginOptions = {}): AddonHttpPlugin {
   return async (fastifyApp) => {
     const fastify = fastifyApp as FastifyInstance;
-    const baseUrl = (
-      options.ispServiceUrl ??
-      process.env.MW_ISP_URL ??
-      'http://127.0.0.1:3002'
-    ).replace(/\/+$/u, '');
+    const baseUrl = trimTrailingSlashes(
+      options.ispServiceUrl ?? process.env.MW_ISP_URL ?? DEFAULT_ISP_SERVICE_URL
+    );
     const fetchImpl = options.fetchImpl ?? globalThis.fetch;
     const adminToken = resolveIspAdminToken({
       adminToken: options.adminToken,
@@ -190,6 +134,46 @@ export function createIspHttpPlugin(options: IspHttpPluginOptions = {}): AddonHt
         const newSecret = randomBytes(24).toString('base64url');
         const reason = req.body?.reason?.trim() || 'manual_rotation';
 
+        // Sync the new secret to the RADIUS runtime BEFORE committing to DB
+        // so a runtime timeout/error never leaves DB and runtime diverged
+        // (audit finding TAUD-10 / TASK-EX-03).
+        let runtimeRes: Response;
+        try {
+          runtimeRes = await fetchImpl(
+            `${baseUrl}/api/clients/${encodeURIComponent(nas.ip_address)}/rotate-secret`,
+            {
+              method: 'POST',
+              headers: ispAuthHeaders(adminToken, { 'content-type': 'application/json' }),
+              body: JSON.stringify({ secret: newSecret, reason }),
+              signal: AbortSignal.timeout(5_000),
+            }
+          );
+        } catch {
+          return reply.code(502).send({
+            success: false,
+            error: 'ISP runtime unreachable; NAS secret was not rotated in database',
+            data: {
+              nasId: nas.id,
+              ipAddress: nas.ip_address,
+              rotated: false,
+              runtimeSynced: false,
+            },
+          });
+        }
+
+        if (!runtimeRes.ok) {
+          return reply.code(502).send({
+            success: false,
+            error: `ISP runtime rejected secret rotation (${runtimeRes.status}); database unchanged`,
+            data: {
+              nasId: nas.id,
+              ipAddress: nas.ip_address,
+              rotated: false,
+              runtimeSynced: false,
+            },
+          });
+        }
+
         await ISPNAS.query().findById(nas.id).patch({ secret: newSecret });
         await AuditLog.query().insert({
           model: ISPNAS.modelName,
@@ -199,29 +183,13 @@ export function createIspHttpPlugin(options: IspHttpPluginOptions = {}): AddonHt
           changes: JSON.stringify({ reason, secret: '[redacted]' }),
         });
 
-        let runtimeSynced: boolean;
-        try {
-          const res = await fetchImpl(
-            `${baseUrl}/api/clients/${encodeURIComponent(nas.ip_address)}/rotate-secret`,
-            {
-              method: 'POST',
-              headers: ispAuthHeaders(adminToken, { 'content-type': 'application/json' }),
-              body: JSON.stringify({ secret: newSecret, reason }),
-              signal: AbortSignal.timeout(5_000),
-            }
-          );
-          runtimeSynced = res.ok;
-        } catch {
-          runtimeSynced = false;
-        }
-
         return {
           success: true,
           data: {
             nasId: nas.id,
             ipAddress: nas.ip_address,
             rotated: true,
-            runtimeSynced,
+            runtimeSynced: true,
           },
         };
       }

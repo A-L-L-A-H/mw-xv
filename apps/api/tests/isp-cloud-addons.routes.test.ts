@@ -37,6 +37,8 @@ describe('ISP and Cloud live API addons with httpPlugins', () => {
     });
     Model.knex(db);
     process.env.NODE_ENV = 'test';
+    process.env.MW_CONTROL_PLANE_URL = 'http://127.0.0.1:3003';
+    process.env.MW_CONTROL_PLANE_TOKEN = 'isp-cloud-addons-control-plane-token-123456';
     app = await buildApp({
       db,
       superadminPassword: ADMIN_PASSWORD,

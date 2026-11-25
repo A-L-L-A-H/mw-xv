@@ -1,6 +1,7 @@
 import type { AddonHttpPlugin } from '@moonwitness/orm';
 import { readConceptProfileVersion } from '../concept-profile-store.js';
 import { resolveCorpusDataRoot } from '../corpus-root.js';
+import { hasValidationError } from './helpers.js';
 
 const errorSchema = {
   type: 'object',
@@ -8,15 +9,6 @@ const errorSchema = {
   required: ['success', 'error'],
   properties: { success: { const: false }, error: { type: 'string' } },
 } as const;
-
-function hasValidationError(request: unknown): boolean {
-  return (
-    typeof request === 'object' &&
-    request !== null &&
-    'validationError' in request &&
-    Boolean((request as { readonly validationError?: unknown }).validationError)
-  );
-}
 
 export const conceptProfileHttpPlugin: AddonHttpPlugin = async (app) => {
   if (!app.db) {

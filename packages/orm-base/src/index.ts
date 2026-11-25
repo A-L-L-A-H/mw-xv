@@ -47,8 +47,5 @@ export {
   type ConfigParameterValueType,
   type ConfigParamQueryDb,
 } from './models/config-parameter.js';
-export type {
-  SeedContext,
-  SeedResult,
-  AddonSeedManifest,
-} from './seed-manifest.js';
+export type { SeedContext, SeedResult, AddonSeedManifest } from './seed-manifest.js';
+export { resolveInsertedId } from './seed-utils.js';

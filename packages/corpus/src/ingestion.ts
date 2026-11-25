@@ -1,4 +1,5 @@
-import { createHash } from 'node:crypto';
+import { isRecord } from '@moonwitness/types';
+import { sha256Hex } from '@moonwitness/types/node';
 import { lstat, mkdir, mkdtemp, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import {
@@ -14,16 +15,13 @@ import {
 } from './dataset-release.js';
 import type { ActiveDatasetRelease } from './dataset-release.js';
 import type { DatasetReleaseSnapshot } from './dataset-release.js';
+import { safeRelativePath } from './path-safety.js';
 import type { IngestionRecipe, IngestionReport, IngestionRequest } from './types.js';
 
 type JsonObject = Record<string, unknown>;
 
-function isObject(value: unknown): value is JsonObject {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
 function parseRecipe(value: unknown): IngestionRecipe {
-  if (!isObject(value)) throw new TypeError('Recipe must be a JSON object');
+  if (!isRecord(value)) throw new TypeError('Recipe must be a JSON object');
   const keys = Object.keys(value).sort();
   if (keys.join(',') !== 'format,parser,recipeId,source') {
     throw new TypeError('Recipe must contain only format, recipeId, source, and parser');
@@ -35,7 +33,7 @@ function parseRecipe(value: unknown): IngestionRecipe {
   if (typeof value.recipeId !== 'string' || !/^[a-z0-9][a-z0-9._-]{0,99}$/u.test(value.recipeId)) {
     throw new TypeError('recipeId must be a stable lowercase identifier');
   }
-  if (!isObject(value.source) || Object.keys(value.source).sort().join(',') !== 'path,sha256') {
+  if (!isRecord(value.source) || Object.keys(value.source).sort().join(',') !== 'path,sha256') {
     throw new TypeError('source must contain only path and sha256');
   }
   if (typeof value.source.path !== 'string' || value.source.path.length === 0) {
@@ -50,17 +48,6 @@ function parseRecipe(value: unknown): IngestionRecipe {
     parser: 'json-record-array/v1',
     source: { path: value.source.path, sha256: value.source.sha256 },
   };
-}
-
-function safeRelativePath(value: string, label: string): string {
-  if (path.isAbsolute(value) || value.includes('\\') || value.includes('\0')) {
-    throw new TypeError(`${label} must be a safe relative POSIX path`);
-  }
-  const segments = value.split('/');
-  if (segments.some((segment) => segment.length === 0 || segment === '.' || segment === '..')) {
-    throw new TypeError(`${label} must not contain empty, dot, or parent segments`);
-  }
-  return segments.join(path.sep);
 }
 
 async function assertRegularFile(
@@ -110,10 +97,6 @@ async function ensureSafeOutputParent(root: string, destination: string): Promis
   }
 }
 
-function sha256(bytes: Buffer): string {
-  return createHash('sha256').update(bytes).digest('hex');
-}
-
 function decodeUtf8(bytes: Buffer, label: string): string {
   try {
     return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
@@ -134,7 +117,7 @@ function validateRecords(value: unknown): JsonObject[] {
         .join('; ');
       throw new TypeError(`Record at index ${index} is invalid: ${messages}`);
     }
-    if (!isObject(candidate)) throw new TypeError(`Record at index ${index} must be an object`);
+    if (!isRecord(candidate)) throw new TypeError(`Record at index ${index} must be an object`);
     if (typeof candidate.id !== 'string')
       throw new TypeError(`Record at index ${index} has no string ID`);
     if (ids.has(candidate.id)) throw new TypeError(`Duplicate record ID: ${candidate.id}`);
@@ -154,7 +137,7 @@ function compareIds(left: JsonObject, right: JsonObject): number {
 }
 
 function recordFilename(id: string): string {
-  return `${createHash('sha256').update(id, 'utf8').digest('hex')}.json`;
+  return `${sha256Hex(id)}.json`;
 }
 
 export async function ingestDataset(request: IngestionRequest): Promise<IngestionReport> {
@@ -164,7 +147,7 @@ export async function ingestDataset(request: IngestionRequest): Promise<Ingestio
   const recipe = parseRecipe(parseCanonicalJson(decodeUtf8(recipeBytes, 'Recipe')));
   const sourceFile = await assertRegularFile(root, recipe.source.path, 'source.path');
   const sourceBytes = await readFile(sourceFile);
-  const actualSourceSha = sha256(sourceBytes);
+  const actualSourceSha = sha256Hex(sourceBytes);
   if (actualSourceSha !== recipe.source.sha256) {
     throw new TypeError(
       `Source checksum mismatch: expected ${recipe.source.sha256}, got ${actualSourceSha}`
@@ -178,7 +161,7 @@ export async function ingestDataset(request: IngestionRequest): Promise<Ingestio
   const report: IngestionReport = {
     format: 'moonwitness-ingestion-report/v1',
     recipeId: recipe.recipeId,
-    recipeSha256: sha256(recipeBytes),
+    recipeSha256: sha256Hex(recipeBytes),
     parser: recipe.parser,
     source: { path: recipe.source.path, sha256: actualSourceSha, bytes: sourceBytes.byteLength },
     records: records.length,
@@ -270,7 +253,7 @@ export async function replayDatasetRelease(
 
   const recipeFile = await assertRegularFile(root, manifest.sourceRecipe.path, 'sourceRecipe.path');
   const recipeBytes = await readFile(recipeFile);
-  if (sha256(recipeBytes) !== manifest.sourceRecipe.sha256) {
+  if (sha256Hex(recipeBytes) !== manifest.sourceRecipe.sha256) {
     throw new TypeError('Pinned source recipe checksum mismatch; release was not rebuilt');
   }
   const preview = await ingestDataset({

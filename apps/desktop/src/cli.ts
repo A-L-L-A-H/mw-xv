@@ -2,6 +2,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { createAiMcpServer, serveAiMcpStdio, type AiMcpAuthContext } from '@moonwitness/ai-mcp';
+import { DEFAULT_BOARD_ORIGIN } from '@moonwitness/types';
 import { createDesktopHarnessBridge } from './bridge.js';
 import { importDesktopTasks } from './importer.js';
 import {
@@ -53,7 +54,7 @@ export function parseDesktopCliArgs(
   let repoRoot = env.MW_DESKTOP_REPO_ROOT ?? process.cwd();
   let desktopHomeDir = resolveDesktopHomeDir(env.MW_DESKTOP_HOME);
   let sqlitePath: string | undefined = env.MW_DESKTOP_SQLITE_PATH;
-  let boardOrigin = env.MW_DESKTOP_BOARD_ORIGIN ?? 'http://127.0.0.1:5173';
+  let boardOrigin = env.MW_DESKTOP_BOARD_ORIGIN ?? DEFAULT_BOARD_ORIGIN;
   let apiBaseUrl = env.MW_DESKTOP_API_URL ?? 'http://127.0.0.1:4242';
   let healthPort = Number.parseInt(env.MW_DESKTOP_HEALTH_PORT ?? '0', 10) || 0;
   let apiPort: number | undefined =

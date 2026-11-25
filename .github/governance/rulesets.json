@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "repository": "A-L-L-A-H/mw-xv",
+  "description": "Declarative governance plane. Managed by a human break-glass operator only; agents in the fleet may inspect and plan but never apply.",
+  "requiredCheckNames": ["ci-gate", "policy-gate"],
+  "breakGlassActors": ["bjo163"],
+  "rulesets": [
+    {
+      "name": "Two branches only: main and dev",
+      "id": null,
+      "target": "branch",
+      "enforcement": "active",
+      "conditions": {
+        "ref_name": {
+          "include": ["~ALL"],
+          "exclude": ["refs/heads/governance/**"]
+        }
+      },
+      "rules": [{ "type": "creation" }, { "type": "deletion" }, { "type": "non_fast_forward" }],
+      "bypass_actors": []
+    },
+    {
+      "name": "Protect main: promote from dev through CI",
+      "id": null,
+      "target": "branch",
+      "enforcement": "active",
+      "conditions": {
+        "ref_name": {
+          "include": ["refs/heads/main"],
+          "exclude": []
+        }
+      },
+      "rules": [
+        {
+          "type": "pull_request",
+          "parameters": {
+            "required_approving_review_count": 0,
+            "dismiss_stale_reviews_on_push": true,
+            "require_code_owner_review": false,
+            "require_last_push_approval": false,
+            "required_review_thread_resolution": true,
+            "allowed_merge_methods": ["merge"]
+          }
+        },
+        {
+          "type": "required_status_checks",
+          "parameters": {
+            "strict_required_status_checks_policy": true,
+            "do_not_enforce_on_create": false,
+            "required_status_checks": [{ "context": "ci-gate" }, { "context": "policy-gate" }]
+          }
+        },
+        {
+          "type": "merge_queue",
+          "parameters": {
+            "max_merge_group_size": 1,
+            "check_response_timeout_minutes": 60,
+            "grouping_strategy": "ALLGREEN",
+            "merge_method": "MERGE"
+          }
+        },
+        { "type": "deletion" },
+        { "type": "non_fast_forward" }
+      ],
+      "bypass_actors": []
+    },
+    {
+      "name": "Protect version tags",
+      "id": null,
+      "target": "tag",
+      "enforcement": "active",
+      "conditions": {
+        "ref_name": {
+          "include": ["refs/tags/v*"],
+          "exclude": []
+        }
+      },
+      "rules": [{ "type": "deletion" }, { "type": "non_fast_forward" }],
+      "bypass_actors": []
+    }
+  ]
+}

@@ -22,7 +22,7 @@ const riskTiers = [
       /^packages\/[^/]+\/(?:.*\/)?(?:models|addons|manifest)(?:\/|\.|$)/,
       /^apps\/[^/]+\/package\.json$/,
       /^packages\/[^/]+\/package\.json$/,
-      /^(?:Dockerfile|docker-compose\.production\.yml|package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml)$/,
+      /^(?:Dockerfile|deploy\/compose\/docker-compose\.production\.yml|package\.json|bun\.lock)$/,
     ],
   },
   {

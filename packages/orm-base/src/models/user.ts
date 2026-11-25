@@ -19,6 +19,9 @@ export const User = defineModel('base.user', {
       default: 'user',
       label: 'Role',
     }),
+    /** Monotonically incremented on password change or explicit revocation.
+     *  Embedded in access JWTs as `tkv` claim for instant cross-replica invalidation. */
+    token_version: fields.integer({ required: true, default: 1, label: 'Token Version' }),
   },
 });
 

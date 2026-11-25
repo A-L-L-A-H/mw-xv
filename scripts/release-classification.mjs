@@ -28,25 +28,38 @@ const breakingFooter = /(?:^|\n)(?:BREAKING CHANGE|BREAKING-CHANGE):\s*\S/im;
 
 export function parseConventionalCommit(commit) {
   const subject = commit.subject?.trim() ?? '';
+  const hasBreakingFooter = breakingFooter.test(commit.body ?? '');
   const match =
     /^(?<type>[a-z][a-z0-9-]*)(?:\((?<scope>[^()\r\n]+)\))?(?<breaking>!)?: (?<description>\S.*)$/.exec(
       subject
     );
-  if (!match?.groups || !commitTypes.has(match.groups.type)) {
+  if (match?.groups && commitTypes.has(match.groups.type)) {
+    const isBreaking = hasBreakingFooter || match.groups.breaking === '!';
     return {
-      valid: false,
-      reason: 'subject must use a supported Conventional Commit type and format',
+      valid: true,
+      type: match.groups.type,
+      scope: match.groups.scope ?? null,
+      description: match.groups.description,
+      isBreaking,
+      changeKind: isBreaking ? 'major' : (releaseKinds[match.groups.type] ?? 'none'),
     };
   }
 
-  const isBreaking = match.groups.breaking === '!' || breakingFooter.test(commit.body ?? '');
+  const revertMatch = /^Revert "(?<description>\S.*)"$/.exec(subject);
+  if (revertMatch?.groups) {
+    return {
+      valid: true,
+      type: 'revert',
+      scope: null,
+      description: revertMatch.groups.description,
+      isBreaking: hasBreakingFooter,
+      changeKind: hasBreakingFooter ? 'major' : 'patch',
+    };
+  }
+
   return {
-    valid: true,
-    type: match.groups.type,
-    scope: match.groups.scope ?? null,
-    description: match.groups.description,
-    isBreaking,
-    changeKind: isBreaking ? 'major' : (releaseKinds[match.groups.type] ?? 'none'),
+    valid: false,
+    reason: 'subject must use a supported Conventional Commit type and format',
   };
 }
 

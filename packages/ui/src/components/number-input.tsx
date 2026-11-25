@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useId, useState } from 'react';
 import { cn } from '../lib/cn.js';
 
 export type NumberInputProps = {
@@ -58,6 +58,14 @@ export function NumberInput({
   const errorId = error ? `${id}-error` : undefined;
   const describedBy = [descriptionId, errorId].filter(Boolean).join(' ') || undefined;
   const invalidState = invalid || Boolean(error);
+  const [uncontrolledValue, setUncontrolledValue] = useState<number | null>(null);
+  const isControlled = value !== undefined;
+  const currentValue = isControlled ? value : uncontrolledValue;
+
+  const updateValue = (nextValue: number | null) => {
+    if (!isControlled) setUncontrolledValue(nextValue);
+    onValueChange?.(nextValue);
+  };
 
   return (
     <div className={cn('mw-ui-field', className)} data-slot="number-input">
@@ -78,11 +86,11 @@ export function NumberInput({
         max={max}
         min={min}
         name={name}
-        onChange={(event) => onValueChange?.(parseNumber(event.target.value, integer))}
+        onChange={(event) => updateValue(parseNumber(event.target.value, integer))}
         required={required}
         step={step ?? (integer ? 1 : 'any')}
         type="number"
-        value={formatValue(value)}
+        value={formatValue(currentValue)}
       />
       {description ? (
         <div className="mw-ui-field-description" id={descriptionId}>

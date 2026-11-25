@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { WhatsappAccount, WhatsappConversation } from '../models.js';
 import { isRecord } from '@moonwitness/types';
 import { safeMime, sniffMime } from '../runtime/media.js';
-import { gowaRequest } from '../runtime/gowa-client.js';
+import { whatsappGatewayRequest } from '../runtime/gateway.js';
 import parsePhoneNumberFromString from 'libphonenumber-js/max';
 import { whatsappLogErrorContext } from '../runtime/log-redaction.js';
 import {
@@ -85,13 +85,13 @@ export function registerWhatsAppConversationRoutes(
     const account = await WhatsappAccount.query().findOne({ company_id: companyId });
     if (!account?.gateway_device_id) return { success: true, data: [] };
     const providerLimit = offset === 0 ? Math.max(100, limit) : limit;
-    const upstream = await gowaRequest<{ data?: Array<Record<string, unknown>> }>(
+    const upstream = await whatsappGatewayRequest<{ data?: Array<Record<string, unknown>> }>(
       `/chats?limit=${providerLimit}&offset=${offset}&archived=${archived}`,
       { deviceId: account.gateway_device_id }
     );
     const chats = new Map((upstream.data ?? []).map((chat) => [chat.jid, chat]));
     if (search) {
-      const matchingChats = await gowaRequest<{ data?: Array<Record<string, unknown>> }>(
+      const matchingChats = await whatsappGatewayRequest<{ data?: Array<Record<string, unknown>> }>(
         `/chats?limit=100&offset=0&archived=${archived}&search=${encodeURIComponent(search)}`,
         { deviceId: account.gateway_device_id }
       );
@@ -185,7 +185,7 @@ export function registerWhatsAppConversationRoutes(
           try {
             const conversationId = conversationIdByJid.get(jid);
             if (!conversationId) continue;
-            const latest = await gowaRequest<{ data?: Array<Record<string, unknown>> }>(
+            const latest = await whatsappGatewayRequest<{ data?: Array<Record<string, unknown>> }>(
               `/chat/${encodeURIComponent(jid)}/messages?limit=${INBOX_SYNC_PAGE_SIZE}&offset=0`,
               { deviceId: account.gateway_device_id! }
             );
@@ -206,7 +206,9 @@ export function registerWhatsAppConversationRoutes(
                 fetchedThisPoll < INBOX_SYNC_MAX_MESSAGES_PER_POLL;
                 offset += INBOX_SYNC_PAGE_SIZE
               ) {
-                const page = await gowaRequest<{ data?: Array<Record<string, unknown>> }>(
+                const page = await whatsappGatewayRequest<{
+                  data?: Array<Record<string, unknown>>;
+                }>(
                   `/chat/${encodeURIComponent(jid)}/messages?limit=${INBOX_SYNC_PAGE_SIZE}&offset=${offset}`,
                   { deviceId: account.gateway_device_id! }
                 );
@@ -572,7 +574,7 @@ export function registerWhatsAppConversationRoutes(
       if (!account || account.status !== 'connected' || !account.gateway_device_id)
         return reply.code(409).send({ success: false, error: 'WhatsApp account is not connected' });
       try {
-        const check = await gowaRequest<{ is_on_whatsapp?: unknown }>(
+        const check = await whatsappGatewayRequest<{ is_on_whatsapp?: unknown }>(
           `/user/check?phone=${encodeURIComponent(parsedPhone.number.slice(1))}`,
           { deviceId: account.gateway_device_id }
         );
@@ -615,7 +617,7 @@ export function registerWhatsAppConversationRoutes(
       if (!account?.gateway_device_id)
         return reply.code(409).send({ success: false, error: 'WhatsApp account is not connected' });
       try {
-        await gowaRequest(`/chat/${encodeURIComponent(conversation.jid)}/archive`, {
+        await whatsappGatewayRequest(`/chat/${encodeURIComponent(conversation.jid)}/archive`, {
           method: 'POST',
           deviceId: account.gateway_device_id,
           contentType: 'application/json',
@@ -673,7 +675,7 @@ export function registerWhatsAppConversationRoutes(
       if (!account?.gateway_device_id)
         return reply.code(409).send({ success: false, error: 'WhatsApp account is not connected' });
       try {
-        await gowaRequest(`/chat/${encodeURIComponent(conversation.jid)}/pin`, {
+        await whatsappGatewayRequest(`/chat/${encodeURIComponent(conversation.jid)}/pin`, {
           method: 'POST',
           deviceId: account.gateway_device_id,
           contentType: 'application/json',
@@ -867,11 +869,11 @@ export function registerWhatsAppConversationRoutes(
       if (!account?.gateway_device_id)
         return reply.code(503).send({ success: false, error: 'WhatsApp account is unavailable' });
       const [profileResult, avatarResult] = await Promise.allSettled([
-        gowaRequest<Record<string, unknown>>(
+        whatsappGatewayRequest<Record<string, unknown>>(
           `/user/info?phone=${encodeURIComponent(conversation.jid)}`,
           { deviceId: account.gateway_device_id }
         ),
-        gowaRequest<{ url?: unknown; id?: unknown }>(
+        whatsappGatewayRequest<{ url?: unknown; id?: unknown }>(
           `/user/avatar?phone=${encodeURIComponent(conversation.jid)}&is_preview=true`,
           { deviceId: account.gateway_device_id }
         ),
@@ -977,7 +979,7 @@ export function registerWhatsAppConversationRoutes(
         return true;
       };
       try {
-        const avatar = await gowaRequest<{ url?: unknown; id?: unknown }>(
+        const avatar = await whatsappGatewayRequest<{ url?: unknown; id?: unknown }>(
           `/user/avatar?phone=${encodeURIComponent(conversation.jid)}&is_preview=true`,
           { deviceId: account.gateway_device_id }
         );

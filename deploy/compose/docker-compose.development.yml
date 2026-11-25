@@ -1,0 +1,135 @@
+# Optional full development stack. The base stack starts PostgreSQL and standalone WhatsApp service.
+# Relative build contexts resolve from this file's directory (deploy/compose/), so they use ../..
+# to reach the repository root. Run from the repository root with
+#   docker compose -f deploy/compose/docker-compose.yml -f deploy/compose/docker-compose.development.yml up -d --build
+# Do not pass --project-directory .; it would break those contexts.
+services:
+  api:
+    build:
+      context: ../..
+      target: build
+    command: ['pnpm', '--filter', '@moonwitness/api', 'dev']
+    environment:
+      NODE_ENV: development
+      API_HOST: 0.0.0.0
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/moonwitness_db
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      SUPERADMIN_PASSWORD: ${SUPERADMIN_PASSWORD:-}
+      WHATSAPP_GATEWAY_URL: ${WHATSAPP_GATEWAY_URL:-http://whatsapp:3000}
+      WHATSAPP_GATEWAY_EXPECTED_VERSION: ${WHATSAPP_GATEWAY_EXPECTED_VERSION:-v9.6.0}
+      WHATSAPP_GATEWAY_USERNAME: ${WHATSAPP_GATEWAY_USERNAME:-moonwitness}
+      WHATSAPP_GATEWAY_PASSWORD: ${WHATSAPP_GATEWAY_PASSWORD:-moonwitness}
+      WHATSAPP_GATEWAY_TIMEOUT_MS: ${WHATSAPP_GATEWAY_TIMEOUT_MS:-20000}
+      WHATSAPP_WEBHOOK_URL: ${WHATSAPP_WEBHOOK_URL:-}
+      WHATSAPP_WEBHOOK_SECRET: ${WHATSAPP_WEBHOOK_SECRET:-}
+      ATTACHMENT_STORAGE_DIR: /var/lib/moonwitness/attachments
+      # Defaults keep the stack bootable with one command. Set ATTACHMENT_STORAGE_DRIVER=s3 and
+      # provide the Garage key pair in .env to write dev attachments to the shared bucket.
+      ATTACHMENT_STORAGE_DRIVER: ${ATTACHMENT_STORAGE_DRIVER:-local}
+      ATTACHMENT_S3_ENDPOINT: ${ATTACHMENT_S3_ENDPOINT:-https://s3.moonwitness.biz.id}
+      ATTACHMENT_S3_REGION: ${ATTACHMENT_S3_REGION:-garage}
+      ATTACHMENT_S3_BUCKET: ${ATTACHMENT_S3_BUCKET:-moonwitness-attachments}
+      ATTACHMENT_S3_ACCESS_KEY: ${ATTACHMENT_S3_ACCESS_KEY:-}
+      ATTACHMENT_S3_SECRET_KEY: ${ATTACHMENT_S3_SECRET_KEY:-}
+      ATTACHMENT_S3_FORCE_PATH_STYLE: ${ATTACHMENT_S3_FORCE_PATH_STYLE:-true}
+    ports: ['127.0.0.1:3000:3000']
+    volumes: [whatsapp_dev_attachments:/var/lib/moonwitness/attachments]
+    depends_on:
+      postgres: { condition: service_healthy }
+    healthcheck:
+      test:
+        [
+          CMD,
+          node,
+          -e,
+          "fetch('http://127.0.0.1:3000/readyz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 6
+  board:
+    build:
+      context: ../..
+      target: build
+    command: ['pnpm', '--filter', '@moonwitness/board', 'dev']
+    environment:
+      BOARD_API_TARGET: http://api:3000
+    ports: ['127.0.0.1:5173:5173']
+    depends_on:
+      api: { condition: service_healthy }
+  outbox-worker:
+    build:
+      context: ../..
+      target: build
+    command: ['pnpm', '--filter', '@moonwitness/api', 'jobs:outbox']
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/moonwitness_db
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      METRICS_TOKEN: ${METRICS_TOKEN:-}
+      WORKER_HEALTH_HOST: ${WORKER_HEALTH_HOST:-127.0.0.1}
+      OUTBOX_WORKER_HEALTH_PORT: ${OUTBOX_WORKER_HEALTH_PORT:-0}
+      WHATSAPP_GATEWAY_URL: ${WHATSAPP_GATEWAY_URL:-http://whatsapp:3000}
+      WHATSAPP_GATEWAY_EXPECTED_VERSION: ${WHATSAPP_GATEWAY_EXPECTED_VERSION:-v9.6.0}
+      WHATSAPP_GATEWAY_USERNAME: ${WHATSAPP_GATEWAY_USERNAME:-moonwitness}
+      WHATSAPP_GATEWAY_PASSWORD: ${WHATSAPP_GATEWAY_PASSWORD:-moonwitness}
+      ATTACHMENT_STORAGE_DIR: /var/lib/moonwitness/attachments
+      ATTACHMENT_STORAGE_DRIVER: ${ATTACHMENT_STORAGE_DRIVER:-local}
+      ATTACHMENT_S3_ENDPOINT: ${ATTACHMENT_S3_ENDPOINT:-https://s3.moonwitness.biz.id}
+      ATTACHMENT_S3_REGION: ${ATTACHMENT_S3_REGION:-garage}
+      ATTACHMENT_S3_BUCKET: ${ATTACHMENT_S3_BUCKET:-moonwitness-attachments}
+      ATTACHMENT_S3_ACCESS_KEY: ${ATTACHMENT_S3_ACCESS_KEY:-}
+      ATTACHMENT_S3_SECRET_KEY: ${ATTACHMENT_S3_SECRET_KEY:-}
+      ATTACHMENT_S3_FORCE_PATH_STYLE: ${ATTACHMENT_S3_FORCE_PATH_STYLE:-true}
+    volumes: [whatsapp_dev_attachments:/var/lib/moonwitness/attachments]
+    depends_on:
+      postgres: { condition: service_healthy }
+  jobs-worker:
+    build:
+      context: ../..
+      target: build
+    command: ['pnpm', '--filter', '@moonwitness/api', 'jobs:worker']
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/moonwitness_db
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      METRICS_TOKEN: ${METRICS_TOKEN:-}
+      WORKER_HEALTH_HOST: ${WORKER_HEALTH_HOST:-127.0.0.1}
+      JOBS_WORKER_HEALTH_PORT: ${JOBS_WORKER_HEALTH_PORT:-0}
+      ATTACHMENT_STORAGE_DIR: /var/lib/moonwitness/attachments
+      ATTACHMENT_STORAGE_DRIVER: ${ATTACHMENT_STORAGE_DRIVER:-local}
+      ATTACHMENT_S3_ENDPOINT: ${ATTACHMENT_S3_ENDPOINT:-https://s3.moonwitness.biz.id}
+      ATTACHMENT_S3_REGION: ${ATTACHMENT_S3_REGION:-garage}
+      ATTACHMENT_S3_BUCKET: ${ATTACHMENT_S3_BUCKET:-moonwitness-attachments}
+      ATTACHMENT_S3_ACCESS_KEY: ${ATTACHMENT_S3_ACCESS_KEY:-}
+      ATTACHMENT_S3_SECRET_KEY: ${ATTACHMENT_S3_SECRET_KEY:-}
+      ATTACHMENT_S3_FORCE_PATH_STYLE: ${ATTACHMENT_S3_FORCE_PATH_STYLE:-true}
+    volumes: [whatsapp_dev_attachments:/var/lib/moonwitness/attachments]
+    depends_on:
+      postgres: { condition: service_healthy }
+  jobs-scheduler:
+    build:
+      context: ../..
+      target: build
+    command: ['pnpm', '--filter', '@moonwitness/api', 'jobs:scheduler']
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/moonwitness_db
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      METRICS_TOKEN: ${METRICS_TOKEN:-}
+      WORKER_HEALTH_HOST: ${WORKER_HEALTH_HOST:-127.0.0.1}
+      JOBS_SCHEDULER_HEALTH_PORT: ${JOBS_SCHEDULER_HEALTH_PORT:-0}
+      ATTACHMENT_STORAGE_DIR: /var/lib/moonwitness/attachments
+      ATTACHMENT_STORAGE_DRIVER: ${ATTACHMENT_STORAGE_DRIVER:-local}
+      ATTACHMENT_S3_ENDPOINT: ${ATTACHMENT_S3_ENDPOINT:-https://s3.moonwitness.biz.id}
+      ATTACHMENT_S3_REGION: ${ATTACHMENT_S3_REGION:-garage}
+      ATTACHMENT_S3_BUCKET: ${ATTACHMENT_S3_BUCKET:-moonwitness-attachments}
+      ATTACHMENT_S3_ACCESS_KEY: ${ATTACHMENT_S3_ACCESS_KEY:-}
+      ATTACHMENT_S3_SECRET_KEY: ${ATTACHMENT_S3_SECRET_KEY:-}
+      ATTACHMENT_S3_FORCE_PATH_STYLE: ${ATTACHMENT_S3_FORCE_PATH_STYLE:-true}
+    volumes: [whatsapp_dev_attachments:/var/lib/moonwitness/attachments]
+    depends_on:
+      postgres: { condition: service_healthy }
+volumes:
+  whatsapp_dev_attachments:

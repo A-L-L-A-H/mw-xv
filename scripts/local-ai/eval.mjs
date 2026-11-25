@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
+import { sha256Hex } from '@moonwitness/types/node';
 import { existsSync } from 'node:fs';
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { performance } from 'node:perf_hooks';
@@ -8,10 +8,6 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { TextDecoder } from 'node:util';
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-
-function sha256Hex(bytes) {
-  return createHash('sha256').update(bytes).digest('hex');
-}
 
 function selectSearchProbeToken(text) {
   const tokens = text.normalize('NFKC').match(/[\p{L}\p{N}]+/gu) ?? [];
@@ -117,7 +113,7 @@ function buildGoldenPassage(index, text) {
     source_id: `mw:source:golden-${index}`,
     edition_id: `mw:edition:golden-${index}-v1`,
     locator: `golden:${index}`,
-    content_sha256: createHash('sha256').update(text, 'utf8').digest('hex'),
+    content_sha256: sha256Hex(text),
     evidence_id: `mw:evidence:golden-${index}`,
     assertion_id: `mw:assertion:golden-${index}`,
     text,
@@ -248,7 +244,7 @@ export async function runLocalAiEval(options = {}) {
       const prefix = Array.from(sample.text).slice(0, sample.scalars).join('');
       const byteEnd = Buffer.byteLength(prefix, 'utf8');
       const artifactBytes = Buffer.from(sample.text, 'utf8');
-      const sha = createHash('sha256').update(artifactBytes).digest('hex');
+      const sha = sha256Hex(artifactBytes);
       const manifestBytes = Buffer.from(
         JSON.stringify({
           schema_version: 1,
@@ -290,7 +286,7 @@ export async function runLocalAiEval(options = {}) {
   await recordCase('utf8-reject-mid-codepoint-slice', 'utf8_span_fidelity', async () => {
     const text = 'السلام';
     const artifactBytes = Buffer.from(text, 'utf8');
-    const sha = createHash('sha256').update(artifactBytes).digest('hex');
+    const sha = sha256Hex(artifactBytes);
     const manifestBytes = Buffer.from(
       JSON.stringify({
         schema_version: 1,
@@ -460,7 +456,7 @@ export async function runLocalAiEval(options = {}) {
   }
   await recordCase('visibility-deny-acl-callback', 'cross_visibility_refusal', async () => {
     const artifactBytes = Buffer.from('Authorized source only', 'utf8');
-    const sha = createHash('sha256').update(artifactBytes).digest('hex');
+    const sha = sha256Hex(artifactBytes);
     const manifestBytes = Buffer.from(
       JSON.stringify({
         schema_version: 1,

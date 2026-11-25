@@ -30,7 +30,9 @@
     "build": "tsc",
     "build:web": "vite build --config desktop-web/vite.config.ts",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit -p tsconfig.check.json"
+    "test:web": "playwright test --config playwright.web.config.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.check.json",
+    "typecheck:web": "tsc --noEmit -p tsconfig.web.json"
   },
   "dependencies": {
     "@fastify/cors": "11.3.1",
@@ -51,11 +53,12 @@
     "@moonwitness/orm-workflow": "workspace:*",
     "@moonwitness/types": "workspace:*",
     "better-sqlite3": "^13.0.3",
-    "fastify": "^5.12.6",
+    "fastify": "^5.12.8",
     "knex": "^3.3.0",
     "objection": "^3.1.5"
   },
   "devDependencies": {
+    "@moonwitness/assets": "workspace:*",
     "@moonwitness/ui": "workspace:*",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/better-sqlite3": "^9.6.0",

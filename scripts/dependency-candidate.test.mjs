@@ -29,12 +29,16 @@ function workspace() {
   writeFileSync(
     join(root, 'package.json'),
     JSON.stringify(
-      { name: 'fixture-root', private: true, packageManager: 'pnpm@11.0.0' },
+      {
+        name: 'fixture-root',
+        private: true,
+        packageManager: 'bun@1.4.5',
+        workspaces: ['apps/*', 'packages/*'],
+      },
       null,
       2
     ) + '\n'
   );
-  writeFileSync(join(root, 'pnpm-workspace.yaml'), 'packages:\n  - apps/*\n  - packages/*\n');
   writeFileSync(
     join(root, 'packages', 'fixture', 'package.json'),
     JSON.stringify(
@@ -66,17 +70,17 @@ test('applies one non-major exact package update only on the matching source SHA
       expectedSourceSha: fixture.sourceSha,
       root: fixture.root,
       execute: (_executable, args, cwd) => {
-        assert.equal(_executable, 'pnpm');
+        assert.equal(_executable, 'bun');
         if (args.includes('--lockfile-only')) {
-          writeFileSync(join(cwd, 'pnpm-lock.yaml'), "lockfileVersion: '9.0'\n");
+          writeFileSync(join(cwd, 'bun.lock'), '{\n  "lockfileVersion": 1\n}\n');
         }
       },
     });
     assert.deepEqual([...result.current].sort(), ['^7.0.0', '~7.0.1']);
     assert.deepEqual(result.changedFiles, [
+      'bun.lock',
       'packages/fixture-two/package.json',
       'packages/fixture/package.json',
-      'pnpm-lock.yaml',
     ]);
     const manifest = JSON.parse(
       readFileSync(join(fixture.root, 'packages/fixture/package.json'), 'utf8')
@@ -166,10 +170,10 @@ test('a failing full-suite E2E gate stops the candidate before container smoke c
         root: fixture.root,
         execute: (executable, args, cwd) => {
           executed.push(`${executable} ${args.join(' ')}`);
-          if (executable === 'pnpm' && args.includes('--lockfile-only')) {
-            writeFileSync(join(cwd, 'pnpm-lock.yaml'), "lockfileVersion: '9.0'\n");
+          if (executable === 'bun' && args.includes('--lockfile-only')) {
+            writeFileSync(join(cwd, 'bun.lock'), '{\n  "lockfileVersion": 1\n}\n');
           }
-          if (executable === 'pnpm' && args.includes('test:e2e:built')) {
+          if (executable === 'bun' && args.includes('test:e2e:built')) {
             throw new Error('simulated E2E regression');
           }
         },
@@ -203,8 +207,8 @@ test('uses native browser installation semantics and cross-platform container sm
         platform,
         execute: (executable, args, cwd) => {
           executed.push(`${executable} ${args.join(' ')}`);
-          if (executable === 'pnpm' && args.includes('--lockfile-only')) {
-            writeFileSync(join(cwd, 'pnpm-lock.yaml'), "lockfileVersion: '9.0'\n");
+          if (executable === 'bun' && args.includes('--lockfile-only')) {
+            writeFileSync(join(cwd, 'bun.lock'), '{\n  "lockfileVersion": 1\n}\n');
           }
         },
       });

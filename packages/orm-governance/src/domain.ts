@@ -1,14 +1,6 @@
-export type PolicyStatus =
-  | 'draft'
-  | 'in_review'
-  | 'enacted'
-  | 'in_force'
-  | 'superseded'
-  | 'repealed';
+import type { AllocationStatus, MandateStatus, PolicyStatus } from './statuses.js';
 
-export type MandateStatus = 'active' | 'expired' | 'revoked' | 'pending';
-
-export type AllocationStatus = 'proposed' | 'approved' | 'released' | 'spent' | 'returned';
+export type { AllocationStatus, MandateStatus, PolicyStatus };
 
 export interface BudgetLineSummary {
   readonly fiscalYear: number;
@@ -50,9 +42,7 @@ export function isMandateActive(
   return true;
 }
 
-export function summarizeBudgetAllocations(
-  allocations: readonly BudgetAllocationLike[]
-): {
+export function summarizeBudgetAllocations(allocations: readonly BudgetAllocationLike[]): {
   totalMinor: number;
   releasedMinor: number;
   pendingMinor: number;

@@ -1,3 +1,5 @@
+import { BASIS_POINTS_TOTAL } from '@moonwitness/types';
+
 export type LeadTier = 'hot' | 'warm' | 'cold';
 
 export interface LeadSignals {
@@ -154,7 +156,7 @@ export const DEFAULT_STAGE_PROBABILITIES_BPS: Readonly<Record<string, number>> =
   qualified: 2500,
   proposal: 5000,
   negotiation: 7500,
-  won: 10000,
+  won: BASIS_POINTS_TOTAL,
   lost: 0,
 };
 
@@ -188,9 +190,9 @@ export function forecastPipelineRevenue(
     const effectiveBps = clamp(
       deal.probabilityBps !== undefined ? Math.round(deal.probabilityBps) : defaultBps,
       0,
-      10000
+      BASIS_POINTS_TOTAL
     );
-    const weightedCents = Math.round((deal.amountCents * effectiveBps) / 10000);
+    const weightedCents = Math.round((deal.amountCents * effectiveBps) / BASIS_POINTS_TOTAL);
 
     totalDeals += 1;
     totalGrossCents += deal.amountCents;

@@ -1,3 +1,5 @@
+import { isRecord } from '@moonwitness/types';
+
 export const DEFAULT_DESKTOP_UPDATE_ENDPOINT =
   'https://github.com/A-L-L-A-H/mw-xv/releases/latest/download/latest.json';
 
@@ -138,10 +140,6 @@ export function compareSemver(a: string, b: string): number {
 
 export function isValidSha256Hex(value: string | undefined): boolean {
   return typeof value === 'string' && SHA256_HEX_REGEX.test(value.trim());
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function parseManifest(raw: unknown): DesktopUpdateManifest | null {

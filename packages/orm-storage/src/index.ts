@@ -22,6 +22,7 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3
 
 export type { AttachmentStorage, StoredObjectMetadata } from './storage.types.js';
 export * from './seed.js';
+export { storageSeedManifest, type AddonSeedManifest } from './seed-manifest.js';
 import type { AttachmentStorage, StoredObjectMetadata } from './storage.types.js';
 
 function validateKey(key: string): string {

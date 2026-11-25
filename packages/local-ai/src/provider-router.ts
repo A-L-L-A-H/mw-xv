@@ -1,3 +1,5 @@
+import { isLoopbackEndpointUrl as isSharedLoopbackEndpointUrl } from '@moonwitness/types';
+
 export type RouterProviderKind = 'ollama' | 'lm-studio' | 'llama-cpp' | 'openai-compatible';
 export type ProviderLocality = 'local' | 'cloud';
 export type PrivacyTier = 'offline-strict' | 'hybrid';
@@ -116,16 +118,11 @@ const DEFAULT_CIRCUIT_BREAKER: CircuitBreakerConfig = {
   cooldownMs: 30_000,
 };
 
-const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '::1']);
-
 export function isLoopbackEndpointUrl(endpoint: string): boolean {
-  try {
-    const parsed = new URL(endpoint);
-    const host = parsed.hostname.replace(/^\[|\]$/gu, '').toLowerCase();
-    return LOOPBACK_HOSTS.has(host);
-  } catch {
-    return false;
-  }
+  return isSharedLoopbackEndpointUrl(endpoint, {
+    rejectQuery: true,
+    allowIpv4LoopbackSubnet: false,
+  });
 }
 
 export function estimatePromptTokens(prompt: string): number {
@@ -154,6 +151,16 @@ export function createMultiProviderLlmRouter(config: ProviderRouterConfig): Mult
     windowSize: config.circuitBreaker?.windowSize ?? DEFAULT_CIRCUIT_BREAKER.windowSize,
     cooldownMs: config.circuitBreaker?.cooldownMs ?? DEFAULT_CIRCUIT_BREAKER.cooldownMs,
   };
+  if (
+    !Number.isInteger(cb.failureThreshold) ||
+    cb.failureThreshold < 1 ||
+    !Number.isInteger(cb.windowSize) ||
+    cb.windowSize < 1 ||
+    !Number.isFinite(cb.cooldownMs) ||
+    cb.cooldownMs < 0
+  ) {
+    throw new TypeError('circuitBreaker bounds must be positive counts and non-negative cooldown');
+  }
 
   const states = new Map<string, ProviderState>();
   for (const provider of config.providers) {

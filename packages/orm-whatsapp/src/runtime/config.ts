@@ -1,8 +1,27 @@
+import path from 'node:path';
+
+export type WhatsAppDriver = 'baileys' | 'gowa';
+
 export interface WhatsAppGatewayConfig {
   url: string;
   username: string;
   password: string;
   timeoutMs: number;
+}
+
+export function whatsappDriver(env: NodeJS.ProcessEnv = process.env): WhatsAppDriver {
+  const explicit = env.WHATSAPP_DRIVER?.trim().toLowerCase();
+  if (explicit === 'baileys' || explicit === 'gowa') {
+    return explicit;
+  }
+  return env.WHATSAPP_GOWA_BASE_URL?.trim() || env.WHATSAPP_GATEWAY_URL?.trim()
+    ? 'gowa'
+    : 'baileys';
+}
+
+export function baileysAuthDir(env: NodeJS.ProcessEnv = process.env): string {
+  const configured = env.WHATSAPP_BAILEYS_AUTH_DIR?.trim();
+  return path.resolve(configured || '.moonwitness/whatsapp-baileys-auth');
 }
 
 const DEV_USERNAME = 'moonwitness';

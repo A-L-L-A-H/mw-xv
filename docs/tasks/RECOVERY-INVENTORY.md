@@ -30,27 +30,27 @@ This follow-up was performed against the exact Git blobs after the original 627-
 
 A direct Git blob audit of `docs/tasks/tasks.json` found 1,358 valid JSON records. The source-reference distribution is:
 
-| Existing source reference |   Records |
-| ------------------------- | --------: |
-| `docs/roadmap/tasks.json` |       239 |
-| `audit`                   |        14 |
-| `todo-wa.md`              |       112 |
-| `todo.md`                 |       861 |
-| `todo-desktop.md`         |       128 |
-| `evolution/backlog.json`  |         4 |
-| **Total**                 | **1,358** |
+| Existing source reference            |   Records |
+| ------------------------------------ | --------: |
+| `docs/roadmap/tasks.json`            |       239 |
+| `audit`                              |        14 |
+| `docs/tasks/sources/todo-wa.md`      |       112 |
+| `docs/tasks/sources/todo.md`         |       861 |
+| `docs/tasks/sources/todo-desktop.md` |       128 |
+| `evolution/backlog.json`             |         4 |
+| **Total**                            | **1,358** |
 
-Task codes are unique and every record has a `sourceRef.file`, but the 861 `todo.md` references are stale as current provenance because root `todo.md` is now a pointer. The source-backed candidate inventory intentionally uses the archived checklist and imports only its seven still-open records; it adds 14 promotion-governance and 109 Visual Universe records for a candidate total of 627.
+Task codes are unique and every record has a `sourceRef.file`, but the 861 `docs/tasks/sources/todo.md` references are stale as current provenance because root `docs/tasks/sources/todo.md` is now a pointer. The source-backed candidate inventory intentionally uses the archived checklist and imports only its seven still-open records; it adds 14 promotion-governance and 109 Visual Universe records for a candidate total of 627.
 
 **Historical pre-migration instruction:** the 1,358-record file was not to be overwritten before review. The owner subsequently approved the reconciled candidate; its exact previous Git blob is now retained at `${oldArchivePath}`. The canonical registry has been replaced once by a Git tree update, not by running the one-time `--write` importer. CI remains read-only and must never write to `docs/tasks/tasks.json`.
 
 ## Exact legacy TODO identity reconciliation — 2026-11-23
 
-A direct blob read plus a line-by-line parse of the archived checklist proves the complete 861-record `todo.md` subset is reconciled by stable task code:
+A direct blob read plus a line-by-line parse of the archived checklist proves the complete 861-record `docs/tasks/sources/todo.md` subset is reconciled by stable task code:
 
 - Legacy registry blob: `d56499936761dcc062704d06588ee2679fd1aae2` (`docs/tasks/tasks.json` at the pre-closeout source tree).
 - Archived checklist blob: `f29ec364530195484f668287c5616bf91984554f` (`docs/archive/todos/todo.md`).
-- Legacy rows with `sourceRef.file === "todo.md"`: **861** (854 `done`, 7 `todo`, 0 `doing`).
+- Legacy rows with `sourceRef.file === "docs/tasks/sources/todo.md"`: **861** (854 `done`, 7 `todo`, 0 `doing`).
 - Archived checklist rows: **861** (854 checked, 7 unchecked).
 - Checked archive IDs and the 854 legacy `done` IDs are identical; unchecked archive IDs and the 7 legacy `todo` IDs are identical. Both set comparisons have **zero missing and zero extra IDs**.
 - All seven unchecked IDs are retained by the source-backed candidate as `blocked` pending owner re-triage:
@@ -70,15 +70,15 @@ The uploaded candidate was compared by task code against the complete legacy reg
 
 **Exact task-code set comparison:**
 
-| Classification                     | Count | Treatment                                                                           |
-| ---------------------------------- | ----: | ----------------------------------------------------------------------------------- |
-| Legacy codes present in candidate  |   504 | Retain stable task identities                                                       |
-| Legacy codes absent from candidate |   854 | All 854 are `done` and cite root `todo.md`; retain as historical checklist evidence |
-| Candidate codes absent from legacy |   123 | Add 14 AI Corporation PR lifecycle IDs and 109 Visual Universe task IDs             |
-| Candidate duplicate codes          |     0 | None                                                                                |
-| Candidate total                    |   627 | 504 retained + 123 new                                                              |
+| Classification                     | Count | Treatment                                                                                              |
+| ---------------------------------- | ----: | ------------------------------------------------------------------------------------------------------ |
+| Legacy codes present in candidate  |   504 | Retain stable task identities                                                                          |
+| Legacy codes absent from candidate |   854 | All 854 are `done` and cite root `docs/tasks/sources/todo.md`; retain as historical checklist evidence |
+| Candidate codes absent from legacy |   123 | Add 14 AI Corporation PR lifecycle IDs and 109 Visual Universe task IDs                                |
+| Candidate duplicate codes          |     0 | None                                                                                                   |
+| Candidate total                    |   627 | 504 retained + 123 new                                                                                 |
 
-The 854 removed codes are exactly the completed subset of the 861 root-`todo.md` records. The remaining seven open IDs are included in the candidate under `docs/archive/todos/todo.md` and are mapped from legacy `todo` to TaskOS `blocked` pending re-triage. The 854 completed checklist entries remain in the immutable archive and in the byte-for-byte legacy registry backup at `${oldArchivePath}` after the owner-approved migration.
+The 854 removed codes are exactly the completed subset of the 861 root-`docs/tasks/sources/todo.md` records. The remaining seven open IDs are included in the candidate under `docs/archive/todos/todo.md` and are mapped from legacy `todo` to TaskOS `blocked` pending re-triage. The 854 completed checklist entries remain in the immutable archive and in the byte-for-byte legacy registry backup at `${oldArchivePath}` after the owner-approved migration.
 
 Arithmetic: **1,358 - 854 + 123 = 627**. This accounts for the full net change of 731 records; it is not an unexplained deletion. The 497 other legacy records (roadmap, audit, WhatsApp, Desktop and Evolution source groups) plus the seven archived open MW items account for the 504 retained identities.
 
@@ -97,23 +97,23 @@ Arithmetic: **1,358 - 854 + 123 = 627**. This accounts for the full net change o
 `docs/tasks/tasks.json` is now the only canonical task lifecycle registry for this repository. The pre-migration registry is a read-only backup, not a second active queue.
 
 - Task ID, project, status, priority, owner, dependency graph, acceptance criteria, validation and provenance live in TaskOS.
-- `ROADMAP.md`, `docs/roadmap/tasks.json`, root `todo.md`, and GitHub Issues are views, navigation or operational projections. Their task status must not be independently edited as a second authority after TaskOS recovery.
-- The Visual Universe package's `task.json`, `TASKS.md`, and individual task cards are generated scoped projections from TaskOS. The original 109-task source is preserved immutably at `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-source-2026-11-23.json`; original 109 task cards are preserved byte-for-byte in nine chunks under `legacy/task-cards-2026-11-23/`. Two non-generic card notes (W1-001 and W5-012) are preserved in `notes-addendum.json` and imported into TaskOS metadata with original blob SHA provenance. The 91 repeated generic 'keep task atomic' notes remain preserved in the card snapshots and need not be copied into every active task record. Project-specific fields are retained in TaskOS `metadata`. Pack configuration is stored separately in `pack-manifest.json`. The nine-chunk archive is indexed by `legacy/task-cards-2026-11-23/manifest.json`; an independent Git blob SHA verification matched all 109/109 archived files. Task-card generation no longer reads prior card content; it derives status, per-criterion completion and notes only from the TaskOS projection, while showing imported historical notes separately.
+- `ROADMAP.md`, `docs/roadmap/tasks.json`, root `docs/tasks/sources/todo.md`, and GitHub Issues are views, navigation or operational projections. Their task status must not be independently edited as a second authority after TaskOS recovery.
+- The Visual Universe package's `task.json`, `TASKS.md`, and individual task cards are generated scoped projections from TaskOS. The original 109-task source is preserved immutably at `docs/bundles/visual-universe-pack/legacy/task-source-2026-11-23.json`; original 109 task cards are preserved byte-for-byte in nine chunks under `legacy/task-cards-2026-11-23/`. Two non-generic card notes (W1-001 and W5-012) are preserved in `notes-addendum.json` and imported into TaskOS metadata with original blob SHA provenance. The 91 repeated generic 'keep task atomic' notes remain preserved in the card snapshots and need not be copied into every active task record. Project-specific fields are retained in TaskOS `metadata`. Pack configuration is stored separately in `pack-manifest.json`. The nine-chunk archive is indexed by `legacy/task-cards-2026-11-23/manifest.json`; an independent Git blob SHA verification matched all 109/109 archived files. Task-card generation no longer reads prior card content; it derives status, per-criterion completion and notes only from the TaskOS projection, while showing imported historical notes separately.
 - Archived TODOs remain historical source evidence. Only explicitly identified, still-open records enter the migration, and they are imported as blocked pending revalidation.
 - The import tool is a one-time recovery tool. Do not rerun it to overwrite an already populated canonical registry.
 
 ## Verified source inventory
 
-| Source                                                                                   |    Verified records | Current state                                                                               | Migration treatment                                                                                                                                                  |
-| ---------------------------------------------------------------------------------------- | ------------------: | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `docs/roadmap/tasks.json` + `ROADMAP.md`                                                 |  239 (174 M + 65 K) | 157 complete, 35 todo, 47 in progress; the Markdown checkboxes agree (157 checked, 82 open) | Import all; TaskOS becomes canonical lifecycle source                                                                                                                |
-| `todo-wa.md`                                                                             |                 112 | 72 checked, 40 open                                                                         | Import all with stable `WA-` prefix                                                                                                                                  |
-| `todo-desktop.md`                                                                        |                 128 | All 128 checked                                                                             | Import as completed history with source provenance                                                                                                                   |
-| `docs/archive/todos/todo.md`                                                             |      7 open records | 854 other checklist rows checked; archive contains 861 checklist rows                       | Import only 7 unchecked MW records as blocked / needs re-triage; retain the archive                                                                                  |
-| `moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md`               | 14 PR lifecycle IDs | PR.01–PR.13 checked; PR.14 unchecked                                                        | Import 13 completed records and PR.14 as a human-owned blocked approval gate; AI0/AI1-style proposal IDs are not promoted as official tasks                          |
-| `evolution/backlog.json`                                                                 |                   4 | 2 completed, 2 active                                                                       | Import with completed/active status preserved                                                                                                                        |
-| `scripts/tasks/sources/audit-tasks.mjs`                                                  |                  14 | Explicit audit backlog entries                                                              | Import with provenance pointing to the dedicated source data file; importer logic remains separate                                                                   |
-| `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-source-2026-11-23.json` |                 109 | 93 done, 3 skipped, 13 blocked                                                              | Import into project `visual-universe`; skipped is mapped to TaskOS done plus `status:skipped` tag, and the original task object is retained losslessly in `metadata` |
+| Source                                                                      |    Verified records | Current state                                                                               | Migration treatment                                                                                                                                                  |
+| --------------------------------------------------------------------------- | ------------------: | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `docs/roadmap/tasks.json` + `ROADMAP.md`                                    |  239 (174 M + 65 K) | 157 complete, 35 todo, 47 in progress; the Markdown checkboxes agree (157 checked, 82 open) | Import all; TaskOS becomes canonical lifecycle source                                                                                                                |
+| `docs/tasks/sources/todo-wa.md`                                             |                 112 | 72 checked, 40 open                                                                         | Import all with stable `WA-` prefix                                                                                                                                  |
+| `docs/tasks/sources/todo-desktop.md`                                        |                 128 | All 128 checked                                                                             | Import as completed history with source provenance                                                                                                                   |
+| `docs/archive/todos/todo.md`                                                |      7 open records | 854 other checklist rows checked; archive contains 861 checklist rows                       | Import only 7 unchecked MW records as blocked / needs re-triage; retain the archive                                                                                  |
+| `docs/bundles/ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md` | 14 PR lifecycle IDs | PR.01–PR.13 checked; PR.14 unchecked                                                        | Import 13 completed records and PR.14 as a human-owned blocked approval gate; AI0/AI1-style proposal IDs are not promoted as official tasks                          |
+| `evolution/backlog.json`                                                    |                   4 | 2 completed, 2 active                                                                       | Import with completed/active status preserved                                                                                                                        |
+| `scripts/tasks/sources/audit-tasks.mjs`                                     |                  14 | Explicit audit backlog entries                                                              | Import with provenance pointing to the dedicated source data file; importer logic remains separate                                                                   |
+| `docs/bundles/visual-universe-pack/legacy/task-source-2026-11-23.json`      |                 109 | 93 done, 3 skipped, 13 blocked                                                              | Import into project `visual-universe`; skipped is mapped to TaskOS done plus `status:skipped` tag, and the original task object is retained losslessly in `metadata` |
 
 **Expected initial TaskOS projection: 627 task records** (239 + 112 + 128 + 7 + 14 + 4 + 14 + 109). This is a source-inventory expectation, not a claim that the registry has been restored or validated. The automated projection test must confirm the exact total and schema before the one-time write is allowed.
 
@@ -135,9 +135,9 @@ The three Visual Universe tasks originally marked `skipped` are represented as T
 
 | Source                                                        | Observed state                                     | Reason                                                                                                                                                                     |
 | ------------------------------------------------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Root `todo.md`                                                | 2,761-character pointer to `docs/tasks/tasks.json` | It is navigation only, not a source backlog. The importer verifies this contract and never parses it as tasks.                                                             |
-| `todo-foundation.md`                                          | 18/18 checkboxes checked                           | Historical completed checklist; preserve as source evidence, do not create a second active backlog.                                                                        |
-| `todo-ui.md`                                                  | 635/635 checkboxes checked                         | Historical completed design/implementation ledger; preserve, do not import as active tasks.                                                                                |
+| Root `docs/tasks/sources/todo.md`                             | 2,761-character pointer to `docs/tasks/tasks.json` | It is navigation only, not a source backlog. The importer verifies this contract and never parses it as tasks.                                                             |
+| `docs/tasks/sources/todo-foundation.md`                       | 18/18 checkboxes checked                           | Historical completed checklist; preserve as source evidence, do not create a second active backlog.                                                                        |
+| `docs/tasks/sources/todo-ui.md`                               | 635/635 checkboxes checked                         | Historical completed design/implementation ledger; preserve, do not import as active tasks.                                                                                |
 | Other `AI0.*` / `AI1.*` lines in the AI Corporation checklist | Proposal IDs and baseline notes                    | The source explicitly says these IDs are proposals, not official master task IDs until a separate Phase 0 reconciliation. Only the explicit PR lifecycle IDs are imported. |
 
 ## Safety and validation rules
@@ -146,7 +146,7 @@ The three Visual Universe tasks originally marked `skipped` are represented as T
 2. Duplicate task codes across sources are fatal and must be reconciled before import.
 3. Every TaskOS task must carry a repository-relative `sourceRef.file`; the schema and validator enforce provenance.
 4. Unknown project references, dependency references, block references, duplicate IDs and dependency cycles fail validation.
-5. Root `todo.md` remains a pointer; archived open tasks enter as blocked, never as ready work.
+5. Root `docs/tasks/sources/todo.md` remains a pointer; archived open tasks enter as blocked, never as ready work.
 6. The Visual Universe task projection must preserve original delegated metadata, plus the two task-specific notes from the immutable task-card addendum. The complete original cards are archived with blob SHAs; local `task.json`, `TASKS.md` and task cards are generated views, not independent lifecycle authorities.
 7. The original Visual Universe source snapshot must not be edited; the local task projection remains non-authoritative until the reviewed candidate is applied. The TaskOS import CLI defaults to dry-run. Use `--candidate <path>` to export a validated candidate outside the worktree; `--write` must not be used against the existing populated registry.
 8. `pnpm tasks:sync` refuses to run until the canonical registry passes schema, provenance, reference, dependency and roadmap parity validation.

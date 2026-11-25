@@ -22,6 +22,7 @@
   "dependencies": {
     "@moonwitness/orm": "workspace:*",
     "@moonwitness/orm-base": "workspace:*",
+    "@moonwitness/types": "workspace:*",
     "knex": "^3.3.0",
     "objection": "^3.1.5"
   },

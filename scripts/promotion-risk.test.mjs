@@ -36,7 +36,7 @@ test('schema, workflow, and dependency changes require approval regardless of co
   const expectedTiers = new Map([
     ['packages/orm-base/src/models/user.ts', 'runtime-data'],
     ['.github/workflows/promote.yml', 'release-surface'],
-    ['pnpm-lock.yaml', 'runtime-data'],
+    ['bun.lock', 'runtime-data'],
   ]);
   for (const [filePath, tier] of expectedTiers) {
     const result = classifyPromotionRisk({
@@ -53,7 +53,7 @@ test('the release surface outranks product code within one diff', () => {
     commits: [commit('c4', 'fix(api): keep the response shape')],
     changes: [
       { status: 'M', path: 'apps/api/src/routes/partner.routes.ts' },
-      { status: 'M', path: '.github/actions/setup-pnpm/action.yml' },
+      { status: 'M', path: '.github/actions/setup-bun/action.yml' },
     ],
   });
 
@@ -160,6 +160,17 @@ test('a rename out of a sensitive path is still a sensitive promotion', () => {
 
   assert.equal(result.requiresApproval, true);
   assert.equal(result.riskTier, 'runtime-data');
+});
+
+test('Git-generated revert subjects remain eligible for automatic promotion', () => {
+  const result = classifyPromotionRisk({
+    commits: [commit('g6', 'Revert "chore: remove unused files"')],
+    changes: [],
+  });
+
+  assert.equal(result.requiresApproval, false);
+  assert.equal(result.changeKind, 'patch');
+  assert.deepEqual(result.reasons, []);
 });
 
 test('invalid source commit messages fail closed', () => {

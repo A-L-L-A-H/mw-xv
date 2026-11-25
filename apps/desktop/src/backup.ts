@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
+import { isRecord } from '@moonwitness/types';
 
 export interface LocalDbBackupManifest {
   version: 1;
@@ -29,10 +30,6 @@ export interface RestoreLocalDbBackupResult {
 }
 
 const SHA256_HEX_PATTERN = /^[a-f0-9]{64}$/u;
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 function assertNoTraversalTokens(rawPath: string): void {
   if (rawPath.includes('\0')) {

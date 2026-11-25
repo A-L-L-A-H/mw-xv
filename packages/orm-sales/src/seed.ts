@@ -1,6 +1,7 @@
 import type { Knex } from 'knex';
+import { countValue } from '@moonwitness/types';
 import { SaleOrder, SaleOrderLine, SaleOrderState, SaleOrderTagLink } from './models/index.js';
-import { Partner } from '@moonwitness/orm-base';
+import { Partner, resolveInsertedId } from '@moonwitness/orm-base';
 
 export type SalesSeedStateCode = 'draft' | 'sent' | 'confirmed' | 'done' | 'cancel';
 
@@ -309,27 +310,6 @@ export function buildSalesInitialSeed(): SalesInitialSeed {
   return bundle;
 }
 
-function parseCount(value: unknown): number {
-  return (
-    Number(typeof value === 'object' && value !== null && 'count' in value ? value.count : value) ||
-    0
-  );
-}
-
-function resolveInsertedId(inserted: readonly unknown[], context: string): number {
-  const value = inserted[0];
-  if (typeof value === 'number' && Number.isFinite(value)) return Number(value);
-  if (typeof value === 'bigint') return Number(value);
-  if (typeof value === 'string' && /^\d+$/.test(value)) return Number(value);
-  if (value && typeof value === 'object' && 'id' in value) {
-    const id = (value as { readonly id?: unknown }).id;
-    if (typeof id === 'number' && Number.isFinite(id)) return Number(id);
-    if (typeof id === 'bigint') return Number(id);
-    if (typeof id === 'string' && /^\d+$/.test(id)) return Number(id);
-  }
-  throw new Error(`Unable to resolve inserted id for ${context}`);
-}
-
 export async function seedSalesInitialData(
   db: Knex,
   options: SeedSalesInitialDataOptions = {}
@@ -506,10 +486,10 @@ export async function seedSalesInitialData(
 
   return {
     companyId,
-    statesTotal: parseCount(statesTotal),
-    ordersTotal: parseCount(ordersTotal),
-    linesTotal: parseCount(linesTotal),
-    tagLinksTotal: parseCount(tagLinksTotal),
+    statesTotal: countValue(statesTotal),
+    ordersTotal: countValue(ordersTotal),
+    linesTotal: countValue(linesTotal),
+    tagLinksTotal: countValue(tagLinksTotal),
     insertedStates,
     insertedOrders,
     insertedLines,

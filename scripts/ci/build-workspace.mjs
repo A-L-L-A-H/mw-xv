@@ -11,7 +11,7 @@ const packageManager = resolvePackageManager();
 const buildFilter = process.argv[2];
 if (!packageManager) {
   process.stderr.write(
-    'Run the workspace build through pnpm so the package manager can be resolved safely.\n'
+    'Run the workspace build through bun so the package manager can be resolved safely.\n'
   );
   process.exit(2);
 }
@@ -20,7 +20,7 @@ if (buildFilter && buildFilter !== '@moonwitness/api...') {
   process.exit(2);
 }
 
-const buildArgs = buildFilter ? ['--filter', buildFilter, 'build'] : ['-r', 'build'];
+const buildArgs = buildFilter ? ['--filter', buildFilter, 'build'] : ['--filter', '*', 'build'];
 const result = spawnSync(packageManager.command, [...packageManager.prefixArgs, ...buildArgs], {
   encoding: 'utf8',
   maxBuffer: 10 * 1024 * 1024,

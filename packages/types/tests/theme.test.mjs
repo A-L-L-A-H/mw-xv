@@ -40,6 +40,32 @@ test('isSkinMetadata validates well-formed and malformed metadata objects', () =
   assert.equal(isSkinMetadata({ id: '' }), false);
   assert.equal(
     isSkinMetadata({
+      id: 'Invalid_Skin',
+      label: 'Invalid Skin',
+      description: 'Invalid id',
+      supportedModes: ['light'],
+      supportedDensities: ['comfortable'],
+      defaultMode: 'light',
+      defaultDensity: 'comfortable',
+      swatch: { background: '#fff', surface: '#fff', foreground: '#000', accent: '#ff0' },
+    }),
+    false
+  );
+  assert.equal(
+    isSkinMetadata({
+      id: 'invalid-default',
+      label: 'Invalid Default',
+      description: 'Unsupported default mode',
+      supportedModes: ['dark'],
+      supportedDensities: ['comfortable'],
+      defaultMode: 'light',
+      defaultDensity: 'comfortable',
+      swatch: { background: '#fff', surface: '#fff', foreground: '#000', accent: '#ff0' },
+    }),
+    false
+  );
+  assert.equal(
+    isSkinMetadata({
       id: 'bad-skin',
       label: 'Bad Skin',
       description: 'Missing modes',

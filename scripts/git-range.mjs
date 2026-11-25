@@ -12,7 +12,7 @@ export function readCommitRange(baseCommit, headCommit) {
   const output = execFileSync(
     'git',
     ['log', '--format=%H%x00%P%x00%s%x00%b%x1e', `${baseCommit}..${headCommit}`],
-    { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }
+    { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 64 * 1024 * 1024 }
   );
 
   return output
@@ -53,7 +53,7 @@ export function readChangedFiles(baseCommit, headCommit) {
   const output = execFileSync(
     'git',
     ['diff', '--name-status', '-M', '-z', baseCommit, headCommit],
-    { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }
+    { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 64 * 1024 * 1024 }
   );
   return parseChangedFiles(output);
 }

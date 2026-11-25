@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type VisibilityIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function VisibilityIcon({ size = 24, title, ...props }: VisibilityIconProps) {
+const VisibilityIcon = forwardRef<SVGSVGElement, VisibilityIconProps>(function VisibilityIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -27,4 +31,8 @@ export function VisibilityIcon({ size = 24, title, ...props }: VisibilityIconPro
       <circle cx="12" cy="12" r="2.5" />
     </svg>
   );
-}
+});
+
+VisibilityIcon.displayName = 'VisibilityIcon';
+
+export { VisibilityIcon };

@@ -94,7 +94,9 @@ test('historical scanner exceptions match only the seven exact false-positive so
       'duplicate checks, stale snapshots, revoked permissions, and malformed/untrusted webhook or issue events.',
     ].join(''),
   ];
-  const matchers = expectedAllowlistExpressions.slice(4).map((source) => new RegExp(source, 'u'));
+  const matchers = expectedAllowlistExpressions
+    .slice(4, 11)
+    .map((source) => new RegExp(source, 'u'));
 
   assert.equal(historicalLines.length, matchers.length);
   for (const [index, line] of historicalLines.entries()) {
@@ -176,8 +178,8 @@ test('committed non-secret placeholders for the pinned names stay below the entr
   const callers = [
     '.github/workflows/ci.yml',
     '.github/workflows/release.yml',
-    'docker-compose.yml',
-    'docker-compose.production.yml',
+    'deploy/compose/docker-compose.yml',
+    'deploy/compose/docker-compose.production.yml',
     '.env.example',
     '.env.production.example',
     'scripts/smoke-containers.mjs',

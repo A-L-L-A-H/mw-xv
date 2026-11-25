@@ -1,4 +1,7 @@
-import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Field } from '@moonwitness/ui/components/field';
+import { Input } from '@moonwitness/ui/components/input';
+import { SelectField } from '@moonwitness/ui/components/select-field';
 import manifestUrl from '@moonwitness/assets/manifest.json?url';
 import licensesUrl from '@moonwitness/assets/licenses.json?url';
 import heroDesktop from '@moonwitness/assets/illustrations/home-hero-desktop.webp';
@@ -33,13 +36,13 @@ const previewByPath: Record<string, string> = {
   'illustrations/home-hero-mobile.webp': heroMobile,
   'illustrations/board-masthead.webp': boardMasthead,
 };
-const filters: { key: InventoryFilter; label: string }[] = [
-  { key: 'kind', label: 'Category' },
-  { key: 'pack', label: 'Pack' },
-  { key: 'subject', label: 'Subject' },
-  { key: 'domain', label: 'Domain' },
-  { key: 'variant', label: 'Variant' },
-  { key: 'status', label: 'Status' },
+const filters: { key: InventoryFilter; label: string; allLabel: string }[] = [
+  { key: 'kind', label: 'Category', allLabel: 'All categories' },
+  { key: 'pack', label: 'Pack', allLabel: 'All packs' },
+  { key: 'subject', label: 'Subject', allLabel: 'All subjects' },
+  { key: 'domain', label: 'Domain', allLabel: 'All domains' },
+  { key: 'variant', label: 'Variant', allLabel: 'All variants' },
+  { key: 'status', label: 'Status', allLabel: 'All statuses' },
 ];
 
 function valuesFor(key: InventoryFilter, assets: AssetRecord[]): string[] {
@@ -111,8 +114,7 @@ export function AssetBrowser() {
     [search, selected]
   );
 
-  function updateFilter(key: InventoryFilter, event: ChangeEvent<HTMLSelectElement>) {
-    const value = event.currentTarget.value;
+  function updateFilter(key: InventoryFilter, value: string) {
     setSelected((current) => ({ ...current, [key]: value }));
   }
 
@@ -123,34 +125,39 @@ export function AssetBrowser() {
       aria-busy={assets.length === 0 && !loadError}
     >
       <div className="asset-browser-controls">
-        <label className="asset-browser-search">
-          <span>Find an asset</span>
-          <input
+        <Field className="asset-browser-search" htmlFor="asset-search" label="Find an asset">
+          <Input
             type="search"
             value={search}
             onChange={(event) => setSearch(event.currentTarget.value)}
             placeholder="Search paths and tags"
           />
-        </label>
-        {filters.map(({ key, label }) => {
+        </Field>
+        {filters.map(({ key, label, allLabel }) => {
           const values = valuesFor(key, assets);
+          const id = `asset-filter-${key}`;
           return (
-            <label key={key} className="asset-browser-filter">
-              <span>{label}</span>
-              <select
-                aria-label={label}
+            <Field
+              key={key}
+              className="asset-browser-filter"
+              htmlFor={id}
+              label={label}
+              description={
+                values.length === 0 ? `No registered ${label.toLocaleLowerCase()} tags` : undefined
+              }
+            >
+              <SelectField
                 value={selected[key]}
-                onChange={(event) => updateFilter(key, event)}
+                onChange={(event) => updateFilter(key, event.currentTarget.value)}
               >
-                <option value="">All {label.toLocaleLowerCase()}s</option>
+                <option value="">{allLabel}</option>
                 {values.map((value) => (
                   <option key={value} value={value}>
                     {value}
                   </option>
                 ))}
-              </select>
-              {values.length === 0 && <small>No registered {label.toLocaleLowerCase()} tags</small>}
-            </label>
+              </SelectField>
+            </Field>
           );
         })}
       </div>

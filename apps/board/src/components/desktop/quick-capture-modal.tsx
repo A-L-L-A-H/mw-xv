@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useSfx } from '@moonwitness/ui/components/audio';
 import { Badge } from '@moonwitness/ui/components/badge';
 import { Button } from '@moonwitness/ui/components/button';
 import {
@@ -12,15 +13,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@moonwitness/ui/components/dialog';
+import { Field } from '@moonwitness/ui/components/field';
 import { Input } from '@moonwitness/ui/components/input';
-import { Label } from '@moonwitness/ui/components/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@moonwitness/ui/components/select';
+import { SelectField } from '@moonwitness/ui/components/select-field';
 import { toast } from '@moonwitness/ui/components/toast';
 import { CheckIcon, SignalIcon, SparkleIcon } from '@moonwitness/ui/icons';
 import { client } from '@/lib/client';
@@ -49,8 +44,10 @@ type CapturePriority = 'low' | 'normal' | 'high' | 'urgent';
 
 export function QuickCaptureModal() {
   const queryClient = useQueryClient();
+  const { play } = useSfx();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
+  const [titleError, setTitleError] = useState<string | undefined>(undefined);
   const [priority, setPriority] = useState<CapturePriority>('normal');
   const [projectCode, setProjectCode] = useState('');
 
@@ -88,14 +85,17 @@ export function QuickCaptureModal() {
       return response.data;
     },
     onSuccess: (result) => {
+      play('success');
       toast.success(`Captured task #${result.task.id}: ${result.task.name}`);
       setTitle('');
+      setTitleError(undefined);
       setPriority('normal');
       setProjectCode('');
       setOpen(false);
       void queryClient.invalidateQueries({ queryKey: ['desktop', 'sync', 'status'] });
     },
     onError: (error) => {
+      play('alert');
       toast.error(error instanceof Error ? error.message : 'Quick capture failed.');
     },
   });
@@ -115,9 +115,12 @@ export function QuickCaptureModal() {
     event.preventDefault();
     const trimmedTitle = title.trim();
     if (!trimmedTitle) {
+      setTitleError('Task title is required.');
+      play('alert');
       toast.error('Task title is required.');
       return;
     }
+    setTitleError(undefined);
     captureMutation.mutate({
       title: trimmedTitle,
       priority,
@@ -178,45 +181,38 @@ export function QuickCaptureModal() {
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="quick-capture-title">Title</Label>
+            <Field label="Title" htmlFor="quick-capture-title" required error={titleError}>
               <Input
-                id="quick-capture-title"
                 placeholder="e.g. Review Q4 deployment checklist"
                 value={title}
-                onChange={(event) => setTitle(event.target.value)}
+                onChange={(event) => {
+                  setTitle(event.target.value);
+                  if (titleError) setTitleError(undefined);
+                }}
                 autoFocus
               />
-            </div>
+            </Field>
 
             <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label htmlFor="quick-capture-priority">Priority</Label>
-                <Select
+              <Field label="Priority" htmlFor="quick-capture-priority">
+                <SelectField
                   value={priority}
-                  onValueChange={(value) => setPriority(value as CapturePriority)}
+                  onChange={(event) => setPriority(event.target.value as CapturePriority)}
                 >
-                  <SelectTrigger id="quick-capture-priority">
-                    <SelectValue placeholder="Priority" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="normal">Normal</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                    <SelectItem value="urgent">Urgent</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  <option value="low">Low</option>
+                  <option value="normal">Normal</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </SelectField>
+              </Field>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="quick-capture-project">Project Code</Label>
+              <Field label="Project Code" htmlFor="quick-capture-project">
                 <Input
-                  id="quick-capture-project"
                   placeholder="Optional (e.g. CORE)"
                   value={projectCode}
                   onChange={(event) => setProjectCode(event.target.value)}
                 />
-              </div>
+              </Field>
             </div>
 
             <DialogFooter>

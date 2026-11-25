@@ -1,6 +1,11 @@
 import { createHash } from 'node:crypto';
 import { isIP } from 'node:net';
-import type { AddonHttpHostContext, AddonHttpPlugin, AddonHttpReply } from '@moonwitness/orm';
+import type {
+  AddonHttpApp,
+  AddonHttpHostContext,
+  AddonHttpPlugin,
+  AddonHttpReply,
+} from '@moonwitness/orm';
 import {
   DEFAULT_A2A_CLOCK_SKEW_MS,
   MAX_A2A_TTL_MS,
@@ -12,11 +17,47 @@ import {
 import { Agent } from '@moonwitness/orm-ai';
 import { AuditLog, Company } from '@moonwitness/orm-base';
 import { isRecord } from '@moonwitness/types';
+import {
+  createA2aPeerIdentityRegistryFromJson,
+  type A2aPeerIdentityRegistry,
+} from './peer-identity.js';
+import {
+  createA2aTransportIdentityConfigFromJson,
+  readA2aTransportCertificate,
+  verifyA2aTransportIdentity,
+  type A2aTransportIdentityConfig,
+} from './transport-identity.js';
+import {
+  A2aIngestionThrottle,
+  DEFAULT_A2A_INGESTION_BACKPRESSURE,
+  DEFAULT_A2A_INBOX_PAGINATION,
+  DEFAULT_A2A_INBOX_RETENTION,
+  buildA2aInboxPage,
+  parseA2aInboxPageRequest,
+  projectA2aReceiptForRetention,
+  type A2aInboxPaginationConfig,
+  type A2aInboxRetentionPolicy,
+  type A2aIngestionBackpressureConfig,
+} from './inbox-policy.js';
 
 const A2A_MESSAGE_MODEL = 'ai.a2a_message';
 const A2A_FENCING_MODEL = 'ai.a2a_fencing';
 const MAX_RECENT_RECEIPTS = 2_000;
-const MAX_ENVELOPE_BYTES = 256 * 1024;
+
+/** Optional, explicit service injection. Production defaults stay fail-closed and default-off. */
+export interface A2aReceiverServices {
+  readonly now?: () => number;
+  readonly peerIdentityRegistry?: A2aPeerIdentityRegistry;
+  readonly transportIdentityConfig?: A2aTransportIdentityConfig;
+  readonly ingestionThrottle?: A2aIngestionThrottle;
+  readonly paginationConfig?: A2aInboxPaginationConfig;
+  readonly retentionPolicy?: A2aInboxRetentionPolicy;
+}
+
+interface A2aPeerIdentityReceiverConfig {
+  readonly enabled: boolean;
+  readonly registry: A2aPeerIdentityRegistry | null;
+}
 
 type A2AApiConfig =
   | { readonly enabled: false; readonly valid: true }
@@ -27,6 +68,11 @@ type A2AApiConfig =
       readonly companyId: number;
       readonly signingSecret: string;
       readonly endpointOrigin: string;
+      readonly peerIdentity: A2aPeerIdentityReceiverConfig;
+      readonly transportIdentity: A2aTransportIdentityConfig;
+      readonly backpressure: A2aIngestionBackpressureConfig;
+      readonly pagination: A2aInboxPaginationConfig;
+      readonly retention: A2aInboxRetentionPolicy;
     };
 
 interface A2AReject {
@@ -50,11 +96,30 @@ interface A2AAuditChanges extends Record<string, unknown> {
   readonly delegationDepth: number;
   readonly payloadSha256: string;
   readonly payload: Record<string, unknown>;
+  readonly peerKeyId?: string;
+  readonly peerKeyFingerprintSha256?: string;
+}
+
+interface A2APeerIdentityMetadata {
+  readonly keyId: string;
+  readonly fingerprintSha256: string;
 }
 
 type A2AEnvelope = SignedA2AEnvelope<Record<string, unknown>>;
 
-function readA2AApiConfig(env: NodeJS.ProcessEnv = process.env): A2AApiConfig {
+const DEFAULT_THROTTLE = new A2aIngestionThrottle();
+
+function readEnvInteger(env: NodeJS.ProcessEnv, key: string, fallback: number): number | null {
+  const raw = env[key];
+  if (raw === undefined || raw.trim() === '') return fallback;
+  const parsed = Number(raw.trim());
+  return Number.isSafeInteger(parsed) ? parsed : null;
+}
+
+function readA2AApiConfig(
+  env: NodeJS.ProcessEnv = process.env,
+  services: A2aReceiverServices = {}
+): A2AApiConfig {
   const rawEnabled = env.MW_A2A_API_ENABLED?.trim().toLowerCase();
   if (rawEnabled === undefined || rawEnabled === '' || rawEnabled === 'false') {
     return { enabled: false, valid: true };
@@ -94,8 +159,9 @@ function readA2AApiConfig(env: NodeJS.ProcessEnv = process.env): A2AApiConfig {
     };
   }
 
+  let endpoint: URL;
   try {
-    const endpoint = new URL(rawEndpoint);
+    endpoint = new URL(rawEndpoint);
     if (
       !['http:', 'https:'].includes(endpoint.protocol) ||
       endpoint.username ||
@@ -107,13 +173,6 @@ function readA2AApiConfig(env: NodeJS.ProcessEnv = process.env): A2AApiConfig {
     ) {
       throw new Error('endpoint must be an origin on a private EasyTier mesh IP');
     }
-    return {
-      enabled: true,
-      valid: true,
-      companyId,
-      signingSecret,
-      endpointOrigin: endpoint.origin,
-    };
   } catch {
     return {
       enabled: true,
@@ -121,6 +180,104 @@ function readA2AApiConfig(env: NodeJS.ProcessEnv = process.env): A2AApiConfig {
       error: 'MW_A2A_API_ENDPOINT must be an http(s) origin on a private EasyTier mesh IP',
     };
   }
+
+  let peerIdentity: A2aPeerIdentityReceiverConfig;
+  try {
+    let registry = services.peerIdentityRegistry ?? null;
+    if (!registry && env.MW_A2A_PEER_KEYS_JSON?.trim()) {
+      registry = createA2aPeerIdentityRegistryFromJson(env.MW_A2A_PEER_KEYS_JSON);
+    }
+    const enabled =
+      services.peerIdentityRegistry !== undefined ||
+      env.MW_A2A_PEER_IDENTITY_ENABLED?.trim().toLowerCase() === 'true';
+    if (enabled && !registry) {
+      return {
+        enabled: true,
+        valid: false,
+        error: 'MW_A2A_PEER_KEYS_JSON is required when per-agent peer identity is enabled',
+      };
+    }
+    peerIdentity = { enabled, registry };
+  } catch (error) {
+    return {
+      enabled: true,
+      valid: false,
+      error: `Invalid MW_A2A_PEER_KEYS_JSON: ${(error as Error).message}`,
+    };
+  }
+
+  let transportIdentity: A2aTransportIdentityConfig;
+  try {
+    const enabled = env.MW_A2A_TRANSPORT_IDENTITY_ENABLED?.trim().toLowerCase() === 'true';
+    transportIdentity =
+      services.transportIdentityConfig ??
+      (env.MW_A2A_TRANSPORT_PEERS_JSON?.trim()
+        ? createA2aTransportIdentityConfigFromJson(env.MW_A2A_TRANSPORT_PEERS_JSON, enabled)
+        : { enabled, peers: [] });
+    if (transportIdentity.enabled && transportIdentity.peers.length === 0) {
+      return {
+        enabled: true,
+        valid: false,
+        error: 'MW_A2A_TRANSPORT_PEERS_JSON is required when transport identity is enabled',
+      };
+    }
+  } catch (error) {
+    return {
+      enabled: true,
+      valid: false,
+      error: `Invalid MW_A2A_TRANSPORT_PEERS_JSON: ${(error as Error).message}`,
+    };
+  }
+
+  const defaultLimit = readEnvInteger(
+    env,
+    'MW_A2A_INBOX_DEFAULT_LIMIT',
+    DEFAULT_A2A_INBOX_PAGINATION.defaultLimit
+  );
+  const maxLimit = readEnvInteger(
+    env,
+    'MW_A2A_INBOX_MAX_LIMIT',
+    DEFAULT_A2A_INBOX_PAGINATION.maxLimit
+  );
+  if (defaultLimit === null || maxLimit === null || defaultLimit < 1 || maxLimit < defaultLimit) {
+    return {
+      enabled: true,
+      valid: false,
+      error:
+        'MW_A2A_INBOX_DEFAULT_LIMIT and MW_A2A_INBOX_MAX_LIMIT must be positive integers with maxLimit >= defaultLimit',
+    };
+  }
+  const pagination: A2aInboxPaginationConfig = Object.freeze({ defaultLimit, maxLimit });
+
+  const payloadRetentionMs = readEnvInteger(
+    env,
+    'MW_A2A_PAYLOAD_RETENTION_MS',
+    DEFAULT_A2A_INBOX_RETENTION.payloadRetentionMs
+  );
+  if (payloadRetentionMs === null || payloadRetentionMs < 1) {
+    return {
+      enabled: true,
+      valid: false,
+      error: 'MW_A2A_PAYLOAD_RETENTION_MS must be a positive integer',
+    };
+  }
+  const retention: A2aInboxRetentionPolicy = Object.freeze({
+    ...DEFAULT_A2A_INBOX_RETENTION,
+    payloadRetentionMs,
+  });
+
+  return {
+    enabled: true,
+    valid: true,
+    companyId,
+    signingSecret,
+    endpointOrigin: endpoint.origin,
+    peerIdentity,
+    transportIdentity,
+    backpressure: services.ingestionThrottle?.config ?? DEFAULT_A2A_INGESTION_BACKPRESSURE,
+    pagination: services.paginationConfig ?? pagination,
+    retention: services.retentionPolicy ?? retention,
+  };
 }
 
 function normalizeIpAddress(value: string | undefined | null): string | null {
@@ -171,6 +328,8 @@ function parseEnvelope(value: unknown): A2AEnvelope | null {
   if (
     (value.sourceEndpoint !== undefined &&
       (typeof value.sourceEndpoint !== 'string' || !value.sourceEndpoint.trim())) ||
+    (value.keyId !== undefined &&
+      (typeof value.keyId !== 'string' || !value.keyId.trim() || value.keyId.length > 128)) ||
     !Number.isSafeInteger(value.companyId) ||
     !Number.isSafeInteger(value.delegationDepth) ||
     !Number.isSafeInteger(value.fencingToken) ||
@@ -208,24 +367,59 @@ function parseAuditChanges(value: unknown): Record<string, unknown> | null {
   }
 }
 
+const UNAUTHORIZED_REASON_CODES = new Set([
+  'INVALID_SECRET',
+  'INVALID_SIGNATURE',
+  'PEER_KEY_UNKNOWN',
+  'PEER_KEY_REVOKED',
+  'PEER_KEY_RETIRED',
+  'PEER_KEY_EXPIRED',
+  'PEER_KEY_GRACE_EXPIRED',
+  'TRANSPORT_TLS_REQUIRED',
+  'TRANSPORT_CERT_MISSING',
+  'TRANSPORT_CERT_UNTRUSTED',
+  'TRANSPORT_CERT_INVALID_VALIDITY',
+  'TRANSPORT_CERT_NOT_YET_VALID',
+  'TRANSPORT_CERT_EXPIRED',
+  'TRANSPORT_CERT_FINGERPRINT_INVALID',
+]);
+
+const FORBIDDEN_REASON_CODES = new Set([
+  'PUBLIC_ENDPOINT_FORBIDDEN',
+  'COMPANY_ISOLATION_VIOLATION',
+  'DELEGATION_DEPTH_EXCEEDED',
+  'CLASSIFICATION_VIOLATION',
+  'SERVER_ONLY_ACCEPTED_AUTHORITY',
+  'PEER_KEY_CROSS_COMPANY_REUSE',
+  'PEER_KEY_AGENT_MISMATCH',
+  'TRANSPORT_CERT_REVOKED',
+  'TRANSPORT_CERT_FINGERPRINT_MISMATCH',
+  'TRANSPORT_IDENTITY_NOT_ALLOWED',
+  'TRANSPORT_IDENTITY_MISMATCH',
+]);
+
+const CONFLICT_REASON_CODES = new Set([
+  'STALE_FENCING_TOKEN',
+  'REPLAY_NONCE_DETECTED',
+  'DUPLICATE_MESSAGE_ID',
+]);
+
 function verificationReject(reasonCode: string | undefined, reason: string | undefined): A2AReject {
   const code = reasonCode ?? 'INVALID_ENVELOPE';
   const statusCode =
-    code === 'INVALID_SECRET' || code === 'INVALID_SIGNATURE'
-      ? 401
-      : code === 'ENVELOPE_EXPIRED'
-        ? 410
-        : [
-              'PUBLIC_ENDPOINT_FORBIDDEN',
-              'COMPANY_ISOLATION_VIOLATION',
-              'DELEGATION_DEPTH_EXCEEDED',
-              'CLASSIFICATION_VIOLATION',
-              'SERVER_ONLY_ACCEPTED_AUTHORITY',
-            ].includes(code)
-          ? 403
-          : code === 'STALE_FENCING_TOKEN' || code === 'REPLAY_NONCE_DETECTED'
-            ? 409
-            : 400;
+    code === 'A2A_RATE_LIMITED'
+      ? 429
+      : UNAUTHORIZED_REASON_CODES.has(code)
+        ? 401
+        : code === 'ENVELOPE_EXPIRED'
+          ? 410
+          : FORBIDDEN_REASON_CODES.has(code)
+            ? 403
+            : CONFLICT_REASON_CODES.has(code)
+              ? 409
+              : code === 'PEER_KEY_ID_REQUIRED' || code === 'INVALID_PEER_KEY_ID'
+                ? 400
+                : 400;
   return {
     statusCode,
     reasonCode: code,
@@ -245,7 +439,9 @@ async function persistA2AReceipt(
   envelope: A2AEnvelope,
   config: Extract<A2AApiConfig, { readonly enabled: true; readonly valid: true }>,
   nowMs: number,
-  sourcePeerAddress: string
+  sourcePeerAddress: string,
+  verificationSecret: string,
+  peerIdentity: A2APeerIdentityMetadata | undefined
 ): Promise<
   | { readonly ok: true; readonly receivedAt: string }
   | { readonly ok: false; readonly error: A2AReject }
@@ -379,7 +575,7 @@ async function persistA2AReceipt(
     }
 
     const verification = verifyA2AEnvelope(envelope, {
-      signingSecret: config.signingSecret,
+      signingSecret: verificationSecret,
       expectedCompanyId: config.companyId,
       lastSeenFencingToken,
       seenNonces,
@@ -403,7 +599,7 @@ async function persistA2AReceipt(
     }
 
     const receivedAt = new Date(nowMs).toISOString();
-    const redactor = createRedactor([config.signingSecret]);
+    const redactor = createRedactor([config.signingSecret, verificationSecret]);
     const safePayload = redactor.redactObject(envelope.payload);
     const payloadSha256 = createHash('sha256')
       .update(JSON.stringify(envelope.payload), 'utf8')
@@ -445,6 +641,12 @@ async function persistA2AReceipt(
         payloadSha256,
         payload: safePayload,
         status: 'queued',
+        ...(peerIdentity !== undefined
+          ? {
+              peerKeyId: peerIdentity.keyId,
+              peerKeyFingerprintSha256: peerIdentity.fingerprintSha256,
+            }
+          : {}),
       } satisfies A2AAuditChanges),
     });
 
@@ -452,7 +654,15 @@ async function persistA2AReceipt(
   });
 }
 
-export const a2aApiRoutes: AddonHttpPlugin = async (fastify, options: AddonHttpHostContext) => {
+/** Optional third argument is for tests and other hosts; the addon uses the default services. */
+export async function a2aApiRoutes(
+  fastify: AddonHttpApp,
+  options: AddonHttpHostContext,
+  services: A2aReceiverServices = {}
+): Promise<void> {
+  const throttle = services.ingestionThrottle ?? DEFAULT_THROTTLE;
+  const now = (): number => services.now?.() ?? Date.now();
+
   fastify.post(
     '/a2a/delegate',
     {
@@ -460,16 +670,16 @@ export const a2aApiRoutes: AddonHttpPlugin = async (fastify, options: AddonHttpH
       schema: {
         tags: ['A2A'],
         description:
-          'Public signed A2A v1 envelope receiver. Requires X-A2A-Protocol and a valid HMAC envelope; never accepts a bearer token.',
+          'Public signed A2A v1 envelope receiver. Requires X-A2A-Protocol and a valid HMAC envelope; never accepts a bearer token. CF-017/018 gates are default-off and fail closed when enabled.',
       },
     },
     async (request, reply) => {
-      const config = readA2AApiConfig();
-      if (!config.enabled) {
+      const activeConfig = readA2AApiConfig(undefined, services);
+      if (!activeConfig.enabled) {
         return reply.code(404).send({ success: false, error: 'A2A API receiver is disabled' });
       }
-      if (!config.valid) {
-        return reply.code(503).send({ success: false, error: config.error });
+      if (!activeConfig.valid) {
+        return reply.code(503).send({ success: false, error: activeConfig.error });
       }
       if (request.headers['x-a2a-protocol'] !== 'a2a.v1') {
         return reply.code(400).send({
@@ -500,12 +710,25 @@ export const a2aApiRoutes: AddonHttpPlugin = async (fastify, options: AddonHttpH
         });
       }
 
-      if (Buffer.byteLength(JSON.stringify(envelope), 'utf8') > MAX_ENVELOPE_BYTES) {
+      if (
+        Buffer.byteLength(JSON.stringify(envelope), 'utf8') >
+        activeConfig.backpressure.maxEnvelopeBytes
+      ) {
         return reply.code(413).send({
           success: false,
           error: 'A2A envelope exceeds the API receiver size limit',
           reasonCode: 'ENVELOPE_TOO_LARGE',
         });
+      }
+
+      const nowMs = now();
+      const throttleDecision = throttle.tryAcquire(nowMs);
+      if (!throttleDecision.allowed) {
+        reply.header('Retry-After', String(activeConfig.backpressure.retryAfterSeconds));
+        return sendReject(
+          reply,
+          verificationReject('A2A_RATE_LIMITED', 'A2A ingestion rate limit exceeded')
+        );
       }
 
       const sourceEndpoint =
@@ -523,7 +746,7 @@ export const a2aApiRoutes: AddonHttpPlugin = async (fastify, options: AddonHttpH
           reasonCode: 'SOURCE_ENDPOINT_MISMATCH',
         });
       }
-      if (!targetEndpoint || targetEndpoint.origin !== config.endpointOrigin) {
+      if (!targetEndpoint || targetEndpoint.origin !== activeConfig.endpointOrigin) {
         return reply.code(403).send({
           success: false,
           error: 'A2A targetEndpoint does not identify this configured API receiver',
@@ -531,9 +754,59 @@ export const a2aApiRoutes: AddonHttpPlugin = async (fastify, options: AddonHttpH
         });
       }
 
+      let verificationSecret = activeConfig.signingSecret;
+      let peerIdentityMetadata: A2APeerIdentityMetadata | undefined;
+      if (activeConfig.peerIdentity.enabled && activeConfig.peerIdentity.registry) {
+        const resolved = activeConfig.peerIdentity.registry.resolve({
+          keyId: envelope.keyId,
+          companyId: envelope.companyId,
+          agentCode: envelope.sourceAgentId,
+          nowMs,
+        });
+        if (!resolved.ok) {
+          return sendReject(reply, verificationReject(resolved.reasonCode, resolved.error));
+        }
+        verificationSecret = resolved.key.secret;
+        peerIdentityMetadata = {
+          keyId: resolved.key.keyId,
+          fingerprintSha256: resolved.key.fingerprintSha256,
+        };
+      }
+
+      if (activeConfig.transportIdentity.enabled) {
+        const transportResult = verifyA2aTransportIdentity(
+          readA2aTransportCertificate(request, nowMs),
+          activeConfig.transportIdentity
+        );
+        if (!transportResult.ok) {
+          return sendReject(
+            reply,
+            verificationReject(transportResult.reasonCode, transportResult.error)
+          );
+        }
+        const identity = transportResult.identity;
+        if (
+          !identity ||
+          identity.companyId !== envelope.companyId ||
+          identity.agentCode !== envelope.sourceAgentId ||
+          (peerIdentityMetadata !== undefined &&
+            identity.keyId !== undefined &&
+            identity.keyId !== peerIdentityMetadata.keyId)
+        ) {
+          return sendReject(
+            reply,
+            verificationReject(
+              'TRANSPORT_IDENTITY_MISMATCH',
+              'Transport-authenticated peer identity does not match the signed envelope'
+            )
+          );
+        }
+      }
+
       const initialVerification = verifyA2AEnvelope(envelope, {
-        signingSecret: config.signingSecret,
-        expectedCompanyId: config.companyId,
+        signingSecret: verificationSecret,
+        expectedCompanyId: activeConfig.companyId,
+        nowMs,
       });
       if (!initialVerification.valid) {
         return sendReject(
@@ -542,7 +815,14 @@ export const a2aApiRoutes: AddonHttpPlugin = async (fastify, options: AddonHttpH
         );
       }
 
-      const persisted = await persistA2AReceipt(envelope, config, Date.now(), remoteAddress);
+      const persisted = await persistA2AReceipt(
+        envelope,
+        activeConfig,
+        nowMs,
+        remoteAddress,
+        verificationSecret,
+        peerIdentityMetadata
+      );
       if (!persisted.ok) return sendReject(reply, persisted.error);
 
       return reply.code(202).send({
@@ -556,13 +836,13 @@ export const a2aApiRoutes: AddonHttpPlugin = async (fastify, options: AddonHttpH
     }
   );
 
-  fastify.get<{ Querystring: { limit?: string } }>(
+  fastify.get<{ Querystring: { limit?: string; cursor?: string } }>(
     '/api/ai/a2a/inbox',
     {
       schema: {
         tags: ['A2A'],
         description:
-          'Administrator-only view of the durable A2A message inbox. Requires an authenticated superadmin or system actor with company context.',
+          'Administrator-only, bounded and cursor-paginated view of the durable A2A message inbox. Payload minimization preserves verification digests and audit references.',
       },
     },
     async (request, reply) => {
@@ -591,43 +871,66 @@ export const a2aApiRoutes: AddonHttpPlugin = async (fastify, options: AddonHttpH
           .send({ success: false, error: 'A2A inbox access requires an administrator' });
       }
 
-      const config = readA2AApiConfig();
-      if (!config.enabled) {
+      const inboxConfig = readA2AApiConfig(undefined, services);
+      if (!inboxConfig.enabled) {
         return reply.code(404).send({ success: false, error: 'A2A API receiver is disabled' });
       }
-      if (!config.valid) {
-        return reply.code(503).send({ success: false, error: config.error });
+      if (!inboxConfig.valid) {
+        return reply.code(503).send({ success: false, error: inboxConfig.error });
       }
-      if (auth.companyId !== config.companyId) {
+      if (auth.companyId !== inboxConfig.companyId) {
         return reply
           .code(403)
           .send({ success: false, error: 'A2A inbox is outside the configured company' });
       }
 
-      const requestedLimit = request.query.limit === undefined ? 50 : Number(request.query.limit);
-      if (!Number.isSafeInteger(requestedLimit) || requestedLimit < 1 || requestedLimit > 200) {
+      const pageRequest = parseA2aInboxPageRequest(request.query, inboxConfig.pagination);
+      if (!pageRequest.ok) {
         return reply
           .code(400)
-          .send({ success: false, error: 'limit must be an integer from 1 to 200' });
+          .send({ success: false, error: pageRequest.error, reasonCode: pageRequest.reasonCode });
       }
 
-      const rows = await AuditLog.query()
-        .where({
-          model: A2A_MESSAGE_MODEL,
-          record_id: auth.companyId,
-          operation: 'received',
-        })
-        .orderBy('id', 'desc')
-        .limit(requestedLimit);
+      let inboxQuery = AuditLog.query().where({
+        model: A2A_MESSAGE_MODEL,
+        record_id: auth.companyId,
+        operation: 'received',
+      });
+      if (pageRequest.query.beforeId !== undefined) {
+        inboxQuery = inboxQuery.where('id', '<', pageRequest.query.beforeId);
+      }
+      const rows = await inboxQuery.orderBy('id', 'desc').limit(pageRequest.query.limit + 1);
+
+      const page = buildA2aInboxPage(rows, pageRequest.query.limit, inboxConfig.pagination);
+      const data = page.items.map((row) =>
+        projectA2aReceiptForRetention(
+          {
+            auditLogId: row.id,
+            model: A2A_MESSAGE_MODEL,
+            receivedAt: typeof row.create_date === 'string' ? row.create_date : '',
+            changes: {
+              ...(parseAuditChanges(row.changes) ?? { integrityError: true }),
+              createdAt: row.create_date,
+            },
+          },
+          now(),
+          inboxConfig.retention
+        )
+      );
 
       return {
         success: true,
-        data: rows.map((row) => ({
-          id: row.id,
-          ...(parseAuditChanges(row.changes) ?? { integrityError: true }),
-          createdAt: row.create_date,
-        })),
+        data,
+        page: {
+          limit: page.limit,
+          hasMore: page.hasMore,
+          nextCursor: page.nextCursor,
+        },
       };
     }
   );
-};
+}
+
+// Keep the addon plugin type available to consumers without loosening the
+// optional-services signature used by tests and other hosts.
+export const a2aApiAddonPlugin: AddonHttpPlugin = a2aApiRoutes;

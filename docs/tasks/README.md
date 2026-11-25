@@ -19,7 +19,7 @@ The initial owner-approved migration reconciled **1,358 → 627** task identitie
 - **Roadmap completion:** `ROADMAP.md` checkboxes and linked evidence remain the completion proof for M/K work; TaskOS statuses must pass roadmap parity.
 - **Human triage:** GitHub Issues own assignees, discussion and human approval gates.
 - **Delivery/release:** exact source SHA, required CI, promotion PR/review and release metadata; never infer release readiness from checkboxes.
-- **Projections:** `docs/roadmap/tasks.json`, root `todo.md`, and Visual Universe `task.json`, `TASKS.md` and individual task cards are views, not competing lifecycle authorities.
+- **Projections:** `docs/roadmap/tasks.json`, root `docs/tasks/sources/todo.md`, and Visual Universe `task.json`, `TASKS.md` and individual task cards are views, not competing lifecycle authorities.
 
 ## Core files
 
@@ -42,10 +42,10 @@ pnpm automation:check:roadmap
 pnpm tasks:sweep -- --check
 
 # Confirm the Visual Universe views are generated from canonical TaskOS
-node MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/tools/sync-task-state.mjs --check
+node docs/bundles/visual-universe-pack/tools/sync-task-state.mjs --check
 
 # Regenerate Visual Universe local views only after canonical validation
-node MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/tools/sync-task-state.mjs
+node docs/bundles/visual-universe-pack/tools/sync-task-state.mjs
 ```
 
 The `--candidate` mode remains non-mutating and writes only outside the repository. The one-time `--write` importer is for an empty registry and refuses to overwrite a populated canonical file. Do not use it to replace the migrated registry. Canonical lifecycle changes must use the reviewed TaskOS workflow and must preserve source provenance and dependency integrity.

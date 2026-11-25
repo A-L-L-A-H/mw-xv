@@ -1,11 +1,26 @@
 import { defineView } from '@moonwitness/orm';
-import { SlaPolicy, SupportTicket, TicketMessage, EscalationRule, KnowledgeDeflection, CsatSurvey } from './models/index.js';
+import {
+  SlaPolicy,
+  SupportTicket,
+  TicketMessage,
+  EscalationRule,
+  KnowledgeDeflection,
+  CsatSurvey,
+} from './models/index.js';
 
 export const views = [
   defineView(SlaPolicy, {
     title: 'SLA Policies',
     list: {
-      columns: ['name', 'priority', 'first_response_minutes', 'resolution_minutes', 'business_hours_only', 'applies_to_queue', 'is_active'],
+      columns: [
+        'name',
+        'priority',
+        'first_response_minutes',
+        'resolution_minutes',
+        'business_hours_only',
+        'applies_to_queue',
+        'is_active',
+      ],
       order: 'priority asc, id asc',
       decorations: [
         { color: 'success', domain: [['is_active', '=', true]] },
@@ -47,7 +62,20 @@ export const views = [
   defineView(SupportTicket, {
     title: 'Support Tickets',
     list: {
-      columns: ['ticket_no', 'subject', 'status', 'priority', 'channel', 'queue', 'customer', 'assigned_agent', 'first_response_due_at', 'resolution_due_at', 'sla_breached', 'escalation_level'],
+      columns: [
+        'ticket_no',
+        'subject',
+        'status',
+        'priority',
+        'channel',
+        'queue',
+        'customer',
+        'assigned_agent',
+        'first_response_due_at',
+        'resolution_due_at',
+        'sla_breached',
+        'escalation_level',
+      ],
       order: 'create_date desc, id desc',
       decorations: [
         { color: 'danger', domain: [['sla_breached', '=', true]] },
@@ -63,12 +91,30 @@ export const views = [
         {
           title: 'Ticket Details',
           columns: 2,
-          fields: ['ticket_no', 'company', 'customer', 'subject', 'status', 'priority', 'channel', 'queue', 'assigned_agent'],
+          fields: [
+            'ticket_no',
+            'company',
+            'customer',
+            'subject',
+            'status',
+            'priority',
+            'channel',
+            'queue',
+            'assigned_agent',
+          ],
         },
         {
           title: 'SLA Tracking',
           columns: 2,
-          fields: ['sla_policy', 'first_response_due_at', 'first_responded_at', 'resolution_due_at', 'resolved_at', 'sla_breached', 'escalation_level'],
+          fields: [
+            'sla_policy',
+            'first_response_due_at',
+            'first_responded_at',
+            'resolution_due_at',
+            'resolved_at',
+            'sla_breached',
+            'escalation_level',
+          ],
         },
         {
           title: 'Source & Tags',
@@ -148,7 +194,16 @@ export const views = [
   defineView(EscalationRule, {
     title: 'Escalation Rules',
     list: {
-      columns: ['name', 'sla_policy', 'trigger', 'escalate_after_minutes', 'escalate_to', 'oncall_rotation', 'max_escalations', 'is_active'],
+      columns: [
+        'name',
+        'sla_policy',
+        'trigger',
+        'escalate_after_minutes',
+        'escalate_to',
+        'oncall_rotation',
+        'max_escalations',
+        'is_active',
+      ],
       order: 'id asc',
       decorations: [
         { color: 'success', domain: [['is_active', '=', true]] },

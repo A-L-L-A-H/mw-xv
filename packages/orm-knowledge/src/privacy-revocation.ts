@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { sha256Hex } from '@moonwitness/types/node';
 import type { Knex } from 'knex';
 
 const revocationTable = 'knowledge_privacy_revocations';
@@ -48,16 +48,12 @@ export class PrivacyRevocationError extends Error {
   }
 }
 
-function sha256(value: string): string {
-  return createHash('sha256').update(value, 'utf8').digest('hex');
-}
-
 /** Stable tenant-scoped subject identity used to link a synthetic witness to withdrawal. */
 export function syntheticWitnessSubjectRefSha256(companyId: number, externalKey: string): string {
   if (!Number.isSafeInteger(companyId) || companyId < 1 || !externalKey.trim()) {
     throw new TypeError('A valid company and witness key are required');
   }
-  return sha256(`moonwitness:knowledge:witness:v1:${companyId}:${externalKey}`);
+  return sha256Hex(`moonwitness:knowledge:witness:v1:${companyId}:${externalKey}`);
 }
 
 function validSteward(steward: AuthenticatedPrivacySteward): boolean {
@@ -117,7 +113,7 @@ async function verifySteward(trx: Knex.Transaction, steward: AuthenticatedPrivac
 }
 
 function eventDigest(input: ApplyPrivacyRevocationInput): string {
-  return sha256(
+  return sha256Hex(
     JSON.stringify({
       action: 'withdrawn',
       companyId: input.steward.companyId,
@@ -297,7 +293,7 @@ export async function readActivePrivacyProjections(
           'Stored research projection is invalid'
         );
       }
-      if (sha256(String(row.projection_json)) !== row.projection_digest) {
+      if (sha256Hex(String(row.projection_json)) !== row.projection_digest) {
         throw new PrivacyRevocationError(
           'INVALID_STORED_PROJECTION',
           'Stored research projection is invalid'

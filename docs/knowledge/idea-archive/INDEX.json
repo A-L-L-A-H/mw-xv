@@ -1,0 +1,2247 @@
+{
+  "schemaVersion": 1,
+  "format": "moonwitness-idea-archive-index/v1",
+  "generator": "scripts/knowledge/build-idea-archive-index.mjs",
+  "note": "Navigation index only. Not a task registry, not canon authority, not source bytes.",
+  "countedFiles": 27,
+  "counts": {
+    "IDEA": 72,
+    "PRJ": 26,
+    "CAN": 16,
+    "MW-STORY-LEAD": 4,
+    "CHR": 19,
+    "FRM": 17,
+    "SRC-LIB": 11,
+    "UNR": 44
+  },
+  "entries": [
+    {
+      "id": "IDEA-0001",
+      "title": "MoonWitness / BULAN BERSAKSI",
+      "source": "II master blueprint; MW-XV Issue #16",
+      "status": "Product vision proposal",
+      "issues": [
+        16
+      ],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0002",
+      "title": "“When The Moon Witness, We Share A Message.”",
+      "source": "II README / master blueprint",
+      "status": "Original wording preserved; editorial refinement is separate",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0003",
+      "title": "MoonWitness Radio / RADIO",
+      "source": "MW-XV Issue #16",
+      "status": "Radio MVP (on-demand, scheduled or live) unresolved",
+      "issues": [
+        16
+      ],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0004",
+      "title": "Message sharing / signals / shared experience",
+      "source": "MW-XV Issue #16",
+      "status": "Product journey proposal",
+      "issues": [
+        16
+      ],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0005",
+      "title": "Mission Board / missions and progression",
+      "source": "Available project context; Issue #15",
+      "status": "Exact scope and owning domain need review",
+      "issues": [
+        15
+      ],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0006",
+      "title": "A-L-L-A-H.COM / Empire of the Light",
+      "source": "bjo163/A-L-L-A-H.COM, bjo163/A-L-L-A-H, bjo163/empire-of-the-light",
+      "status": "Distinguish operational hub from proposed Empire design",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0007",
+      "title": "“SUNSHINE BELONG”",
+      "source": "Prior poster brief in available context",
+      "status": "Exact final brand placement not revalidated",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0008",
+      "title": "“FIND LIGHT IN DARKNESS”",
+      "source": "Prior poster brief in available context",
+      "status": "Tagline wording preserved",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0009",
+      "title": "“HOW U REMIND ME”",
+      "source": "Prior poster brief in available context",
+      "status": "Tagline wording preserved",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0010",
+      "title": "AEQ / BABYDOLL — SERVICE JAM",
+      "source": "MW-XV Issue #22",
+      "status": "Separate exploratory initiative; not integrated",
+      "issues": [
+        22
+      ],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0011",
+      "title": "“No Plan (Just Do it)” / “Simple Plan”",
+      "source": "Issue #22 concept brief",
+      "status": "Preserve source phrases; operational meaning unresolved",
+      "issues": [
+        22
+      ],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0012",
+      "title": "CAPTURE → CONNECT → WITNESS → UNDERSTAND → PRESERVE → PROMOTE → MOVE FORWARD",
+      "source": "bjo163/moonwitness-II/docs/MASTER_BLUEPRINT.md",
+      "status": "Story/platform flow; editorial source",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0013",
+      "title": "MoonWitness 13 core functions",
+      "source": "II master blueprint",
+      "status": "Storytelling, Exposure, Change Advisory Board, Chasing Heart, Lovestruck, Breath Electric, Seduction, Fault Lines, Villain of the Story, Witness Archive, Sanity’s Last Breath, Past Presence, Promoting",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0014",
+      "title": "Eight MoonWitness II eras",
+      "source": "II data/eras.yaml",
+      "status": "BEFORE LIGHT; THE ARRIVAL; THE WITNESS; THE RUNAWAYS; THE EXPOSURE; THE CHANGE; END OF AN ERA; NEXT PHASE",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0015",
+      "title": "“When The Moon Witness”",
+      "source": "II data/stories.yaml, story_001",
+      "status": "Status review; not marked final",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0016",
+      "title": "“THE RUNAWAY TRACE”",
+      "source": "II data/stories.yaml, story_002",
+      "status": "Status review; not marked final",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0017",
+      "title": "V10 99-chapter index",
+      "source": "MW-XIV MASTER_NARRATIVE_V10_PUBLIC_DRAFT.md",
+      "status": "Editorial public digest, not original transcript",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0018",
+      "title": "V10.1 expanded 16-part narrative",
+      "source": "MW-XIV MASTER_NARRATIVE_V10_1_EXPANDED.md",
+      "status": "Expanded research companion, not final canon",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0019",
+      "title": "MoonWitness XII — 15 indexed episodes / 63 editorial summary pages",
+      "source": "XII progress and source inventory",
+      "status": "Summaries are not authenticated original transcripts",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0020",
+      "title": "33 Bug Patch / World Patch register",
+      "source": "XII MASTER_BUG_PATCH_33_V2.md",
+      "status": "8 reported, 5 recovered drafts, 1 number conflict, 18 proposals, 1 in-chat record; 0 independently verified divine approvals",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0021",
+      "title": "THE SHADOW / 00",
+      "source": "II data/characters.yaml",
+      "status": "Lore level; review; alias equivalence must remain evidence-based",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0022",
+      "title": "A LAH / THE BOSS / THE BATTERY",
+      "source": "II character roster",
+      "status": "Lore level; review",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0023",
+      "title": "DOGS FROM UNIVERSE",
+      "source": "II character roster",
+      "status": "Lore level; review",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0024",
+      "title": "THE BLUE WITCH",
+      "source": "II character roster",
+      "status": "Lore level; review",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0025",
+      "title": "DJ DAVID",
+      "source": "II character roster",
+      "status": "Lore level; review",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0026",
+      "title": "WALTER WHITE",
+      "source": "II character roster",
+      "status": "Fictional/reference treatment; do not infer real identity",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0027",
+      "title": "ELECTRIC FOREST",
+      "source": "II character roster",
+      "status": "Lore level; review",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0028",
+      "title": "INDESTRUCTIBLE",
+      "source": "II character roster",
+      "status": "Lore level; review",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0029",
+      "title": "JHNNY DEPP / Pirate of Carebean",
+      "source": "II character roster",
+      "status": "Preserve spelling as source; rights/identity review before adaptation",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0030",
+      "title": "ROCKSOUL — ANGEL WITH SHOTGUN",
+      "source": "User creative context; separate rocksoul-aws repository",
+      "status": "Distinguish creative title from AWS repository's LAW domain",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0031",
+      "title": "GOD PROMISE",
+      "source": "MW-XV Issue #17; older GOD-PROMISE draft",
+      "status": "Editorial concept; not scripture text",
+      "issues": [
+        17
+      ],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0032",
+      "title": "GOD PROMISE / SF (Share Feeling)",
+      "source": "Issue #17 / available context",
+      "status": "Meaning retained as label; exact original workflow pending",
+      "issues": [
+        17
+      ],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0033",
+      "title": "“Qāf Kāf kahf Kun”",
+      "source": "Issue #17",
+      "status": "Concept label; meaning/source not inferred",
+      "issues": [
+        17
+      ],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0034",
+      "title": "1 · 6 · 3",
+      "source": "bjo163/dev-mw-blueprint/GOD-PROMISE_MOONWITNESS.md",
+      "status": "Personal conceptual framework; not established Qur'anic numeric code",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0035",
+      "title": "Asmaul Husna 99-name dataset / concept map",
+      "source": "MW-XV Issue #18; packages/research/src/asma.ts",
+      "status": "The repository notes that complete, source-reviewed dataset is not yet evidenced",
+      "issues": [
+        18
+      ],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0036",
+      "title": "Selected Asma list corrections #67–69 and #71–74",
+      "source": "MW-XV Issue #18",
+      "status": "Project-selected profile; not a claim that all scholarly lists share one order",
+      "issues": [
+        18,
+        67,
+        71
+      ],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0037",
+      "title": "#75–81 nostalgia/anime/game visual concepts",
+      "source": "MW-XV Issue #18",
+      "status": "Moodboard references only; use original rights-cleared designs",
+      "issues": [
+        18,
+        75
+      ],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0038",
+      "title": "Q4Q / Quantum 4 Kitab",
+      "source": "Available prior context",
+      "status": "Qur'an-primary comparison framework; source editions and comparison rules require verification",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0039",
+      "title": "POLARITY + RGBL + 9 GATES + 13 WAYS",
+      "source": "Available prior context",
+      "status": "Personal taxonomy; not a validated scientific or theological ontology",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0040",
+      "title": "72 → 73 unity criteria",
+      "source": "Available prior context",
+      "status": "Personal conceptual rule; no external doctrine asserted",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0041",
+      "title": "Q47:35 “Secret 4” — wa / ila / la / lan",
+      "source": "Available prior context",
+      "status": "Lexical/pattern hypothesis; exact Arabic and extraction method need source-based reproduction",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0042",
+      "title": "Divinity / Boundary / Civilian levels",
+      "source": "Available prior context",
+      "status": "Editorial classification; not religious doctrine",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0043",
+      "title": "HISTA — Hikmah, Isti’anah, Sains, Tawakal, Amanah",
+      "source": "Available prior context",
+      "status": "Framework label; definition/revision chronology incomplete",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0044",
+      "title": "Four Pillars of Soul / Djiwa Alami / “AR-RUH Absurd Teori”",
+      "source": "Available prior context; ROCKSOUL editorial track",
+      "status": "Personal metaphor/theory label; not validated physiology or theology",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0045",
+      "title": "“Merawat sebuah Kaca” / self-reflection first",
+      "source": "Available prior context",
+      "status": "Mirror metaphor",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0046",
+      "title": "nafs – fisikal – infrastructure / input-output “same path”",
+      "source": "Available prior context",
+      "status": "Conceptual diagram; scientific meaning not established",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0047",
+      "title": "“faith × prayer × knowledge × effort × patience”",
+      "source": "Available prior context",
+      "status": "Motivational mnemonic, not a scientific equation",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0048",
+      "title": "“Lines — Visual Effect mansa”",
+      "source": "II master blueprint",
+      "status": "Visual identity note; source spelling preserved",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0049",
+      "title": "Futuristic / Gen-Z / cyberpunk / grunge / fantasy-cosmic poster directions",
+      "source": "Current prompt and prior design context",
+      "status": "Separate project-specific art directions; not one universal skin",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0050",
+      "title": "9:16 English research poster and 4:5 cinematic fantasy poster",
+      "source": "Available design prompts",
+      "status": "Two distinct output briefs; not a canon format",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0051",
+      "title": "ROCKSOUL metal / absurd metal poster titles",
+      "source": "Available prior context",
+      "status": "Creative title experiments; preserve exact source variants",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0052",
+      "title": "Artwork-first, no forced 3D",
+      "source": "MW-XV Issue #19",
+      "status": "Existing package/UI-catalog pipeline; no second asset manager",
+      "issues": [
+        19
+      ],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0053",
+      "title": "ARSY — Agent Reality System Yard / Orchestration",
+      "source": "bjo163/A-L-L-A-H/docs/MASTER_BLUEPRINT.md",
+      "status": "Proposed governed agent orchestration architecture",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0054",
+      "title": "MoonShips Mini-PaaS, Loco.rs, SQLite-first direction",
+      "source": "Available prior context",
+      "status": "Product direction / prototype request; not current MW-XV architecture decision",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0055",
+      "title": "Exatel / Trans Indonesia Superkoridor / IDPLAY ISP ecosystem",
+      "source": "Available memory summary",
+      "status": "Public archive stores only high-level product context; no network secrets/customer details",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0056",
+      "title": "AgentOPS Corridor / OLT-NMS operations",
+      "source": "Available memory summary",
+      "status": "Engineering product concept; implementation status must be re-audited",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0057",
+      "title": "Caroline WhatsApp customer specialist",
+      "source": "Available memory summary",
+      "status": "Tone/response policy; operational system details are not published here",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0058",
+      "title": "FollowTrack AI",
+      "source": "Available memory summary",
+      "status": "Follow-up workflow concept; exact current implementation status unresolved",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0059",
+      "title": "WhatsApp connector evaluation; no OpenClaw direction",
+      "source": "Available recent context",
+      "status": "Prior preference recorded; connector decision needs fresh exact-version audit",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0060",
+      "title": "YouTube monitoring / push / live status",
+      "source": "Available recent context",
+      "status": "Monitoring requirements not yet converted into validated source-backed task set",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0061",
+      "title": "CRAYON Framework v1.3 — R1 Reality → G2 Governing Order → B3 Being → L4 Light; 9 Gate; 13 Way; clock model",
+      "source": "Library source; MW-XV Issue #173",
+      "status": "Version 1.3 baseline; proposed conceptual/educational framework, not validated scientific theory",
+      "issues": [
+        173
+      ],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0062",
+      "title": "An Easy Way to Understand Allah — bilingual pre-scriptural conceptual paper using R1/G2/B3/L4, 9 Gates and 13 Ways",
+      "source": "Library source; companion to MW-XV Issue #173",
+      "status": "Version 2 paper; non-scriptural entry point; conceptual proposal, not proof or experimentally validated persuasion method",
+      "issues": [
+        173
+      ],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0063",
+      "title": "Dīn Allah — 4 Kitab Allah / Universal Iman Foundation",
+      "source": "Library source; MW-XV Issue #174",
+      "status": "Qur’an-governed comparative research proposal; filename says v1.8 while internal cover says v1.7 and footer also references v1.2; version labels need reconciliation",
+      "issues": [
+        174
+      ],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0064",
+      "title": "QUANTUM–FE STONE ENERGY — solar air heating, thermal storage, Fe-oxide/ferrite screening",
+      "source": "Library paper and workbook; MW-XV Issue #175",
+      "status": "Preliminary scoping review and proposal; no physical experiment or new DFT result; material novelty not established",
+      "issues": [
+        175
+      ],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0065",
+      "title": "ROCKSOUL GAME — THE LOST SIGNAL",
+      "source": "bjo163/rocksoul-game; MW-XV Issue #176",
+      "status": "Early local browser demo / preproduction; not a launched MMO; game canon remains candidate",
+      "issues": [
+        176
+      ],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0066",
+      "title": "MEGA TILESET MOONWITNESS / JOURNEY OF LIGHT — 32×32 top-down RPG visual direction",
+      "source": "Selected Library image captions including “MEGA TILESET MOONWITNESS” and Moonwitness: Journey of Light Map.png",
+      "status": "Caption/visual metadata only; original prompt, source master and reuse rights are not established",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0067",
+      "title": "MoonWitness RPG / 25-prophet Qur’an-mirror game concept",
+      "source": "Available account Memory Summary only; see MW-XV Issue #176",
+      "status": "Keep separate from ROCKSOUL GAME — The Lost Signal until first-source wording and intended relationship are recovered",
+      "issues": [
+        176
+      ],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0068",
+      "title": "MoonWitness OS v2.0 model — “4 SOURCE → 7 CHANNEL → 4 PROCESS → AMAL → 4 SCALE AXES → MĪZĀN”",
+      "source": "Available account Memory Summary only; see MW-XV Issue #177",
+      "status": "Preserve as a memory lead; original definitions, ordering and source conversation still need recovery before canon or implementation",
+      "issues": [
+        177
+      ],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0069",
+      "title": "MOONWITNESS — Two Generations, One Toast",
+      "source": "Recent conversation summary; Library image caption/file title Moonwitness: Two Generations, One Toast.png",
+      "status": "DRAFT; father/son, memory and parallel-world motifs appear in the available summary/caption. Exact dialogue, plot sequence and approved visual prompt are not recovered.",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0070",
+      "title": "MOONWITNESS — Chaos Before Dawn",
+      "source": "Recent conversation summary of a pre-dawn / dream-world narrative involving MyLuft",
+      "status": "DRAFT; retain the title and limited summary only. Full source text, cast details and chronology remain missing.",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0071",
+      "title": "MOONWITNESS — BIRD OF A FEATHER",
+      "source": "Recent conversation summary records the title and a poster-text revision request",
+      "status": "DRAFT; title-only lead. Plot, characters, universe link and ending are unresolved.",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "IDEA-0072",
+      "title": "MOONWITNESS — THUNDERSTRUCK",
+      "source": "Recent conversation summary dated 30 Sep 2026; V10 progress ledger separately mentions MENGGIGIL / THUNDERSTRUCK",
+      "status": "DRAFT; a “Wahyono” wordplay note is remembered. Its relationship to MENGGIGIL, to any religious term, or to other story characters is not established.",
+      "issues": [],
+      "namespace": "IDEA",
+      "file": "IDEA-CATALOG.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "PRJ-0001",
+      "title": "MoonWitness",
+      "source": "USER IDEA + PRODUCT PROPOSAL",
+      "status": "Target ecosystem; not every proposed experience is shipped",
+      "issues": [
+        16
+      ],
+      "namespace": "PRJ",
+      "file": "PROJECT-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "PRJ-0002",
+      "title": "MoonWitness II",
+      "source": "REPOSITORY-DOCUMENTED",
+      "status": "Public app and datasets exist; character/story data statuses include review / draft",
+      "issues": [],
+      "namespace": "PRJ",
+      "file": "PROJECT-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "PRJ-0003",
+      "title": "MoonWitness XII",
+      "source": "REPOSITORY-DOCUMENTED",
+      "status": "Partial editorial archive; source, rights and QA gaps remain",
+      "issues": [],
+      "namespace": "PRJ",
+      "file": "PROJECT-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "PRJ-0004",
+      "title": "MoonWitness XIV",
+      "source": "HISTORICAL SOURCE",
+      "status": "Superseded as forward target; preserve history, do not create parallel platform",
+      "issues": [],
+      "namespace": "PRJ",
+      "file": "PROJECT-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "PRJ-0005",
+      "title": "MoonWitness XV / MW-XV",
+      "source": "OWNER-SELECTED TARGET",
+      "status": "Canonical forward development target for this work",
+      "issues": [],
+      "namespace": "PRJ",
+      "file": "PROJECT-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "PRJ-0006",
+      "title": "ROCKSOUL",
+      "source": "USER IDEA + EDITORIAL PROPOSAL",
+      "status": "Keep personal frameworks, fiction and research evidence separated",
+      "issues": [
+        17
+      ],
+      "namespace": "PRJ",
+      "file": "PROJECT-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "PRJ-0007",
+      "title": "GOD PROMISE",
+      "source": "USER IDEA + PROPOSAL",
+      "status": "Source text, translation, tafsir and reflection must remain distinct",
+      "issues": [
+        17
+      ],
+      "namespace": "PRJ",
+      "file": "PROJECT-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "PRJ-0008",
+      "title": "Asmaul Husna reference & visual concepts",
+      "source": "USER IDEA + PROPOSAL",
+      "status": "No complete canonical 99-row dataset is asserted by this archive",
+      "issues": [
+        18
+      ],
+      "namespace": "PRJ",
+      "file": "PROJECT-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "PRJ-0009",
+      "title": "A-L-L-A-H.COM",
+      "source": "REPOSITORY-DOCUMENTED",
+      "status": "README claims Fastify/Next platform; actual service/deployment requires exact runtime proof",
+      "issues": [],
+      "namespace": "PRJ",
+      "file": "PROJECT-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "PRJ-0010",
+      "title": "Empire of the Light",
+      "source": "REPOSITORY-DOCUMENTED PROPOSAL",
+      "status": "Its own README describes a proposed design baseline, not production certification",
+      "issues": [],
+      "namespace": "PRJ",
+      "file": "PROJECT-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "PRJ-0011",
+      "title": "ARSY",
+      "source": "USER IDEA + PROPOSED ARCHITECTURE",
+      "status": "Governed agent orchestration; must not be mistaken for unrestricted AGI or a second MW-XV Hub",
+      "issues": [],
+      "namespace": "PRJ",
+      "file": "PROJECT-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "PRJ-0012",
+      "title": "ROCKSOUL Research domains",
+      "source": "REPOSITORY-DOCUMENTED ECOSYSTEM",
+      "status": "Separate source owners; not one canon, ORM or database",
+      "issues": [],
+      "namespace": "PRJ",
+      "file": "PROJECT-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "PRJ-0013",
+      "title": "ROCKSOUL assets / UI / Moonframe",
+      "source": "REPOSITORY-DOCUMENTED",
+      "status": "Reference only unless source-specific rights, license and technical fit are cleared",
+      "issues": [],
+      "namespace": "PRJ",
+      "file": "PROJECT-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "PRJ-0014",
+      "title": "AEQ / BABYDOLL Service Jam",
+      "source": "USER IDEA / UNRESOLVED",
+      "status": "Preserve independently; no app, payment or reward ledger inferred",
+      "issues": [
+        22
+      ],
+      "namespace": "PRJ",
+      "file": "PROJECT-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "PRJ-0015",
+      "title": "MoonWitness Memory",
+      "source": "ARCHIVED REPOSITORY REFERENCE",
+      "status": "Repository metadata marks it archived; private conversation export is still not provided to MW-XV",
+      "issues": [],
+      "namespace": "PRJ",
+      "file": "PROJECT-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "PRJ-0016",
+      "title": "MoonShips",
+      "source": "REPOSITORY-DOCUMENTED",
+      "status": "Distinct service identity/schema; compare carefully with MW-XV integration/WhatsApp domain",
+      "issues": [],
+      "namespace": "PRJ",
+      "file": "PROJECT-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "PRJ-0017",
+      "title": "MoonShips Mini-PaaS",
+      "source": "USER IDEA / RESEARCH",
+      "status": "Product exploration, not an accepted MW-XV architecture",
+      "issues": [],
+      "namespace": "PRJ",
+      "file": "PROJECT-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "PRJ-0018",
+      "title": "Exatel / Supercorridor / IDPLAY ecosystem",
+      "source": "BUSINESS CONTEXT",
+      "status": "Keep technical secrets, credentials, private endpoints and customer data out of public knowledge files",
+      "issues": [],
+      "namespace": "PRJ",
+      "file": "PROJECT-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "PRJ-0019",
+      "title": "AgentOPS Corridor",
+      "source": "PRODUCT / ENGINEERING CONTEXT",
+      "status": "Codebase and current production status not audited in this pass",
+      "issues": [],
+      "namespace": "PRJ",
+      "file": "PROJECT-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "PRJ-0020",
+      "title": "Caroline / FollowTrack",
+      "source": "PRODUCT / AUTOMATION CONTEXT",
+      "status": "Preserve customer-language rules; avoid exposing logs and customer identifiers",
+      "issues": [],
+      "namespace": "PRJ",
+      "file": "PROJECT-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "PRJ-0021",
+      "title": "Local AI / Desktop Harness",
+      "source": "REPOSITORY-DOCUMENTED",
+      "status": "Reuse MW-XV desktop/runtime boundaries; no competing agent runtime",
+      "issues": [
+        21
+      ],
+      "namespace": "PRJ",
+      "file": "PROJECT-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "PRJ-0022",
+      "title": "AGI/g4f experiments",
+      "source": "THIRD-PARTY FORK REFERENCE",
+      "status": "GitHub metadata marks the repo as a fork; README identifies GPT4Free/g4f, not an original AGI system",
+      "issues": [],
+      "namespace": "PRJ",
+      "file": "PROJECT-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "PRJ-0023",
+      "title": "CRAYON Framework",
+      "source": "USER IDEA / CONCEPTUAL FRAMEWORK",
+      "status": "Versioned baseline; not a validated scientific or cognitive theory; distinct from RGBL OMNISCIENCE METHOD",
+      "issues": [
+        173
+      ],
+      "namespace": "PRJ",
+      "file": "PROJECT-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "PRJ-0024",
+      "title": "Dīn Allah — Universal Iman Foundation",
+      "source": "USER IDEA / RESEARCH PROPOSAL",
+      "status": "Source-layered synthesis; filename/internal version labels conflict; not a new religion or revelation",
+      "issues": [
+        174
+      ],
+      "namespace": "PRJ",
+      "file": "PROJECT-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "PRJ-0025",
+      "title": "QUANTUM–FE STONE ENERGY",
+      "source": "USER IDEA / RESEARCH PROPOSAL",
+      "status": "No experiment or new DFT result; novelty unverified; high-temperature ferrite/redox work is lab-only",
+      "issues": [
+        175
+      ],
+      "namespace": "PRJ",
+      "file": "PROJECT-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "PRJ-0026",
+      "title": "ROCKSOUL GAME — THE LOST SIGNAL",
+      "source": "REPOSITORY-DOCUMENTED / PREPRODUCTION",
+      "status": "Early local demo; game repository is read-only to this connection; not production-certified and not a day-one MMO",
+      "issues": [
+        176
+      ],
+      "namespace": "PRJ",
+      "file": "PROJECT-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CAN-0001",
+      "title": "“The Moon is the symbolic anchor of the Witness layer.”",
+      "source": "moonwitness-II/docs/WORLD_RULES.md, blob c3634f74b63ad727cd1c8166e5dbe6d6278aa0ea",
+      "status": "PROVISIONAL lore",
+      "issues": [],
+      "namespace": "CAN",
+      "file": "CANON-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CAN-0002",
+      "title": "“A witness can preserve an observation without forcing a final interpretation.”",
+      "source": "Same II world rules",
+      "status": "PROVISIONAL lore",
+      "issues": [],
+      "namespace": "CAN",
+      "file": "CANON-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CAN-0003",
+      "title": "“Mystery, unknown, and unresolved states are valid parts of the universe.”",
+      "source": "Same II world rules",
+      "status": "PROVISIONAL lore",
+      "issues": [],
+      "namespace": "CAN",
+      "file": "CANON-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CAN-0004",
+      "title": "“Aliases can coexist without automatically becoming separate entities.”",
+      "source": "Same II world rules; target ontology also forbids identity inference",
+      "status": "PROVISIONAL lore / policy alignment",
+      "issues": [],
+      "namespace": "CAN",
+      "file": "CANON-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CAN-0005",
+      "title": "“Past Presence connects Eras.”",
+      "source": "Same II world rules",
+      "status": "PROVISIONAL lore",
+      "issues": [],
+      "namespace": "CAN",
+      "file": "CANON-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CAN-0006",
+      "title": "“A fault line marks tension or misalignment, not necessarily permanent breakage.”",
+      "source": "Same II world rules",
+      "status": "PROVISIONAL lore",
+      "issues": [],
+      "namespace": "CAN",
+      "file": "CANON-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CAN-0007",
+      "title": "“Promoting asks what deserves to continue into the next phase.” / “Promoting is not advertising.”",
+      "source": "II master blueprint",
+      "status": "PROVISIONAL lore",
+      "issues": [],
+      "namespace": "CAN",
+      "file": "CANON-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CAN-0008",
+      "title": "“Narrative Roles Stay Contextual.”",
+      "source": "II world rules",
+      "status": "PROVISIONAL lore",
+      "issues": [],
+      "namespace": "CAN",
+      "file": "CANON-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CAN-0009",
+      "title": "“Canon may grow. Lore may remain unresolved.”",
+      "source": "II world rules",
+      "status": "PROVISIONAL lore",
+      "issues": [],
+      "namespace": "CAN",
+      "file": "CANON-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CAN-0010",
+      "title": "“World rules should make creation and exploration easier, not harder.”",
+      "source": "II world rules",
+      "status": "PROVISIONAL lore",
+      "issues": [],
+      "namespace": "CAN",
+      "file": "CANON-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CAN-0011",
+      "title": "Do not depict Allah as a human, character or visual object.",
+      "source": "Owner-provided 775-line master prompt",
+      "status": "LOCKED owner instruction",
+      "issues": [],
+      "namespace": "CAN",
+      "file": "CANON-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CAN-0012",
+      "title": "Do not silently change canon, remove historical versions or replace original wording without preserving the source.",
+      "source": "Owner-provided master prompt",
+      "status": "LOCKED archive rule",
+      "issues": [],
+      "namespace": "CAN",
+      "file": "CANON-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CAN-0013",
+      "title": "Distinguish original user ideas from AI suggestions, drafts, proposals and assumptions.",
+      "source": "Owner-provided master prompt",
+      "status": "LOCKED archive rule",
+      "issues": [],
+      "namespace": "CAN",
+      "file": "CANON-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CAN-0014",
+      "title": "Distinguish scripture text, hadith, tafsir, translation, personal interpretation, metaphor and creative concept.",
+      "source": "Owner-provided master prompt",
+      "status": "LOCKED editorial boundary",
+      "issues": [],
+      "namespace": "CAN",
+      "file": "CANON-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CAN-0015",
+      "title": "Do not reproduce third-party character/artwork references as original production assets.",
+      "source": "Existing MW-XV Issue #18 / #19 proposals and source policies",
+      "status": "PROVISIONAL until asset rights review",
+      "issues": [
+        18,
+        19
+      ],
+      "namespace": "CAN",
+      "file": "CANON-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CAN-0016",
+      "title": "No legacy source bytes, private conversation records, prompts, fixtures, data or assets are imported under current K0-006 scope.",
+      "source": "Owner-approved MW-XV K0-006 decision and Issue #27",
+      "status": "LOCKED current migration boundary",
+      "issues": [
+        27
+      ],
+      "namespace": "CAN",
+      "file": "CANON-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "MW-STORY-LEAD-0001",
+      "title": "MOONWITNESS — Two Generations, One Toast",
+      "source": "The Library contains a matching image title/caption. Available context associates the concept with a father/son, memory and parallel-world narrative.",
+      "status": "DRAFT / SOURCE-PARTIAL; recover the original episode text and prompt before expanding",
+      "issues": [],
+      "namespace": "MW-STORY-LEAD",
+      "file": "STORY-CANON-CHARACTER-BIBLE.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "MW-STORY-LEAD-0002",
+      "title": "MOONWITNESS — Chaos Before Dawn",
+      "source": "Available summary identifies a pre-dawn dream-world sequence and the name MyLuft.",
+      "status": "DRAFT / NEEDS-SOURCE; plot, sequence and final wording not available",
+      "issues": [],
+      "namespace": "MW-STORY-LEAD",
+      "file": "STORY-CANON-CHARACTER-BIBLE.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "MW-STORY-LEAD-0003",
+      "title": "MOONWITNESS — BIRD OF A FEATHER",
+      "source": "Available summary confirms the exact title and that poster text was revised.",
+      "status": "DRAFT / TITLE-ONLY; do not add a plot or characters from inference",
+      "issues": [],
+      "namespace": "MW-STORY-LEAD",
+      "file": "STORY-CANON-CHARACTER-BIBLE.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "MW-STORY-LEAD-0004",
+      "title": "MOONWITNESS — THUNDERSTRUCK",
+      "source": "Available summary preserves the title, a MyLuft dream-world framing and a “Wahyono” wordplay note. The V10 progress ledger separately uses the locator MENGGIGIL / THUNDERSTRUCK.",
+      "status": "DRAFT / UNRESOLVED; do not assume the ledger's two labels are identical or interpret the wordplay as a religious claim",
+      "issues": [],
+      "namespace": "MW-STORY-LEAD",
+      "file": "STORY-CANON-CHARACTER-BIBLE.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CHR-0001",
+      "title": "THE SHADOW",
+      "source": "R; 163; Dancer; Runaway; Not Untouched; Actor; alternate identity field THE DREAMER; Dreamer aliases include Runaway, The Unremembered, The Chosen One, Dancer, The Exposer",
+      "status": "lore / review",
+      "issues": [],
+      "namespace": "CHR",
+      "file": "CHARACTER-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CHR-0002",
+      "title": "A LAH",
+      "source": "THE BOSS; LiAlH₄; nickname THE BATTERY",
+      "status": "lore / review",
+      "issues": [],
+      "namespace": "CHR",
+      "file": "CHARACTER-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CHR-0003",
+      "title": "DOGS FROM UNIVERSE",
+      "source": "MOH571; THE STARS; YOUJIZZ; THE DREAMER",
+      "status": "lore / review",
+      "issues": [],
+      "namespace": "CHR",
+      "file": "CHARACTER-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CHR-0004",
+      "title": "THE BLUE WITCH",
+      "source": "MANSA MUSA; BLUE EYES",
+      "status": "lore / review",
+      "issues": [],
+      "namespace": "CHR",
+      "file": "CHARACTER-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CHR-0005",
+      "title": "DJ DAVID",
+      "source": "David",
+      "status": "lore / review",
+      "issues": [],
+      "namespace": "CHR",
+      "file": "CHARACTER-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CHR-0006",
+      "title": "WALTER WHITE",
+      "source": "Skill: DOKTER BEDAH",
+      "status": "lore / review",
+      "issues": [],
+      "namespace": "CHR",
+      "file": "CHARACTER-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CHR-0007",
+      "title": "ELECTRIC FOREST",
+      "source": "Cassade Pope",
+      "status": "lore / review",
+      "issues": [],
+      "namespace": "CHR",
+      "file": "CHARACTER-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CHR-0008",
+      "title": "INDESTRUCTIBLE",
+      "source": "THE FATHER; THE RED FIRE",
+      "status": "lore / review",
+      "issues": [],
+      "namespace": "CHR",
+      "file": "CHARACTER-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CHR-0009",
+      "title": "JHNNY DEPP",
+      "source": "Pirate of Carebean",
+      "status": "lore / review",
+      "issues": [],
+      "namespace": "CHR",
+      "file": "CHARACTER-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CHR-0010",
+      "title": "ROCKSOUL",
+      "source": "Main Witness; hoodie/backward cap; green/black cap modes are symbolic storytelling",
+      "status": "UNRESOLVED vs other ROCKSOUL references",
+      "issues": [],
+      "namespace": "CHR",
+      "file": "CHARACTER-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CHR-0011",
+      "title": "ISROCKFEEL",
+      "source": "Action Mentor / Punk-Rock Driver; stage energy",
+      "status": "UNRESOLVED",
+      "issues": [],
+      "namespace": "CHR",
+      "file": "CHARACTER-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CHR-0012",
+      "title": "WALTERWHITE",
+      "source": "Wild Idea Engineer; eccentric engineer",
+      "status": "UNRESOLVED vs II WALTER WHITE",
+      "issues": [],
+      "namespace": "CHR",
+      "file": "CHARACTER-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CHR-0013",
+      "title": "4-LAH / THE BATTERIES",
+      "source": "Signal Queen / Command Center",
+      "status": "UNRESOLVED vs II A LAH / THE BATTERY",
+      "issues": [],
+      "namespace": "CHR",
+      "file": "CHARACTER-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CHR-0014",
+      "title": "MIKAIL",
+      "source": "MIKAIL",
+      "status": "Emerald field-gardener / stewardship design",
+      "issues": [],
+      "namespace": "CHR",
+      "file": "CHARACTER-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CHR-0015",
+      "title": "FINAL KEEPER",
+      "source": "FINAL KEEPER",
+      "status": "Silver-black time watcher; the source says inspired by mortality-related themes, not an unqualified identification",
+      "issues": [],
+      "namespace": "CHR",
+      "file": "CHARACTER-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CHR-0016",
+      "title": "QUESTION DUO",
+      "source": "QUESTION DUO",
+      "status": "Indigo/crimson investigators",
+      "issues": [],
+      "namespace": "CHR",
+      "file": "CHARACTER-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CHR-0017",
+      "title": "RECORD TWINS",
+      "source": "RECORD TWINS",
+      "status": "Gold/silver archivists; the source explicitly cautions against treating Raqib/Atid as personal names from Qur'an 50:18",
+      "issues": [],
+      "namespace": "CHR",
+      "file": "CHARACTER-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CHR-0018",
+      "title": "MALIK",
+      "source": "MALIK",
+      "status": "Dark-red boundary guardian",
+      "issues": [],
+      "namespace": "CHR",
+      "file": "CHARACTER-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "CHR-0019",
+      "title": "RIDWAN",
+      "source": "RIDWAN",
+      "status": "Jade garden welcome; source says the name occurs in later tradition, not named in Qur'an",
+      "issues": [],
+      "namespace": "CHR",
+      "file": "CHARACTER-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "FRM-0001",
+      "title": "OMNISCIENCE METHOD / R–G–B–L",
+      "source": "Reality → Guidance → Balance → Light; R¹→G²→B³→L⁴; 1–4 are ordinal stage identifiers, not probabilities or truth scores",
+      "status": "USER IDEA / RESEARCH FRAMEWORK; independent evaluation open",
+      "issues": [],
+      "namespace": "FRM",
+      "file": "FRAMEWORK-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "FRM-0002",
+      "title": "Mizan / Mizan Reloaded",
+      "source": "Evidence-bound analytic factors with explicit scope, uncertainty and evidence IDs; no human-worth/salvation/divine/legal verdict or autonomous harm/publication",
+      "status": "Current target policy boundary; legacy TH/ARI semantics rejected as unverified",
+      "issues": [],
+      "namespace": "FRM",
+      "file": "FRAMEWORK-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "FRM-0003",
+      "title": "HISTA",
+      "source": "Hikmah · Isti’anah · Sains · Tawakal · Amanah",
+      "status": "USER IDEA / mnemonic; first source chronology incomplete",
+      "issues": [
+        17
+      ],
+      "namespace": "FRM",
+      "file": "FRAMEWORK-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "FRM-0004",
+      "title": "Four Pillars of Soul / Djiwa Alami / “AR-RUH Absurd Teori”",
+      "source": "Personal reflection / maintenance model; four original pillar definitions not yet established by the inspected issue",
+      "status": "USER IDEA / METAPHOR; definitions unresolved",
+      "issues": [
+        17
+      ],
+      "namespace": "FRM",
+      "file": "FRAMEWORK-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "FRM-0005",
+      "title": "“Merawat sebuah Kaca”",
+      "source": "Mirror as self-reflection and accountability metaphor",
+      "status": "USER IDEA / METAPHOR",
+      "issues": [
+        17
+      ],
+      "namespace": "FRM",
+      "file": "FRAMEWORK-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "FRM-0006",
+      "title": "nafs – fisikal – infrastructure / “same path” input-output",
+      "source": "Conceptual diagram relating inner/self, physical and infrastructure layers",
+      "status": "USER IDEA / METAPHOR; owner definitions and arrows unresolved",
+      "issues": [
+        17
+      ],
+      "namespace": "FRM",
+      "file": "FRAMEWORK-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "FRM-0007",
+      "title": "faith × prayer × knowledge × effort × patience",
+      "source": "Motivational multiplicative mnemonic",
+      "status": "USER IDEA / MOTIVATIONAL FORMULA; not a scientific equation",
+      "issues": [
+        17
+      ],
+      "namespace": "FRM",
+      "file": "FRAMEWORK-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "FRM-0008",
+      "title": "GOD-PROMISE 1·6·3",
+      "source": "Author framework around divine oneness, six creation ayyām and a three-category boundary/hijab concept",
+      "status": "USER IDEA / CONCEPTUAL; not Qur'anic mathematical code or consensus tafsir; no legacy byte import under K0-006",
+      "issues": [],
+      "namespace": "FRM",
+      "file": "FRAMEWORK-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "FRM-0009",
+      "title": "POLARITY + RGBL + 9 GATES + 13 WAYS",
+      "source": "Named framework family; full definitions/links unavailable",
+      "status": "USER IDEA / UNRESOLVED",
+      "issues": [],
+      "namespace": "FRM",
+      "file": "FRAMEWORK-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "FRM-0010",
+      "title": "72 → 73 unity criteria",
+      "source": "Owner-originated number relationship / conceptual rule",
+      "status": "USER IDEA / UNRESOLVED; no theological or scientific claim",
+      "issues": [],
+      "namespace": "FRM",
+      "file": "FRAMEWORK-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "FRM-0011",
+      "title": "Q4Q / Quantum 4 Kitab",
+      "source": "Qur’an-primary comparison framework with three other scripture references; an Old-Testament-only variant is also mentioned",
+      "status": "USER IDEA / RESEARCH; textual works, editions and source-selection policy unresolved",
+      "issues": [],
+      "namespace": "FRM",
+      "file": "FRAMEWORK-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "FRM-0012",
+      "title": "Q47:35 “Secret 4” — wa / ila / la / lan",
+      "source": "Lexical/pattern hypothesis",
+      "status": "RESEARCH HYPOTHESIS / UNVERIFIED; exact Arabic edition, segmentation and reproducible extraction required",
+      "issues": [
+        20
+      ],
+      "namespace": "FRM",
+      "file": "FRAMEWORK-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "FRM-0013",
+      "title": "RGB light / Memory RED + Ruhani BLUE = Nature GREEN",
+      "source": "Visual mnemonic; not the same thing as RGBL epistemic framework",
+      "status": "USER IDEA / VISUAL METAPHOR; original prompt needs recovery",
+      "issues": [],
+      "namespace": "FRM",
+      "file": "FRAMEWORK-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "FRM-0014",
+      "title": "“RockSoul: The Codex of Balance”",
+      "source": "Memory RED + Ruhani BLUE = Nature GREEN as visual composition language",
+      "status": "USER IDEA / DRAFT VISUAL CONCEPT; not an established model",
+      "issues": [],
+      "namespace": "FRM",
+      "file": "FRAMEWORK-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "FRM-0015",
+      "title": "CRAYON Framework v1.3",
+      "status": "proposed conceptual and educational framework; not a validated scientific theory or experimentally validated cognitive taxonomy. Mathematics, science and logic are tools, not standalone proof or direct empirical measurement of Allah.",
+      "source": "CRAYON_Framework_v1.3_Bilingual_FINAL.docx, Library, 23 August 2026; Issue #173. A separate companion paper, Easy_Way_to_Understand_Allah_Bilingual_Research_Paper_v2_FINAL.docx, uses the framework as a non-scriptural conceptual starting point.",
+      "issues": [
+        173
+      ],
+      "namespace": "FRM",
+      "file": "FRAMEWORK-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "FRM-0016",
+      "title": "Dīn Allah / Universal Iman Foundation v1.8 file",
+      "status": "SECTION-DEFINED",
+      "source": "",
+      "issues": [
+        174
+      ],
+      "namespace": "FRM",
+      "file": "FRAMEWORK-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "FRM-0017",
+      "title": "MoonWitness OS v2.0 model (memory-summary only)",
+      "status": "SECTION-DEFINED",
+      "source": "",
+      "issues": [
+        177
+      ],
+      "namespace": "FRM",
+      "file": "FRAMEWORK-REGISTRY.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "SRC-LIB-0001",
+      "title": "Current-turn master prompt, Teks yang ditempel (1).txt",
+      "source": "775 lines · 23 Nov 2026",
+      "status": "SOURCE-READ; preserved verbatim at raw master prompt",
+      "issues": [],
+      "namespace": "SRC-LIB",
+      "file": "LIBRARY-SOURCE-REGISTER.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "SRC-LIB-0002",
+      "title": "Older Library Pasted text.txt",
+      "source": "439 lines · 19 Jun 2026",
+      "status": "PRIVATE-WITHHELD; sensitive first-person note; not copied or summarized into public Git",
+      "issues": [],
+      "namespace": "SRC-LIB",
+      "file": "LIBRARY-SOURCE-REGISTER.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "SRC-LIB-0003",
+      "title": "Omniscience_Method_RGBL_AI_Ready_Research_Paper.md",
+      "source": "437 lines · v1.0 · 17 Aug 2026",
+      "status": "SOURCE-READ; summarized in Framework Registry; personal experiential detail omitted",
+      "issues": [],
+      "namespace": "SRC-LIB",
+      "file": "LIBRARY-SOURCE-REGISTER.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "SRC-LIB-0004",
+      "title": "Library folder rocksoul",
+      "source": "Folder metadata",
+      "status": "METADATA-ONLY; recursive contents were not resolved by the listing call; do not infer it is empty",
+      "issues": [],
+      "namespace": "SRC-LIB",
+      "file": "LIBRARY-SOURCE-REGISTER.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "SRC-LIB-0005",
+      "title": "CRAYON_Framework_v1.3_Bilingual_FINAL.docx and paired PDF",
+      "source": "9 pages · v1.3 · 23 Aug 2026",
+      "status": "SOURCE-READ for the DOCX text; four cumulative levels, clock metaphor, 9 Gate, 13 Way, audience conditions and non-claims recorded",
+      "issues": [],
+      "namespace": "SRC-LIB",
+      "file": "LIBRARY-SOURCE-REGISTER.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "SRC-LIB-0006",
+      "title": "Easy_Way_to_Understand_Allah_Bilingual_Research_Paper_v2_FINAL.docx and paired PDF",
+      "source": "16 pages · v2",
+      "status": "SOURCE-READ for the DOCX text; non-scriptural conceptual starting framework; PDF is listed as a paired copy",
+      "issues": [],
+      "namespace": "SRC-LIB",
+      "file": "LIBRARY-SOURCE-REGISTER.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "SRC-LIB-0007",
+      "title": "Din_Allah_4_Kitab_Universal_Iman_Foundation_v1.8_FINAL_Universal_Iman_Charter.docx",
+      "source": "56 pages · 20 Aug 2026",
+      "status": "SOURCE-PARTIAL; first pages and four-book section inspected. Filename v1.8 conflicts with internal cover v1.7 and footer v1.2",
+      "issues": [],
+      "namespace": "SRC-LIB",
+      "file": "LIBRARY-SOURCE-REGISTER.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "SRC-LIB-0008",
+      "title": "Quantum_FE_Stone_Research_Paper_ID.docx and paired PDF",
+      "source": "14 pages · v1.0 · 17 Oct 2026",
+      "status": "SOURCE-PARTIAL; executive summary, method, selected technical sections inspected; preliminary scoping review/proposal only",
+      "issues": [],
+      "namespace": "SRC-LIB",
+      "file": "LIBRARY-SOURCE-REGISTER.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "SRC-LIB-0009",
+      "title": "Quantum_FE_Stone_Research_DIY.xlsx",
+      "source": "7 worksheets · 149 extracted rows · v1.0",
+      "status": "SOURCE-READ; planner, DIY recipes, BOQ, experiment log, candidate materials and selected literature rows reviewed; explicitly reports no physical experiment",
+      "issues": [],
+      "namespace": "SRC-LIB",
+      "file": "LIBRARY-SOURCE-REGISTER.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "SRC-LIB-0010",
+      "title": "Remaining Library image collection",
+      "source": "203 PNG records in the latest root inventory",
+      "status": "METADATA-ONLY / RIGHTS-REVIEW unless an individual item is separately inspected; do not treat captions as original prompt history",
+      "issues": [],
+      "namespace": "SRC-LIB",
+      "file": "LIBRARY-SOURCE-REGISTER.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "SRC-LIB-0011",
+      "title": "Library folder /MoonWitness",
+      "source": "18 nested folders · 22 files (Markdown, TypeScript and JSON)",
+      "status": "METADATA-ONLY inventory; blueprint, contracts, code, governance and tests require source-by-source review before any target adoption",
+      "issues": [],
+      "namespace": "SRC-LIB",
+      "file": "LIBRARY-SOURCE-REGISTER.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "UNR-0001",
+      "title": "Full ChatGPT history available?",
+      "source": "Owner / MISSING",
+      "status": "☐",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "DECISION-PACKETS.md",
+      "alsoReferencedIn": [
+        "UNRESOLVED-DECISIONS.md"
+      ]
+    },
+    {
+      "id": "UNR-0002",
+      "title": "Private bjo163/* resources",
+      "source": "Owner / OPEN",
+      "status": "☐",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "DECISION-PACKETS.md",
+      "alsoReferencedIn": [
+        "UNRESOLVED-DECISIONS.md"
+      ]
+    },
+    {
+      "id": "UNR-0003",
+      "title": "Source mirror & LFS restore",
+      "source": "Owner / OPEN",
+      "status": "☐",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "DECISION-PACKETS.md",
+      "alsoReferencedIn": [
+        "UNRESOLVED-DECISIONS.md"
+      ]
+    },
+    {
+      "id": "UNR-0004",
+      "title": "License / rights / provenance",
+      "source": "Owner / OPEN",
+      "status": "☐",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "DECISION-PACKETS.md",
+      "alsoReferencedIn": [
+        "UNRESOLVED-DECISIONS.md"
+      ]
+    },
+    {
+      "id": "UNR-0005",
+      "title": "Reopen K0-006?",
+      "source": "Owner / LOCKED CURRENT POLICY",
+      "status": "☐",
+      "issues": [
+        27
+      ],
+      "namespace": "UNR",
+      "file": "DECISION-PACKETS.md",
+      "alsoReferencedIn": [
+        "UNRESOLVED-DECISIONS.md"
+      ]
+    },
+    {
+      "id": "UNR-0006",
+      "title": "P1",
+      "source": "Preserve as distinct records until primary source proves a relationship",
+      "status": "Owner / UNRESOLVED",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "UNRESOLVED-DECISIONS.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "UNR-0007",
+      "title": "P1",
+      "source": "Do not merge aliases; create evidence-bearing identity decision per link",
+      "status": "Owner / UNRESOLVED",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "UNRESOLVED-DECISIONS.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "UNR-0008",
+      "title": "P1",
+      "source": "Retain all source fields; require owner confirmation for equivalence beyond source-level field",
+      "status": "Owner / REVIEW",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "UNRESOLVED-DECISIONS.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "UNR-0009",
+      "title": "P1",
+      "source": "Keep separate pending source comparison and owner decision",
+      "status": "Owner / UNRESOLVED",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "UNRESOLVED-DECISIONS.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "UNR-0010",
+      "title": "P1",
+      "source": "Keep both candidates and block renumbering until original source evidence",
+      "status": "Owner / UNRESOLVED",
+      "issues": [
+        14
+      ],
+      "namespace": "UNR",
+      "file": "UNRESOLVED-DECISIONS.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "UNR-0011",
+      "title": "P1",
+      "source": "Do not generate missing original text; recover source first",
+      "status": "Owner / NEEDS_SOURCE",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "UNRESOLVED-DECISIONS.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "UNR-0012",
+      "title": "P1",
+      "source": "Keep separate until originals and definitions are available",
+      "status": "Owner / UNRESOLVED",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "UNRESOLVED-DECISIONS.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "UNR-0013",
+      "title": "P1",
+      "source": "Source-by-source lexical and identity review; no auto-merge",
+      "status": "Owner / UNRESOLVED",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "UNRESOLVED-DECISIONS.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "UNR-0014",
+      "title": "Exact Asmaul Husna numbering profile",
+      "source": "Owner / REVIEW",
+      "status": "☐",
+      "issues": [
+        67,
+        71
+      ],
+      "namespace": "UNR",
+      "file": "DECISION-PACKETS.md",
+      "alsoReferencedIn": [
+        "UNRESOLVED-DECISIONS.md"
+      ]
+    },
+    {
+      "id": "UNR-0015",
+      "title": "P1",
+      "source": "Create source profile records before cross-reference claims",
+      "status": "Owner / UNRESOLVED",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "UNRESOLVED-DECISIONS.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "UNR-0016",
+      "title": "P1",
+      "source": "Preserve exact terms; request source/definitions in future intake; do not treat as doctrine/science",
+      "status": "Owner / NEEDS_SOURCE",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "UNRESOLVED-DECISIONS.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "UNR-0017",
+      "title": "Visual depiction boundary",
+      "source": "Owner / LOCKED IN CONTEXT",
+      "status": "☐",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "DECISION-PACKETS.md",
+      "alsoReferencedIn": [
+        "UNRESOLVED-DECISIONS.md"
+      ]
+    },
+    {
+      "id": "UNR-0018",
+      "title": "P1",
+      "source": "First define user journey, rights, moderation and operations; no new ORM yet",
+      "status": "Product owner / OPEN",
+      "issues": [
+        16
+      ],
+      "namespace": "UNR",
+      "file": "UNRESOLVED-DECISIONS.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "UNR-0019",
+      "title": "P1",
+      "source": "Keep both with source attribution; owner selects official expansion",
+      "status": "Owner / UNRESOLVED",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "UNRESOLVED-DECISIONS.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "UNR-0020",
+      "title": "P1",
+      "source": "Treat as separate projects until user defines product relation and IAM/data boundary",
+      "status": "Owner / UNRESOLVED",
+      "issues": [
+        16
+      ],
+      "namespace": "UNR",
+      "file": "UNRESOLVED-DECISIONS.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "UNR-0021",
+      "title": "P1",
+      "source": "Keep original label; no replacement before source recovery",
+      "status": "Owner / NEEDS_SOURCE",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "UNRESOLVED-DECISIONS.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "UNR-0022",
+      "title": "P2",
+      "source": "Maintain independent concept register; do not create addon/app until confirmed",
+      "status": "Owner / UNRESOLVED",
+      "issues": [
+        22
+      ],
+      "namespace": "UNR",
+      "file": "UNRESOLVED-DECISIONS.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "UNR-0023",
+      "title": "P2",
+      "source": "Keep independent; no architecture change in MW-XV until accepted product brief",
+      "status": "Owner / OPEN",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "UNRESOLVED-DECISIONS.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "UNR-0024",
+      "title": "P2",
+      "source": "Store only high-level non-sensitive metadata publicly; no infrastructure or customer details",
+      "status": "Owner / OPEN",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "UNRESOLVED-DECISIONS.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "UNR-0025",
+      "title": "P2",
+      "source": "Keep broad window; never invent first appearance dates",
+      "status": "Owner / NEEDS_SOURCE",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "UNRESOLVED-DECISIONS.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "UNR-0026",
+      "title": "P2",
+      "source": "Keep brief text and source locator; no binary or rights claim without source",
+      "status": "Owner / NEEDS_SOURCE",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "UNRESOLVED-DECISIONS.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "UNR-0027",
+      "title": "P2",
+      "source": "Record separate records; do not infer relation",
+      "status": "Owner / UNRESOLVED",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "UNRESOLVED-DECISIONS.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "UNR-0028",
+      "title": "Canonical CF-020",
+      "source": "Maintainer / RESOLVED 2026-11-25",
+      "status": "☑ #74 canonical",
+      "issues": [
+        74,
+        75
+      ],
+      "namespace": "UNR",
+      "file": "DECISION-PACKETS.md",
+      "alsoReferencedIn": [
+        "UNRESOLVED-DECISIONS.md"
+      ]
+    },
+    {
+      "id": "UNR-0029",
+      "title": "P1",
+      "source": "Preserve exact term as MEMORY-SUMMARY / NEEDS_SOURCE; do not claim AGI capability or merge with 99 domains/Asmaul Husna",
+      "status": "Owner / NEEDS_SOURCE",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "UNRESOLVED-DECISIONS.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "UNR-0030",
+      "title": "P1",
+      "source": "Keep distinct from 99 Asmaul Husna, Q4Q and canon/edition identity until original definition is found",
+      "status": "Owner / NEEDS_SOURCE",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "UNRESOLVED-DECISIONS.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "UNR-0031",
+      "title": "P1",
+      "source": "Do not equate with 99 Asmaul Husna names, V10 99 chapters or AGI-99; retrieve the original enumerated list first",
+      "status": "Owner / NEEDS_SOURCE",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "UNRESOLVED-DECISIONS.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "UNR-0032",
+      "title": "P1",
+      "source": "Keep ZILL shadow-optics and ZILL tasawuf separate; Sidrat/Shirat/‘Arsh require exact definitions, context and source before connecting",
+      "status": "Owner / UNRESOLVED",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "UNRESOLVED-DECISIONS.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "UNR-0033",
+      "title": "P1",
+      "source": "Do not merge with XII's 33 patch slots or 100 simulated challenge levels; recover original ordered list and rules",
+      "status": "Owner / NEEDS_SOURCE",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "UNRESOLVED-DECISIONS.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "UNR-0034",
+      "title": "P2",
+      "source": "Preserve the label; no feature/runtime design until original brief, purpose and relationship are recovered",
+      "status": "Owner / NEEDS_SOURCE",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "UNRESOLVED-DECISIONS.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "UNR-0035",
+      "title": "P2",
+      "source": "Keep each occurrence source-local; require owner decision before unifying into a product or character",
+      "status": "Owner / UNRESOLVED",
+      "issues": [
+        16
+      ],
+      "namespace": "UNR",
+      "file": "UNRESOLVED-DECISIONS.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "UNR-0036",
+      "title": "P1",
+      "source": "Preserve Qur’an primary and the comparative-source labels; do not treat modern book editions as identical to original revealed books or assert passage equivalence without source-level comparison",
+      "status": "Owner / NEEDS_SOURCE",
+      "issues": [
+        17
+      ],
+      "namespace": "UNR",
+      "file": "UNRESOLVED-DECISIONS.md",
+      "alsoReferencedIn": []
+    },
+    {
+      "id": "UNR-0037",
+      "title": "CRAYON v1.3 vs v2",
+      "source": "Owner / REVIEW",
+      "status": "☐",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "DECISION-PACKETS.md",
+      "alsoReferencedIn": [
+        "UNRESOLVED-DECISIONS.md"
+      ]
+    },
+    {
+      "id": "UNR-0038",
+      "title": "Dīn Allah version label",
+      "source": "Owner / REVIEW",
+      "status": "☐",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "DECISION-PACKETS.md",
+      "alsoReferencedIn": [
+        "UNRESOLVED-DECISIONS.md"
+      ]
+    },
+    {
+      "id": "UNR-0039",
+      "title": "Quantum–Fe Stone claims",
+      "source": "Owner / NEEDS-RESEARCH",
+      "status": "☐",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "DECISION-PACKETS.md",
+      "alsoReferencedIn": [
+        "UNRESOLVED-DECISIONS.md"
+      ]
+    },
+    {
+      "id": "UNR-0040",
+      "title": "ROCKSOUL GAME vs 25-prophet RPG",
+      "source": "Owner / UNRESOLVED",
+      "status": "☐",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "DECISION-PACKETS.md",
+      "alsoReferencedIn": [
+        "UNRESOLVED-DECISIONS.md"
+      ]
+    },
+    {
+      "id": "UNR-0041",
+      "title": "Mīzān first source",
+      "source": "Owner / NEEDS-SOURCE",
+      "status": "☐",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "DECISION-PACKETS.md",
+      "alsoReferencedIn": [
+        "UNRESOLVED-DECISIONS.md"
+      ]
+    },
+    {
+      "id": "UNR-0042",
+      "title": "Four story leads' primaries",
+      "source": "Owner / NEEDS-SOURCE",
+      "status": "☐",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "DECISION-PACKETS.md",
+      "alsoReferencedIn": [
+        "UNRESOLVED-DECISIONS.md"
+      ]
+    },
+    {
+      "id": "UNR-0043",
+      "title": "203 PNG provenance & rights",
+      "source": "Owner / RIGHTS-REVIEW",
+      "status": "☐",
+      "issues": [],
+      "namespace": "UNR",
+      "file": "DECISION-PACKETS.md",
+      "alsoReferencedIn": [
+        "UNRESOLVED-DECISIONS.md"
+      ]
+    },
+    {
+      "id": "UNR-0044",
+      "title": "P1",
+      "source": "No code migration under K0-006; inspect and record all 22 source items before making identity or architecture claims; Issue #182",
+      "status": "Owner / NEEDS-SOURCE",
+      "issues": [
+        182
+      ],
+      "namespace": "UNR",
+      "file": "UNRESOLVED-DECISIONS.md",
+      "alsoReferencedIn": []
+    }
+  ]
+}

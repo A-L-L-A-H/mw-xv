@@ -18,13 +18,16 @@ import { manifest as knowledgeAddon } from '@moonwitness/orm-knowledge';
 import {
   manifest as aiAddon,
   ensureAiJobHandlersRegistered,
+  hasCompanyAccess,
   isValidAiMutation,
+  recordAiAudit,
 } from '@moonwitness/orm-ai';
 import { manifest as a2aAddon } from '@moonwitness/orm-a2a';
 import { manifest as storageAddon, type AttachmentStorage } from '@moonwitness/orm-storage';
 import { whatsappManifest } from '@moonwitness/orm-whatsapp';
 import { manifest as ispAddon } from '@moonwitness/orm-isp';
 import { manifest as cloudAddon } from '@moonwitness/orm-cloud';
+import { manifest as observabilityAddon } from '@moonwitness/orm-observability';
 import { createAttachmentScanner, type AttachmentScanner } from '../whatsapp/clamav-scanner.js';
 import type { createVideoPoster } from '../whatsapp/media-thumbnail.js';
 import { checkWhatsAppGatewayVersion } from '../whatsapp/version-guard.js';
@@ -38,9 +41,11 @@ import { menuRegistry } from './action-menu-registry.js';
 import { jobsRoutes } from '../routes/jobs.routes.js';
 import { canAccess } from '../auth/policy.js';
 import { getRecordRuleDomain } from '../auth/rules.js';
-import { hasCompanyAccess, recordAiAudit } from '../ai-corporation/route-helpers.js';
+import { installCloudAgentEffect } from '../ai-corporation/cloud-agent-effect-setup.js';
 
 export interface ApiAddonRuntimeContext {
+  db: Knex;
+  observabilityIngestToken?: string;
   jwtSecret: string;
   accessTtlSeconds: number;
   refreshTtlSeconds: number;
@@ -189,6 +194,10 @@ export const API_ADDONS: readonly ApiAddonModule[] = [
     name: 'a2a',
     manifest: a2aAddon,
   },
+  {
+    name: 'observability',
+    manifest: observabilityAddon,
+  },
 ];
 
 export interface InstallApiAddonsOptions {
@@ -239,6 +248,7 @@ export async function installApiAddons(
     .map((addon) => addon.manifest)
     .filter((manifest): manifest is Addon => manifest !== undefined);
   syncAddonMenusToRegistry(manifests);
+  if (addons.some((addon) => addon.name === 'ai')) installCloudAgentEffect();
   const skipBootMigrations =
     installOptions.skipBootMigrations ?? process.env.SKIP_BOOT_MIGRATIONS === 'true';
 
@@ -289,6 +299,13 @@ export async function bootstrapApiWorker(
     await waitForSchemaReady(db, { desired });
   }
   await registerApiAddons(db, addons);
+  // Job handlers are registered in-process. installApiAddons' postInstall only runs
+  // in the API process, so the worker must register the AI handlers itself or an
+  // enqueued ai.agent_run.* job would have no handler here.
+  if (addons.some((addon) => addon.name === 'ai')) {
+    installCloudAgentEffect();
+    ensureAiJobHandlersRegistered();
+  }
 }
 
 export async function registerApiAddonRoutes(

@@ -17,18 +17,21 @@ export function SelectGroup(props: React.ComponentProps<typeof Primitive.Group>)
 export function SelectValue(props: React.ComponentProps<typeof Primitive.Value>) {
   return <Primitive.Value data-slot="select-value" {...props} />;
 }
-export function SelectTrigger({
-  className,
-  size = 'default',
-  children,
-  ...props
-}: React.ComponentProps<typeof Primitive.Trigger> & { size?: 'sm' | 'default' }) {
+export const SelectTrigger = React.forwardRef<
+  React.ElementRef<typeof Primitive.Trigger>,
+  React.ComponentProps<typeof Primitive.Trigger> & { size?: 'sm' | 'default'; fullWidth?: boolean }
+>(function SelectTrigger(
+  { className, size = 'default', fullWidth = false, children, ...props },
+  ref
+) {
   return (
     <Primitive.Trigger
+      ref={ref}
       data-slot="select-trigger"
       data-size={size}
+      data-full-width={fullWidth ? 'true' : undefined}
       className={cn(
-        'mw-ui-select-trigger flex w-fit items-center justify-between gap-2 rounded-none border-2 border-ink bg-paper-raised px-3 py-2 text-sm whitespace-nowrap shadow-ink-sm transition-[color,box-shadow] outline-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-[var(--mw-error)] data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*=size-])]:size-4 [&_svg:not([class*=text-])]:text-ink',
+        'mw-ui-select-trigger flex w-fit items-center justify-between gap-2 rounded-none border-2 border-ink bg-paper-raised px-3 py-2 text-sm whitespace-nowrap shadow-ink-sm transition-[color,box-shadow] outline-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-[var(--mw-error)] data-[size=default]:h-9 data-[size=sm]:h-8 data-[full-width=true]:w-full *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*=size-])]:size-4 [&_svg:not([class*=text-])]:text-ink',
         className
       )}
       {...props}
@@ -37,7 +40,7 @@ export function SelectTrigger({
       <Primitive.Icon asChild>{down}</Primitive.Icon>
     </Primitive.Trigger>
   );
-}
+});
 export function SelectContent({
   className,
   children,
@@ -50,7 +53,7 @@ export function SelectContent({
       <Primitive.Content
         data-slot="select-content"
         className={cn(
-          'mw-ui-select-content relative max-h-(--radix-select-content-available-height) min-w-[8rem] origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-none border-2 border-ink bg-card text-ink shadow-[4px_4px_0_0_var(--ink)] data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
+          'mw-ui-select-content relative max-h-(--radix-select-content-available-height) min-w-[8rem] origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-none border-2 border-ink bg-card text-ink shadow-[4px_4px_0_0_var(--mw-ink)] data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
           position === 'popper' &&
             'mw-ui-select-popper data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1',
           className

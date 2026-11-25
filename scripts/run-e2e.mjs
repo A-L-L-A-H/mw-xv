@@ -111,6 +111,8 @@ if (built) {
   );
 }
 
+// Mirrors E2E_SUPERADMIN_PASSWORD in @moonwitness/types/node (this script cannot
+// import workspace TS); keep the fallback literal in sync with it.
 const e2ePassword = env.MW_E2E_SUPERADMIN_PASSWORD ?? 'e2e-only-password';
 await runPreflight(
   'reset-superadmin-password',

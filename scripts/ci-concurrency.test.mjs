@@ -5,20 +5,27 @@ import test from 'node:test';
 const workflow = readFileSync('.github/workflows/ci.yml', 'utf8');
 const pagesWorkflow = readFileSync('.github/workflows/pages.yml', 'utf8');
 const releaseWorkflow = readFileSync('.github/workflows/release.yml', 'utf8');
-const productionCompose = readFileSync('docker-compose.production.yml', 'utf8');
+const productionCompose = readFileSync('deploy/compose/docker-compose.production.yml', 'utf8');
 const containerSmoke = readFileSync('scripts/smoke-containers.mjs', 'utf8');
 
-test('CI cancels stale runs only within the same workflow and ref', () => {
+test('CI cancels stale runs within the same workflow, event, branch or PR', () => {
   assert.match(
     workflow,
-    /group:\s*ci-\$\{\{\s*github\.workflow\s*\}\}-\$\{\{\s*github\.ref\s*\}\}/u
+    /group:\s*ci-\$\{\{\s*github\.workflow\s*\}\}-\$\{\{\s*github\.event_name\s*\}\}-\$\{\{\s*github\.event\.pull_request\.number\s*\|\|\s*github\.ref\s*\}\}/u
   );
   assert.match(workflow, /cancel-in-progress:\s*true/u);
 
-  const group = (workflowName, ref) => `ci-${workflowName}-${ref}`;
-  assert.notEqual(group('CI', 'refs/heads/dev'), group('CI', 'refs/heads/main'));
-  assert.notEqual(group('CI', 'refs/heads/dev'), group('CI', 'refs/pull/1/merge'));
-  assert.equal(group('CI', 'refs/heads/dev'), group('CI', 'refs/heads/dev'));
+  // Push and PR runs for the same commit are distinct concurrency groups: neither
+  // cancels the other, while newer commits on the same branch or PR cancel stale
+  // runs that would otherwise starve the runner queue.
+  const group = (workflowName, eventName, scope) => `ci-${workflowName}-${eventName}-${scope}`;
+  assert.notEqual(
+    group('CI', 'push', 'refs/heads/dev'),
+    group('CI', 'pull_request', 'refs/heads/dev')
+  );
+  assert.notEqual(group('CI', 'push', 'refs/heads/dev'), group('CI', 'pull_request', '218'));
+  assert.notEqual(group('CI', 'pull_request', '218'), group('CI', 'pull_request', '219'));
+  assert.equal(group('CI', 'push', 'refs/heads/dev'), group('CI', 'push', 'refs/heads/dev'));
 });
 
 test('CI runs quality-and-build, unit-tests, knowledge-gate, and postgres-integration on dev and main', () => {
@@ -32,9 +39,9 @@ test('CI runs quality-and-build, unit-tests, knowledge-gate, and postgres-integr
   ]) {
     assert.match(workflow, new RegExp(`^ {2}${jobName}:`, 'mu'));
   }
-  assert.match(workflow, /pnpm docs:check:built/u);
-  assert.match(workflow, /pnpm api:addon:check/u);
-  assert.match(workflow, /pnpm test:integration:built/u);
+  assert.match(workflow, /bun run docs:check:built/u);
+  assert.match(workflow, /bun run api:addon:check/u);
+  assert.match(workflow, /bun run test:integration:built/u);
   assert.match(workflow, /node scripts\/knowledge\/run-k-gate\.mjs --json/u);
 
   if (existsSync('.github/workflows/codeql.yml') && existsSync('.github/workflows/gitleaks.yml')) {
@@ -51,10 +58,19 @@ test('CI runs quality-and-build, unit-tests, knowledge-gate, and postgres-integr
 test('every CI job declares explicit least-privilege contents: read permissions', () => {
   assert.match(workflow, /^permissions:\r?\n {2}contents: read/mu);
   const jobsSection = workflow.slice(workflow.search(/^jobs:\s*$/mu));
-  const jobHeaders = jobsSection.match(/^ {2}[a-z0-9_-]+:/gmu) ?? [];
-  const jobPermissions = jobsSection.match(/^ {4}permissions:\r?\n {6}contents: read/gmu) ?? [];
-  assert.equal(jobPermissions.length, jobHeaders.length);
-  assert.doesNotMatch(workflow, /:\s*write\b/u);
+  const jobHeaders = [...jobsSection.matchAll(/^ {2}([a-z0-9_-]+):\s*$/gmu)];
+  assert.ok(jobHeaders.length > 0);
+  for (const [index, job] of jobHeaders.entries()) {
+    const nextJob = jobHeaders[index + 1];
+    const jobBody = jobsSection.slice(job.index, nextJob?.index);
+    assert.match(jobBody, /^ {4}permissions:/mu, `${job[1]} must declare permissions`);
+    assert.match(jobBody, /^ {6}contents: read\s*$/mu, `${job[1]} must allow contents reads`);
+    assert.doesNotMatch(jobBody, /^ {6}contents: write\s*$/mu, `${job[1]} must not write contents`);
+  }
+  const writePermissions = [...workflow.matchAll(/^ {6}([a-z-]+): write\s*$/gmu)].map(
+    ([, permission]) => permission
+  );
+  assert.deepEqual(writePermissions, ['security-events']);
 });
 
 test('affected CI selector keeps full validation for shared config and master roadmap changes', () => {
@@ -81,7 +97,7 @@ test('integration job supplies isolated PostgreSQL test credentials', () => {
 test('Pages portal tests build and serve the publication site only once', () => {
   assert.doesNotMatch(pagesWorkflow, /name: Build documentation portal site/u);
   assert.match(pagesWorkflow, /name: Test documentation portal\s+id: docs_portal_tests/u);
-  assert.match(pagesWorkflow, /run: pnpm --filter @moonwitness\/docs test/u);
+  assert.match(pagesWorkflow, /run: bun --filter @moonwitness\/docs test/u);
 });
 
 test('every caller of the production Compose stack supplies each variable it requires', () => {

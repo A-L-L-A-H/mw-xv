@@ -18,19 +18,19 @@ const reportDirectory = path.join(root, 'test-results', 'junit');
 const packageManager = resolvePackageManager();
 if (!packageManager) {
   process.stderr.write(
-    'Run test:unit:ci through pnpm so the package manager can be resolved safely.\n'
+    'Run test:unit:ci through bun so the package manager can be resolved safely.\n'
   );
   process.exit(2);
 }
 
 await mkdir(reportDirectory, { recursive: true });
 
-function run(args, label) {
-  const result = spawnSync(packageManager.command, [...packageManager.prefixArgs, ...args], {
+function runCommand(command, args, label, shell = false) {
+  const result = spawnSync(command, args, {
     cwd: root,
     encoding: 'utf8',
     maxBuffer: 10 * 1024 * 1024,
-    ...(packageManager.shell ? { shell: true } : {}),
+    ...(shell ? { shell: true } : {}),
   });
   const output = `${result.stdout ?? ''}${result.stderr ?? ''}`;
   process.stdout.write(output);
@@ -86,11 +86,23 @@ function run(args, label) {
   }
 }
 
+function run(args, label) {
+  runCommand(
+    packageManager.command,
+    [...packageManager.prefixArgs, ...args],
+    label,
+    packageManager.shell
+  );
+}
+
+function runNode(args, label) {
+  runCommand(process.execPath, args, label);
+}
+
 run(['run', 'test:unit-runner-policy'], 'Unit runner CI ownership policy');
 run(['run', 'test:taskos'], 'TaskOS registry safety');
-run(['build'], 'Build');
-run(['--filter', '@moonwitness/whatsapp', 'test'], 'WhatsApp worker');
-run(['exec', 'node', '--test', 'scripts/roadmap/addon-conformance.test.mjs'], 'Addon conformance');
+run(['run', 'build'], 'Build');
+runNode(['--test', 'scripts/roadmap/addon-conformance.test.mjs'], 'Addon conformance');
 for (const check of unitRunnerChecks) {
   run(check.args, check.name);
 }
@@ -99,6 +111,7 @@ const suites = [
   {
     name: 'api',
     packageName: '@moonwitness/api',
+    packageDir: 'apps/api',
     excludePostgres: true,
     maxWorkers: 2,
     coverage: ['src/auth/policy.ts', 'src/auth/rules.ts'],
@@ -173,6 +186,69 @@ const suites = [
     typecheck: true,
   },
   {
+    name: 'orm-observability',
+    packageName: '@moonwitness/orm-observability',
+    typecheck: true,
+  },
+  { name: 'orm-a2a', packageName: '@moonwitness/orm-a2a' },
+  {
+    name: 'orm-automation-core',
+    packageName: '@moonwitness/orm-automation-core',
+    typecheck: true,
+  },
+  {
+    name: 'orm-bot-orchestrator',
+    packageName: '@moonwitness/orm-bot-orchestrator',
+    typecheck: true,
+  },
+  { name: 'orm-catalog', packageName: '@moonwitness/orm-catalog' },
+  { name: 'orm-clinical', packageName: '@moonwitness/orm-clinical' },
+  { name: 'orm-cloud', packageName: '@moonwitness/orm-cloud', typecheck: true },
+  { name: 'orm-compliance', packageName: '@moonwitness/orm-compliance' },
+  {
+    name: 'orm-content-factory',
+    packageName: '@moonwitness/orm-content-factory',
+    typecheck: true,
+  },
+  { name: 'orm-crm', packageName: '@moonwitness/orm-crm' },
+  {
+    name: 'orm-ecommerce-sync',
+    packageName: '@moonwitness/orm-ecommerce-sync',
+    typecheck: true,
+  },
+  { name: 'orm-governance', packageName: '@moonwitness/orm-governance' },
+  { name: 'orm-helpdesk', packageName: '@moonwitness/orm-helpdesk' },
+  {
+    name: 'orm-income-ledger',
+    packageName: '@moonwitness/orm-income-ledger',
+    typecheck: true,
+  },
+  { name: 'orm-isp', packageName: '@moonwitness/orm-isp' },
+  {
+    name: 'orm-public-services',
+    packageName: '@moonwitness/orm-public-services',
+    typecheck: true,
+  },
+  { name: 'orm-rnd', packageName: '@moonwitness/orm-rnd', typecheck: true },
+  { name: 'orm-sales', packageName: '@moonwitness/orm-sales' },
+  { name: 'orm-sensor', packageName: '@moonwitness/orm-sensor' },
+  { name: 'orm-sharia', packageName: '@moonwitness/orm-sharia' },
+  { name: 'orm-signal', packageName: '@moonwitness/orm-signal' },
+  { name: 'orm-sim', packageName: '@moonwitness/orm-sim', typecheck: true },
+  { name: 'orm-subscription', packageName: '@moonwitness/orm-subscription' },
+  {
+    name: 'agent-observability',
+    packageName: '@moonwitness/agent-observability',
+    packageDir: 'apps/agent-observability',
+    typecheck: true,
+  },
+  {
+    name: 'whatsapp',
+    packageName: '@moonwitness/whatsapp',
+    packageDir: 'apps/whatsapp',
+    typecheck: true,
+  },
+  {
     name: 'ai-mcp',
     packageName: '@moonwitness/ai-mcp',
     typecheck: true,
@@ -203,20 +279,14 @@ const suites = [
 ];
 
 for (const suite of suites) {
+  const packageDir = suite.packageDir ?? `packages/${suite.name}`;
   if (suite.typecheck) {
     run(
-      [
-        '--filter',
-        suite.packageName,
-        'exec',
-        'tsc',
-        '-p',
-        suite.typecheckConfig ?? 'tsconfig.check.json',
-      ],
+      ['x', '--cwd', packageDir, 'tsc', '-p', suite.typecheckConfig ?? 'tsconfig.check.json'],
       `${suite.name} typecheck`
     );
   }
-  const args = ['--filter', suite.packageName, 'exec', 'vitest', 'run'];
+  const args = ['x', '--cwd', packageDir, 'vitest', 'run'];
   if (suite.maxWorkers) args.push(`--maxWorkers=${suite.maxWorkers}`);
   if (suite.excludePostgres) {
     args.push(
@@ -245,5 +315,5 @@ for (const suite of suites) {
 }
 
 run(['run', 'test:knowledge-cli:built'], 'Knowledge offline validator CLI');
-run(['exec', 'node', 'scripts/check-coverage.mjs'], 'Critical branch coverage');
+runNode(['scripts/check-coverage.mjs'], 'Critical branch coverage');
 process.stdout.write(`JUnit reports written to ${path.relative(root, reportDirectory)}\n`);

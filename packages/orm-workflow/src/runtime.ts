@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { Knex } from 'knex';
-import { isRecord } from '@moonwitness/types';
+import { isRecord, MILLISECONDS_PER_MINUTE } from '@moonwitness/types';
 import { registerJobHandler } from '@moonwitness/jobs';
 import { enqueueNotification } from '@moonwitness/orm-notification';
 import { WorkflowApproval, WorkflowDefinition, WorkflowEvent, WorkflowInstance } from './models.js';
@@ -376,7 +376,9 @@ export async function startWorkflow(db: Knex, input: StartWorkflowInput) {
       throw new WorkflowError('FORBIDDEN', 'Role cannot start this workflow');
     if (!config.resourceModels.includes(input.resourceModel))
       throw new WorkflowError('FORBIDDEN', 'Resource model is not allowed by this workflow');
-    const dueAt = new Date(now.getTime() + config.timeoutMinutes * 60_000).toISOString();
+    const dueAt = new Date(
+      now.getTime() + config.timeoutMinutes * MILLISECONDS_PER_MINUTE
+    ).toISOString();
     const created = await WorkflowInstance.query(trx).insertAndFetch({
       definition_id: definition.id,
       definition_version: definition.version,

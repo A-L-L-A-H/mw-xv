@@ -7,12 +7,16 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"crypto/subtle"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -107,14 +111,95 @@ func runCmdWithStdin(ctx context.Context, stdin []byte, name string, args ...str
 	return string(out), nil
 }
 
-// defaultHTTPHealthProbe probes url with HTTP GET and requires a 2xx response.
-func defaultHTTPHealthProbe(ctx context.Context, url string) error {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+// defaultHTTPHealthProbe probes rawURL with HTTP GET and requires a 2xx response.
+// rawURL must be a valid, absolute HTTPS URL pointing exclusively to public,
+// non-loopback, non-internal addresses, with DNS resolution pinned to the
+// validated IP at dial time and redirects disabled.
+func defaultHTTPHealthProbe(ctx context.Context, rawURL string) error {
+	return probeHTTPSURL(
+		ctx,
+		rawURL,
+		net.DefaultResolver.LookupIPAddr,
+		(&net.Dialer{Timeout: 5 * time.Second}).DialContext,
+		nil,
+	)
+}
+
+func probeHTTPSURL(
+	ctx context.Context,
+	rawURL string,
+	lookupIP func(context.Context, string) ([]net.IPAddr, error),
+	dialContext func(context.Context, string, string) (net.Conn, error),
+	rootCAs *x509.CertPool,
+) error {
+	parsed, err := url.Parse(rawURL)
+	if err != nil {
+		return fmt.Errorf("invalid URL: %w", err)
+	}
+	if parsed.Scheme != "https" {
+		return fmt.Errorf("healthcheck URL must use HTTPS scheme")
+	}
+	if parsed.User != nil {
+		return fmt.Errorf("healthcheck URL must not contain userinfo")
+	}
+	if parsed.Host == "" {
+		return fmt.Errorf("healthcheck URL must include a host")
+	}
+	hostname := parsed.Hostname()
+	if hostname == "" || isBlockedProbeHostname(hostname) {
+		return fmt.Errorf("healthcheck URL must not target internal addresses")
+	}
+
+	verifiedIP, err := resolveVerifiedPublicIP(ctx, hostname, lookupIP)
 	if err != nil {
 		return err
 	}
-	client := &http.Client{Timeout: 5 * time.Second}
-	resp, err := client.Do(req)
+
+	port := "443"
+	if rawPort := parsed.Port(); rawPort != "" {
+		portNum, convErr := strconv.Atoi(rawPort)
+		if convErr != nil || portNum < 1 || portNum > 65535 {
+			return fmt.Errorf("healthcheck URL has invalid port")
+		}
+		port = strconv.Itoa(portNum)
+	}
+
+	pinnedAddr := net.JoinHostPort(verifiedIP.String(), port)
+	transport := &http.Transport{
+		DialContext: func(dialCtx context.Context, network, _ string) (net.Conn, error) {
+			return dialContext(dialCtx, network, pinnedAddr)
+		},
+		TLSClientConfig: &tls.Config{
+			ServerName: hostname,
+			MinVersion: tls.VersionTLS12,
+			RootCAs:    rootCAs,
+		},
+		DisableKeepAlives: true,
+	}
+	defer transport.CloseIdleConnections()
+
+	client := &http.Client{
+		Timeout:   5 * time.Second,
+		Transport: transport,
+		CheckRedirect: func(*http.Request, []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+
+	targetURL := url.URL{
+		Scheme:   "https",
+		Host:     pinnedAddr,
+		Path:     parsed.Path,
+		RawPath:  parsed.RawPath,
+		RawQuery: parsed.RawQuery,
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, targetURL.String(), nil)
+	if err != nil {
+		return err
+	}
+	req.Host = parsed.Host
+
+	resp, err := client.Do(req) // lgtm[go/request-forgery]
 	if err != nil {
 		return err
 	}
@@ -124,6 +209,59 @@ func defaultHTTPHealthProbe(ctx context.Context, url string) error {
 		return fmt.Errorf("healthcheck returned status %d", resp.StatusCode)
 	}
 	return nil
+}
+
+func isBlockedProbeHostname(hostname string) bool {
+	h := strings.ToLower(strings.TrimSpace(hostname))
+	return h == "" ||
+		h == "localhost" ||
+		strings.HasSuffix(h, ".localhost") ||
+		strings.HasSuffix(h, ".local") ||
+		strings.HasSuffix(h, ".internal")
+}
+
+func resolveVerifiedPublicIP(
+	ctx context.Context,
+	hostname string,
+	lookupIP func(context.Context, string) ([]net.IPAddr, error),
+) (net.IP, error) {
+	addrs, err := lookupIP(ctx, hostname)
+	if err != nil || len(addrs) == 0 {
+		return nil, fmt.Errorf("healthcheck URL must not target internal addresses")
+	}
+	var verifiedIP net.IP
+	for _, addr := range addrs {
+		ip := addr.IP
+		if isDisallowedProbeIP(ip) {
+			return nil, fmt.Errorf("healthcheck URL must not target internal addresses")
+		}
+		if ip4 := ip.To4(); ip4 != nil {
+			ip = ip4
+		}
+		if verifiedIP == nil {
+			verifiedIP = ip
+		}
+	}
+	if verifiedIP == nil {
+		return nil, fmt.Errorf("healthcheck URL must not target internal addresses")
+	}
+	return verifiedIP, nil
+}
+
+// isDisallowedProbeIP returns true for any non-public IP address including
+// loopback, link-local, private RFC 1918 / RFC 4193, unspecified, multicast,
+// and canonical private EasyTier mesh ranges.
+func isDisallowedProbeIP(ip net.IP) bool {
+	if ip == nil {
+		return true
+	}
+	return ip.IsLoopback() ||
+		ip.IsLinkLocalUnicast() ||
+		ip.IsLinkLocalMulticast() ||
+		ip.IsPrivate() ||
+		ip.IsUnspecified() ||
+		ip.IsMulticast() ||
+		IsPrivateMeshIP(ip)
 }
 
 // handleAppLogsStream streams `docker logs --follow --timestamps --tail N <container>`

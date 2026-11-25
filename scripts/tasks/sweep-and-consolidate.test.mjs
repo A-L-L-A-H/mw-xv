@@ -21,14 +21,14 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
 
   const candidateValidation = await validateTaskRegistryData(result);
   assert.equal(candidateValidation.valid, true, candidateValidation.errors.join('\n'));
-  assert.equal(candidateValidation.taskCount, 637);
+  assert.equal(candidateValidation.taskCount, 679);
 
   // Source inventory: 239 roadmap + 24 audit + 112 WhatsApp + 7 legacy MW
   // + 14 promotion lifecycle + 128 desktop + 4 evolution + 109 Visual Universe records.
   assert.equal(
     result.tasks.length,
-    637,
-    `Expected 637 source-backed tasks, got ${result.tasks.length}`
+    679,
+    `Expected 679 source-backed tasks, got ${result.tasks.length}`
   );
   const statusCounts = Object.fromEntries(
     ['done', 'doing', 'todo', 'blocked'].map((status) => [
@@ -36,7 +36,7 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
       result.tasks.filter((task) => task.status === status).length,
     ])
   );
-  assert.deepEqual(statusCounts, { done: 468, doing: 49, todo: 96, blocked: 24 });
+  assert.deepEqual(statusCounts, { done: 469, doing: 49, todo: 119, blocked: 24 });
 
   const sourceCounts = Object.fromEntries(
     [...new Set(result.tasks.map((task) => task.sourceRef.file))]
@@ -47,14 +47,16 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
       ])
   );
   assert.deepEqual(sourceCounts, {
-    'MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-source-2026-11-23.json': 109,
+    'docs/bundles/visual-universe-pack/legacy/task-source-2026-11-23.json': 109,
     'docs/archive/todos/todo.md': 7,
+    'docs/operations/social-media-grand-plan.md': 29,
+    'docs/operations/youtube-channel.md': 13,
     'docs/roadmap/tasks.json': 239,
     'evolution/backlog.json': 4,
-    'moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md': 14,
+    'docs/bundles/ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md': 14,
     'scripts/tasks/sources/audit-tasks.mjs': 24,
-    'todo-desktop.md': 128,
-    'todo-wa.md': 112,
+    'docs/tasks/sources/todo-desktop.md': 128,
+    'docs/tasks/sources/todo-wa.md': 112,
   });
 
   // Reconcile every old root-todo record by stable code against the archived checklist.
@@ -118,6 +120,10 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
   );
   assert.ok(taskByCode.has('PR.14'), 'Must include the explicit human promotion approval gate.');
   assert.ok(taskByCode.has('W0-001'), 'Must include delegated Visual Universe work.');
+  assert.ok(taskByCode.has('YT-001'), 'Must include YouTube channel task YT-001.');
+  assert.ok(taskByCode.has('SM-001'), 'Must include Social Media task SM-001.');
+  assert.equal(taskByCode.get('SM-017').human, true, 'Launch thread tasks are human gates.');
+  assert.equal(taskByCode.get('YT-001').status, 'done', 'YT-001 channel branding is complete.');
 
   // Verify status mapping: M0.01 is complete in ROADMAP.md, so it must be 'done'
   assert.equal(taskByCode.get('M0.01').status, 'done');
@@ -134,12 +140,12 @@ test('sweepAndConsolidate aggregates all sources and produces schema-valid tasks
   assert.ok(visualTasks.every((task) => task.metadata?.id === task.code));
   assert.deepEqual(taskByCode.get('W1-001').metadata.legacyCardNotes, {
     text: 'Human approval required only for canonical style lock. Continue other independent audit work while waiting.',
-    sourceFile: 'MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/tasks/W1/W1-001.md',
+    sourceFile: 'docs/bundles/visual-universe-pack/tasks/W1/W1-001.md',
     sourceBlobSha: '74b510d170dd12c640f1ffb1e734ae5293187dcc',
   });
   assert.deepEqual(taskByCode.get('W5-012').metadata.legacyCardNotes, {
     text: 'May be skipped with documented reason; do not block the baseline world runtime.',
-    sourceFile: 'MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/tasks/W5/W5-012.md',
+    sourceFile: 'docs/bundles/visual-universe-pack/tasks/W5/W5-012.md',
     sourceBlobSha: 'fe2364614cf7ddfe550e26bbbcea2dcc8a5cf79f',
   });
   assert.equal(taskByCode.get('W1-002').metadata.legacyCardNotes, null);
@@ -209,7 +215,7 @@ test('isolated recovery candidate mode writes validated output without touching 
 
   try {
     const result = spawnSync(
-      process.execPath,
+      'node',
       ['scripts/tasks/sweep-and-consolidate.mjs', '--candidate', candidatePath],
       {
         cwd: repositoryRoot,
@@ -221,7 +227,7 @@ test('isolated recovery candidate mode writes validated output without touching 
     const candidate = JSON.parse(await readFile(candidatePath, 'utf8'));
     const validation = await validateTaskRegistryData(candidate);
     assert.equal(validation.valid, true, validation.errors.join('\n'));
-    assert.equal(candidate.tasks.length, 637);
+    assert.equal(candidate.tasks.length, 679);
     assert.equal(await readFile(canonicalPath, 'utf8'), canonicalBefore);
     assert.equal((await stat(candidatePath)).isFile(), true);
   } finally {
@@ -236,7 +242,7 @@ test('candidate output mode refuses paths inside the repository', async () => {
   const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
   const insidePath = path.join(repositoryRoot, 'docs/tasks/recovery-candidate.json');
   const result = spawnSync(
-    process.execPath,
+    'node',
     ['scripts/tasks/sweep-and-consolidate.mjs', '--candidate', insidePath],
     { cwd: repositoryRoot, encoding: 'utf8' }
   );

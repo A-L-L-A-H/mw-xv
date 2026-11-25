@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type LanguageIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function LanguageIcon({ size = 24, title, ...props }: LanguageIconProps) {
+const LanguageIcon = forwardRef<SVGSVGElement, LanguageIconProps>(function LanguageIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -28,4 +32,8 @@ export function LanguageIcon({ size = 24, title, ...props }: LanguageIconProps) 
       <path d="m16 4 4 4m-1-4-4 4" />
     </svg>
   );
-}
+});
+
+LanguageIcon.displayName = 'LanguageIcon';
+
+export { LanguageIcon };

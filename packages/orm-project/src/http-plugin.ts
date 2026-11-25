@@ -7,6 +7,7 @@ import {
   type AddonHttpRequestBase,
 } from '@moonwitness/orm';
 import { AuditLog, Company, CompanyMembership } from '@moonwitness/orm-base';
+import { isRecord } from '@moonwitness/types';
 import {
   Project,
   ProjectMilestone,
@@ -64,10 +65,6 @@ interface DynamicModelQuery {
 
 interface DynamicModelClass {
   query(trx?: unknown): DynamicModelQuery;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function parsePositiveIntId(raw: string): number | null {

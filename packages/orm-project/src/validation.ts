@@ -1,4 +1,5 @@
 import type { Transaction } from 'objection';
+import { extractRelationId, isValidIsoDate, resolveMutationField } from '@moonwitness/orm';
 import { CompanyMembership } from '@moonwitness/orm-base';
 import { OrganizationDepartment, OrganizationTeam } from '@moonwitness/orm-organization';
 import {
@@ -12,28 +13,8 @@ import {
 type MutationRecord = Readonly<Record<string, unknown>>;
 type ModelRow = Readonly<Record<string, unknown>>;
 
-function relationId(values: MutationRecord, current: ModelRow | undefined, field: string) {
-  const idKey = `${field}_id`;
-  const value = Object.hasOwn(values, idKey)
-    ? values[idKey]
-    : Object.hasOwn(values, field)
-      ? values[field]
-      : current?.[idKey];
-  return typeof value === 'number' && Number.isSafeInteger(value) && value > 0 ? value : null;
-}
-
-function fieldValue(values: MutationRecord, current: ModelRow | undefined, field: string) {
-  return Object.hasOwn(values, field) ? values[field] : current?.[field];
-}
-
-function validDate(value: unknown): value is string {
-  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/u.test(value)) return false;
-  const parsed = new Date(`${value}T00:00:00.000Z`);
-  return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
-}
-
 function optionalValidDate(value: unknown): boolean {
-  return value === undefined || value === null || value === '' || validDate(value);
+  return value === undefined || value === null || value === '' || isValidIsoDate(value);
 }
 
 async function userBelongsToCompany(
@@ -111,7 +92,7 @@ export async function isValidProjectMutation(
     return true;
   }
 
-  const companyId = relationId(values, current, 'company');
+  const companyId = extractRelationId(values, current, 'company');
   if (companyId === null) return false;
   const currentId = typeof current?.id === 'number' ? current.id : undefined;
 
@@ -126,7 +107,7 @@ export async function isValidProjectMutation(
       return false;
     }
 
-    const departmentId = relationId(values, current, 'department');
+    const departmentId = extractRelationId(values, current, 'department');
     if (departmentId !== null) {
       const department = (await OrganizationDepartment.query(trx).findById(
         departmentId
@@ -134,7 +115,7 @@ export async function isValidProjectMutation(
       if (!department || department.company_id !== companyId) return false;
     }
 
-    const teamId = relationId(values, current, 'team');
+    const teamId = extractRelationId(values, current, 'team');
     if (teamId !== null) {
       const team = (await OrganizationTeam.query(trx).findById(teamId)) as unknown as
         ModelRow | undefined;
@@ -142,18 +123,19 @@ export async function isValidProjectMutation(
       if (departmentId !== null && team.department_id !== departmentId) return false;
     }
 
-    const ownerId = relationId(values, current, 'owner');
+    const ownerId = extractRelationId(values, current, 'owner');
     if (!(await userBelongsToCompany(ownerId, companyId, trx))) return false;
 
-    const startDate = fieldValue(values, current, 'start_date');
-    const targetDate = fieldValue(values, current, 'target_date');
+    const startDate = resolveMutationField(values, current, 'start_date');
+    const targetDate = resolveMutationField(values, current, 'target_date');
     if (!optionalValidDate(startDate) || !optionalValidDate(targetDate)) return false;
-    if (validDate(startDate) && validDate(targetDate) && targetDate < startDate) return false;
+    if (isValidIsoDate(startDate) && isValidIsoDate(targetDate) && targetDate < startDate)
+      return false;
     return true;
   }
 
   if (modelName === ProjectStage.modelName) {
-    const projectId = relationId(values, current, 'project');
+    const projectId = extractRelationId(values, current, 'project');
     if (projectId !== null) {
       const project = (await Project.query(trx).findById(projectId)) as unknown as
         ModelRow | undefined;
@@ -166,7 +148,7 @@ export async function isValidProjectMutation(
     ) {
       return false;
     }
-    const code = fieldValue(values, current, 'code');
+    const code = resolveMutationField(values, current, 'code');
     if (projectId === null && typeof code === 'string') {
       const duplicateDefault = await ProjectStage.query(trx)
         .where({ company_id: companyId, code })
@@ -174,7 +156,7 @@ export async function isValidProjectMutation(
         .first();
       if (duplicateDefault && duplicateDefault.id !== currentId) return false;
     }
-    const wipLimit = fieldValue(values, current, 'wip_limit');
+    const wipLimit = resolveMutationField(values, current, 'wip_limit');
     if (
       wipLimit !== undefined &&
       wipLimit !== null &&
@@ -186,7 +168,7 @@ export async function isValidProjectMutation(
   }
 
   if (modelName === ProjectMilestone.modelName) {
-    const projectId = relationId(values, current, 'project');
+    const projectId = extractRelationId(values, current, 'project');
     if (projectId === null) return false;
     const project = (await Project.query(trx).findById(projectId)) as unknown as
       ModelRow | undefined;
@@ -198,15 +180,15 @@ export async function isValidProjectMutation(
     ) {
       return false;
     }
-    const ownerId = relationId(values, current, 'owner');
+    const ownerId = extractRelationId(values, current, 'owner');
     if (!(await userBelongsToCompany(ownerId, companyId, trx))) return false;
-    const dueDate = fieldValue(values, current, 'due_date');
+    const dueDate = resolveMutationField(values, current, 'due_date');
     return optionalValidDate(dueDate);
   }
 
   if (modelName === ProjectTask.modelName) {
-    const projectId = relationId(values, current, 'project');
-    const stageId = relationId(values, current, 'stage');
+    const projectId = extractRelationId(values, current, 'project');
+    const stageId = extractRelationId(values, current, 'stage');
     if (projectId === null || stageId === null) return false;
 
     const [projectRaw, stageRaw] = await Promise.all([
@@ -234,7 +216,7 @@ export async function isValidProjectMutation(
       return false;
     }
 
-    const milestoneId = relationId(values, current, 'milestone');
+    const milestoneId = extractRelationId(values, current, 'milestone');
     if (milestoneId !== null) {
       const milestone = (await ProjectMilestone.query(trx).findById(milestoneId)) as unknown as
         ModelRow | undefined;
@@ -243,7 +225,7 @@ export async function isValidProjectMutation(
       }
     }
 
-    const parentId = relationId(values, current, 'parent');
+    const parentId = extractRelationId(values, current, 'parent');
     if (parentId !== null) {
       const parent = (await ProjectTask.query(trx).findById(parentId)) as unknown as
         ModelRow | undefined;
@@ -253,12 +235,12 @@ export async function isValidProjectMutation(
       if (!(await taskParentChainIsAcyclic(parentId, currentId, trx))) return false;
     }
 
-    const assigneeId = relationId(values, current, 'assignee');
-    const reviewerId = relationId(values, current, 'reviewer');
+    const assigneeId = extractRelationId(values, current, 'assignee');
+    const reviewerId = extractRelationId(values, current, 'reviewer');
     if (!(await userBelongsToCompany(assigneeId, companyId, trx))) return false;
     if (!(await userBelongsToCompany(reviewerId, companyId, trx))) return false;
 
-    const estimateMinutes = fieldValue(values, current, 'estimate_minutes');
+    const estimateMinutes = resolveMutationField(values, current, 'estimate_minutes');
     if (
       estimateMinutes !== undefined &&
       estimateMinutes !== null &&
@@ -269,13 +251,13 @@ export async function isValidProjectMutation(
       return false;
     }
 
-    const dueDate = fieldValue(values, current, 'due_date');
+    const dueDate = resolveMutationField(values, current, 'due_date');
     return optionalValidDate(dueDate);
   }
 
   if (modelName === ProjectTaskDependency.modelName) {
-    const taskId = relationId(values, current, 'task');
-    const dependsOnId = relationId(values, current, 'depends_on');
+    const taskId = extractRelationId(values, current, 'task');
+    const dependsOnId = extractRelationId(values, current, 'depends_on');
     if (taskId === null || dependsOnId === null || taskId === dependsOnId) return false;
 
     const [taskRaw, blockerRaw] = await Promise.all([
@@ -287,7 +269,7 @@ export async function isValidProjectMutation(
     if (!task || !blocker) return false;
     if (task.company_id !== companyId || blocker.company_id !== companyId) return false;
 
-    const kind = fieldValue(values, current, 'kind') ?? 'blocks';
+    const kind = resolveMutationField(values, current, 'kind') ?? 'blocks';
     if (kind === 'blocks') {
       return blockingDependencyGraphIsAcyclic(taskId, dependsOnId, trx);
     }

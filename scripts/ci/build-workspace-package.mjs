@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
+import { resolvePackageManager } from '../package-manager.mjs';
 import { summarizeTypeScriptDiagnostics } from './typescript-diagnostics.mjs';
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -19,11 +20,21 @@ if (packageManifest.name !== packageName || packageManifest.scripts?.build !== '
   throw new Error(`Package ${packageName} must exist and expose the tsc build script.`);
 }
 
-const packageManager = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
+const packageManager = resolvePackageManager();
+if (!packageManager) {
+  process.stderr.write('Could not resolve package manager (bun).\n');
+  process.exit(2);
+}
+
+// Run tsc directly inside the package via bun x.
 const result = spawnSync(
-  packageManager,
-  ['--filter', packageName, 'exec', 'tsc', '--pretty', 'false'],
-  { cwd: repositoryRoot, encoding: 'utf8', shell: process.platform === 'win32' }
+  packageManager.command,
+  [...packageManager.prefixArgs, 'x', 'tsc', '--pretty', 'false'],
+  {
+    cwd: packageRoot,
+    encoding: 'utf8',
+    shell: packageManager.shell,
+  }
 );
 const output = `${result.stdout ?? ''}\n${result.stderr ?? ''}`;
 

@@ -41,7 +41,8 @@ export type PaasQuotaDenialCode =
   | 'PAAS_MAX_APPS_EXCEEDED'
   | 'PAAS_MAX_RAM_EXCEEDED'
   | 'PAAS_CUSTOM_DOMAIN_EXCEEDED'
-  | 'PAAS_DEDICATED_MESH_NOT_ALLOWED';
+  | 'PAAS_DEDICATED_MESH_NOT_ALLOWED'
+  | 'PAAS_QUOTA_RESERVATION_EXCEEDED';
 
 export interface TenantPaasQuotaInput {
   readonly tenantId: string;
@@ -277,4 +278,265 @@ export function planSubscriptionEnforcement(
       evaluatedAt,
     },
   };
+}
+
+/*
+ * CF-007 / concurrency-safe quota reservation
+ * ---------------------------------------------------------------------------
+ * A reservation is a two-phase claim against a (companyId, resource) scope:
+ *   reserve() -> "reserved" (capacity held) -> commit()/release() (terminal).
+ *
+ * Atomicity contract: all reads/writes for one scope are serialized through a
+ * per-scope promise chain, modelling the conditional
+ * `UPDATE ... SET reserved = reserved + ? WHERE reserved + ? <= capacity`
+ * executed inside the ORM transaction that owns the scope row. Two concurrent
+ * reserve() calls therefore can never both consume the same remaining
+ * capacity; the loser is denied with PAAS_QUOTA_RESERVATION_EXCEEDED.
+ *
+ * Idempotency contract: `idempotencyKey` is unique per scope, so a retried
+ * reserve() returns the original reservation without holding capacity twice.
+ * commit()/release()/settle() are idempotent state transitions; a failed
+ * provider operation releases exactly once, and a successful settlement
+ * records usage exactly once even under duplicate delivery.
+ */
+
+export interface QuotaReservationScope {
+  readonly companyId: number;
+  readonly resource: string;
+}
+
+export type QuotaReservationState = 'reserved' | 'committed' | 'released';
+
+export interface QuotaReservation {
+  readonly id: string;
+  readonly scope: QuotaReservationScope;
+  readonly idempotencyKey: string;
+  readonly units: number;
+  readonly state: QuotaReservationState;
+  readonly createdAt: string;
+}
+
+export interface QuotaReservationInput {
+  readonly scope: QuotaReservationScope;
+  readonly idempotencyKey: string;
+  readonly units: number;
+  /** Plan limit snapshot for the scope, supplied by the authoritative transaction. */
+  readonly capacity: number;
+  readonly requestedAt?: string;
+}
+
+export interface QuotaReservationOutcome {
+  readonly allowed: boolean;
+  readonly code?: PaasQuotaDenialCode;
+  readonly reason: string;
+  readonly replay: boolean;
+  readonly reservation?: QuotaReservation;
+  readonly remainingUnits: number;
+  readonly version: number;
+}
+
+export interface QuotaSettlementOutcome {
+  /** false when the settlement was a duplicate replay. */
+  readonly changed: boolean;
+  readonly reservation: QuotaReservation;
+  readonly usageRecorded: boolean;
+  readonly reason: string;
+}
+
+export interface QuotaScopeSnapshot {
+  readonly capacity: number;
+  readonly committedUnits: number;
+  readonly reservedUnits: number;
+  readonly remainingUnits: number;
+  readonly version: number;
+}
+
+interface QuotaScopeEntry {
+  capacity: number;
+  committedUnits: number;
+  reservedUnits: number;
+  version: number;
+}
+
+function quotaScopeKey(scope: QuotaReservationScope): string {
+  return `${scope.companyId}:${scope.resource.trim().toLowerCase()}`;
+}
+
+export class PaasQuotaReservationLedger {
+  private readonly scopes = new Map<string, QuotaScopeEntry>();
+  private readonly reservations = new Map<string, QuotaReservation>();
+  private readonly idempotencyIndex = new Map<string, string>();
+  private readonly scopeTails = new Map<string, Promise<unknown>>();
+  private sequence = 0;
+
+  /** Serializes check-and-set operations for one scope (the transaction authority). */
+  private async inScope<T>(key: string, operation: () => T | Promise<T>): Promise<T> {
+    const previous = this.scopeTails.get(key) ?? Promise.resolve();
+    const next = previous.then(operation, operation);
+    this.scopeTails.set(
+      key,
+      next.then(
+        () => undefined,
+        () => undefined
+      )
+    );
+    return next;
+  }
+
+  private snapshotEntry(key: string): QuotaScopeSnapshot {
+    const entry = this.scopes.get(key);
+    if (!entry)
+      return { capacity: 0, committedUnits: 0, reservedUnits: 0, remainingUnits: 0, version: 0 };
+    return {
+      capacity: entry.capacity,
+      committedUnits: entry.committedUnits,
+      reservedUnits: entry.reservedUnits,
+      remainingUnits: Math.max(0, entry.capacity - entry.committedUnits - entry.reservedUnits),
+      version: entry.version,
+    };
+  }
+
+  snapshot(scope: QuotaReservationScope): QuotaScopeSnapshot {
+    return this.snapshotEntry(quotaScopeKey(scope));
+  }
+
+  async reserve(input: QuotaReservationInput): Promise<QuotaReservationOutcome> {
+    const key = quotaScopeKey(input.scope);
+    return this.inScope(key, () => {
+      if (!Number.isSafeInteger(input.units) || input.units <= 0) {
+        return {
+          allowed: false,
+          code: 'PAAS_QUOTA_RESERVATION_EXCEEDED' as const,
+          reason: 'Reservation units must be a positive safe integer',
+          replay: false,
+          remainingUnits: this.snapshotEntry(key).remainingUnits,
+          version: this.snapshotEntry(key).version,
+        };
+      }
+
+      const replayId = this.idempotencyIndex.get(`${key}:${input.idempotencyKey}`);
+      if (replayId) {
+        const replay = this.reservations.get(replayId)!;
+        const snapshot = this.snapshotEntry(key);
+        return {
+          allowed: true,
+          reason: `Idempotent replay of reservation "${replay.id}"; no capacity consumed twice`,
+          replay: true,
+          reservation: replay,
+          remainingUnits: snapshot.remainingUnits,
+          version: snapshot.version,
+        };
+      }
+
+      if (!Number.isSafeInteger(input.capacity) || input.capacity < 0) {
+        throw new Error('Quota capacity must be a non-negative safe integer');
+      }
+
+      let entry = this.scopes.get(key);
+      if (!entry) {
+        entry = { capacity: input.capacity, committedUnits: 0, reservedUnits: 0, version: 0 };
+        this.scopes.set(key, entry);
+      } else if (entry.capacity !== input.capacity) {
+        throw new Error(
+          `Quota capacity mismatch for scope "${key}": committed ${entry.capacity}, received ${input.capacity}`
+        );
+      }
+
+      const remaining = Math.max(0, entry.capacity - entry.committedUnits - entry.reservedUnits);
+      if (input.units > remaining) {
+        return {
+          allowed: false,
+          code: 'PAAS_QUOTA_RESERVATION_EXCEEDED' as const,
+          reason: `Requested ${input.units} unit(s) exceeds remaining capacity ${remaining} for scope "${key}"`,
+          replay: false,
+          remainingUnits: remaining,
+          version: entry.version,
+        };
+      }
+
+      this.sequence += 1;
+      const reservation: QuotaReservation = {
+        id: `qr-${this.sequence}`,
+        scope: input.scope,
+        idempotencyKey: input.idempotencyKey,
+        units: input.units,
+        state: 'reserved',
+        createdAt: input.requestedAt ?? new Date().toISOString(),
+      };
+      entry.reservedUnits += input.units;
+      entry.version += 1;
+      this.reservations.set(reservation.id, reservation);
+      this.idempotencyIndex.set(`${key}:${input.idempotencyKey}`, reservation.id);
+
+      return {
+        allowed: true,
+        reason: `Reserved ${input.units} unit(s) for scope "${key}"`,
+        replay: false,
+        reservation,
+        remainingUnits: entry.capacity - entry.committedUnits - entry.reservedUnits,
+        version: entry.version,
+      };
+    });
+  }
+
+  async commit(reservationId: string): Promise<QuotaSettlementOutcome> {
+    return this.settleReservation(reservationId, 'commit');
+  }
+
+  async release(reservationId: string): Promise<QuotaSettlementOutcome> {
+    return this.settleReservation(reservationId, 'release');
+  }
+
+  async settle(
+    reservationId: string,
+    outcome: 'success' | 'failure'
+  ): Promise<QuotaSettlementOutcome> {
+    return this.settleReservation(reservationId, outcome === 'success' ? 'commit' : 'release');
+  }
+
+  private async settleReservation(
+    reservationId: string,
+    target: 'commit' | 'release'
+  ): Promise<QuotaSettlementOutcome> {
+    const reservation = this.reservations.get(reservationId);
+    if (!reservation) throw new Error(`Unknown quota reservation "${reservationId}"`);
+    const key = quotaScopeKey(reservation.scope);
+
+    return this.inScope(key, () => {
+      const current = this.reservations.get(reservationId)!;
+      const entry = this.scopes.get(key)!;
+      const settledState: QuotaReservationState = target === 'commit' ? 'committed' : 'released';
+      if (current.state === settledState) {
+        return {
+          changed: false,
+          reservation: current,
+          usageRecorded: false,
+          reason: `Duplicate ${target} settlement for "${reservationId}"; state unchanged`,
+        };
+      }
+      if (current.state === 'released' && target === 'commit') {
+        throw new Error(`Cannot commit released reservation "${reservationId}"`);
+      }
+      if (current.state === 'committed' && target === 'release') {
+        throw new Error(`Cannot release already committed reservation "${reservationId}"`);
+      }
+
+      const nextState: QuotaReservationState = target === 'commit' ? 'committed' : 'released';
+      const updated: QuotaReservation = { ...current, state: nextState };
+      entry.reservedUnits -= current.units;
+      if (target === 'commit') entry.committedUnits += current.units;
+      entry.version += 1;
+      this.reservations.set(reservationId, updated);
+
+      return {
+        changed: true,
+        reservation: updated,
+        usageRecorded: target === 'commit',
+        reason:
+          target === 'commit'
+            ? `Committed reservation "${reservationId}"; usage recorded exactly once`
+            : `Released reservation "${reservationId}"; capacity restored exactly once`,
+      };
+    });
+  }
 }

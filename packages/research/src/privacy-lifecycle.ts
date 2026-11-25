@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { sha256Hex } from '@moonwitness/types/node';
 import type { ResearchVisibility } from './relation.js';
 
 export type PrivacyUse =
@@ -209,10 +209,6 @@ export interface PrivacyRevocationPlan {
   };
 }
 
-function sha256(value: string): string {
-  return createHash('sha256').update(value, 'utf8').digest('hex');
-}
-
 /** Build a sanitized revocation plan; persistence adapters must apply every invalidation. */
 export function createPrivacyRevocationPlan(input: {
   subjectRef: string;
@@ -251,10 +247,10 @@ export function createPrivacyRevocationPlan(input: {
     format: 'moonwitness-privacy-revocation-plan/v1',
     decision: 'withdrawn',
     decidedAt: input.decidedAt,
-    subjectRefSha256: sha256(input.subjectRef),
-    consentDecisionRefSha256: sha256(input.consentDecisionRef),
+    subjectRefSha256: sha256Hex(input.subjectRef),
+    consentDecisionRefSha256: sha256Hex(input.consentDecisionRef),
     derivedArtifacts: input.derivedArtifacts.map((artifact) => ({
-      artifactRefSha256: sha256(artifact.artifactRef),
+      artifactRefSha256: sha256Hex(artifact.artifactRef),
       kind: artifact.kind,
       action: 'invalidate_or_rebuild',
     })),

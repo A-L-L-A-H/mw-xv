@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type TeamIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function TeamIcon({ size = 24, title, ...props }: TeamIconProps) {
+const TeamIcon = forwardRef<SVGSVGElement, TeamIconProps>(function TeamIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -29,4 +33,8 @@ export function TeamIcon({ size = 24, title, ...props }: TeamIconProps) {
       <path d="M7 19c.4-3.2 2-4.8 5-4.8s4.6 1.6 5 4.8m-14.5-.5c.3-2.3 1.3-3.5 3.2-3.8m13.8 3.8c-.3-2.3-1.3-3.5-3.2-3.8" />
     </svg>
   );
-}
+});
+
+TeamIcon.displayName = 'TeamIcon';
+
+export { TeamIcon };

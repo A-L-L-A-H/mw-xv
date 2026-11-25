@@ -4,7 +4,7 @@ import { ObligationContinuityLedger } from './pcw-verifier.js';
 import { AnthropicProviderAdapter } from './providers/anthropic-adapter.js';
 import { MockProvider } from './providers/mock-provider.js';
 import { OpenAiProviderAdapter } from './providers/openai-adapter.js';
-import { isLoopbackHostname } from './providers/shared.js';
+import { FREELMAPI_APPROVED_ORIGIN, isLoopbackHostname } from './providers/shared.js';
 import { ReadOnlyRepoInspector } from './repo-inspector.js';
 import type { RiskTier } from './risk-policy.js';
 import { createEnvSecretResolver } from './secrets.js';
@@ -75,12 +75,14 @@ async function safeInsertRow(
 
 export interface CloudProviderAdapterConfig {
   readonly id?: string;
-  readonly kind?: 'openai' | 'anthropic';
+  /** `freellmapi` is an OpenAI-compatible cloud-egress provider and delegates to the OpenAI transport. */
+  readonly kind?: 'openai' | 'anthropic' | 'freellmapi';
   readonly baseUrl?: string | URL;
   readonly model?: string;
   readonly secretRef?: string;
   readonly secretResolver?: SecretResolver;
   readonly allowLoopbackHttp?: boolean;
+  readonly approvedPrivateOrigins?: readonly string[];
   readonly defaultTimeoutMs?: number;
   readonly maxResponseBytes?: number;
   readonly capabilities?: Partial<ProviderCapabilities>;
@@ -90,7 +92,7 @@ export interface CloudProviderAdapterConfig {
 
 export class CloudProviderAdapter implements AiProvider {
   readonly id: string;
-  readonly kind: 'openai' | 'anthropic';
+  readonly kind: 'openai' | 'anthropic' | 'freellmapi';
   readonly capabilities: ProviderCapabilities;
   private readonly delegate: AiProvider;
   private readonly defaultModelName: string;
@@ -98,24 +100,33 @@ export class CloudProviderAdapter implements AiProvider {
   constructor(config: CloudProviderAdapterConfig = {}) {
     this.id = config.id ?? 'cloud-default';
     this.kind = config.kind ?? 'openai';
+    const isFreellm = this.kind === 'freellmapi';
     this.defaultModelName =
-      config.model ?? (this.kind === 'anthropic' ? 'claude-3-7-sonnet' : 'gpt-4.1-mini');
+      config.model ??
+      (isFreellm
+        ? 'default' // selected from real gateway discovery; never invent a model id
+        : this.kind === 'anthropic'
+          ? 'claude-3-7-sonnet'
+          : 'gpt-4.1-mini');
 
-    const secretRef = config.secretRef ?? 'MW_AI_CLOUD_KEY';
+    const secretRef = config.secretRef ?? (isFreellm ? 'MW_AI_FREELLM_KEY' : 'MW_AI_CLOUD_KEY');
+    const baseUrl = config.baseUrl ?? (isFreellm ? FREELMAPI_APPROVED_ORIGIN : undefined);
+    const approvedPrivateOrigins =
+      config.approvedPrivateOrigins ?? (isFreellm ? [FREELMAPI_APPROVED_ORIGIN] : []);
     let allowLoopbackHttp = config.allowLoopbackHttp;
-    if (allowLoopbackHttp === undefined && config.baseUrl !== undefined) {
+    if (allowLoopbackHttp === undefined && baseUrl !== undefined) {
       try {
-        const parsed = new URL(String(config.baseUrl));
+        const parsed = new URL(String(baseUrl));
         allowLoopbackHttp = isLoopbackHostname(parsed.hostname);
       } catch {
         allowLoopbackHttp = false;
       }
     }
 
-    const fallbackEnvResolver = createEnvSecretResolver({
-      ...process.env,
-      [secretRef]: process.env[secretRef] ?? 'mw-cloud-adapter-secret-token',
-    });
+    // Fail closed: no fallback credential is fabricated when the secret is
+    // absent. Callers must inject a company-scoped resolver or set the MW_AI_*
+    // environment reference; otherwise secret resolution throws.
+    const fallbackEnvResolver = createEnvSecretResolver(process.env);
     const secretResolver: SecretResolver =
       config.secretResolver ??
       ((ref: string, companyId?: number) => fallbackEnvResolver(ref, companyId ?? 1));
@@ -123,7 +134,7 @@ export class CloudProviderAdapter implements AiProvider {
     if (this.kind === 'anthropic') {
       this.delegate = new AnthropicProviderAdapter({
         id: this.id,
-        baseUrl: config.baseUrl,
+        baseUrl,
         allowLoopbackHttp,
         secretRef,
         secretResolver,
@@ -136,8 +147,9 @@ export class CloudProviderAdapter implements AiProvider {
     } else {
       this.delegate = new OpenAiProviderAdapter({
         id: this.id,
-        baseUrl: config.baseUrl,
+        baseUrl,
         allowLoopbackHttp,
+        approvedPrivateOrigins,
         secretRef,
         secretResolver,
         defaultTimeoutMs: config.defaultTimeoutMs,

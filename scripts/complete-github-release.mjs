@@ -1,34 +1,24 @@
 import { createHash } from 'node:crypto';
-import { execFile as execFileCallback } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { basename } from 'node:path';
-import { promisify } from 'node:util';
 import process from 'node:process';
 import { completeGitHubRelease } from './github-release-lifecycle.mjs';
+import { ghJson, runGh } from './lib/gh-cli.mjs';
 
-const execFile = promisify(execFileCallback);
 const tag = process.env.RELEASE_TAG;
 const repository = process.env.GH_REPOSITORY;
 const updateLatest = process.env.UPDATE_LATEST === 'true';
 const prerelease = typeof tag === 'string' && tag.includes('-');
-
-async function runGh(args) {
-  try {
-    const { stdout } = await execFile('gh', args, { maxBuffer: 10 * 1024 * 1024 });
-    return stdout;
-  } catch {
-    throw new Error('GitHub CLI release operation failed');
-  }
-}
+const ghReleaseOptions = {
+  maxBuffer: 10 * 1024 * 1024,
+  errorMessage: 'GitHub CLI release operation failed',
+};
 
 async function readRelease(releaseTag) {
   try {
-    const { stdout } = await execFile(
-      'gh',
-      ['api', `repos/${repository}/releases/tags/${releaseTag}`],
-      { maxBuffer: 10 * 1024 * 1024 }
-    );
-    const release = JSON.parse(stdout);
+    const release = await ghJson([`repos/${repository}/releases/tags/${releaseTag}`], {
+      maxBuffer: 10 * 1024 * 1024,
+    });
     if (!Number.isSafeInteger(release.id)) throw new Error('Invalid release ID');
     return {
       tagName: release.tag_name,
@@ -92,16 +82,12 @@ async function main() {
           '--latest=false',
         ];
         if (isPrerelease) args.push('--prerelease');
-        await runGh(args);
+        await runGh(args, ghReleaseOptions);
       },
       async listAssets(releaseId) {
-        const pages = JSON.parse(
-          await runGh([
-            'api',
-            '--paginate',
-            '--slurp',
-            `repos/${repository}/releases/${releaseId}/assets?per_page=100`,
-          ])
+        const pages = await ghJson(
+          [`repos/${repository}/releases/${releaseId}/assets?per_page=100`],
+          { ...ghReleaseOptions, paginate: true }
         );
         if (!Array.isArray(pages) || pages.some((page) => !Array.isArray(page))) {
           throw new Error('GitHub returned an invalid release asset list');
@@ -113,16 +99,22 @@ async function main() {
         }));
       },
       async uploadAsset(releaseTag, path) {
-        await runGh(['release', 'upload', releaseTag, path, '--repo', repository]);
+        await runGh(
+          ['release', 'upload', releaseTag, path, '--repo', repository],
+          ghReleaseOptions
+        );
       },
       async verifyAsset(releaseTag, path) {
-        await runGh(['release', 'verify-asset', releaseTag, path, '--repo', repository]);
+        await runGh(
+          ['release', 'verify-asset', releaseTag, path, '--repo', repository],
+          ghReleaseOptions
+        );
       },
       async publishRelease(releaseTag, options) {
         const args = ['release', 'edit', releaseTag, '--repo', repository, '--draft=false'];
         if (options.prerelease) args.push('--prerelease', '--latest=false');
         else args.push(options.updateLatest ? '--latest' : '--latest=false');
-        await runGh(args);
+        await runGh(args, ghReleaseOptions);
       },
     },
   });

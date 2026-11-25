@@ -9,6 +9,7 @@ import {
   type ResearchVisibility,
 } from '@moonwitness/research';
 import { WorkflowError } from '@moonwitness/orm-workflow';
+import { isRecord } from '@moonwitness/types';
 import type { StoredResearchGraphRecord } from './research-release.types.js';
 
 export const visibilityOrder: Record<ResearchVisibility, number> = {
@@ -21,10 +22,6 @@ export const visibilityOrder: Record<ResearchVisibility, number> = {
 
 function fail(code: ConstructorParameters<typeof WorkflowError>[0], message: string): never {
   throw new WorkflowError(code, message);
-}
-
-function isObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 export function getVisibility(value: unknown): ResearchVisibility {
@@ -62,7 +59,7 @@ export function reviewVisibility(
 }
 
 export function assertObject(value: unknown, message: string): Record<string, unknown> {
-  if (!isObject(value)) return fail('INVALID_EVENT_PAYLOAD', message);
+  if (!isRecord(value)) return fail('INVALID_EVENT_PAYLOAD', message);
   return value;
 }
 

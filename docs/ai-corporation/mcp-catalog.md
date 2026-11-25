@@ -74,9 +74,11 @@ For `apps/desktop` (`LocalMcpServerConfig` in [`apps/desktop/src/types.ts`](../.
 
 ### 4.1 Current architecture and enablement boundary
 
-[ADR 0009](../decisions/0009-a2a-mesh-federation.md) is accepted. The protocol foundation lives in `@moonwitness/ai-runtime`; `apps/desktop` contains the outbound `A2AMeshClient`; and `apps/control-plane` exposes a private-mesh `POST /a2a/delegate` handler. The API has a separate durable inbox receiver at `POST /a2a/delegate`, provided by the addon-first workspace package `@moonwitness/orm-a2a` and disabled by default.
+[ADR 0009](../decisions/0009-a2a-mesh-federation.md) is accepted. The protocol foundation lives in `@moonwitness/ai-runtime`; `apps/desktop` contains the outbound `A2AMeshClient`; and `apps/control-plane` exposes a private-mesh `POST /a2a/delegate` **forwarder**. The API has a separate durable inbox receiver at `POST /a2a/delegate`, provided by the addon-first workspace package `@moonwitness/orm-a2a` and disabled by default.
 
-For a durable API receipt, the sender's `targetEndpoint` must be the private-mesh origin of the **API receiver**, not the Control Plane listener. The desktop client appends `/a2a/delegate` when the target URL has no path. Configure the API receiver using `MW_A2A_API_ENABLED`, `MW_A2A_SIGNING_SECRET`, `MW_A2A_COMPANY_ID`, and `MW_A2A_API_ENDPOINT`; see [A2A Peer Federation Operations](a2a-peer-federation.md).
+The Control Plane forwarder keeps no replay/fencing authority. It validates the signed envelope, authenticates the mesh peer via a registered mTLS certificate identity, and relays the unmodified body and protocol headers to `MW_A2A_FORWARD_ORIGIN`. Target origins are restricted to configured private mesh IP literals, redirects are rejected, retries are bounded and the forwarder never claims `queued` unless the durable receiver returns a matching `202` receipt. See [A2A Peer Federation Operations](a2a-peer-federation.md) for the full configuration and TS-side contract.
+
+For a direct durable API receipt, the sender's `targetEndpoint` may be the private-mesh origin of the **API receiver** itself; the desktop client appends `/a2a/delegate` when the target URL has no path. When the sender targets the Control Plane listener instead, the forwarder relays to the configured API origin. Configure the API receiver using `MW_A2A_API_ENABLED`, `MW_A2A_SIGNING_SECRET`, `MW_A2A_COMPANY_ID`, and `MW_A2A_API_ENDPOINT`.
 
 The API receiver enforces:
 
@@ -90,14 +92,15 @@ The API receiver enforces:
 
 HTTP `202` with status `queued` means **the signed message was durably recorded in the API inbox**. It does not mean a worker executed it, an `ai.work_contract` was created, artifacts were verified, or work was accepted. The company-scoped inbox read endpoint is `GET /api/ai/a2a/inbox` and requires a company superadmin/system role.
 
-The current Control Plane endpoint still has its own in-memory replay/fencing cache and returns a local queued receipt. It is not yet a durable forwarding adapter to the API inbox. A sender targeting the Control Plane port therefore must not interpret that acknowledgement as an API-persisted inbox item.
+The current Control Plane endpoint is a thin durable forwarding adapter. A `202 queued` response from the Control Plane is only valid when it relays a matching `202` receipt from the API inbox; any forwarding failure returns a safe error (`502`/`504` or the upstream reason code) and never claims the work was queued. Replay/fencing state is not kept in the Control Plane, so a sender targeting the Control Plane port can rely on the API inbox being the sole authority.
 
 ### 4.3 Security limitations and release gate
 
 - `MW_A2A_API_ENABLED=false` is the default and must remain so until operators configure a direct private-mesh API listener, a company-specific secret, and the expected company/endpoint values.
-- The current A2A signature uses a shared HMAC secret. It is a trust boundary for peers holding that secret, not per-agent cryptographic attestation or a substitute for mTLS/key pinning.
+- The A2A envelope signature still uses a shared HMAC secret. The Control Plane now adds per-peer identity verification: a verified client certificate chain plus an SPKI pin bound to a registered `peerId`/`agentId`/`companyId`/`keyId` (CF-017/CF-018). This is fail-closed; missing, expired, untrusted or mismatched certificates and forwarded identity headers are rejected. The API receiver must consume the same canonical peer registry before multi-organization use.
 - The API receiver persists proposals only. It does not dispatch peer work, accept artifacts, or change a work contract to `accepted`. Server-side PCW verification and independent workflow approval remain authoritative.
-- Multi-organization federation, public endpoints, and live autonomous dispatch remain disabled until per-peer identity/attestation, mTLS or key pinning, cancellation propagation, and a durable dispatch/consumer path have separate acceptance evidence.
+- Multi-organization federation, public endpoints, and live autonomous dispatch remain disabled until the canonical peer registry is shared with the API receiver, certificate rotation/revocation is exercised end to end, and a durable dispatch/consumer path has separate acceptance evidence.
+- The Go forwarder mirrors the canonical TypeScript `PRIVATE_MESH_CIDRS` export (`10.0.0.0/8`, `100.64.0.0/10`, `172.16.0.0/12`, `192.168.0.0/16`, `fd00::/8`) in one declaration used by both A2A admission and the git SSRF filter. Parity is enforced by Go tests.
 
 ### 4.4 ADR and desktop-harness references
 

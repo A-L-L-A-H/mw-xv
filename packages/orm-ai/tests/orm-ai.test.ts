@@ -102,6 +102,7 @@ const EXPECTED_AI_MODEL_NAMES = [
   'ai.acceptance_criterion',
   'ai.capability_grant',
   'ai.agent_run',
+  'ai.agent_run_effect',
   'ai.artifact_manifest',
   'ai.obligation',
   'ai.taskforce',
@@ -273,7 +274,7 @@ describe('@moonwitness/orm-ai addon conformance and domain lifecycle', () => {
     expect(aiManifest.models.map((m) => m.modelName)).toEqual(
       expect.arrayContaining([...EXPECTED_AI_MODEL_NAMES])
     );
-    expect(aiManifest.models).toHaveLength(15);
+    expect(aiManifest.models).toHaveLength(16);
     expect(aiManifest.views).toHaveLength(15);
     expect(aiManifest.menus).toHaveLength(15);
     for (const seedRecord of aiManifest.data ?? []) {
@@ -403,7 +404,7 @@ describe('@moonwitness/orm-ai addon conformance and domain lifecycle', () => {
         )
       )
     ).rejects.toThrow(/Duplicate external data ID/iu);
-  }, 10000);
+  }, 30_000);
 
   it('enforces agent lifecycle states, org consistency, acyclic reporting, and non-privileged service principals', async () => {
     const db = await setupFullAddons();

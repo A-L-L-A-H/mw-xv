@@ -18,6 +18,7 @@ import {
   TableRow,
 } from '../dist/components/table.js';
 import { Toolbar } from '../dist/components/toolbar.js';
+import { PopoverTitle } from '../dist/components/popover.js';
 
 test('field connects labels and validation descriptions to the control', () => {
   const html = renderToStaticMarkup(
@@ -37,7 +38,29 @@ test('field connects labels and validation descriptions to the control', () => {
   assert.match(html, /<input[^>]*id="email"/);
   assert.match(html, /aria-describedby="email-description email-error"/);
   assert.match(html, /aria-invalid="true"/);
+  assert.match(html, /required=""/);
   assert.match(html, /role="alert"/);
+});
+
+test('field preserves child ARIA and native required while merging field state', () => {
+  const html = renderToStaticMarkup(
+    React.createElement(
+      Field,
+      { label: 'Code', htmlFor: 'code', description: 'Project code', required: false },
+      React.createElement('input', {
+        id: 'ignored',
+        required: true,
+        'aria-describedby': 'code-hint',
+        'aria-invalid': 'false',
+        'aria-required': 'false',
+      })
+    )
+  );
+
+  assert.match(html, /id="code"[^>]*required=""/);
+  assert.match(html, /aria-describedby="code-hint code-description"/);
+  assert.match(html, /aria-invalid="false"/);
+  assert.match(html, /aria-required="false"/);
 });
 
 test('pagination is controlled, bounded, and exposes disabled edge actions', () => {
@@ -69,7 +92,11 @@ test('composition parts retain landmarks and semantic table markup', () => {
       React.Fragment,
       null,
       React.createElement(PageHeader, { title: 'Users', description: 'Manage access' }),
-      React.createElement(Toolbar, { 'aria-label': 'User actions', actions: 'Export' }),
+      React.createElement(
+        Toolbar,
+        { 'aria-label': 'User actions', filters: 'Filters', actions: 'Export' },
+        React.createElement('button', { type: 'button' }, 'Refresh')
+      ),
       React.createElement(Panel, { title: 'Directory', children: 'Records' }),
       React.createElement(EmptyState, { title: 'No users', description: 'Invite a teammate' }),
       React.createElement(Skeleton, { className: 'h-4' }),
@@ -93,11 +120,21 @@ test('composition parts retain landmarks and semantic table markup', () => {
   );
   assert.match(html, /<h1[^>]*>Users<\/h1>/);
   assert.match(html, /role="toolbar"/);
+  assert.match(html, />Filters</);
+  assert.match(html, /<button[^>]*>Refresh<\/button>/);
+  assert.match(html, />Export</);
   assert.match(html, /<section[^>]*class="mw-ui-panel"/);
   assert.match(html, /<section[^>]*class="mw-ui-empty-state"/);
   assert.match(html, /aria-hidden="true"/);
   assert.match(html, /<table[^>]*class="mw-ui-table"/);
   assert.match(html, /<th[^>]*scope="col"/);
+});
+
+test('popover title renders a typed heading', () => {
+  const html = renderToStaticMarkup(
+    React.createElement(PopoverTitle, { id: 'preview-title' }, 'Preview details')
+  );
+  assert.match(html, /^<h2[^>]*data-slot="popover-title"[^>]*>Preview details<\/h2>$/);
 });
 
 test('table overflow wrapper becomes a labeled keyboard-focusable region on request', () => {
@@ -115,7 +152,25 @@ test('table overflow wrapper becomes a labeled keyboard-focusable region on requ
 
   assert.match(
     html,
-    /<div class="mw-ui-table-wrap" data-slot="table-wrap" role="region" aria-label="Installed add-ons table horizontal scroll" tabindex="0">/u
+    /<div class="mw-ui-table-wrap" data-slot="table-wrap" role="region" aria-label="Installed add-ons table horizontal scroll" aria-describedby="[^"]+" tabindex="0">/u
   );
+  const describedBy = html.match(/aria-describedby="([^"]+)"/)[1];
+  assert.match(html, new RegExp(`<span class="mw-ui-visually-hidden" id="${describedBy}">`));
+  assert.match(html, /Use Left and Right Arrow to scroll horizontally/u);
+  assert.match(html, /Home and End/u);
   assert.match(html, /<table[^>]*aria-label="Installed add-ons"/u);
+});
+
+test('table overflow semantics remain opt-in', () => {
+  const html = renderToStaticMarkup(
+    React.createElement(Table, {
+      children: React.createElement(TableBody, {
+        children: React.createElement(TableRow, {
+          children: React.createElement(TableCell, { children: 'Base' }),
+        }),
+      }),
+    })
+  );
+  assert.match(html, /^<div class="mw-ui-table-wrap" data-slot="table-wrap">/u);
+  assert.doesNotMatch(html, /role="region"|tabindex=|aria-describedby=/u);
 });

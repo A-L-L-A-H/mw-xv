@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ArchiveIcon, ArrowRightIcon, BoltIcon, DeleteIcon, SaveIcon } from '@moonwitness/ui/icons';
 import { LoadingSpinner } from '@moonwitness/ui/components/effects';
+import { useSfx } from '@moonwitness/ui/components/audio';
 import { toast } from '@moonwitness/ui/components/toast';
 import { ConflictError } from '@moonwitness/client';
 import { evalDomain, type FieldMeta, type ResolvedViews } from '@moonwitness/client';
@@ -21,6 +22,8 @@ import { One2ManyWidget } from './one2many-widget';
 import { Chatter } from './chatter';
 import { TagsWidget } from './tags-widget';
 import { WorkflowPanel } from './workflow-panel';
+import { EmptyState } from '@moonwitness/ui/components/empty-state';
+import { modelViewErrorState } from '@/lib/model-view-error-state';
 
 interface FormViewProps {
   model: string;
@@ -32,16 +35,59 @@ interface FormViewProps {
 }
 
 export function FormView(props: FormViewProps) {
-  const { data: initialRecord, isLoading } = useRecord(props.model, props.recordId);
-  if (props.recordId !== undefined && isLoading) {
+  const {
+    data: initialRecord,
+    isLoading,
+    isFetching,
+    isError,
+    isSuccess,
+    error,
+    refetch,
+  } = useRecord(props.model, props.recordId);
+  const isEdit = props.recordId !== undefined;
+
+  if (isEdit && isLoading) {
     return (
-      <div className="ink-panel p-8 space-y-6 bg-card">
+      <div role="status" aria-label="Loading record" className="ink-panel p-8 space-y-6 bg-card">
         <Skeleton className="h-10 w-full bg-ink/10" />
         <Skeleton className="h-10 w-full bg-ink/10" />
         <Skeleton className="h-10 w-2/3 bg-ink/10" />
       </div>
     );
   }
+
+  if (isEdit && isError) {
+    const errorState = modelViewErrorState(error);
+    return (
+      <EmptyState
+        role="alert"
+        className="ink-panel bg-card p-12 text-center"
+        title={errorState.title}
+        description={errorState.description}
+        action={
+          <Button variant="outline" disabled={isFetching} onClick={() => void refetch()}>
+            {isFetching ? 'Retrying…' : 'Retry'}
+          </Button>
+        }
+      />
+    );
+  }
+
+  if (isEdit && isSuccess && !initialRecord) {
+    return (
+      <EmptyState
+        className="ink-panel bg-card p-12 text-center"
+        title="Record not found"
+        description="The read succeeded, but this record is empty or unavailable in the current workspace."
+        action={
+          <Button variant="outline" onClick={props.onBack}>
+            Back to list
+          </Button>
+        }
+      />
+    );
+  }
+
   return (
     <FormEditor
       key={`${props.model}:${props.recordId ?? 'new'}:${JSON.stringify(props.initialValues ?? {})}`}
@@ -61,8 +107,10 @@ function FormEditor({
   initialRecord,
 }: FormViewProps & { initialRecord?: Record<string, unknown> }) {
   const isCreate = recordId === undefined;
+  const canWrite = isCreate ? Boolean(views.permissions.create) : Boolean(views.permissions.write);
   const mutations = useRecordMutations(model);
   const queryClient = useQueryClient();
+  const { play } = useSfx();
 
   const [formData, setFormData] = useState<Record<string, unknown>>(() => {
     if (initialRecord) return { ...initialRecord };
@@ -124,7 +172,11 @@ function FormEditor({
   const handleSave = useCallback(
     async (e?: React.FormEvent) => {
       if (e) e.preventDefault();
-      if (saveInFlight.current) return;
+      if (saveInFlight.current || !canWrite) return;
+      if (!isCreate && !initialRecord) {
+        setError('The record must be loaded successfully before it can be saved.');
+        return;
+      }
       setError(null);
 
       // Validate required fields (respecting dynamic visibility and required predicates)
@@ -139,6 +191,7 @@ function FormEditor({
           (formData[name] === undefined || formData[name] === null || formData[name] === '')
         ) {
           setError(`Field '${f.label}' is required.`);
+          play('alert');
           return;
         }
       }
@@ -168,15 +221,20 @@ function FormEditor({
         const saved = await mutations.save.mutateAsync({
           id: recordId,
           values: cleanValues,
-          writeDate: isCreate ? undefined : String(initialRecord?.write_date ?? ''),
+          writeDate:
+            !isCreate && typeof initialRecord?.write_date === 'string' && initialRecord.write_date
+              ? initialRecord.write_date
+              : undefined,
         });
         setDirty(false);
+        play('success');
         toast.success('Record saved successfully.');
 
         if (isCreate && saved?.id) {
           onSaved?.(saved.id);
         }
       } catch (err: unknown) {
+        play('alert');
         if (err instanceof ConflictError && recordId !== undefined) {
           try {
             const serverRecord = await queryClient.fetchQuery<RecordData>({
@@ -202,9 +260,11 @@ function FormEditor({
       mutations.save,
       recordId,
       isCreate,
+      canWrite,
       onSaved,
       initialRecord,
       model,
+      play,
       queryClient,
     ]
   );
@@ -225,16 +285,21 @@ function FormEditor({
   }, [handleSave, handleBackSafe]);
 
   async function handleArchive(hard = false) {
-    if (!recordId) return;
+    if (!recordId || !initialRecord || !views.permissions.unlink) return;
     try {
       await mutations.archive.mutateAsync({
         id: recordId,
         hard,
-        writeDate: String(initialRecord?.write_date ?? ''),
+        writeDate:
+          typeof initialRecord.write_date === 'string' && initialRecord.write_date
+            ? initialRecord.write_date
+            : undefined,
       });
       toast.success(hard ? 'Record deleted.' : 'Record archived.');
+      play('signal');
       onBack();
     } catch (err: unknown) {
+      play('alert');
       toast.error(err instanceof Error ? err.message : 'Failed to archive record.');
     } finally {
       setConfirmAction(null);
@@ -250,13 +315,13 @@ function FormEditor({
     setError(null);
     try {
       await mutations.action.mutateAsync({ id: recordId, method });
+      play('signal');
       toast.success('Action executed successfully.');
     } catch (err) {
+      play('alert');
       setError(err instanceof Error ? err.message : 'Action failed to execute.');
     }
   }
-
-  const canWrite = views.permissions.write || (isCreate && views.permissions.create);
 
   const formSections = useMemo(() => {
     const sections = views.form?.sections?.length

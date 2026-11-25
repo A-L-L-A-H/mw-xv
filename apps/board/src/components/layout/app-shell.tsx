@@ -1,5 +1,6 @@
 'use client';
 
+import './board-chrome.css';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -33,7 +34,7 @@ import { scopedQueryKey } from '@/lib/query-scope';
 import { canReadResearch } from '@/lib/research-access';
 import { useAuth } from '@/hooks/use-auth-context';
 import { useModels } from '@/hooks/use-model';
-import { useTheme } from '@/hooks/use-theme';
+import { useSkin } from '@/components/providers/skin-context';
 import { DashboardIcon, modelIcon, modelLabel } from '@/lib/models';
 import { readDevelopmentMode, updateDevelopmentMode } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
@@ -56,7 +57,7 @@ import {
   DropdownMenuTrigger,
 } from '@moonwitness/ui/components/dropdown-menu';
 import { Logo } from '@/components/manga/logo';
-import { DecorativeMotif, Doodle } from '@moonwitness/ui/components/effects';
+import { DecorativeMotif, Doodle, LoadingSpinner } from '@moonwitness/ui/components/effects';
 import { ShortcutsDialog } from '@/components/manga/shortcuts-dialog';
 import { ActivityBell } from './activity-bell';
 import { NotificationBell } from './notification-bell';
@@ -69,7 +70,7 @@ import { QuickCaptureModal } from '@/components/desktop/quick-capture-modal';
 import { AI_MISSION_CONTROL_ROUTES } from '@/components/ai/ai-api';
 import { UpdateBanner, type UpdateBannerStatus } from '@moonwitness/ui/components/update-banner';
 import { ModePicker } from '@moonwitness/ui/components/mode-picker';
-import { useDesktopBridge } from '@/lib/desktop-bridge';
+import { getDesktopBridge, useDesktopBridge } from '@/lib/desktop-bridge';
 import { useDesktopMode } from '@/lib/desktop-mode';
 
 function NavItem({
@@ -91,7 +92,7 @@ function NavItem({
       onClick={onNavigate}
       title={label}
       className={cn(
-        'board-nav-item group relative flex min-h-10 min-w-0 items-center gap-3 border-l-4 border-transparent px-2 py-2 font-display text-base uppercase tracking-wide text-ink/75 hover:bg-ink/10 hover:text-ink',
+        'board-nav-item group relative flex min-h-10 min-w-0 items-center gap-3 border-l-4 border-transparent px-2 py-2 font-sans text-sm font-semibold tracking-normal text-ink/75 hover:bg-ink/10 hover:text-ink',
         active &&
           'board-nav-item-active border-magenta bg-magenta text-on-magenta hover:bg-magenta hover:text-on-magenta'
       )}
@@ -187,17 +188,74 @@ function ModelNavigation({
 }
 
 function DesktopUpdateBannerMount() {
-  const { isDesktop } = useDesktopBridge();
+  const { isDesktop, bridge } = useDesktopBridge();
   const [dismissed, setDismissed] = useState(false);
   const [status, setStatus] = useState<UpdateBannerStatus>('idle');
+  const [currentVersion, setCurrentVersion] = useState('1.0.0-rc.1');
+  const [availableVersion, setAvailableVersion] = useState<string | undefined>(undefined);
+  const [releaseUrl, setReleaseUrl] = useState<string | undefined>(undefined);
+  const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined);
+
+  const handleCheck = useCallback(async () => {
+    setStatus('checking');
+    setErrorMessage(undefined);
+    const activeBridge = bridge ?? getDesktopBridge();
+    if (!activeBridge || typeof activeBridge.checkForUpdates !== 'function') {
+      setStatus('idle');
+      return;
+    }
+    try {
+      const summary = await activeBridge.checkForUpdates();
+      if (summary.currentVersion) setCurrentVersion(summary.currentVersion);
+      setAvailableVersion(summary.availableVersion);
+      setReleaseUrl(summary.releaseUrl);
+      if (summary.status === 'available') {
+        setStatus('available');
+      } else if (summary.status === 'error') {
+        setErrorMessage(summary.errorMessage ?? 'Unable to check for updates.');
+        setStatus('error');
+      } else {
+        setStatus('idle');
+      }
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Unable to check for updates.');
+      setStatus('error');
+    }
+  }, [bridge]);
+
+  const handleInstall = useCallback(async () => {
+    const activeBridge = bridge ?? getDesktopBridge();
+    if (!activeBridge || typeof activeBridge.installUpdate !== 'function') return;
+    setStatus('downloading');
+    setErrorMessage(undefined);
+    try {
+      const result = await activeBridge.installUpdate();
+      if (result.availableVersion) setAvailableVersion(result.availableVersion);
+      if (result.status === 'ready') {
+        setStatus('ready');
+      } else if (result.status === 'error') {
+        setErrorMessage(result.errorMessage ?? 'Unable to install update.');
+        setStatus('error');
+      } else {
+        setStatus('idle');
+      }
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Unable to install update.');
+      setStatus('error');
+    }
+  }, [bridge]);
 
   if (!isDesktop || dismissed) return null;
 
   return (
     <UpdateBanner
-      currentVersion="1.0.0-rc.1"
+      currentVersion={currentVersion}
+      availableVersion={availableVersion}
+      releaseUrl={releaseUrl}
+      errorMessage={errorMessage}
       status={status}
-      onCheck={() => setStatus('checking')}
+      onCheck={() => void handleCheck()}
+      onInstall={() => void handleInstall()}
       onDismiss={() => setDismissed(true)}
     />
   );
@@ -205,7 +263,8 @@ function DesktopUpdateBannerMount() {
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
-  const { theme, toggle } = useTheme();
+  const { mode: theme, setMode } = useSkin();
+  const toggle = useCallback(() => setMode(theme === 'dark' ? 'light' : 'dark'), [setMode, theme]);
   const { isDesktop } = useDesktopBridge();
   const {
     mode: desktopMode,
@@ -260,47 +319,53 @@ export function AppShell({ children }: { children: ReactNode }) {
   };
 
   // Omnisearch cross-model query
-  const { data: searchResults } = useQuery({
+  const searchQuery = useQuery({
     queryKey: scopedQueryKey(['omnisearch', paletteQuery]),
     queryFn: async () => {
       const q = paletteQuery.trim();
-      if (!q) return [];
-      const [partners, users, comps, activities] = await Promise.all([
-        client
-          .model<{ id: number; name: string }>('base.partner')
-          .searchRead({
+      if (!q) return { items: [], failedScopes: [] as string[] };
+      const [partnersResult, usersResult, compsResult, activitiesResult] = await Promise.allSettled(
+        [
+          client.model<{ id: number; name: string }>('base.partner').searchRead({
             domain: [['name', 'ilike', `%${q}%`]],
             limit: 5,
-          })
-          .catch(() => ({ records: [] })),
-        client
-          .model<{ id: number; login: string }>('base.user')
-          .searchRead({
+          }),
+          client.model<{ id: number; login: string }>('base.user').searchRead({
             domain: [['login', 'ilike', `%${q}%`]],
             limit: 5,
-          })
-          .catch(() => ({ records: [] })),
-        client
-          .model<{ id: number; name: string }>('base.company')
-          .searchRead({
+          }),
+          client.model<{ id: number; name: string }>('base.company').searchRead({
             domain: [['name', 'ilike', `%${q}%`]],
             limit: 5,
-          })
-          .catch(() => ({ records: [] })),
-        client
-          .model<{
-            id: number;
-            summary: string;
-            activity_type: string;
-            resource_model: string;
-            resource_id: number;
-          }>('base.activity')
-          .searchRead({
-            domain: [['summary', 'ilike', `%${q}%`]],
-            limit: 5,
-          })
-          .catch(() => ({ records: [] })),
-      ]);
+          }),
+          client
+            .model<{
+              id: number;
+              summary: string;
+              activity_type: string;
+              resource_model: string;
+              resource_id: number;
+            }>('base.activity')
+            .searchRead({
+              domain: [['summary', 'ilike', `%${q}%`]],
+              limit: 5,
+            }),
+        ]
+      );
+
+      const scopeEntries = [
+        ['Partners', partnersResult],
+        ['Users', usersResult],
+        ['Companies', compsResult],
+        ['Activities', activitiesResult],
+      ] as const;
+      const failedScopes: string[] = [];
+      for (const [label, result] of scopeEntries) {
+        if (result.status === 'rejected') failedScopes.push(label);
+      }
+      if (failedScopes.length === scopeEntries.length) {
+        throw new Error('Record search is currently unavailable.');
+      }
 
       const items: Array<{
         id: number;
@@ -310,28 +375,38 @@ export function AppShell({ children }: { children: ReactNode }) {
         targetUrl?: string;
       }> = [];
 
-      for (const p of partners.records) {
-        items.push({ id: p.id, model: 'base.partner', title: p.name, type: 'partner' });
+      if (partnersResult.status === 'fulfilled') {
+        for (const p of partnersResult.value.records) {
+          items.push({ id: p.id, model: 'base.partner', title: p.name, type: 'partner' });
+        }
       }
-      for (const u of users.records) {
-        items.push({ id: u.id, model: 'base.user', title: u.login, type: 'user' });
+      if (usersResult.status === 'fulfilled') {
+        for (const u of usersResult.value.records) {
+          items.push({ id: u.id, model: 'base.user', title: u.login, type: 'user' });
+        }
       }
-      for (const c of comps.records) {
-        items.push({ id: c.id, model: 'base.company', title: c.name, type: 'company' });
+      if (compsResult.status === 'fulfilled') {
+        for (const c of compsResult.value.records) {
+          items.push({ id: c.id, model: 'base.company', title: c.name, type: 'company' });
+        }
       }
-      for (const a of activities.records) {
-        items.push({
-          id: a.id,
-          model: 'base.activity',
-          title: a.summary,
-          type: 'activity',
-          targetUrl: `/board/m/${a.resource_model}/${a.resource_id}`,
-        });
+      if (activitiesResult.status === 'fulfilled') {
+        for (const a of activitiesResult.value.records) {
+          items.push({
+            id: a.id,
+            model: 'base.activity',
+            title: a.summary,
+            type: 'activity',
+            targetUrl: `/board/m/${a.resource_model}/${a.resource_id}`,
+          });
+        }
       }
-      return items;
+      return { items, failedScopes };
     },
     enabled: paletteOpen && paletteQuery.trim().length >= 2,
   });
+  const searchResults = searchQuery.data?.items;
+  const searchFailedScopes = searchQuery.data?.failedScopes ?? [];
 
   const groups = useMemo(() => {
     const byGroup = new Map<string, ModelInfo[]>();
@@ -446,7 +521,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="flex min-w-0 flex-col">
-        <header className="board-topbar sticky top-0 z-20 flex min-w-0 items-center gap-1 border-b-2 border-ink bg-paper/90 px-3 py-3 backdrop-blur sm:gap-3 sm:px-6">
+        <header className="board-topbar sticky top-0 z-20 flex min-w-0 items-center gap-1 border-b-2 border-ink bg-paper/90 px-3 py-3 backdrop-blur sm:gap-2 sm:px-4 lg:px-5 xl:gap-3 xl:px-6">
           <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
             <SheetTrigger asChild>
               <Button
@@ -463,7 +538,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               className="board-sidebar dark w-[min(18rem,85vw)] gap-0 border-r-4 border-ink bg-night p-0 text-ink"
               aria-label="Model navigation"
             >
-              <div className="flex items-center gap-3 border-b-2 border-dashed border-ink/20 px-4 py-4">
+              <div className="flex items-center gap-3 border-b-2 border-dashed border-ink/20 px-4 py-4 pr-14">
                 <Logo compact decorative surface="dark" className="size-9 shrink-0" />
                 <span className="font-display text-sm uppercase tracking-[0.16em] text-ink">
                   MoonWitness
@@ -527,7 +602,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             id="open-command-palette"
             ref={commandPaletteTriggerRef}
             onClick={() => setPaletteOpen(true)}
-            className="press flex h-10 min-w-0 flex-1 items-center gap-2 overflow-hidden rounded-none border-2 border-ink bg-paper-raised px-2 text-left text-sm text-ink-faint shadow-ink-sm sm:max-w-md sm:px-3"
+            className="press flex h-10 min-w-0 flex-1 items-center gap-2 overflow-hidden rounded-none border-2 border-ink bg-paper-raised px-2 text-left text-sm text-ink-faint shadow-ink-sm sm:max-w-md sm:px-3 md:min-w-[9rem] xl:min-w-[11rem]"
           >
             <SearchIcon className="size-4 shrink-0 text-ink" strokeWidth={2.6} />
             <span className="truncate">Search records, models, commands…</span>
@@ -536,7 +611,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </kbd>
           </Button>
 
-          <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
+          <div className="ml-auto flex min-w-0 shrink-0 items-center gap-1.5 xl:gap-2">
             {isDesktop && <WorkspaceAssistantDrawer />}
             {!isWorkspaceDesktop && <DesktopHarnessDrawer />}
             {/* Tenant / Company Switcher */}
@@ -546,13 +621,13 @@ export function AppShell({ children }: { children: ReactNode }) {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="gap-1.5 border-2 border-ink px-2 font-mono text-xs shadow-ink-sm sm:gap-2 sm:px-3"
+                    className="min-w-0 gap-1.5 border-2 border-ink px-2 font-mono text-xs shadow-ink-sm xl:gap-2 xl:px-3"
                     aria-label={`Switch company. Current scope: ${currentCompany?.name ?? 'Global Scope'}`}
                     title={`Company scope: ${currentCompany?.name ?? 'Global Scope'}`}
                   >
-                    <CompanyIcon className="size-3.5 text-yellow-readable" />
-                    <span className="hidden sm:inline">Tenant:</span>
-                    <span className="hidden max-w-[120px] truncate font-bold md:inline">
+                    <CompanyIcon className="size-3.5 shrink-0 text-yellow-readable" />
+                    <span className="hidden xl:inline">Tenant:</span>
+                    <span className="hidden max-w-[96px] truncate font-bold lg:inline xl:max-w-[120px]">
                       {currentCompany ? currentCompany.name : 'Global Scope'}
                     </span>
                   </Button>
@@ -602,7 +677,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               id="shortcuts-btn"
               variant="outline"
               size="icon"
-              className="hidden md:inline-flex"
+              className="hidden lg:inline-flex"
               onClick={() => setShortcutsOpen(true)}
               aria-label="Keyboard Shortcuts"
               title="Keyboard Shortcuts (Ctrl + /)"
@@ -628,14 +703,16 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <Button
                   id="user-menu"
                   variant="outline"
-                  className="gap-1.5 px-2 normal-case sm:gap-2 sm:px-3"
+                  className="min-w-0 gap-1.5 px-2 normal-case xl:gap-2 xl:px-3"
                   aria-label={`User menu for ${user?.login ?? 'current user'}`}
                   title={`User menu for ${user?.login ?? 'current user'}`}
                 >
-                  <span className="grid size-6 place-items-center border-2 border-ink bg-primary font-display text-xs text-primary-foreground">
+                  <span className="grid size-6 shrink-0 place-items-center border-2 border-ink bg-primary font-display text-xs text-primary-foreground">
                     {user?.login.slice(0, 1).toUpperCase()}
                   </span>
-                  <span className="hidden sm:inline">{user?.login}</span>
+                  <span className="hidden max-w-[84px] truncate lg:inline xl:max-w-[140px]">
+                    {user?.login}
+                  </span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-52">
@@ -690,6 +767,38 @@ export function AppShell({ children }: { children: ReactNode }) {
           onValueChange={setPaletteQuery}
         />
         <CommandList>
+          {searchQuery.isFetching ? (
+            <div
+              role="status"
+              className="flex items-center gap-2 border-b border-ink/20 px-3 py-2 font-mono text-xs text-ink-soft"
+            >
+              <LoadingSpinner className="size-3.5" />
+              <span>Searching records…</span>
+            </div>
+          ) : null}
+          {searchQuery.isError ? (
+            <div
+              role="alert"
+              className="flex items-center justify-between gap-3 border-b border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive"
+            >
+              <span>Record search failed. Check your connection and try again.</span>
+              <Button
+                type="button"
+                size="xs"
+                variant="outline"
+                onClick={() => void searchQuery.refetch()}
+              >
+                Retry
+              </Button>
+            </div>
+          ) : searchFailedScopes.length > 0 ? (
+            <p
+              role="status"
+              className="border-b border-ink/20 bg-paper-raised px-3 py-2 font-mono text-[11px] text-ink-soft"
+            >
+              Partial record search: {searchFailedScopes.join(', ')} unavailable.
+            </p>
+          ) : null}
           <CommandEmpty>No matching models or records found.</CommandEmpty>
 
           {/* Direct Matching Records Section */}

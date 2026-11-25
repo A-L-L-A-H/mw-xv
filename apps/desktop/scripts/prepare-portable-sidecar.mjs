@@ -132,7 +132,7 @@ function measureDirBytes(dirPath) {
 function main() {
   if (!fs.existsSync(path.join(distSrcDir, 'cli.js'))) {
     throw new Error(
-      `Missing ${path.join(distSrcDir, 'cli.js')}. Run pnpm --filter @moonwitness/desktop build first.`
+      `Missing ${path.join(distSrcDir, 'cli.js')}. Run bun --filter @moonwitness/desktop build first.`
     );
   }
 

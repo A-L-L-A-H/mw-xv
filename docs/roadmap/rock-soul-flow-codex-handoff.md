@@ -21,7 +21,7 @@ Compare the eight ROCKSOUL FLOW capabilities with the real implementation in thi
    - `docs/architecture/adr/0008-local-first-desktop-agent-harness.md`
    - `docs/architecture/desktop-local-first-harness.md`
    - `docs/decisions/0007-ai-corporation-addon-first-architecture.md`
-   - `todo-desktop.md`
+   - `docs/tasks/sources/todo-desktop.md`
    - `docs/migration/SOURCE-MIGRATION-MATRIX.md`
    - relevant AI runtime, PCW, ORM-AI and Desktop package READMEs/source/test files.
 

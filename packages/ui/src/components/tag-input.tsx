@@ -1,4 +1,4 @@
-import { useId, type KeyboardEvent } from 'react';
+import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 import { cn } from '../lib/cn.js';
 
 export type TagInputProps = {
@@ -42,21 +42,38 @@ export function TagInput({
   const errorId = error ? `${id}-error` : undefined;
   const atLimit = maxTags !== undefined && value.length >= maxTags;
   const limitId = atLimit ? `${id}-limit` : undefined;
-  const describedBy = [descriptionId, errorId, limitId].filter(Boolean).join(' ') || undefined;
   const invalidState = invalid || Boolean(error);
+  const [draft, setDraft] = useState('');
+  const draftRef = useRef<HTMLInputElement>(null);
+  const composingRef = useRef(false);
+  const instructionsId = `${id}-instructions`;
+  const describedBy = [descriptionId, errorId, limitId, instructionsId].filter(Boolean).join(' ');
+
+  useEffect(() => {
+    const draftInput = draftRef.current;
+    if (!draftInput) return;
+    draftInput.setCustomValidity(
+      error ?? (required && value.length === 0 ? 'Add at least one tag.' : '')
+    );
+  }, [error, required, value.length]);
+
+  const commitDraft = () => {
+    const rawValue = draft.trim();
+    if (!rawValue || atLimit || value.includes(rawValue)) return;
+    onValueChange([...value, rawValue]);
+    setDraft('');
+  };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (composingRef.current || event.nativeEvent.isComposing || event.keyCode === 229) return;
     if (event.key === 'Enter' || event.key === ',') {
       event.preventDefault();
-      const rawValue = event.currentTarget.value.trim();
-      if (!rawValue || atLimit || value.includes(rawValue)) return;
-      onValueChange?.([...value, rawValue]);
-      event.currentTarget.value = '';
+      commitDraft();
       return;
     }
-    if (event.key === 'Backspace' && event.currentTarget.value === '' && value.length > 0) {
+    if (event.key === 'Backspace' && draft === '' && value.length > 0) {
       event.preventDefault();
-      onValueChange?.(removeTag(value, value.length - 1));
+      onValueChange(removeTag(value, value.length - 1));
     }
   };
 
@@ -67,6 +84,15 @@ export function TagInput({
         {required ? <span aria-hidden="true"> *</span> : null}
       </label>
       <div className="mw-ui-tag-input">
+        {value.map((tag, index) => (
+          <input
+            key={`${tag}-${index}`}
+            disabled={disabled}
+            name={name}
+            type="hidden"
+            value={tag}
+          />
+        ))}
         <ul className="mw-ui-tag-list">
           {value.map((tag, index) => (
             <li className="mw-ui-tag" key={`${tag}-${index}`}>
@@ -92,13 +118,26 @@ export function TagInput({
           data-empty={value.length === 0}
           disabled={disabled}
           id={id}
-          name={name}
+          onChange={(event) => setDraft(event.target.value)}
+          onCompositionEnd={(event) => {
+            composingRef.current = false;
+            setDraft(event.currentTarget.value);
+          }}
+          onCompositionStart={() => {
+            composingRef.current = true;
+          }}
           onKeyDown={handleKeyDown}
           placeholder={atLimit ? 'Maximum tags reached' : placeholder}
           readOnly={atLimit}
+          ref={draftRef}
           type="text"
+          value={draft}
         />
       </div>
+      <span className="mw-ui-visually-hidden" id={instructionsId}>
+        Press Enter or comma to add a tag. Text that has not been added as a tag will not be
+        submitted.
+      </span>
       {atLimit ? (
         <span className="mw-ui-visually-hidden" id={limitId}>
           Maximum {maxTags} tags reached.

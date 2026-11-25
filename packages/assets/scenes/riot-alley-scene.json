@@ -1,0 +1,181 @@
+{
+  "scenes": [
+    {
+      "id": "riot-alley-hero",
+      "staticFallback": "illustrations/riot-universe/backgrounds/bg-riot-street-alley.webp",
+      "accessibilityFallback": "illustrations/riot-universe/states/state-welcome.webp",
+      "clips": ["kuro-signal-idle", "kuro-signal-wave"],
+      "layers": [
+        {
+          "id": "sky-backdrop",
+          "asset": "illustrations/riot-universe/backgrounds/bg-riot-street-alley.webp",
+          "order": 0,
+          "position": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "opacity": 1,
+          "parallax": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "id": "alley-bg",
+          "asset": "environments/riot-alley-bg.svg",
+          "order": 10,
+          "position": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "opacity": 0.96,
+          "parallax": {
+            "x": 0.1,
+            "y": 0.04
+          }
+        },
+        {
+          "id": "alley-mid",
+          "asset": "environments/riot-alley-mid.svg",
+          "order": 20,
+          "position": {
+            "x": 0.5,
+            "y": 0.52
+          },
+          "pivot": {
+            "x": 0.5,
+            "y": 0.52
+          },
+          "opacity": 1,
+          "parallax": {
+            "x": 0.28,
+            "y": 0.1
+          }
+        },
+        {
+          "id": "alley-fg",
+          "asset": "environments/riot-alley-fg.svg",
+          "order": 40,
+          "position": {
+            "x": 0.5,
+            "y": 0.88
+          },
+          "pivot": {
+            "x": 0.5,
+            "y": 0.88
+          },
+          "opacity": 1,
+          "parallax": {
+            "x": 0.52,
+            "y": 0.18
+          }
+        },
+        {
+          "id": "alley-decor",
+          "asset": "environments/riot-alley-decor.svg",
+          "order": 60,
+          "position": {
+            "x": 0.5,
+            "y": 0.24
+          },
+          "pivot": {
+            "x": 0.5,
+            "y": 0.24
+          },
+          "opacity": 0.94,
+          "parallax": {
+            "x": 0.72,
+            "y": 0.24
+          }
+        }
+      ],
+      "breakpoints": [
+        {
+          "name": "mobile",
+          "minWidth": 0,
+          "maxWidth": 767,
+          "overlay": "illustrations/riot-universe/states/state-welcome.webp",
+          "layerOverrides": [
+            {
+              "layerId": "alley-decor",
+              "opacity": 0.55,
+              "parallax": {
+                "x": 0.2,
+                "y": 0.08
+              }
+            }
+          ]
+        },
+        {
+          "name": "desktop",
+          "minWidth": 768,
+          "overlay": "illustrations/riot-universe/backgrounds/bg-riot-street-alley.webp"
+        }
+      ]
+    }
+  ],
+  "clips": [
+    {
+      "id": "kuro-signal-idle",
+      "loop": true,
+      "direction": "ping-pong",
+      "pivot": {
+        "x": 0.5,
+        "y": 0.88
+      },
+      "frames": [
+        {
+          "asset": "animation/kuro-signal-idle/kuro-signal-idle-frame-01.png",
+          "durationMs": 260
+        },
+        {
+          "asset": "animation/kuro-signal-idle/kuro-signal-idle-frame-02.png",
+          "durationMs": 260
+        },
+        {
+          "asset": "animation/kuro-signal-idle/kuro-signal-idle-frame-03.png",
+          "durationMs": 260
+        },
+        {
+          "asset": "animation/kuro-signal-idle/kuro-signal-idle-frame-04.png",
+          "durationMs": 260
+        }
+      ]
+    },
+    {
+      "id": "kuro-signal-wave",
+      "loop": true,
+      "direction": "ping-pong",
+      "pivot": {
+        "x": 0.5,
+        "y": 0.88
+      },
+      "frames": [
+        {
+          "asset": "animation/kuro-signal-wave/kuro-signal-wave-frame-01.png",
+          "durationMs": 200
+        },
+        {
+          "asset": "animation/kuro-signal-wave/kuro-signal-wave-frame-02.png",
+          "durationMs": 200
+        },
+        {
+          "asset": "animation/kuro-signal-wave/kuro-signal-wave-frame-03.png",
+          "durationMs": 200
+        },
+        {
+          "asset": "animation/kuro-signal-wave/kuro-signal-wave-frame-04.png",
+          "durationMs": 200
+        }
+      ]
+    }
+  ]
+}

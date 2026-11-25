@@ -1,5 +1,5 @@
-import { createHash } from 'node:crypto';
 import { isPrivateMeshHost } from './a2a-protocol.js';
+import { sha256Canonical } from './canonical-json.js';
 import { createRedactor } from './redaction.js';
 import type { DataClassification } from './types.js';
 
@@ -139,30 +139,6 @@ function computeLexicalTagOverlap(
     overlap: matchedTags.length / unionSize,
     matchedTags,
   };
-}
-
-function canonicalizeValue(value: unknown): unknown {
-  if (Array.isArray(value)) {
-    return value.map((entry) => canonicalizeValue(entry));
-  }
-  if (value !== null && typeof value === 'object') {
-    const record = value as Record<string, unknown>;
-    const sorted: Record<string, unknown> = {};
-    for (const key of Object.keys(record).sort()) {
-      const entry = record[key];
-      if (entry !== undefined) {
-        sorted[key] = canonicalizeValue(entry);
-      }
-    }
-    return sorted;
-  }
-  return value;
-}
-
-function sha256Canonical(payload: unknown): string {
-  return createHash('sha256')
-    .update(JSON.stringify(canonicalizeValue(payload)), 'utf8')
-    .digest('hex');
 }
 
 export function matchTaskToMeshAgentsByResonance(

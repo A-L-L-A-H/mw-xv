@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Domain, ResolvedViews } from '@moonwitness/client';
+import { useSfx } from '@moonwitness/ui/components/audio';
+import { EmptyState } from '@moonwitness/ui/components/empty-state';
+import { ErrorState } from '@moonwitness/ui/components/error-state';
+import { KanbanBoard, type KanbanColumn } from '@moonwitness/ui/components/kanban-board';
+import { Skeleton } from '@moonwitness/ui/components/skeleton';
 import { toast } from '@moonwitness/ui/components/toast';
-import { Doodle } from '@moonwitness/ui/components/effects';
-import { SelectField } from '@moonwitness/ui/components/select-field';
-import { Button } from '@moonwitness/ui/components/button';
 import { client } from '@/lib/client';
 import { scopedQueryKey } from '@/lib/query-scope';
 
@@ -21,7 +22,7 @@ interface KanbanViewProps {
 export function KanbanView({ model, views, onOpenRecord }: KanbanViewProps) {
   const metadata = views.kanban;
   const queryClient = useQueryClient();
-  const [draggingId, setDraggingId] = useState<number | null>(null);
+  const { play } = useSfx();
   const domain: Domain = [];
 
   const listQuery = useQuery({
@@ -48,9 +49,12 @@ export function KanbanView({ model, views, onOpenRecord }: KanbanViewProps) {
       client
         .model<RecordData>(model)
         .write(recordId, { [metadata!.groupBy]: stage }, { writeDate }),
-    onError: (error: unknown) =>
-      toast.error(error instanceof Error ? error.message : 'Could not move record'),
+    onError: (error: unknown) => {
+      play('alert');
+      toast.error(error instanceof Error ? error.message : 'Could not move record');
+    },
     onSuccess: () => {
+      play('signal');
       queryClient.invalidateQueries({ queryKey: ['records', model] });
       toast.success('Record moved');
     },
@@ -58,10 +62,47 @@ export function KanbanView({ model, views, onOpenRecord }: KanbanViewProps) {
 
   if (!metadata || columns(metadata.stageOrder).length === 0) {
     return (
-      <div className="ink-panel border-2 border-dashed bg-card p-12 text-center">
-        <Doodle kind="star" className="mx-auto size-10 text-magenta-readable" />
-        <h2 className="font-display text-xl uppercase">No Kanban stages</h2>
-        <p className="mt-1 text-sm text-ink-soft">This model has no Kanban metadata yet.</p>
+      <EmptyState
+        illustration="empty-collection"
+        headingLevel={2}
+        className="ink-panel border-2 border-dashed bg-card p-12 text-center"
+        title="No Kanban stages"
+        description="This model has no Kanban metadata yet."
+      />
+    );
+  }
+
+  if (listQuery.isError || countsQuery.isError) {
+    const err = listQuery.error ?? countsQuery.error;
+    return (
+      <ErrorState
+        role="alert"
+        headingLevel={2}
+        title="Could not load Kanban board"
+        description={
+          err instanceof Error
+            ? err.message
+            : 'Unable to fetch Kanban stage records. Check your connection and try again.'
+        }
+        retrying={listQuery.isFetching || countsQuery.isFetching}
+        onRetry={() => {
+          void listQuery.refetch();
+          void countsQuery.refetch();
+        }}
+      />
+    );
+  }
+
+  if (listQuery.isLoading || countsQuery.isLoading) {
+    return (
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: 4 }, (_, i) => (
+          <Skeleton
+            key={i}
+            label={i === 0 ? 'Loading Kanban stages' : undefined}
+            className="h-72 border-2 border-ink/20 bg-card"
+          />
+        ))}
       </div>
     );
   }
@@ -72,97 +113,38 @@ export function KanbanView({ model, views, onOpenRecord }: KanbanViewProps) {
     countsQuery.data?.groups.find((group) => String(group.values[metadata.groupBy]) === stage)
       ?.count ?? 0;
 
+  const boardColumns: KanbanColumn[] = stages.map((stage) => {
+    const stageRecords = records.filter(
+      (record) => String(record[metadata.groupBy] ?? '') === stage
+    );
+    return {
+      id: stage,
+      title: stage,
+      count: countFor(stage),
+      emptyState: 'Empty stage',
+      cards: stageRecords.map((record) => ({
+        id: String(record.id),
+        title: String(record.name ?? `#${record.id}`),
+        detail: `#${record.id}`,
+      })),
+    };
+  });
+
   return (
-    <div
+    <KanbanBoard
       role="group"
       aria-label={`${views.title} Kanban`}
-      className="flex items-start gap-4 overflow-x-auto pb-6"
-    >
-      {stages.map((stage) => {
-        const stageRecords = records.filter(
-          (record) => String(record[metadata.groupBy] ?? '') === stage
-        );
-        return (
-          <section
-            key={stage}
-            aria-label={stage}
-            className="w-80 shrink-0 border-2 border-ink bg-paper shadow-ink"
-            onDragOver={(event) => event.preventDefault()}
-            onDrop={(event) => {
-              event.preventDefault();
-              if (draggingId !== null)
-                move.mutate({ recordId: draggingId, stage, writeDate: undefined });
-              setDraggingId(null);
-            }}
-          >
-            <header className="flex items-center justify-between border-b-2 border-ink bg-paper-raised px-3 py-2">
-              <h2 className="font-display text-xs uppercase tracking-wider">{stage}</h2>
-              <span className="border border-ink bg-paper px-2 font-mono text-xs">
-                {countFor(stage)}
-              </span>
-            </header>
-            <div className="min-h-[350px] max-h-[600px] space-y-2 overflow-y-auto bg-paper/40 p-2">
-              {stageRecords.map((record) => (
-                <article
-                  key={record.id}
-                  tabIndex={0}
-                  draggable
-                  onDragStart={() => setDraggingId(record.id)}
-                  onKeyDown={(event) => {
-                    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
-                    const next =
-                      stages[stages.indexOf(stage) + (event.key === 'ArrowRight' ? 1 : -1)];
-                    if (next) {
-                      event.preventDefault();
-                      move.mutate({ recordId: record.id, stage: next, writeDate: undefined });
-                    }
-                  }}
-                  className="cursor-pointer border-2 border-ink bg-paper-raised p-3 shadow-ink-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-                >
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => onOpenRecord(record.id)}
-                    className="w-full text-left"
-                  >
-                    <span className="font-mono text-xs">#{record.id}</span>
-                    <span className="mt-1 block font-display text-sm uppercase">
-                      {String(record.name ?? `#${record.id}`)}
-                    </span>
-                  </Button>
-                  <label className="mt-2 block font-mono text-xs">
-                    Move stage
-                    <SelectField
-                      value={stage}
-                      onChange={(event) =>
-                        move.mutate({
-                          recordId: record.id,
-                          stage: event.target.value,
-                          writeDate: undefined,
-                        })
-                      }
-                      className="mt-1 h-8 w-full border-2 border-ink bg-paper px-2"
-                    >
-                      {stages.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </SelectField>
-                  </label>
-                </article>
-              ))}
-              {stageRecords.length === 0 && (
-                <p className="border-2 border-dashed border-ink/20 p-6 text-center font-mono text-xs">
-                  Empty stage
-                </p>
-              )}
-            </div>
-          </section>
-        );
-      })}
-    </div>
+      columns={boardColumns}
+      onCardAction={(cardId) => onOpenRecord(Number(cardId))}
+      onCardMove={(cardId, _fromColumnId, toColumnId) => {
+        const record = records.find((item) => String(item.id) === cardId);
+        move.mutate({
+          recordId: Number(cardId),
+          stage: toColumnId,
+          writeDate: typeof record?.write_date === 'string' ? record.write_date : undefined,
+        });
+      }}
+    />
   );
 }
 

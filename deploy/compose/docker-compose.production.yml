@@ -1,0 +1,321 @@
+# Canonical hardened production stack: Board, API, workers, vendored FreeLLMAPI, and agent sandbox.
+# PostgreSQL is NOT shipped here; it is expected from a managed provider.
+# deploy/compose/docker-compose.prd.yml is a compatibility entrypoint that includes this file.
+#
+#   docker compose --env-file .env.production -f deploy/compose/docker-compose.production.yml up -d --build
+#
+# Run from the repository root. Relative paths in this file are resolved from the Compose project
+# directory, which defaults to this file's directory (deploy/compose/). Build contexts therefore use
+# ../.. to reach the repository root; do NOT add --project-directory . to the commands above, or the
+# contexts would resolve one level above the repository instead.
+#
+# Anchors live inside the first service so both entrypoints render byte-identical config.
+
+services:
+  board:
+    x-app-environment: &app_environment
+      NODE_ENV: production
+      API_HOST: 0.0.0.0
+      API_PORT: 3000
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL to the managed PostgreSQL connection URL}
+      JWT_SECRET: ${JWT_SECRET:?Set a persistent random JWT_SECRET of at least 32 characters}
+      SUPERADMIN_PASSWORD: ${SUPERADMIN_PASSWORD:-}
+      METRICS_TOKEN: ${METRICS_TOKEN:-}
+      WHATSAPP_GATEWAY_URL: ${WHATSAPP_GATEWAY_URL:?Set the GoWA REST API URL}
+      WHATSAPP_GATEWAY_EXPECTED_VERSION: ${WHATSAPP_GATEWAY_EXPECTED_VERSION:-v9.6.0}
+      WHATSAPP_MEDIA_SCAN: ${WHATSAPP_MEDIA_SCAN:-disabled}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_TO_FILE: 'false'
+      LOG_PRETTY: 'false'
+      PRINT_ROUTES: 'false'
+      WORKER_HEALTH_HOST: ${WORKER_HEALTH_HOST:-127.0.0.1}
+      JOBS_WORKER_HEALTH_PORT: ${JOBS_WORKER_HEALTH_PORT:-3011}
+      JOBS_SCHEDULER_HEALTH_PORT: ${JOBS_SCHEDULER_HEALTH_PORT:-3012}
+      OUTBOX_WORKER_HEALTH_PORT: ${OUTBOX_WORKER_HEALTH_PORT:-3013}
+      ATTACHMENT_STORAGE_DIR: ${ATTACHMENT_STORAGE_DIR:-/var/lib/moonwitness/attachments}
+      ATTACHMENT_STORAGE_DRIVER: ${ATTACHMENT_STORAGE_DRIVER:-s3}
+      ATTACHMENT_S3_ENDPOINT: ${ATTACHMENT_S3_ENDPOINT:-https://s3.moonwitness.biz.id}
+      ATTACHMENT_S3_REGION: ${ATTACHMENT_S3_REGION:-garage}
+      ATTACHMENT_S3_BUCKET: ${ATTACHMENT_S3_BUCKET:-moonwitness-attachments}
+      ATTACHMENT_S3_ACCESS_KEY: ${ATTACHMENT_S3_ACCESS_KEY:?Set the Garage bucket key ID (GK...)}
+      ATTACHMENT_S3_SECRET_KEY: ${ATTACHMENT_S3_SECRET_KEY:?Set the Garage bucket secret}
+      ATTACHMENT_S3_FORCE_PATH_STYLE: ${ATTACHMENT_S3_FORCE_PATH_STYLE:-true}
+      JOB_HANDLERS_MODULE: ${JOB_HANDLERS_MODULE:-}
+      OUTBOX_HANDLERS_MODULE: ${OUTBOX_HANDLERS_MODULE:-}
+    x-ai-environment: &ai_environment
+      AI_FREELLMAPI_ORIGIN: ${AI_FREELLMAPI_ORIGIN:-http://freellmapi:3001}
+      AI_FREELLMAPI_ALLOWED_CIDRS: ${AI_FREELLMAPI_ALLOWED_CIDRS:-}
+      FREELLMAPI_DEFAULT_MODEL: ${FREELLMAPI_DEFAULT_MODEL:-}
+      MW_AI_FREELLM_KEY: ${MW_AI_FREELLM_KEY:?Set the FreeLLMAPI unified inference key}
+    x-whatsapp-gateway-credentials: &whatsapp_gateway_credentials
+      WHATSAPP_GATEWAY_USERNAME: ${WHATSAPP_GATEWAY_USERNAME:?Set the GoWA Basic Auth username}
+      WHATSAPP_GATEWAY_PASSWORD: ${WHATSAPP_GATEWAY_PASSWORD:?Set the GoWA Basic Auth password}
+    x-whatsapp-webhook-environment: &whatsapp_webhook_environment
+      WHATSAPP_WEBHOOK_URL: ${WHATSAPP_WEBHOOK_URL:-}
+      WHATSAPP_WEBHOOK_SECRET: ${WHATSAPP_WEBHOOK_SECRET:-}
+    build:
+      context: ../..
+      target: board-runtime
+      args:
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:5173}
+    image: moonwitness-board:production
+    restart: unless-stopped
+    init: true
+    read_only: true
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:5173}
+    tmpfs:
+      - /tmp:size=32m,noexec,nosuid
+      - /app/apps/board/.next/cache:size=64m,noexec,nosuid,uid=1000,gid=1000,mode=0755
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+    ports:
+      - '127.0.0.1:${BOARD_PORT:-4174}:8080'
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:8080/').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+
+  api:
+    build: ../..
+    image: moonwitness-api:production
+    restart: unless-stopped
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,noexec,nosuid
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+    stop_grace_period: 45s
+    ports:
+      - '127.0.0.1:${API_PORT:-3000}:3000'
+    environment:
+      <<:
+        [
+          *app_environment,
+          *ai_environment,
+          *whatsapp_gateway_credentials,
+          *whatsapp_webhook_environment,
+        ]
+      OBSERVABILITY_INGEST_TOKEN: ${OBSERVABILITY_INGEST_TOKEN:-}
+    volumes:
+      - type: volume
+        source: whatsapp_attachments
+        target: /var/lib/moonwitness/attachments
+        read_only: true
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/readyz').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+
+  jobs-worker:
+    image: moonwitness-api:production
+    command: ['node', 'dist/commands/jobs-worker.js']
+    restart: unless-stopped
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,noexec,nosuid
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+    stop_grace_period: 2m
+    depends_on:
+      freellmapi:
+        condition: service_healthy
+      agent-sandbox:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:' + (process.env.JOBS_WORKER_HEALTH_PORT || 3011) + '/readyz').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+    environment:
+      <<: [*app_environment, *ai_environment]
+      AGENT_SANDBOX_URL: ${AGENT_SANDBOX_URL:-http://agent-sandbox:3020}
+      AGENT_SANDBOX_TOKEN: ${AGENT_SANDBOX_TOKEN:?Set a private jobs-worker to agent-sandbox token}
+    volumes:
+      - whatsapp_attachments:/var/lib/moonwitness/attachments
+
+  jobs-scheduler:
+    image: moonwitness-api:production
+    command: ['node', 'dist/commands/jobs-scheduler.js']
+    restart: unless-stopped
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,noexec,nosuid
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+    stop_grace_period: 30s
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:' + (process.env.JOBS_SCHEDULER_HEALTH_PORT || 3012) + '/readyz').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+    environment: *app_environment
+    volumes:
+      - whatsapp_attachments:/var/lib/moonwitness/attachments
+
+  outbox-worker:
+    image: moonwitness-api:production
+    command: ['node', 'dist/commands/outbox-worker.js']
+    restart: unless-stopped
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,noexec,nosuid
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+    stop_grace_period: 2m
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:' + (process.env.OUTBOX_WORKER_HEALTH_PORT || 3013) + '/readyz').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+    environment:
+      <<: [*app_environment, *whatsapp_gateway_credentials]
+
+  freellmapi:
+    build:
+      context: ../../vendor/freellmapi
+      args:
+        FREELLMAPI_COMMIT_SHA: cd65d6485788dfc7828f06c1147cdea207b28322
+    image: moonwitness-freellmapi:production
+    restart: unless-stopped
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3001
+      ALLOWED_HOSTS: localhost,127.0.0.1,freellmapi
+      TRUST_PROXY: 'false'
+      CSP_UPGRADE_INSECURE_REQUESTS: 'false'
+      FREEAPI_BLOCK_PRIVATE_PROVIDER_URLS: 'true'
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?Set the existing FreeLLMAPI encryption key}
+    volumes:
+      - freellmapi_data:/app/server/data
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3001/api/ping').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+
+  agent-sandbox:
+    build: ../../apps/agent-sandbox
+    image: moonwitness-agent-sandbox:production
+    command: ['node', 'dist/server.js']
+    restart: unless-stopped
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,noexec,nosuid
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      NODE_ENV: production
+      AGENT_SANDBOX_HOST: 0.0.0.0
+      AGENT_SANDBOX_PORT: 3020
+      AGENT_SANDBOX_TOKEN: ${AGENT_SANDBOX_TOKEN:?Set a private jobs-worker to agent-sandbox token}
+      AGENT_SANDBOX_DATA_DIR: /var/lib/agent-sandbox
+    # No Docker socket by default: the sandbox runs with a fail-closed executor.
+    # To enable isolated container execution, explicitly add the override file
+    # deploy/compose/docker-compose.agent-sandbox-socket.yml with a dedicated rootless daemon.
+    volumes:
+      - agent_sandbox_data:/var/lib/agent-sandbox
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3020/healthz').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+
+volumes:
+  whatsapp_attachments:
+  freellmapi_data:
+    name: moonwitness-freellmapi-data
+  agent_sandbox_data:
+    name: moonwitness-agent-sandbox-data

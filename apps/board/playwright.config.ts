@@ -33,7 +33,7 @@ if (!Number.isInteger(maxRetries) || maxRetries < 0 || maxRetries > 1) {
 }
 const flakeReporter = resolve(repositoryRoot, 'scripts/playwright-flake-reporter.mjs');
 const apiCommand = buildApiBeforeE2E
-  ? `pnpm exec node "${buildScript}" && pnpm --filter @moonwitness/api dev`
+  ? `bun exec node "${buildScript}" && bun --filter @moonwitness/api dev`
   : 'node apps/api/dist/server.js';
 
 export default defineConfig({
@@ -98,7 +98,7 @@ export default defineConfig({
       },
     },
     {
-      command: `pnpm --filter @moonwitness/board exec next dev --hostname 127.0.0.1 --port ${boardPort}`,
+      command: `bunx --cwd apps/board next dev --hostname 127.0.0.1 --port ${boardPort}`,
       cwd: repositoryRoot,
       url: `${baseURL}/login`,
       timeout: 120_000,
@@ -112,7 +112,7 @@ export default defineConfig({
       },
     },
     {
-      command: 'pnpm jobs:outbox',
+      command: 'bun jobs:outbox',
       cwd: repositoryRoot,
       url: `http://127.0.0.1:${outboxPort}/readyz`,
       timeout: 120_000,

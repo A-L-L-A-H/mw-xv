@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type BookOpenIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function BookOpenIcon({ size = 24, title, ...props }: BookOpenIconProps) {
+const BookOpenIcon = forwardRef<SVGSVGElement, BookOpenIconProps>(function BookOpenIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -26,4 +30,8 @@ export function BookOpenIcon({ size = 24, title, ...props }: BookOpenIconProps) 
       <path d="M12 6c-2-2-5-2.5-9-1v14c4-1.5 7-1 9 1m0-14c2-2 5-2.5 9-1v14c-4-1.5-7-1-9 1m0-14v14" />
     </svg>
   );
-}
+});
+
+BookOpenIcon.displayName = 'BookOpenIcon';
+
+export { BookOpenIcon };

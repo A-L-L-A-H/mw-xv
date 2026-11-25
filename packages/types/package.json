@@ -4,7 +4,11 @@
   "description": "Shared TypeScript definitions, DTOs, and interfaces for MoonWitness monorepo",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "type": "module",
+  "sideEffects": false,
   "engines": {
     "node": "24.x"
   },
@@ -12,11 +16,15 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./node": {
+      "types": "./dist/node/index.d.ts",
+      "import": "./dist/node/index.js"
     }
   },
   "scripts": {
     "build": "tsc",
-    "test": "pnpm build && node --test tests/*.test.mjs"
+    "test": "bun run build && node --test tests/*.test.mjs"
   },
   "devDependencies": {
     "typescript": "~5.7.3"

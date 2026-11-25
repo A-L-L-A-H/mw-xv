@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type SignalIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function SignalIcon({ size = 24, title, ...props }: SignalIconProps) {
+const SignalIcon = forwardRef<SVGSVGElement, SignalIconProps>(function SignalIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -26,4 +30,8 @@ export function SignalIcon({ size = 24, title, ...props }: SignalIconProps) {
       <path d="M4 18a11 11 0 0 1 16 0M7 15a7 7 0 0 1 10 0m-7-3a3 3 0 0 1 4 0m-2 6v.1" />
     </svg>
   );
-}
+});
+
+SignalIcon.displayName = 'SignalIcon';
+
+export { SignalIcon };

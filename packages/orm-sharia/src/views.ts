@@ -1,11 +1,28 @@
 import { defineView } from '@moonwitness/orm';
-import { ShariaContract, ProfitSharingDistribution, ZakatAssessment, WaqfAsset, HalalComplianceAudit } from './models/index.js';
+import {
+  ShariaContract,
+  ProfitSharingDistribution,
+  ZakatAssessment,
+  WaqfAsset,
+  HalalComplianceAudit,
+} from './models/index.js';
 
 export const views = [
   defineView(ShariaContract, {
     title: 'Sharia Contracts',
     list: {
-      columns: ['contract_no', 'type', 'status', 'customer', 'company', 'currency', 'asset_value_minor', 'profit_sharing_ratio', 'start_date', 'end_date'],
+      columns: [
+        'contract_no',
+        'type',
+        'status',
+        'customer',
+        'company',
+        'currency',
+        'asset_value_minor',
+        'profit_sharing_ratio',
+        'start_date',
+        'end_date',
+      ],
       order: 'create_date desc, id desc',
       decorations: [
         { color: 'success', domain: [['status', '=', 'active']] },
@@ -37,7 +54,12 @@ export const views = [
         {
           title: 'Compliance',
           columns: 2,
-          fields: ['dsn_mui_reference', 'sharia_board_approval', 'riba_free_confirmed', 'gharar_free_confirmed'],
+          fields: [
+            'dsn_mui_reference',
+            'sharia_board_approval',
+            'riba_free_confirmed',
+            'gharar_free_confirmed',
+          ],
         },
         {
           title: 'Assignment & Notes',
@@ -68,7 +90,17 @@ export const views = [
   defineView(ProfitSharingDistribution, {
     title: 'Profit Sharing Distributions',
     list: {
-      columns: ['contract', 'period_start', 'period_end', 'gross_profit_minor', 'net_profit_minor', 'customer_share_minor', 'company_share_minor', 'distribution_date', 'posted_to_accounting'],
+      columns: [
+        'contract',
+        'period_start',
+        'period_end',
+        'gross_profit_minor',
+        'net_profit_minor',
+        'customer_share_minor',
+        'company_share_minor',
+        'distribution_date',
+        'posted_to_accounting',
+      ],
       order: 'distribution_date desc, id desc',
       decorations: [
         { color: 'success', domain: [['posted_to_accounting', '=', true]] },
@@ -80,12 +112,25 @@ export const views = [
         {
           title: 'Distribution',
           columns: 2,
-          fields: ['contract', 'company', 'period_start', 'period_end', 'distribution_date', 'approved_by'],
+          fields: [
+            'contract',
+            'company',
+            'period_start',
+            'period_end',
+            'distribution_date',
+            'approved_by',
+          ],
         },
         {
           title: 'Financials',
           columns: 2,
-          fields: ['gross_profit_minor', 'operating_expenses_minor', 'net_profit_minor', 'customer_share_minor', 'company_share_minor'],
+          fields: [
+            'gross_profit_minor',
+            'operating_expenses_minor',
+            'net_profit_minor',
+            'customer_share_minor',
+            'company_share_minor',
+          ],
         },
         {
           title: 'Accounting Posting',
@@ -115,7 +160,18 @@ export const views = [
   defineView(ZakatAssessment, {
     title: 'Zakat Assessments',
     list: {
-      columns: ['assessment_no', 'company', 'assessment_date', 'hijri_year', 'zakat_type', 'asset_category', 'gross_assets_minor', 'net_zakatable_minor', 'zakat_due_minor', 'status'],
+      columns: [
+        'assessment_no',
+        'company',
+        'assessment_date',
+        'hijri_year',
+        'zakat_type',
+        'asset_category',
+        'gross_assets_minor',
+        'net_zakatable_minor',
+        'zakat_due_minor',
+        'status',
+      ],
       order: 'assessment_date desc, id desc',
       decorations: [
         { color: 'success', domain: [['status', '=', 'paid']] },
@@ -129,7 +185,16 @@ export const views = [
         {
           title: 'Assessment',
           columns: 2,
-          fields: ['assessment_no', 'company', 'assessment_date', 'hijri_year', 'zakat_type', 'asset_category', 'calculated_by', 'verified_by'],
+          fields: [
+            'assessment_no',
+            'company',
+            'assessment_date',
+            'hijri_year',
+            'zakat_type',
+            'asset_category',
+            'calculated_by',
+            'verified_by',
+          ],
         },
         {
           title: 'Financials',
@@ -177,7 +242,18 @@ export const views = [
   defineView(WaqfAsset, {
     title: 'Waqf Assets',
     list: {
-      columns: ['asset_code', 'name', 'asset_type', 'company', 'waqf_status', 'is_productive', 'acquisition_value_minor', 'current_value_minor', 'annual_yield_minor', 'beneficiary_category'],
+      columns: [
+        'asset_code',
+        'name',
+        'asset_type',
+        'company',
+        'waqf_status',
+        'is_productive',
+        'acquisition_value_minor',
+        'current_value_minor',
+        'annual_yield_minor',
+        'beneficiary_category',
+      ],
       order: 'create_date desc, id desc',
       decorations: [
         { color: 'success', domain: [['is_productive', '=', true]] },
@@ -239,7 +315,18 @@ export const views = [
   defineView(HalalComplianceAudit, {
     title: 'Halal Compliance Audits',
     list: {
-      columns: ['audit_no', 'company', 'audit_date', 'audit_scope', 'standard_reference', 'auditor', 'status', 'critical_findings_count', 'major_findings_count', 'minor_findings_count'],
+      columns: [
+        'audit_no',
+        'company',
+        'audit_date',
+        'audit_scope',
+        'standard_reference',
+        'auditor',
+        'status',
+        'critical_findings_count',
+        'major_findings_count',
+        'minor_findings_count',
+      ],
       order: 'audit_date desc, id desc',
       decorations: [
         { color: 'success', domain: [['status', '=', 'certified']] },
@@ -253,7 +340,15 @@ export const views = [
         {
           title: 'Audit',
           columns: 2,
-          fields: ['audit_no', 'company', 'audit_date', 'audit_scope', 'standard_reference', 'auditor', 'status'],
+          fields: [
+            'audit_no',
+            'company',
+            'audit_date',
+            'audit_scope',
+            'standard_reference',
+            'auditor',
+            'status',
+          ],
         },
         {
           title: 'Findings',

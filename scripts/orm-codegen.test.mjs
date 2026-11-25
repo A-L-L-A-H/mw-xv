@@ -54,6 +54,27 @@ test('parseOrmSourceFile extracts defineModel, fields, enums, relations, and def
   assert.equal(statusField.required, false);
 });
 
+test('parseOrmSourceFile resolves a const field map referenced by fields:', () => {
+  const source = `
+    import { defineModel, fields, type FieldMap } from '@moonwitness/orm';
+    const itemFields: FieldMap = {
+      title: fields.string({ required: true }),
+      code: fields.string({ unique: true }),
+    };
+    export const Item = defineModel('sample.item', {
+      table: 'sample_items',
+      fields: itemFields,
+    });
+  `;
+  const parsed = parseOrmSourceFile(source, 'packages/orm-sample/src/models.ts');
+  assert.deepEqual(parsed.errors, []);
+  assert.equal(parsed.models.length, 1);
+  assert.deepEqual(
+    parsed.models[0].fields.map((field) => field.name),
+    ['code', 'title']
+  );
+});
+
 test('buildOpenApi31Spec emits valid OpenAPI 3.1.0 schemas and paths', () => {
   const spec = buildOpenApi31Spec(
     [

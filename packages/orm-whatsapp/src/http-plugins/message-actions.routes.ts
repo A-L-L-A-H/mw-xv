@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { createHash } from 'node:crypto';
 import { WhatsappAccount, WhatsappConversation, WhatsappMessage } from '../models.js';
 import { isRecord } from '@moonwitness/types';
-import { gowaRequest } from '../runtime/gowa-client.js';
+import { whatsappGatewayRequest } from '../runtime/gateway.js';
 import { whatsappLogErrorContext } from '../runtime/log-redaction.js';
 import { OutboxEvent } from '@moonwitness/jobs';
 import { WHATSAPP_SEND_EVENT } from '../runtime/events.js';
@@ -71,12 +71,15 @@ export function registerWhatsAppMessageActionRoutes(
       if (!account?.gateway_device_id || account.status !== 'connected')
         return reply.code(409).send({ success: false, error: 'WhatsApp account is not connected' });
       try {
-        await gowaRequest(`/message/${encodeURIComponent(message.external_id)}/reaction`, {
-          method: 'POST',
-          deviceId: account.gateway_device_id,
-          contentType: 'application/json',
-          body: JSON.stringify({ phone: conversation.jid, emoji: body.emoji }),
-        });
+        await whatsappGatewayRequest(
+          `/message/${encodeURIComponent(message.external_id)}/reaction`,
+          {
+            method: 'POST',
+            deviceId: account.gateway_device_id,
+            contentType: 'application/json',
+            body: JSON.stringify({ phone: conversation.jid, emoji: body.emoji }),
+          }
+        );
       } catch (error) {
         req.log.error(
           { error: whatsappLogErrorContext(error) },
@@ -161,7 +164,7 @@ export function registerWhatsAppMessageActionRoutes(
       if (!account?.gateway_device_id || account.status !== 'connected')
         return reply.code(409).send({ success: false, error: 'WhatsApp account is not connected' });
       try {
-        await gowaRequest(`/message/${encodeURIComponent(message.external_id)}/update`, {
+        await whatsappGatewayRequest(`/message/${encodeURIComponent(message.external_id)}/update`, {
           method: 'POST',
           deviceId: account.gateway_device_id,
           contentType: 'application/json',
@@ -222,7 +225,7 @@ export function registerWhatsAppMessageActionRoutes(
       if (!account?.gateway_device_id || account.status !== 'connected')
         return reply.code(409).send({ success: false, error: 'WhatsApp account is not connected' });
       try {
-        await gowaRequest(`/message/${encodeURIComponent(message.external_id)}/revoke`, {
+        await whatsappGatewayRequest(`/message/${encodeURIComponent(message.external_id)}/revoke`, {
           method: 'POST',
           deviceId: account.gateway_device_id,
           contentType: 'application/json',
@@ -307,12 +310,15 @@ export function registerWhatsAppMessageActionRoutes(
       }
       const latestInboundAt = new Date(String(latestInbound.create_date)).toISOString();
       try {
-        await gowaRequest(`/message/${encodeURIComponent(latestInbound.external_id)}/read`, {
-          method: 'POST',
-          deviceId: account.gateway_device_id,
-          contentType: 'application/json',
-          body: JSON.stringify({ phone: conversation.jid }),
-        });
+        await whatsappGatewayRequest(
+          `/message/${encodeURIComponent(latestInbound.external_id)}/read`,
+          {
+            method: 'POST',
+            deviceId: account.gateway_device_id,
+            contentType: 'application/json',
+            body: JSON.stringify({ phone: conversation.jid }),
+          }
+        );
       } catch (error) {
         req.log.error(
           { error: whatsappLogErrorContext(error) },

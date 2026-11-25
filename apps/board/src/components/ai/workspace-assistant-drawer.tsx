@@ -25,6 +25,7 @@ import {
   WarningIcon,
   WorkflowIcon,
 } from '@moonwitness/ui/icons';
+import { client } from '@/lib/client';
 import { useDesktopMode } from '@/lib/desktop-mode';
 
 type WorkspaceQuickAction = 'summarize_tasks' | 'draft_note' | 'search_knowledge';
@@ -39,6 +40,7 @@ interface AssistantResponseView {
   readonly model: string;
   readonly reply: string;
   readonly highlights: readonly string[];
+  readonly offline: boolean;
 }
 
 interface ProofGateChecklistItem {
@@ -67,11 +69,10 @@ const DEFAULT_LOCAL_MODELS: readonly LocalModelOption[] = [
   { id: 'deepseek-coder-v2:16b', providerName: 'LM Studio (Local)' },
 ];
 
-function getDesktopApiBaseUrl(): string | null {
-  if (typeof window === 'undefined') return null;
+function isDesktopRuntime(): boolean {
+  if (typeof window === 'undefined') return false;
   const raw = (window as DesktopApiWindow).__MW_DESKTOP_API_URL__;
-  if (!raw || typeof raw !== 'string') return null;
-  return raw.replace(/\/+$/u, '');
+  return typeof raw === 'string' && raw.trim().length > 0;
 }
 
 function buildWorkspaceOfflineReply(
@@ -81,8 +82,9 @@ function buildWorkspaceOfflineReply(
   const trimmed = prompt.trim();
   if (action === 'summarize_tasks') {
     return {
-      provider: 'Local Assistant',
+      provider: 'Offline Local Assistant',
       model: 'offline-summary',
+      offline: true,
       reply:
         trimmed.length > 0
           ? `Summary ready for "${trimmed}". Your active workspace tasks are organized by priority and status.`
@@ -97,8 +99,9 @@ function buildWorkspaceOfflineReply(
   if (action === 'draft_note') {
     const title = trimmed.length > 0 ? trimmed : 'Workspace Meeting Notes';
     return {
-      provider: 'Local Assistant',
+      provider: 'Offline Local Assistant',
       model: 'offline-summary',
+      offline: true,
       reply: `# ${title}\n\n## Key Takeaways\n- Align on goals and timeline\n- Confirm owners for next steps`,
       highlights: [
         `Structured note created for "${title}"`,
@@ -107,8 +110,9 @@ function buildWorkspaceOfflineReply(
     };
   }
   return {
-    provider: 'Local Assistant',
+    provider: 'Offline Local Assistant',
     model: 'offline-summary',
+    offline: true,
     reply:
       trimmed.length > 0
         ? `Searched your workspace knowledge for "${trimmed}". Relevant notes and guides are listed below.`
@@ -194,15 +198,9 @@ export function WorkspaceAssistantDrawer({
   const [dxSummary, setDxSummary] = useState<AgentDispatchSummary | null>(null);
 
   const loadDiscoveredModels = useCallback(async () => {
-    const baseUrl = getDesktopApiBaseUrl();
-    if (!baseUrl) return;
+    if (!isDesktopRuntime()) return;
     try {
-      const response = await fetch(`${baseUrl}/api/desktop/ai/models`, {
-        method: 'GET',
-        headers: { accept: 'application/json' },
-      });
-      if (!response.ok) return;
-      const payload: unknown = await response.json();
+      const payload: unknown = await client.request('/api/desktop/ai/models');
       if (
         typeof payload === 'object' &&
         payload !== null &&
@@ -252,39 +250,35 @@ export function WorkspaceAssistantDrawer({
     setSelectedAction(action);
     setWorkspaceLoading(true);
     try {
-      const baseUrl = getDesktopApiBaseUrl();
-      if (baseUrl) {
-        const response = await fetch(`${baseUrl}/api/desktop/ai/assistant`, {
+      if (isDesktopRuntime()) {
+        const data: unknown = await client.request('/api/desktop/ai/assist', {
           method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({
+          body: {
             mode: 'workspace',
             action,
             prompt: workspacePrompt,
-          }),
+          },
         });
-        if (response.ok) {
-          const data: unknown = await response.json();
-          if (
-            typeof data === 'object' &&
-            data !== null &&
-            'reply' in data &&
-            typeof (data as { reply: unknown }).reply === 'string'
-          ) {
-            const rec = data as {
-              provider?: string;
-              model?: string;
-              reply: string;
-              highlights?: string[];
-            };
-            setWorkspaceResponse({
-              provider: rec.provider ?? 'Local Assistant',
-              model: rec.model ?? 'local',
-              reply: rec.reply,
-              highlights: Array.isArray(rec.highlights) ? rec.highlights : [],
-            });
-            return;
-          }
+        if (
+          typeof data === 'object' &&
+          data !== null &&
+          'reply' in data &&
+          typeof (data as { reply: unknown }).reply === 'string'
+        ) {
+          const rec = data as {
+            provider?: string;
+            model?: string;
+            reply: string;
+            highlights?: string[];
+          };
+          setWorkspaceResponse({
+            provider: rec.provider ?? 'Local Assistant',
+            model: rec.model ?? 'local',
+            reply: rec.reply,
+            highlights: Array.isArray(rec.highlights) ? rec.highlights : [],
+            offline: false,
+          });
+          return;
         }
       }
       setWorkspaceResponse(buildWorkspaceOfflineReply(action, workspacePrompt));
@@ -298,49 +292,42 @@ export function WorkspaceAssistantDrawer({
   const handleDispatchDxAgent = async () => {
     setDxLoading(true);
     try {
-      const baseUrl = getDesktopApiBaseUrl();
-      if (baseUrl) {
-        const response = await fetch(`${baseUrl}/api/desktop/ai/dispatch-task`, {
+      if (isDesktopRuntime()) {
+        const data: unknown = await client.request('/api/desktop/ai/run-task', {
           method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({
+          body: {
             mode: 'developer',
             taskId: taskCode || 'task-local',
             code: taskCode || 'TASK-1',
             title: taskTitle || 'Untitled Task',
             description: taskDescription,
             model: selectedModel,
-          }),
+          },
         });
-        if (response.ok) {
-          const data: unknown = await response.json();
-          if (
-            typeof data === 'object' &&
-            data !== null &&
-            'status' in data &&
-            'runId' in data &&
-            'digest' in data
-          ) {
-            const rec = data as {
-              status: 'dispatched' | 'preview' | 'denied';
-              runId: string;
-              digest: string;
-              reason?: string;
-              worktreeLease?: { branchName?: string };
-              proofGateChecklist?: ProofGateChecklistItem[];
-            };
-            setDxSummary({
-              status: rec.status,
-              runId: rec.runId,
-              digest: rec.digest,
-              reason: rec.reason ?? 'Agent run evaluated.',
-              worktreeBranch: rec.worktreeLease?.branchName,
-              proofGateChecklist: Array.isArray(rec.proofGateChecklist)
-                ? rec.proofGateChecklist
-                : [],
-            });
-            return;
-          }
+        if (
+          typeof data === 'object' &&
+          data !== null &&
+          'status' in data &&
+          'runId' in data &&
+          'digest' in data
+        ) {
+          const rec = data as {
+            status: 'dispatched' | 'preview' | 'denied';
+            runId: string;
+            digest: string;
+            reason?: string;
+            worktreeLease?: { branchName?: string };
+            proofGateChecklist?: ProofGateChecklistItem[];
+          };
+          setDxSummary({
+            status: rec.status,
+            runId: rec.runId,
+            digest: rec.digest,
+            reason: rec.reason ?? 'Agent run evaluated.',
+            worktreeBranch: rec.worktreeLease?.branchName,
+            proofGateChecklist: Array.isArray(rec.proofGateChecklist) ? rec.proofGateChecklist : [],
+          });
+          return;
         }
       }
       setDxSummary(
@@ -461,9 +448,21 @@ export function WorkspaceAssistantDrawer({
             {workspaceResponse ? (
               <Panel className="space-y-3 p-4">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-sm font-semibold">Assistant Response</span>
-                  <Badge variant="default">{workspaceResponse.provider}</Badge>
+                  <span className="text-sm font-semibold">
+                    {workspaceResponse.offline
+                      ? 'Offline Assistant Fallback'
+                      : 'Assistant Response'}
+                  </span>
+                  <Badge variant={workspaceResponse.offline ? 'destructive' : 'default'}>
+                    {workspaceResponse.offline ? 'Offline' : workspaceResponse.provider}
+                  </Badge>
                 </div>
+                {workspaceResponse.offline ? (
+                  <p role="status" className="text-xs text-muted-foreground">
+                    Generated locally because the desktop assistant is unavailable. This is not
+                    provider output.
+                  </p>
+                ) : null}
                 <div className="whitespace-pre-wrap text-sm leading-relaxed">
                   {workspaceResponse.reply}
                 </div>

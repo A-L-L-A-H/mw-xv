@@ -122,11 +122,11 @@ Menyatukan backend Fastify 5 (`apps/api`), ORM programatis Objection/Knex (`pack
 - [x] **MW-BASE-011** Stack knowledge/corpus/research/local-ai offline dengan trigger append-only (`packages/orm-knowledge/src/manifest.ts`) dan gate deterministik `K9-001` (`scripts/knowledge/run-k-gate.mjs`).
 - [x] **MW-BASE-012** Generator referensi & diagram arsitektur deterministik (`pnpm docs:generate`, `pnpm architecture:generate`) serta validator 213 task roadmap (`pnpm automation:check:roadmap`).
 
-### Rekonsiliasi Backlog Existing (`ROADMAP.md`, `todo-foundation.md`, `todo-ui.md`, `todo-wa.md`)
+### Rekonsiliasi Backlog Existing (`ROADMAP.md`, `docs/tasks/sources/todo-foundation.md`, `docs/tasks/sources/todo-ui.md`, `docs/tasks/sources/todo-wa.md`)
 
 1. **`ROADMAP.md` (`docs/roadmap/tasks.json`):** 132/213 task selesai, 81 terbuka (48 seri M, 33 seri K). Item kode/CI terbuka direkonsiliasi ke Seksi 18, 21, 22, 24, dan 25; item yang bergantung pada approval GitHub/perangkat nyata ditempatkan eksplisit di Seksi 29.
-2. **`todo-foundation.md`:** Ekstraksi `orm-whatsapp`, pemecahan route WhatsApp awal, healthcheck worker, `db:migrate`, `PostgresRateLimitStore`, dan warning `oxlint` sudah selesai. Item tersisa (paritas Node `22.x` vs lokal `v24.x` dan pemecahan lanjutan) masuk ke `MW-DX-001`, `MW-BACK-001`, dan `MW-WEB-007`.
-3. **`todo-ui.md` & `todo-wa.md`:** Fondasi UI dan inbox v1 WhatsApp selesai; item yang tertahan koneksi/scan QR GoWA (`P0-01`–`P0-05`, `P0-08`, `P0-24`–`P0-25`, `P1-06`, `P1-28`, `P2-01`) dilacak di Seksi 29.
+2. **`docs/tasks/sources/todo-foundation.md`:** Ekstraksi `orm-whatsapp`, pemecahan route WhatsApp awal, healthcheck worker, `db:migrate`, `PostgresRateLimitStore`, dan warning `oxlint` sudah selesai. Item tersisa (paritas Node `22.x` vs lokal `v24.x` dan pemecahan lanjutan) masuk ke `MW-DX-001`, `MW-BACK-001`, dan `MW-WEB-007`.
+3. **`docs/tasks/sources/todo-ui.md` & `docs/tasks/sources/todo-wa.md`:** Fondasi UI dan inbox v1 WhatsApp selesai; item yang tertahan koneksi/scan QR GoWA (`P0-01`–`P0-05`, `P0-08`, `P0-24`–`P0-25`, `P1-06`, `P1-28`, `P2-01`) dilacak di Seksi 29.
 
 ---
 
@@ -900,7 +900,7 @@ Menyatukan backend Fastify 5 (`apps/api`), ORM programatis Objection/Knex (`pack
   - [x] **MW-WEB-006.3** Pertahankan jalur direct URL `/board/m/:model` dan `/board/m/:model/:id` serta guard akses 403/404
   - [x] **MW-WEB-006.4** Verifikasi: `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` lulus
 
-- [x] **MW-WEB-007** Lanjutkan dekomposisi `apps/board/src/board-pages/whatsapp-page.tsx` (2.897 baris) ke komponen dan custom hooks domain terpisah (`todo-foundation.md`)
+- [x] **MW-WEB-007** Lanjutkan dekomposisi `apps/board/src/board-pages/whatsapp-page.tsx` (2.897 baris) ke komponen dan custom hooks domain terpisah (`docs/tasks/sources/todo-foundation.md`)
   - [x] **MW-WEB-007.1** Ekstrak `InboxList`, `ConversationTimeline`, `PairingPanel`, dan hook polling/state ke `apps/board/src/components/whatsapp/`
   - [x] **MW-WEB-007.2** Jaga `whatsapp-page.tsx` sebagai orkestrator ringan (< 450 baris) tanpa regresi UX atau polling background
   - [x] **MW-WEB-007.3** Pastikan nol warning `oxlint` dan nol pelanggaran `board:ui:check`
@@ -1124,7 +1124,7 @@ Menyatukan backend Fastify 5 (`apps/api`), ORM programatis Objection/Knex (`pack
   - [x] **MW-CFG-002.3** Uji penolakan akses (`403`) saat user biasa mencoba mengubah parameter global
   - [x] **MW-CFG-002.4** Verifikasi: `pnpm board:ui:check && pnpm --filter @moonwitness/board typecheck` lulus
 
-- [x] **MW-CFG-003** Verifikasi alur upload presigned S3/RustFS & CORS (`todo-wa.md` `P2-05`) serta satukan rekonsiliasi orphan attachment (`pnpm attachments:reconcile`)
+- [x] **MW-CFG-003** Verifikasi alur upload presigned S3/RustFS & CORS (`docs/tasks/sources/todo-wa.md` `P2-05`) serta satukan rekonsiliasi orphan attachment (`pnpm attachments:reconcile`)
   - [x] **MW-CFG-003.1** Uji integrasi S3 presigned POST, verifikasi ukuran/MIME `HEAD`, streaming copy ke key final, dan penolakan replay tiket
   - [x] **MW-CFG-003.2** Pastikan `attachments:reconcile` memindai referensi dari `base.attachment` maupun `whatsapp.message` secara bersamaan agar tidak menghapus file aktif
   - [ ] **MW-CFG-003.3** Tutup 1 test acceptance S3 yang sebelumnya ter-skip pada lingkungan uji ber-storage S3/RustFS
@@ -1286,7 +1286,7 @@ Menyatukan backend Fastify 5 (`apps/api`), ORM programatis Objection/Knex (`pack
 | `MW-DX-003` | P3        | Infrastructure | `MW-SCHEMA-006`, `MW-VIEW-001` | `apps/api/src/commands/`, `package.json`       |
 | `MW-DX-004` | P3        | Infrastructure | `MW-PKG-001`                   | `turbo.json`, `scripts/ci/build-workspace.mjs` |
 
-- [x] **MW-DX-001** Seragamkan runtime Node `22.x` LTS antar lokal, CI, dan Docker (menutup temuan drift lokal `v24.22.1` vs `engines.node: "22.x"` di `todo-foundation.md`)
+- [x] **MW-DX-001** Seragamkan runtime Node `22.x` LTS antar lokal, CI, dan Docker (menutup temuan drift lokal `v24.22.1` vs `engines.node: "22.x"` di `docs/tasks/sources/todo-foundation.md`)
   - [x] **MW-DX-001.1** Tambahkan `.nvmrc` (`22`) dan `.node-version` yang selaras dengan `engines.node: "22.x"` serta workflow CI
   - [x] **MW-DX-001.2** Tambahkan peringatan/cek versi Node yang ramah di skrip dev lokal agar ketidaksesuaian native module `better-sqlite3` segera terlihat
   - [x] **MW-DX-001.3** Validasi seluruh build dan test berjalan bersih di bawah Node `22.x`
@@ -1496,12 +1496,12 @@ Menyatukan backend Fastify 5 (`apps/api`), ORM programatis Objection/Knex (`pack
 
 ## 27 — Final Audit & Cleanup
 
-| ID             | Prioritas | Layer          | Dependensi                                                 | Lokasi Target                            |
-| :------------- | :-------- | :------------- | :--------------------------------------------------------- | :--------------------------------------- |
-| `MW-AUDIT-001` | P1        | Shared         | `MW-BACK-002`, `MW-PKG-002`, `MW-WIDGET-007`, `MW-ACT-007` | Seluruh repository                       |
-| `MW-AUDIT-002` | P1        | QA             | `MW-AUDIT-001`                                             | `apps/*`, `packages/*`                   |
-| `MW-AUDIT-003` | P2        | Infrastructure | `MW-DOC-001`, `MW-AUDIT-001`                               | `docs/`, `README.md`, `packages/assets/` |
-| `MW-AUDIT-004` | P2        | Infrastructure | `MW-E2E-016`, `MW-AUDIT-003`                               | `todo.md`, `ROADMAP.md`, `todo-*.md`     |
+| ID             | Prioritas | Layer          | Dependensi                                                 | Lokasi Target                                           |
+| :------------- | :-------- | :------------- | :--------------------------------------------------------- | :------------------------------------------------------ |
+| `MW-AUDIT-001` | P1        | Shared         | `MW-BACK-002`, `MW-PKG-002`, `MW-WIDGET-007`, `MW-ACT-007` | Seluruh repository                                      |
+| `MW-AUDIT-002` | P1        | QA             | `MW-AUDIT-001`                                             | `apps/*`, `packages/*`                                  |
+| `MW-AUDIT-003` | P2        | Infrastructure | `MW-DOC-001`, `MW-AUDIT-001`                               | `docs/`, `README.md`, `packages/assets/`                |
+| `MW-AUDIT-004` | P2        | Infrastructure | `MW-E2E-016`, `MW-AUDIT-003`                               | `docs/tasks/sources/todo.md`, `ROADMAP.md`, `todo-*.md` |
 
 - [x] **MW-AUDIT-001** Pastikan seluruh shim legacy (`apps/api/src/whatsapp/manifest.ts`), kontrak duplikat (`packages/client/src/types.ts`, evaluator `domain.ts`), dan switch-case model hardcoded bersih dari repository
   - [x] **MW-AUDIT-001.1** Periksa output `pnpm audit:workspace` memiliki nol runtime cycles, nol local file cycles, dan nol workspace cycles
@@ -1521,9 +1521,9 @@ Menyatukan backend Fastify 5 (`apps/api`), ORM programatis Objection/Knex (`pack
   - [x] **MW-AUDIT-003.3** Pastikan `pnpm docs:check` dan `pnpm architecture:check` tidak melaporkan file stale
   - [x] **MW-AUDIT-003.4** Verifikasi: `pnpm docs:check && pnpm architecture:check && pnpm test:assets` lulus
 
-- [x] **MW-AUDIT-004** Rekonsiliasi status checkbox dan bukti eksekusi di `todo.md`, `ROADMAP.md`, `todo-foundation.md`, `todo-ui.md`, dan `todo-wa.md`
+- [x] **MW-AUDIT-004** Rekonsiliasi status checkbox dan bukti eksekusi di `docs/tasks/sources/todo.md`, `ROADMAP.md`, `docs/tasks/sources/todo-foundation.md`, `docs/tasks/sources/todo-ui.md`, dan `docs/tasks/sources/todo-wa.md`
   - [x] **MW-AUDIT-004.1** Perbarui status item yang benar-benar telah terverifikasi pada checklist terkait tanpa membuat backlog tandingan
-  - [x] **MW-AUDIT-004.2** Pastikan ringkasan hitungan `[x]` / `[ ]` pada Seksi 00 `todo.md` dan `ROADMAP.md` akurat
+  - [x] **MW-AUDIT-004.2** Pastikan ringkasan hitungan `[x]` / `[ ]` pada Seksi 00 `docs/tasks/sources/todo.md` dan `ROADMAP.md` akurat
   - [x] **MW-AUDIT-004.3** Jalankan validator roadmap resmi
   - [x] **MW-AUDIT-004.4** Verifikasi: `pnpm automation:check:roadmap && pnpm verify` lulus
 
@@ -1545,7 +1545,7 @@ Suatu task di checklist ini **hanya boleh dicentang `[x]`** apabila seluruh syar
 
 ### A. Ketergantungan Perangkat Keras, Layanan Eksternal & Hosting (Tertunda di Luar Kode Offline)
 
-1. **Pairing Perangkat Nyata GoWA WhatsApp (`todo-wa.md`):** Item `P0-01`–`P0-05`, `P0-08`, `P0-24`–`P0-25`, `P1-06`, `P1-28`, dan `P2-01` menunggu pemindaian QR langsung oleh pengguna ke instance GoWA aktif (`wa.moonwitness.biz.id` `v9.6.0`), verifikasi persistensi sesi setelah restart container, backup volume kredensial GoWA, serta pengamatan receipt/media live.
+1. **Pairing Perangkat Nyata GoWA WhatsApp (`docs/tasks/sources/todo-wa.md`):** Item `P0-01`–`P0-05`, `P0-08`, `P0-24`–`P0-25`, `P1-06`, `P1-28`, dan `P2-01` menunggu pemindaian QR langsung oleh pengguna ke instance GoWA aktif (`wa.moonwitness.biz.id` `v9.6.0`), verifikasi persistensi sesi setelah restart container, backup volume kredensial GoWA, serta pengamatan receipt/media live.
 2. **Benchmark Model Local AI Nyata (`ROADMAP.md` `K7-006`):** Runtime outage & disabled-mode sudah lulus di API; sertifikasi latensi, memori, akurasi komparatif, dan egress-denial tingkat OS menunggu ketersediaan endpoint model lokal (Ollama/OpenAI-compat) pada mesin target.
 3. **Gate Governance & Rilis Hosted GitHub (`ROADMAP.md` `M1.08`, `M6.07`–`M6.11`, `M7.05`–`M7.16`, `M10.07`, `M11.03`–`M11.15`, `K9-007`):** Membutuhkan approval `CODEOWNER` untuk PR promosi `dev -> main`, eksekusi tag rilis GitHub/GHCR perdana, publikasi GitHub Pages terpercaya dari `main`, dan sign-off kebijakan safeguarding.
 
@@ -1553,5 +1553,5 @@ Suatu task di checklist ini **hanya boleh dicentang `[x]`** apabila seluruh syar
 
 1. **Visual Drag-and-Drop Schema/Form/Workflow Builder di UI:** Model dan workflow tetap dideklarasikan code-first dalam TypeScript terketik ketat di package addon (`defineModel`, `defineView`, `WorkflowDefinition`) demi keandalan CI dan type safety.
 2. **Dialek Database di Luar PostgreSQL & SQLite Test Harness:** Target produksi tunggal adalah PostgreSQL 16/17; SQLite (`better-sqlite3`) hanya untuk unit/conformance/audit lokal cepat.
-3. **Fitur WhatsApp Lanjutan v2+ (`todo-wa.md` NEXT):** Album multi-lampiran, voice note, CRM bot/broadcast (`P4-01`–`P4-13`), live presence (`P4-15`), dan publikasi Status/Story (`P3-03`–`P3-16`) ditunda sampai v1 live pairing diterima.
+3. **Fitur WhatsApp Lanjutan v2+ (`docs/tasks/sources/todo-wa.md` NEXT):** Album multi-lampiran, voice note, CRM bot/broadcast (`P4-01`–`P4-13`), live presence (`P4-15`), dan publikasi Status/Story (`P3-03`–`P3-16`) ditunda sampai v1 live pairing diterima.
 4. **Provisioning & Auto-Deploy Cloud Staging/Produksi (`ADR-0001`, `ADR-0004`):** Scope rilis terbatas pada image GHCR, GitHub Release, Docker Compose self-hosted, dan docs GitHub Pages.

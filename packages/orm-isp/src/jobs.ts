@@ -1,6 +1,6 @@
 import type { Knex } from 'knex';
 import { registerJobHandler } from '@moonwitness/jobs';
-import { isRecord } from '@moonwitness/types';
+import { isRecord, MILLISECONDS_PER_MINUTE } from '@moonwitness/types';
 import {
   probeIspNasHealth,
   processIspRadiusOutbox,
@@ -138,7 +138,7 @@ export async function ensureIspCrons(db: Knex, options: EnsureIspCronsOptions = 
 
   const enabled = options.enabled ?? true;
   const nowIso = new Date().toISOString();
-  const nextRunAt = new Date(Date.now() + 60_000).toISOString();
+  const nextRunAt = new Date(Date.now() + MILLISECONDS_PER_MINUTE).toISOString();
 
   const definitions = [
     {

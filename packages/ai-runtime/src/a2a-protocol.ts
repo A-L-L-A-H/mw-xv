@@ -1,4 +1,5 @@
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
+import { canonicalizeValue } from './canonical-json.js';
 import { createRedactor } from './redaction.js';
 import type { DataClassification } from './types.js';
 
@@ -6,6 +7,25 @@ export const A2A_PROTOCOL_VERSION = 'a2a.v1' as const;
 export const MAX_A2A_DELEGATION_DEPTH = 3;
 export const MAX_A2A_TTL_MS = 300_000;
 export const DEFAULT_A2A_CLOCK_SKEW_MS = 30_000;
+
+/**
+ * Canonical private-mesh address ranges (issue #203 / audit finding).
+ *
+ * Every TypeScript validator must derive its answer from this list instead of
+ * re-encoding the ranges: `isPrivateMeshHost` below, `orm-cloud/mesh-ha.ts`
+ * (re-exports this constant) and `apps/desktop/src/mesh-fleet.ts` all consume
+ * it. The Go implementations in `apps/control-plane/a2a.go` and
+ * `apps/control-plane/gitbuilder.go` are mirrors of this same list.
+ */
+export const PRIVATE_MESH_CIDRS = Object.freeze([
+  '10.0.0.0/8',
+  '100.64.0.0/10',
+  '172.16.0.0/12',
+  '192.168.0.0/16',
+  'fd00::/8',
+] as const);
+
+export type PrivateMeshCidr = (typeof PRIVATE_MESH_CIDRS)[number];
 
 export type A2AClaimedStatus = 'proposed' | 'in_progress' | 'submitted' | 'rejected' | 'accepted';
 
@@ -24,7 +44,8 @@ export type A2ARejectionReasonCode =
   | 'INVALID_NONCE'
   | 'INVALID_SIGNATURE'
   | 'INVALID_SECRET'
-  | 'INVALID_PROTOCOL_VERSION';
+  | 'INVALID_PROTOCOL_VERSION'
+  | 'INVALID_PEER_KEY_ID';
 
 export interface A2ADelegationPolicyInput {
   readonly targetEndpoint: string;
@@ -48,6 +69,8 @@ export interface A2APolicyValidationResult {
 
 export interface CreateA2AEnvelopeInput<TPayload extends Record<string, unknown>> {
   readonly messageId: string;
+  /** Key ID bound to an explicitly registered peer identity (CF-017). Signed with the envelope. */
+  readonly keyId?: string;
   readonly sourceAgentId: string;
   readonly targetAgentId: string;
   readonly sourceEndpoint?: string;
@@ -71,6 +94,8 @@ export interface SignedA2AEnvelope<
 > {
   readonly protocolVersion: typeof A2A_PROTOCOL_VERSION;
   readonly messageId: string;
+  /** Key ID bound to an explicitly registered peer identity (CF-017). Covered by the HMAC. */
+  readonly keyId?: string;
   readonly sourceAgentId: string;
   readonly targetAgentId: string;
   readonly sourceEndpoint?: string;
@@ -138,14 +163,41 @@ function parseStrictIpv4(host: string): readonly [number, number, number, number
   return [octets[0]!, octets[1]!, octets[2]!, octets[3]!];
 }
 
-function isValidIpv6UlaFd00(rawHost: string): boolean {
+interface ParsedIpv4Cidr {
+  readonly network: number;
+  readonly mask: number;
+}
+
+interface ParsedIpv6Cidr {
+  readonly network: bigint;
+  readonly mask: bigint;
+}
+
+function ipv4ToUint32(octets: readonly [number, number, number, number]): number {
+  return ((octets[0] << 24) | (octets[1] << 16) | (octets[2] << 8) | octets[3]) >>> 0;
+}
+
+function parseIpv4Cidr(cidr: string): ParsedIpv4Cidr | null {
+  const slash = cidr.indexOf('/');
+  if (slash < 0) return null;
+  const octets = parseStrictIpv4(cidr.slice(0, slash));
+  const prefixText = cidr.slice(slash + 1);
+  if (!octets || !/^\d{1,2}$/u.test(prefixText)) return null;
+  const prefix = Number(prefixText);
+  if (!Number.isInteger(prefix) || prefix > 32) return null;
+  const mask = prefix === 0 ? 0 : (0xffffffff << (32 - prefix)) >>> 0;
+  return { network: (ipv4ToUint32(octets) & mask) >>> 0, mask };
+}
+
+/** Strict IPv6 parser returning eight 16-bit groups; fails closed on zone ids and IPv4 mapping. */
+function parseStrictIpv6(rawHost: string): readonly number[] | null {
   const host = rawHost.startsWith('[') && rawHost.endsWith(']') ? rawHost.slice(1, -1) : rawHost;
   if (!host.includes(':') || host.includes('%') || host.includes('.')) {
-    return false;
+    return null;
   }
   const doubleColonParts = host.split('::');
   if (doubleColonParts.length > 2) {
-    return false;
+    return null;
   }
 
   const left = doubleColonParts[0] ? doubleColonParts[0].split(':') : [];
@@ -153,26 +205,50 @@ function isValidIpv6UlaFd00(rawHost: string): boolean {
   const allGroups = [...left, ...right];
 
   if (doubleColonParts.length === 1) {
-    if (allGroups.length !== 8) {
-      return false;
-    }
+    if (allGroups.length !== 8) return null;
   } else if (allGroups.length >= 8) {
-    return false;
+    return null;
   }
 
   for (const group of allGroups) {
     if (!/^[0-9a-fA-F]{1,4}$/u.test(group)) {
-      return false;
+      return null;
     }
   }
 
-  const firstGroup = left[0];
-  if (!firstGroup) {
-    return false;
-  }
-  const firstValue = Number.parseInt(firstGroup, 16);
-  return firstValue >= 0xfd00 && firstValue <= 0xfdff;
+  return [
+    ...left.map((group) => Number.parseInt(group, 16)),
+    ...Array.from({ length: 8 - allGroups.length }, () => 0),
+    ...right.map((group) => Number.parseInt(group, 16)),
+  ];
 }
+
+function ipv6ToBigInt(groups: readonly number[]): bigint {
+  let value = 0n;
+  for (const group of groups) {
+    value = (value << 16n) | BigInt(group);
+  }
+  return value;
+}
+
+function parseIpv6Cidr(cidr: string): ParsedIpv6Cidr | null {
+  const slash = cidr.indexOf('/');
+  if (slash < 0) return null;
+  const groups = parseStrictIpv6(cidr.slice(0, slash));
+  const prefixText = cidr.slice(slash + 1);
+  if (!groups || !/^\d{1,3}$/u.test(prefixText)) return null;
+  const prefix = Number(prefixText);
+  if (!Number.isInteger(prefix) || prefix > 128) return null;
+  const mask = prefix === 0 ? 0n : ((1n << BigInt(prefix)) - 1n) << BigInt(128 - prefix);
+  return { network: ipv6ToBigInt(groups) & mask, mask };
+}
+
+const PRIVATE_MESH_IPV4_CIDRS = PRIVATE_MESH_CIDRS.map(parseIpv4Cidr).filter(
+  (cidr): cidr is ParsedIpv4Cidr => cidr !== null
+);
+const PRIVATE_MESH_IPV6_CIDRS = PRIVATE_MESH_CIDRS.map(parseIpv6Cidr).filter(
+  (cidr): cidr is ParsedIpv6Cidr => cidr !== null
+);
 
 function extractHost(hostOrUrl: string): string | null {
   const trimmed = hostOrUrl.trim();
@@ -201,15 +277,14 @@ export function isPrivateMeshHost(hostOrUrl: string): boolean {
 
   const ipv4 = parseStrictIpv4(host);
   if (ipv4) {
-    const [o0, o1] = ipv4;
-    if (o0 === 10) return true; // 10.0.0.0/8
-    if (o0 === 100 && o1 >= 64 && o1 <= 127) return true; // 100.64.0.0/10
-    if (o0 === 172 && o1 >= 16 && o1 <= 31) return true; // 172.16.0.0/12
-    if (o0 === 192 && o1 === 168) return true; // 192.168.0.0/16
-    return false;
+    const value = ipv4ToUint32(ipv4);
+    return PRIVATE_MESH_IPV4_CIDRS.some(({ network, mask }) => (value & mask) >>> 0 === network);
   }
 
-  return isValidIpv6UlaFd00(host);
+  const ipv6 = parseStrictIpv6(host);
+  if (!ipv6) return false;
+  const value = ipv6ToBigInt(ipv6);
+  return PRIVATE_MESH_IPV6_CIDRS.some(({ network, mask }) => (value & mask) === network);
 }
 
 function isPositiveSafeInteger(value: number): boolean {
@@ -313,24 +388,6 @@ export function validateA2ADelegationPolicy(
   return { allowed: true };
 }
 
-function canonicalizeValue(value: unknown): unknown {
-  if (Array.isArray(value)) {
-    return value.map((entry) => canonicalizeValue(entry));
-  }
-  if (value !== null && typeof value === 'object') {
-    const record = value as Record<string, unknown>;
-    const sorted: Record<string, unknown> = {};
-    for (const key of Object.keys(record).sort()) {
-      const entry = record[key];
-      if (entry !== undefined) {
-        sorted[key] = canonicalizeValue(entry);
-      }
-    }
-    return sorted;
-  }
-  return value;
-}
-
 function computeEnvelopeSignature<TPayload extends Record<string, unknown>>(
   envelope: Omit<SignedA2AEnvelope<TPayload>, 'signature'>,
   signingSecret: string
@@ -350,6 +407,15 @@ export function createSignedA2AEnvelope<TPayload extends Record<string, unknown>
     throw new A2AProtocolError(
       'INVALID_SECRET',
       redactor.redactString('A2A signing secret must be at least 16 characters.')
+    );
+  }
+  if (
+    input.keyId !== undefined &&
+    (typeof input.keyId !== 'string' || input.keyId.trim().length < 1 || input.keyId.length > 128)
+  ) {
+    throw new A2AProtocolError(
+      'INVALID_PEER_KEY_ID',
+      redactor.redactString('A2A keyId must be a non-empty string of at most 128 characters.')
     );
   }
 
@@ -389,6 +455,7 @@ export function createSignedA2AEnvelope<TPayload extends Record<string, unknown>
   const unsignedEnvelope: Omit<SignedA2AEnvelope<TPayload>, 'signature'> = {
     protocolVersion: A2A_PROTOCOL_VERSION,
     messageId: input.messageId,
+    ...(input.keyId !== undefined ? { keyId: input.keyId } : {}),
     sourceAgentId: input.sourceAgentId,
     targetAgentId: input.targetAgentId,
     ...(input.sourceEndpoint !== undefined ? { sourceEndpoint: input.sourceEndpoint } : {}),
@@ -431,6 +498,18 @@ export function verifyA2AEnvelope<TPayload extends Record<string, unknown>>(
 
   if (envelope.protocolVersion !== A2A_PROTOCOL_VERSION) {
     return fail('INVALID_PROTOCOL_VERSION', 'Unsupported A2A protocol version.');
+  }
+
+  if (
+    envelope.keyId !== undefined &&
+    (typeof envelope.keyId !== 'string' ||
+      envelope.keyId.trim().length < 1 ||
+      envelope.keyId.length > 128)
+  ) {
+    return fail(
+      'INVALID_PEER_KEY_ID',
+      'A2A keyId must be a non-empty string of at most 128 characters.'
+    );
   }
 
   const ttlMs = envelope.expiresAt - envelope.issuedAt;

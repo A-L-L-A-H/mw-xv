@@ -4,7 +4,7 @@
 - Contract schema: [`packages/research/src/semantics-benchmark.schema.json`](../../packages/research/src/semantics-benchmark.schema.json)
 - Runtime implementation: [`packages/research/src/semantics-benchmark.ts`](../../packages/research/src/semantics-benchmark.ts)
 - Versioned synthetic fixtures: [`docs/knowledge/semantics-benchmark-fixtures.json`](semantics-benchmark-fixtures.json)
-- Evaluation report: [`research/evaluations/K4-006-semantics-benchmark.md`](../../research/evaluations/K4-006-semantics-benchmark.md)
+- Evaluation report: [`docs/research/K4-006-semantics-benchmark.md`](../research/K4-006-semantics-benchmark.md)
 
 ## Purpose
 

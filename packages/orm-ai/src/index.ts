@@ -1,4 +1,11 @@
 export { manifest } from './manifest.js';
+export * from './agent-run-executor.js';
+export * from './durable-ports.js';
+export * from './cloud-agent-provider.js';
+export * from './cloud-agent-sandbox.js';
+export * from './cloud-agent-effect.js';
+export * from './cloud-agent-effect-factory.js';
+export * from './freellmapi-discovery.js';
 export { evolutionHttpPlugin } from './evolution-http.js';
 export { AI_CORPORATION_ROUTE_PREFIXES, aiCorporationHttpPlugin } from './ai-corporation-http.js';
 export { AI_DESKTOP_SYNC_ROUTE_PREFIXES, aiDesktopSyncHttpPlugin } from './ai-desktop-sync-http.js';
@@ -11,8 +18,12 @@ export {
   parseAiRunJobPayload,
   recordAiAudit,
   requireAiCompanyContext,
+  type AddonHttpReply,
+  type AddonHttpRequestBase,
+  type AiCompanyContext,
   type AiRunJobPayload,
   type ProofGateEvaluationError,
+  type WorkflowRole,
 } from './ai-http-helpers.js';
 export {
   AGI_CRON_SCHEDULES,
@@ -47,6 +58,8 @@ export {
 export * from './models.js';
 export * from './cognitive-trace-store.js';
 export * from './seed.js';
+export { aiSeedManifest } from './seed-manifest.js';
+export type { AddonSeedManifest } from '@moonwitness/orm-base';
 export {
   assertAcyclicAgentHierarchy,
   assertAcyclicWorkContractHierarchy,

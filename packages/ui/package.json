@@ -253,37 +253,76 @@
     "./components/log-console": {
       "types": "./dist/components/log-console.d.ts",
       "import": "./dist/components/log-console.js"
+    },
+    "./components/comic-panel": {
+      "types": "./dist/components/comic-panel.d.ts",
+      "import": "./dist/components/comic-panel.js"
+    },
+    "./components/speech-bubble": {
+      "types": "./dist/components/speech-bubble.d.ts",
+      "import": "./dist/components/speech-bubble.js"
+    },
+    "./components/character-stage": {
+      "types": "./dist/components/character-stage.d.ts",
+      "import": "./dist/components/character-stage.js"
+    },
+    "./components/quest-card": {
+      "types": "./dist/components/quest-card.d.ts",
+      "import": "./dist/components/quest-card.js"
+    },
+    "./components/confirm-dialog": {
+      "types": "./dist/components/confirm-dialog.d.ts",
+      "import": "./dist/components/confirm-dialog.js"
+    },
+    "./components/error-state": {
+      "types": "./dist/components/error-state.d.ts",
+      "import": "./dist/components/error-state.js"
+    },
+    "./components/breadcrumbs": {
+      "types": "./dist/components/breadcrumbs.d.ts",
+      "import": "./dist/components/breadcrumbs.js"
+    },
+    "./components/brand-mark": {
+      "types": "./dist/components/brand-mark.d.ts",
+      "import": "./dist/components/brand-mark.js"
+    },
+    "./components/inbox-popover": {
+      "types": "./dist/components/inbox-popover.d.ts",
+      "import": "./dist/components/inbox-popover.js"
+    },
+    "./lib/asset-registry": {
+      "types": "./dist/lib/asset-registry.d.ts",
+      "import": "./dist/lib/asset-registry.js"
     }
   },
   "scripts": {
-    "build": "node scripts/generate-icons.mjs && tsc",
-    "test": "pnpm build && node --test tests/*.test.mjs"
+    "build": "bun --filter @moonwitness/types build && node scripts/generate-icons.mjs && tsc",
+    "test": "bun run build && node --test tests/*.test.mjs"
   },
   "peerDependencies": {
     "cmdk": ">=1.1.1",
     "radix-ui": ">=1.6.7",
     "react": ">=18",
+    "react-dom": ">=18",
     "sonner": ">=2"
   },
   "peerDependenciesMeta": {
     "cmdk": {
       "optional": true
     },
-    "radix-ui": {
-      "optional": true
-    },
-    "react": {
-      "optional": true
-    },
     "sonner": {
       "optional": true
     }
+  },
+  "dependencies": {
+    "@moonwitness/types": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "cmdk": "^1.1.1",
     "radix-ui": "^1.6.7",
+    "react": "^19.2.8",
     "react-dom": "^19.3.0",
     "sonner": "^2.0.8"
   }

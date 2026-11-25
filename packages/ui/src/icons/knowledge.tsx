@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type KnowledgeIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function KnowledgeIcon({ size = 24, title, ...props }: KnowledgeIconProps) {
+const KnowledgeIcon = forwardRef<SVGSVGElement, KnowledgeIconProps>(function KnowledgeIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -27,4 +31,8 @@ export function KnowledgeIcon({ size = 24, title, ...props }: KnowledgeIconProps
       <path d="M12 6.7v14m-5-11h2m6 0h2" />
     </svg>
   );
-}
+});
+
+KnowledgeIcon.displayName = 'KnowledgeIcon';
+
+export { KnowledgeIcon };

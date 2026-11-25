@@ -1,3 +1,4 @@
+import { isRecord } from '@moonwitness/types';
 import { hashCanonicalJson } from './canonical-json.js';
 import {
   resolveKnowledgeIdentity,
@@ -173,10 +174,6 @@ export const MIZAN_GOVERNANCE_AXIOMS: readonly MizanGovernanceAxiom[] = [
     'Canonical identifiers and deterministic ordering must preserve the integrity of the graph.'
   ),
 ];
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 function stringIssue(path: string, keyword: string, message: string): KnowledgeValidationIssue {
   return { path, keyword, message };

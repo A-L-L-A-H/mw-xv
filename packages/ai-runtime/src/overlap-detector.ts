@@ -1,4 +1,5 @@
-import { createHash } from 'node:crypto';
+import { sha256Hex } from './canonical-json.js';
+import { compareAscii } from './sort-utils.js';
 import { createRedactor, type RedactionContext } from './redaction.js';
 import type { ReadOnlyRepoInspector } from './repo-inspector.js';
 import type { RepoGitRevision, RepoSnapshot } from './repo-snapshot.js';
@@ -102,16 +103,6 @@ const STOP_WORDS = new Set([
   'have',
   'using',
 ]);
-
-function compareAscii(a: string, b: string): number {
-  if (a < b) return -1;
-  if (a > b) return 1;
-  return 0;
-}
-
-function sha256Hex(value: string): string {
-  return createHash('sha256').update(value, 'utf8').digest('hex');
-}
 
 function normalizePosixPath(raw: string): string {
   return raw

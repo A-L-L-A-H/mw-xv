@@ -12,6 +12,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./canonical-json.js": {
+      "types": "./dist/canonical-json.d.ts",
+      "import": "./dist/canonical-json.js"
     }
   },
   "files": [

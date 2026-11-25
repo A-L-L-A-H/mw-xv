@@ -52,19 +52,19 @@ test('application deployment remains outside repository automation', async () =>
 test('release verification normalizes and validates workspace version before building', () => {
   assert.match(verify, /RELEASE_VERSION: \$\{\{ inputs\.version \|\| github\.ref_name \}\}/u);
   assert.match(verify, /if \[\[ "\$version" != v\*/u);
-  assert.match(verify, /pnpm release:check "\$version"/u);
+  assert.match(verify, /bun run release:check "\$version"/u);
   assert.match(verify, /echo "version=\$version" >> "\$GITHUB_OUTPUT"/u);
 });
 
 test('tag releases skip duplicate local checks while dry runs keep full local verification', () => {
   const verificationSteps = [
-    'pnpm lint',
-    'pnpm format:check',
-    'pnpm typecheck',
-    'pnpm docs:check:built',
-    'pnpm --filter @moonwitness/board lint',
-    'pnpm test:unit:built',
-    'pnpm test:integration:built',
+    'bun run lint',
+    'bun run format:check',
+    'bun run typecheck',
+    'bun run docs:check:built',
+    'bun --filter @moonwitness/board lint',
+    'bun run test:unit:built',
+    'bun run test:integration:built',
   ];
   const reusableCiCondition =
     "github.ref_type != 'tag' || (github.event_name == 'workflow_dispatch' && !inputs.publish)";

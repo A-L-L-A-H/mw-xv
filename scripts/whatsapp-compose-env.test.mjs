@@ -3,8 +3,8 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { localServiceScripts } from './local-service-scripts.mjs';
 
-const canonicalComposeFile = 'docker-compose.production.yml';
-const compatibilityComposeFile = 'docker-compose.prd.yml';
+const canonicalComposeFile = 'deploy/compose/docker-compose.production.yml';
+const compatibilityComposeFile = 'deploy/compose/docker-compose.prd.yml';
 
 function serviceBlock(source, name) {
   const start = source.search(new RegExp(`^  ${name}:\\s*$`, 'mu'));
@@ -14,8 +14,13 @@ function serviceBlock(source, name) {
   return source.slice(start, nextService === -1 ? undefined : start + 1 + nextService);
 }
 
+function environmentMergePattern(...anchors) {
+  const escaped = anchors.map((anchor) => anchor.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&'));
+  return new RegExp(`^ {6}<<:\\s*\\[\\s*${escaped.join(',\\s*')},?\\s*\\]$`, 'mu');
+}
+
 test('development Compose runs WhatsApp outbox and attachment cleanup jobs with scoped secrets', () => {
-  const source = readFileSync('docker-compose.development.yml', 'utf8');
+  const source = readFileSync('deploy/compose/docker-compose.development.yml', 'utf8');
   assert.match(serviceBlock(source, 'outbox-worker'), /WHATSAPP_GATEWAY_USERNAME:/u);
   assert.match(serviceBlock(source, 'outbox-worker'), /WHATSAPP_GATEWAY_PASSWORD:/u);
   for (const name of ['jobs-worker', 'jobs-scheduler']) {
@@ -98,10 +103,16 @@ test('canonical production Compose scopes WhatsApp gateway and webhook secrets t
     /WHATSAPP_GATEWAY_(?:USERNAME|PASSWORD)|WHATSAPP_WEBHOOK_SECRET/u
   );
 
-  const expectedApiEnvironmentMerge =
-    /^ {6}<<:\s*\[\*app_environment,\s*\*whatsapp_gateway_credentials,\s*\*whatsapp_webhook_environment\]$/mu;
-  const expectedOutboxEnvironmentMerge =
-    /^ {6}<<:\s*\[\*app_environment,\s*\*whatsapp_gateway_credentials\]$/mu;
+  const expectedApiEnvironmentMerge = environmentMergePattern(
+    '*app_environment',
+    '*ai_environment',
+    '*whatsapp_gateway_credentials',
+    '*whatsapp_webhook_environment'
+  );
+  const expectedOutboxEnvironmentMerge = environmentMergePattern(
+    '*app_environment',
+    '*whatsapp_gateway_credentials'
+  );
   assert.match(serviceBlock(source, 'api'), expectedApiEnvironmentMerge);
   assert.match(serviceBlock(source, 'outbox-worker'), expectedOutboxEnvironmentMerge);
   assert.doesNotMatch(serviceBlock(source, 'outbox-worker'), /WHATSAPP_WEBHOOK_SECRET/u);
@@ -115,7 +126,13 @@ test('canonical production Compose scopes WhatsApp gateway and webhook secrets t
       `${name} must share the attachment store so scheduled cleanup sees the same objects`
     );
   }
-  assert.doesNotMatch(serviceBlock(source, 'board'), /^ {4}environment:/mu);
+  // Anchors are declared inside the first service for YAML validity; only the
+  // Board's own environment block must stay free of WhatsApp credentials.
+  const boardEnvironment = serviceBlock(source, 'board').match(
+    /^ {4}environment:\s*\r?\n([\s\S]*?)(?=^ {4}\S)/mu
+  );
+  assert.ok(boardEnvironment, 'Board service must declare an environment block');
+  assert.doesNotMatch(boardEnvironment[1], /WHATSAPP_/u);
 });
 
 test('prd Compose entrypoint delegates to the canonical hardened stack', () => {

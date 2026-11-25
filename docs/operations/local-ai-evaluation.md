@@ -12,6 +12,6 @@ Checks run:
 - `pnpm --filter @moonwitness/api exec vitest run tests/auth.test.ts -t "starts with AI disabled and makes no provider call"` — 1 passed; 42 unrelated tests skipped.
 - `node scripts/smoke-containers.mjs` — passed with current working-tree images and the smoke Compose internal network.
 
-Model latency, peak memory, source coverage, and same-source model comparison are **not measured** because no local model endpoint or model identity is configured. No score is claimed. To complete this part, configure a named local model and immutable model digest, then follow the [K7-006 evaluation protocol](../../research/evaluations/K7-006-protocol.md) on the same approved passage and record model-specific results.
+Model latency, peak memory, source coverage, and same-source model comparison are **not measured** because no local model endpoint or model identity is configured. No score is claimed. To complete this part, configure a named local model and immutable model digest, then follow the [K7-006 evaluation protocol](../research/K7-006-protocol.md) on the same approved passage and record model-specific results.
 
 This report is a local model-off baseline only. It does not certify model quality, production resilience, or release readiness.

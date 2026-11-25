@@ -10,6 +10,7 @@ import {
   ModelAccess,
 } from '@moonwitness/orm-base';
 import type { AuthContext, GroupModelGrant } from '../auth/policy.js';
+import { createAuthCacheBus, type AuthCacheBus } from './auth-cache-bus.js';
 
 export type { AuthContext };
 
@@ -49,6 +50,7 @@ interface CachedAuthRecord {
   role: Role;
   partnerId?: number;
   partnerCompanyId?: number;
+  tokenVersion?: number;
   companyMemberships: readonly CachedCompanyMembership[];
   groupPermissions: readonly GroupModelGrant[];
   groupNames: readonly string[];
@@ -59,6 +61,30 @@ const MAX_AUTH_CACHE_ENTRIES = 2_000;
 
 let authCacheEpoch = 1;
 const authCache = new Map<number, CachedAuthRecord>();
+let authCacheBus: AuthCacheBus | null = null;
+
+/**
+ * Broadcast every invalidation to other API replicas over PG NOTIFY. Test
+ * backends (SQLite) get an inert bus, so behavior there is unchanged.
+ */
+export function setAuthCacheBus(bus: AuthCacheBus | null): void {
+  authCacheBus = bus;
+}
+
+function clearLocalAuthCache(userId?: number): void {
+  if (userId !== undefined) {
+    authCache.delete(userId);
+  } else {
+    authCacheEpoch += 1;
+    authCache.clear();
+  }
+}
+
+/** Testing hook: handle an invalidation that arrived from another replica. */
+export function handleRemoteAuthCacheInvalidation(userId?: number): void {
+  // Apply locally ONLY — never re-broadcast back onto the PG NOTIFY bus.
+  clearLocalAuthCache(userId);
+}
 
 export function getAuthCacheEpoch(): number {
   return authCacheEpoch;
@@ -67,14 +93,11 @@ export function getAuthCacheEpoch(): number {
 /**
  * Immediately invalidates cached auth state for a specific user or all users.
  * Called on role, password, group membership, model access, company membership, or session revocation.
+ * Also broadcasts the invalidation to other API replicas via PG NOTIFY.
  */
 export function invalidateAuthCache(userId?: number): void {
-  if (userId !== undefined) {
-    authCache.delete(userId);
-    return;
-  }
-  authCacheEpoch += 1;
-  authCache.clear();
+  clearLocalAuthCache(userId);
+  void authCacheBus?.broadcast(userId);
 }
 
 export function invalidateAuthCacheForModel(modelName: string, userId?: number): void {
@@ -133,6 +156,21 @@ const authPlugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, option
   invalidateAuthCache();
   const cacheTtlMs = resolveCacheTtlMs(options.cacheTtlMs);
 
+  // Cross-replica invalidation: on PostgreSQL, listen for invalidations from
+  // other replicas and apply them to the local cache. No-ops on test backends.
+  if (!authCacheBus && process.env.DATABASE_URL) {
+    const bus = createAuthCacheBus({
+      connectionString: process.env.DATABASE_URL,
+      logger: { warn: (message: string) => fastify.log.warn(message) },
+      onNotification: handleRemoteAuthCacheInvalidation,
+    });
+    setAuthCacheBus(bus);
+    fastify.addHook('onClose', async () => {
+      await bus.close();
+      setAuthCacheBus(null);
+    });
+  }
+
   await fastify.register(jwt, {
     secret: validateJwtSecret(options.jwtSecret),
     // fast-jwt interprets numeric durations as milliseconds.
@@ -154,9 +192,11 @@ const authPlugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, option
     )
       return;
     let userId: number;
+    let payloadTokenVersion: number | undefined;
     try {
-      const payload = await request.jwtVerify<{ sub: string; role: string }>();
+      const payload = await request.jwtVerify<{ sub: string; role: string; tkv?: number }>();
       userId = Number(payload.sub);
+      payloadTokenVersion = payload.tkv;
       if (!Number.isInteger(userId) || userId < 1 || !ROLES.includes(payload.role)) {
         throw new Error('Malformed token claims');
       }
@@ -174,6 +214,19 @@ const authPlugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, option
       cached = undefined;
     }
 
+    if (cached) {
+      // Enforce token_version on cache hits too: a stale token must be rejected
+      // even within the cache TTL window (defense in depth beyond PG NOTIFY).
+      if (payloadTokenVersion !== undefined && cached.tokenVersion !== undefined) {
+        if (payloadTokenVersion < cached.tokenVersion) {
+          return reply
+            .code(401)
+            .header('WWW-Authenticate', 'Bearer')
+            .send({ success: false, error: 'Token revoked' });
+        }
+      }
+    }
+
     if (!cached) {
       const UserModel = request.env.get('base.user');
       const user = (await UserModel.query()
@@ -183,6 +236,7 @@ const authPlugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, option
             role: Role;
             partner_id?: number;
             partner?: { id?: number; active?: boolean; company_id?: number };
+            token_version?: number;
           })
         | undefined;
       const partner = user?.partner;
@@ -192,6 +246,17 @@ const authPlugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, option
           .header('WWW-Authenticate', 'Bearer')
           .send({ success: false, error: 'Authentication required' });
       }
+
+      // Cross-replica token_version check: reject tokens issued before the current token_version
+      if (payloadTokenVersion !== undefined && user.token_version !== undefined) {
+        if (payloadTokenVersion < user.token_version) {
+          return reply
+            .code(401)
+            .header('WWW-Authenticate', 'Bearer')
+            .send({ success: false, error: 'Token revoked' });
+        }
+      }
+
       const role = String(user.role) as Role;
       if (!ROLES.includes(role)) {
         return reply
@@ -259,6 +324,7 @@ const authPlugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, option
         role,
         partnerId,
         partnerCompanyId: partner.company_id,
+        tokenVersion: user.token_version ?? 1,
         companyMemberships,
         groupPermissions,
         groupNames,

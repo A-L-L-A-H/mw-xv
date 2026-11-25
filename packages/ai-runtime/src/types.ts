@@ -1,6 +1,7 @@
 import type { JsonObject, JsonValue } from '@moonwitness/types';
 
-export type ProviderKind = 'mock' | 'ollama' | 'openai' | 'anthropic' | 'local_openai';
+export type ProviderKind =
+  'mock' | 'ollama' | 'openai' | 'anthropic' | 'local_openai' | 'freellmapi';
 export type DataClassification = 'local_only' | 'cloud_eligible' | 'restricted';
 export type ModelModality = 'text' | 'json' | 'vision' | 'audio' | 'image';
 export type UsageSource = 'estimated' | 'provider_reported';

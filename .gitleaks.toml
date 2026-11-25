@@ -19,7 +19,16 @@ regexes = [
   '''^\s*"\^\\\\s\*idempotencyKey: 'duplicate-vote-0001',\$",$''',
   '''^\s*"\^\\\\s\*idempotencyKey: 'reject-decision-0001',\$",$''',
   '''^\s*- Add adapter fixtures for API pagination, missing[/]duplicate checks, stale snapshots, revoked permissions, and malformed/untrusted webhook or issue events\.$''',
+  '''mesh-cidr-fixture''',
+  '''mesh-canonical-cidr-test-secret-0123456789''',
+  '''peer-key-gamma-fixture''',
+  '''peer-key-gamma-0123456789abcdef01234567''',
+  '''FREELLMAPI_COMMIT_SHA: cd65d6485788dfc7828f06c1147cdea207b28322''',
 ]
+
+[[allowlists]]
+description = "Pinned third-party vendor snapshots keep their upstream test fixtures, docs and patches; reviewed at import time"
+paths = ["^vendor/"]
 
 [[rules]]
 id = "moonwitness-runtime-secret"

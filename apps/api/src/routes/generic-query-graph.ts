@@ -45,10 +45,45 @@ export function queryGraphIsBounded(graph: string | undefined): boolean {
   });
 }
 
-export function rpcSearchReadIsBounded(kwargs: Record<string, JsonValue>): boolean {
+/** Shared caps for every JSON-RPC method that maps to the `read` operation. */
+export const RPC_MAX_PAGE_SIZE = 500;
+export const RPC_MAX_IDS = 500;
+
+/**
+ * Bounds every read-mapped JSON-RPC method, not only `search_read`.
+ * Without this, `search`, `read` and `search_count` could scan a whole table
+ * while the REST `GET /api/:model` path was already capped at 500 records.
+ */
+export function rpcReadIsBounded(
+  method: string,
+  args: readonly JsonValue[],
+  kwargs: Record<string, JsonValue>
+): boolean {
   const fields = kwargs.fields;
   if (Array.isArray(fields) && fields.length > 100) return false;
   const graph = typeof kwargs.with === 'string' ? kwargs.with : undefined;
   const order = typeof kwargs.order === 'string' ? kwargs.order : undefined;
-  return queryGraphIsBounded(graph) && (order?.length ?? 0) <= 512;
+  if (!queryGraphIsBounded(graph) || (order?.length ?? 0) > 512) return false;
+
+  if (method === 'search' || method === 'search_read' || method === 'search_count') {
+    const limit = kwargs.limit;
+    if (
+      limit !== undefined &&
+      (!Number.isInteger(limit) || (limit as number) < 1 || (limit as number) > RPC_MAX_PAGE_SIZE)
+    )
+      return false;
+    const offset = kwargs.offset;
+    if (offset !== undefined && (!Number.isInteger(offset) || (offset as number) < 0)) return false;
+  }
+
+  if (method === 'read') {
+    const ids = args[0];
+    if (Array.isArray(ids) && ids.length > RPC_MAX_IDS) return false;
+  }
+
+  return true;
+}
+
+export function rpcSearchReadIsBounded(kwargs: Record<string, JsonValue>): boolean {
+  return rpcReadIsBounded('search_read', [], kwargs);
 }

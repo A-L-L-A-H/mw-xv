@@ -1,3 +1,4 @@
+import type { Multipart } from '@fastify/multipart';
 import type { FastifyRequest } from 'fastify';
 import { createHash, createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 import type { Knex } from 'knex';
@@ -74,14 +75,25 @@ export type OutgoingUpload = {
   mediaSizeBytes: number | null;
 };
 
+type MultipartCapableRequest = FastifyRequest & {
+  isMultipart?: () => boolean;
+  parts?: (options?: {
+    limits?: { fileSize?: number; files?: number };
+  }) => AsyncIterableIterator<Multipart>;
+};
+
 export async function parseOutgoingUpload(
   req: FastifyRequest,
   storage: AttachmentStorage,
   scanner: AttachmentScanner | null,
   extraFields: string[] = []
 ): Promise<OutgoingUpload> {
+  const multipartReq = req as MultipartCapableRequest;
   const fields: Record<string, string> = {};
-  if (req.isMultipart() === false && req.headers['content-type']?.includes('application/json')) {
+  if (
+    multipartReq.isMultipart?.() === false &&
+    req.headers['content-type']?.includes('application/json')
+  ) {
     const body = isRecord(req.body) ? req.body : null;
     if (
       !body ||
@@ -127,7 +139,12 @@ export async function parseOutgoingUpload(
   let mediaSizeBytes = 0;
   let fileCount = 0;
   try {
-    for await (const part of req.parts({ limits: { fileSize: MAX_ATTACHMENT_BYTES, files: 1 } })) {
+    if (!multipartReq.parts) {
+      throw Object.assign(new Error('Multipart parser is not registered'), { statusCode: 500 });
+    }
+    for await (const part of multipartReq.parts({
+      limits: { fileSize: MAX_ATTACHMENT_BYTES, files: 1 },
+    })) {
       if (part.type === 'field') {
         if (
           !['content', 'reply_to_message_id', ...extraFields].includes(part.fieldname) ||

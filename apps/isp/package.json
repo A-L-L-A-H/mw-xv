@@ -2,6 +2,7 @@
   "name": "@moonwitness/isp",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "cargo:build": "cargo build --release",
     "dev": "cargo run",

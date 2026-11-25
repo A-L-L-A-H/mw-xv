@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "pack": "moon-city",
   "domain": "visual-universe",
-  "description": "Canonical recurring character registry. Identity sheets define stable visual continuity; no entry binds a character to an AI provider/model identity or a real crew member. Faces are intentionally unspecified pending separate pilot identity approval.",
+  "description": "Canonical recurring character registry. Crew-01 remains anonymous back-facing for ambient parallax scenes; kuro-signal and vesper-ink are identified Signal Riot universe characters with strict original IP continuity.",
   "characters": [
     {
       "characterId": "crew-01",
@@ -25,6 +25,100 @@
       ],
       "license": "ISC",
       "status": "review"
+    },
+    {
+      "characterId": "kuro-signal",
+      "role": "signal-courier",
+      "depictionPolicy": "identified-approved",
+      "silhouette": "oversized hooded street courier with twin-ring headset antenna and chunky lug-sole boots",
+      "outfit": "ink-splattered charcoal and magenta hoodie with yellow crown pin, cargo joggers, yellow-soled boots",
+      "paletteTokens": ["ink-black", "paper-cream", "signal-yellow", "riot-magenta", "signal-cyan"],
+      "proportions": "stylized anime-cartoon 5.5 heads",
+      "signatureProps": [
+        "crown-enamel-pin",
+        "signal-headset-antenna",
+        "cheek-bandage",
+        "portable-receiver"
+      ],
+      "allowedVariants": [
+        "model-sheet",
+        "expression-happy",
+        "expression-excited",
+        "expression-laughing",
+        "expression-angry",
+        "expression-confused",
+        "expression-thinking",
+        "expression-surprised",
+        "expression-sad",
+        "expression-crying",
+        "expression-sleepy",
+        "expression-curious",
+        "expression-celebrating",
+        "expression-embarrassed",
+        "expression-determined",
+        "expression-victory",
+        "expression-disappointed",
+        "pose-standing",
+        "pose-sitting",
+        "pose-walking",
+        "pose-running",
+        "pose-jumping",
+        "pose-waving",
+        "pose-pointing",
+        "pose-reading",
+        "pose-gaming",
+        "pose-working",
+        "pose-holding-objects",
+        "pose-celebrating"
+      ],
+      "prohibitedVariants": ["sacred-figure", "real-person-likeness", "third-party-logo"],
+      "masterAssetIds": [
+        "source/artwork/riot-universe/kuro-signal-model-sheet-master.png",
+        "source/artwork/riot-universe/kuro-signal-portrait-happy-master.png"
+      ],
+      "variantAssetIds": [
+        "source/artwork/riot-universe/kuro-signal-portrait-excited-master.png",
+        "source/artwork/riot-universe/kuro-signal-portrait-thinking-master.png",
+        "source/artwork/riot-universe/kuro-signal-portrait-celebrating-master.png",
+        "source/artwork/riot-universe/kuro-signal-fullbody-standing-master.png",
+        "illustrations/riot-universe/characters/kuro-signal-expression-happy.webp",
+        "illustrations/riot-universe/characters/kuro-signal-expression-excited.webp",
+        "illustrations/riot-universe/characters/kuro-signal-expression-thinking.webp",
+        "illustrations/riot-universe/characters/kuro-signal-expression-celebrating.webp",
+        "illustrations/riot-universe/characters/kuro-signal-pose-standing.webp",
+        "animation/kuro-signal-idle/kuro-signal-idle-clip.json",
+        "animation/kuro-signal-wave/kuro-signal-wave-clip.json",
+        "animation/kuro-signal-celebrate/kuro-signal-celebrate-clip.json"
+      ],
+      "license": "ISC",
+      "status": "approved"
+    },
+    {
+      "characterId": "vesper-ink",
+      "role": "zine-archivist",
+      "depictionPolicy": "identified-approved",
+      "silhouette": "asymmetric cropped silver-ink bob with forehead goggles and utility apron over rolled sleeves",
+      "outfit": "charcoal tee under scuffed utility apron with yellow binder clips, magenta tape strips, and crossbody satchel",
+      "paletteTokens": [
+        "ink-black",
+        "paper-cream",
+        "electric-violet",
+        "signal-cyan",
+        "signal-yellow",
+        "riot-magenta"
+      ],
+      "proportions": "stylized anime-cartoon 6 heads",
+      "signatureProps": ["forehead-tinted-goggles", "tape-patched-satchel", "brass-stylus"],
+      "allowedVariants": ["portrait"],
+      "prohibitedVariants": ["sacred-figure", "real-person-likeness", "third-party-logo"],
+      "masterAssetIds": ["source/artwork/riot-universe/vesper-ink-portrait-master.png"],
+      "variantAssetIds": [
+        "illustrations/riot-universe/characters/vesper-ink-portrait.webp",
+        "illustrations/riot-universe/characters/vesper-ink-portrait.png",
+        "illustrations/riot-universe/game/avatar-vesper.png"
+      ],
+      "license": "ISC",
+      "status": "approved"
     }
   ]
 }

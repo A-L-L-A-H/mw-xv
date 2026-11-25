@@ -44,7 +44,14 @@ import {
   type EpisodicMemoryItem,
   type RedTeamScenario,
 } from '@moonwitness/ai-runtime';
-import { isRecord, PlatformError, ValidationError, type JsonObject } from '@moonwitness/types';
+import {
+  DEFAULT_BOARD_ORIGIN,
+  DEFAULT_LOCALHOST_BOARD_ORIGIN,
+  isRecord,
+  PlatformError,
+  ValidationError,
+  type JsonObject,
+} from '@moonwitness/types';
 import { A2AMeshClient } from './a2a-client.js';
 import { searchHybridLocalMemory, type HybridMemoryRecord } from './hybrid-memory.js';
 import { DESKTOP_ADDONS, type LocalSidecarController } from './local-sidecar.js';
@@ -132,8 +139,8 @@ const STATIC_ALLOWED_CORS_ORIGINS: ReadonlySet<string> = new Set([
   'tauri://localhost',
   'http://tauri.localhost',
   'https://tauri.localhost',
-  'http://127.0.0.1:5173',
-  'http://localhost:5173',
+  DEFAULT_BOARD_ORIGIN,
+  DEFAULT_LOCALHOST_BOARD_ORIGIN,
 ]);
 
 const DEFAULT_STAGES: readonly {
@@ -341,17 +348,8 @@ function buildDesktopModePayload(mode: DesktopExperienceMode): {
 
 function isAllowedCorsOrigin(origin: string | undefined): boolean {
   if (!origin) return true;
-  if (STATIC_ALLOWED_CORS_ORIGINS.has(origin)) return true;
-  try {
-    const parsed = new URL(origin);
-    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-      return false;
-    }
-    const host = parsed.hostname.toLowerCase();
-    return host === '127.0.0.1' || host === 'localhost' || host === '::1' || host === '[::1]';
-  } catch {
-    return false;
-  }
+  // Strict allowlist only — no wildcard localhost fallback (TASK-EX-05 / TAUD-XX)
+  return STATIC_ALLOWED_CORS_ORIGINS.has(origin);
 }
 
 function isInternalModel(modelName: string): boolean {
@@ -696,12 +694,27 @@ export async function startLocalApiServer(
     }
   });
 
-  await app.register(cors, {
-    origin: (origin, cb) => {
+  // @fastify/cors is compiled against a different fastify patch release than this
+  // workspace, so its plugin signature is structurally incompatible with the app
+  // instance. Adapt the instance parameter without changing runtime behaviour.
+  const corsPlugin = cors as unknown as (
+    instance: FastifyInstance,
+    options: Parameters<typeof cors>[1],
+    done: Parameters<typeof cors>[2]
+  ) => void;
+
+  await app.register(corsPlugin, {
+    origin: (origin: string | undefined, cb: (err: Error | null, allow: boolean) => void) => {
       cb(null, isAllowedCorsOrigin(origin));
     },
     credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-mw-desktop-token', 'x-request-id'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'x-company-id',
+      'x-mw-desktop-token',
+      'x-request-id',
+    ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   });
 
@@ -1010,26 +1023,59 @@ export async function startLocalApiServer(
     }
   );
 
-  app.get<{ Querystring: { limit?: string } }>('/notifications/inbox', async (req, reply) => {
-    if (!req.auth) {
-      return reply.code(401).send({ success: false, error: 'Authentication required' });
+  const notificationInboxRateLimitMax = 60;
+  const notificationInboxRateLimitWindowMs = 60_000;
+  const notificationInboxRateLimitWindows = new Map<string, { startedAt: number; count: number }>();
+
+  app.get<{ Querystring: { limit?: string } }>(
+    '/notifications/inbox',
+    {
+      preHandler: async (req, reply) => {
+        // Unauthenticated requests keep the handler's existing 401 response and do not consume quota.
+        if (!req.auth) return;
+        const key = `${req.auth.companyId}:${req.auth.userId}`;
+        const now = Date.now();
+        let rateWindow = notificationInboxRateLimitWindows.get(key);
+        if (!rateWindow || now - rateWindow.startedAt >= notificationInboxRateLimitWindowMs) {
+          rateWindow = { startedAt: now, count: 0 };
+          notificationInboxRateLimitWindows.set(key, rateWindow);
+        }
+        rateWindow.count += 1;
+        if (rateWindow.count > notificationInboxRateLimitMax) {
+          const retryAfterSeconds = Math.max(
+            1,
+            Math.ceil((rateWindow.startedAt + notificationInboxRateLimitWindowMs - now) / 1_000)
+          );
+          return reply.code(429).header('retry-after', retryAfterSeconds).send({
+            success: false,
+            error: 'Rate limit exceeded',
+            code: 'RATE_LIMITED',
+            requestId: req.id,
+          });
+        }
+      },
+    },
+    async (req, reply) => {
+      if (!req.auth) {
+        return reply.code(401).send({ success: false, error: 'Authentication required' });
+      }
+      const limit = Number(req.query.limit ?? 20);
+      if (!Number.isInteger(limit) || limit < 1 || limit > 200) {
+        return reply.code(400).send({ success: false, error: 'limit must be between 1 and 200' });
+      }
+      if (!(await db.schema.hasTable('notification_notifications'))) {
+        return { success: true, data: [], unreadCount: 0 };
+      }
+      const notifications = await db('notification_notifications')
+        .orderBy('id', 'desc')
+        .limit(limit)
+        .select('*');
+      const unreadCount = await countTableRows('notification_notifications', (qb) =>
+        qb.where({ read: false })
+      ).catch(() => 0);
+      return { success: true, data: notifications, unreadCount };
     }
-    const limit = Number(req.query.limit ?? 20);
-    if (!Number.isInteger(limit) || limit < 1 || limit > 200) {
-      return reply.code(400).send({ success: false, error: 'limit must be between 1 and 200' });
-    }
-    if (!(await db.schema.hasTable('notification_notifications'))) {
-      return { success: true, data: [], unreadCount: 0 };
-    }
-    const notifications = await db('notification_notifications')
-      .orderBy('id', 'desc')
-      .limit(limit)
-      .select('*');
-    const unreadCount = await countTableRows('notification_notifications', (qb) =>
-      qb.where({ read: false })
-    ).catch(() => 0);
-    return { success: true, data: notifications, unreadCount };
-  });
+  );
 
   // INV-014 Addon HTTP plugins (project & workflow)
   const addonHostContext: AddonHttpHostContext = {
@@ -2450,7 +2496,10 @@ export async function startLocalApiServer(
     value === 'mesh';
 
   // Centralized Desktop Logs (active in BOTH Workspace & DX modes)
-  app.get('/api/desktop/logs', async (req) => {
+  app.get('/api/desktop/logs', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
     const query = isRecord(req.query) ? req.query : {};
     const level = query.level === 'all' || isDesktopLogLevel(query.level) ? query.level : undefined;
     const source =
@@ -2480,6 +2529,9 @@ export async function startLocalApiServer(
   });
 
   app.post('/api/desktop/logs/ingest', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
     const body = isRecord(req.body) ? req.body : {};
     const message = typeof body.message === 'string' ? body.message.trim() : '';
     if (!message) {
@@ -2504,12 +2556,18 @@ export async function startLocalApiServer(
     return { success: true, entry };
   });
 
-  app.post('/api/desktop/logs/clear', async () => {
+  app.post('/api/desktop/logs/clear', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
     logHub.clear();
     return { success: true, cleared: true };
   });
 
-  app.get('/api/desktop/logs/bundle', async () => {
+  app.get('/api/desktop/logs/bundle', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
     const markdown = logHub.formatBundle({
       appVersion: '1.0.0-rc.1',
       platform: process.platform,

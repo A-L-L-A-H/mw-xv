@@ -1,12 +1,9 @@
 import type { AddonHttpPlugin } from '@moonwitness/orm';
+import { isRecord } from '@moonwitness/types';
 import {
   provisionResearchActorIdentity,
   ResearchActorIdentityProvisioningError,
 } from '../research-actor-identity.js';
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 interface ProvisionBody {
   target_user_id: number;

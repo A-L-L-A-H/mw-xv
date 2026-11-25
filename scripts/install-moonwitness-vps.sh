@@ -5,7 +5,7 @@ set -euo pipefail
 # Idempotent POSIX/bash installer for Ubuntu/Debian VPS nodes.
 # Clones/updates MoonWitness, generates redacted secrets (chmod 600),
 # starts EasyTier P2P mesh, installs moonwitness-control-plane.service,
-# and launches the Docker Compose stack (postgres, api, board).
+# and launches the Docker Compose stack (postgres, api, board, workers, sandbox).
 
 MW_INSTALL_DIR="${MW_INSTALL_DIR:-/opt/moonwitness-xv}"
 MW_REPO_URL="${MW_REPO_URL:-https://github.com/moonwitness/mw-xv.git}"
@@ -55,11 +55,31 @@ ensure_env_kv() {
   local file="$1"
   local key="$2"
   local value="$3"
-  local existing
+  local existing replacement
   existing="$(get_env_value "$file" "$key" || true)"
-  if [ -z "$existing" ]; then
-    printf '%s=%s\n' "$key" "$value" >>"$file"
+  if [ "$existing" = "$value" ]; then
+    return
   fi
+
+  replacement="$(mktemp "${file}.XXXXXX")"
+  if [ -f "$file" ]; then
+    awk -F= -v k="$key" -v v="$value" '
+      BEGIN { replaced = 0 }
+      $1 == k {
+        if (!replaced) print k "=" v
+        replaced = 1
+        next
+      }
+      { print }
+      END {
+        if (!replaced) print k "=" v
+      }
+    ' "$file" >"$replacement"
+  else
+    printf '%s=%s\n' "$key" "$value" >"$replacement"
+  fi
+  chmod 600 "$replacement"
+  mv -f "$replacement" "$file"
 }
 
 redact_secret() {
@@ -95,7 +115,7 @@ configure_app_env() {
   touch "${MW_ENV_FILE}"
   chmod 600 "${MW_ENV_FILE}"
 
-  local pg_pass jwt_secret metrics_token superadmin_login superadmin_pass
+  local pg_pass jwt_secret metrics_token observability_token sandbox_token superadmin_login superadmin_pass
   pg_pass="$(get_env_value "${MW_ENV_FILE}" "POSTGRES_PASSWORD" || true)"
   [ -n "$pg_pass" ] || pg_pass="$(generate_secret 32)"
 
@@ -104,6 +124,16 @@ configure_app_env() {
 
   metrics_token="$(get_env_value "${MW_ENV_FILE}" "METRICS_TOKEN" || true)"
   [ -n "$metrics_token" ] || metrics_token="$(generate_secret 40)"
+
+  observability_token="$(get_env_value "${MW_ENV_FILE}" "OBSERVABILITY_INGEST_TOKEN" || true)"
+  if [ "${#observability_token}" -lt 32 ]; then
+    observability_token="$(generate_secret 48)"
+  fi
+
+  sandbox_token="$(get_env_value "${MW_ENV_FILE}" "AGENT_SANDBOX_TOKEN" || true)"
+  if [ "${#sandbox_token}" -lt 32 ]; then
+    sandbox_token="$(generate_secret 48)"
+  fi
 
   superadmin_login="$(get_env_value "${MW_ENV_FILE}" "SUPERADMIN_LOGIN" || true)"
   [ -n "$superadmin_login" ] || superadmin_login="${SUPERADMIN_LOGIN:-admin}"
@@ -115,6 +145,8 @@ configure_app_env() {
   ensure_env_kv "${MW_ENV_FILE}" "JWT_SECRET" "${jwt_secret}"
   ensure_env_kv "${MW_ENV_FILE}" "MW_INTERNAL_SECRET" "${jwt_secret}"
   ensure_env_kv "${MW_ENV_FILE}" "METRICS_TOKEN" "${metrics_token}"
+  ensure_env_kv "${MW_ENV_FILE}" "OBSERVABILITY_INGEST_TOKEN" "${observability_token}"
+  ensure_env_kv "${MW_ENV_FILE}" "AGENT_SANDBOX_TOKEN" "${sandbox_token}"
   ensure_env_kv "${MW_ENV_FILE}" "SUPERADMIN_LOGIN" "${superadmin_login}"
   ensure_env_kv "${MW_ENV_FILE}" "SUPERADMIN_INITIAL_PASSWORD" "${superadmin_pass}"
   ensure_env_kv "${MW_ENV_FILE}" "SUPERADMIN_PASSWORD" "${superadmin_pass}"
@@ -185,8 +217,8 @@ EnvironmentFile=${MW_ENV_FILE}
 EnvironmentFile=${MW_MESH_ENV_FILE}
 Environment=MW_CONTROL_PLANE_BIND_MESH=${mesh_ip}:${MW_CONTROL_PLANE_PORT}
 Environment=MW_CONTROL_PLANE_BIND_LOOPBACK=127.0.0.1:${MW_CONTROL_PLANE_PORT}
-ExecStart=/usr/bin/docker compose -f ${MW_INSTALL_DIR}/docker-compose.yml up --build control-plane
-ExecStop=/usr/bin/docker compose -f ${MW_INSTALL_DIR}/docker-compose.yml stop control-plane
+ExecStart=/usr/bin/docker compose -f ${MW_INSTALL_DIR}/deploy/compose/docker-compose.yml up --build control-plane
+ExecStop=/usr/bin/docker compose -f ${MW_INSTALL_DIR}/deploy/compose/docker-compose.yml stop control-plane
 Restart=always
 RestartSec=5
 
@@ -196,20 +228,26 @@ EOF
 
   if command -v systemctl >/dev/null 2>&1 && [ -d /run/systemd/system ]; then
     systemctl daemon-reload
-    systemctl enable --now moonwitness-control-plane.service
+    systemctl enable moonwitness-control-plane.service
   else
-    log "systemd not active; starting control-plane via docker compose directly"
-    docker compose -f "${MW_INSTALL_DIR}/docker-compose.yml" --env-file "${MW_ENV_FILE}" up -d --build control-plane
+    log "systemd not active; control-plane will be started via docker compose directly"
   fi
 }
 
 start_compose_stack() {
-  log "Starting MoonWitness stack (postgres, api, board) via docker compose"
+  log "Starting MoonWitness stack (postgres, api, board, jobs-worker, jobs-scheduler, outbox-worker, agent-sandbox) via docker compose"
   docker compose \
-    -f "${MW_INSTALL_DIR}/docker-compose.yml" \
-    -f "${MW_INSTALL_DIR}/docker-compose.production.yml" \
+    -f "${MW_INSTALL_DIR}/deploy/compose/docker-compose.yml" \
+    -f "${MW_INSTALL_DIR}/deploy/compose/docker-compose.production.yml" \
     --env-file "${MW_ENV_FILE}" \
-    up -d --build postgres api board
+    up -d --build postgres api board jobs-worker jobs-scheduler outbox-worker agent-sandbox
+
+  if command -v systemctl >/dev/null 2>&1 && [ -d /run/systemd/system ]; then
+    systemctl restart moonwitness-control-plane.service
+  else
+    log "systemd not active; starting control-plane via docker compose directly"
+    docker compose -f "${MW_INSTALL_DIR}/deploy/compose/docker-compose.yml" --env-file "${MW_ENV_FILE}" up -d --build control-plane
+  fi
 }
 
 probe_http_status() {

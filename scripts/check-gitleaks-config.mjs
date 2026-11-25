@@ -89,9 +89,19 @@ const historicalFalsePositiveLines = [
   ]),
   String.raw`^\s*- Add adapter fixtures for API pagination, missing[/]duplicate checks, stale snapshots, revoked permissions, and malformed/untrusted webhook or issue events\.$`,
 ];
+// Exact single-line fixtures added when the control-plane workstream's historical
+// test literals and the pinned vendor commit SHA were reviewed.
+const reviewedWorkstreamLines = [
+  'mesh-cidr-fixture',
+  'mesh-canonical-cidr-test-secret-0123456789',
+  'peer-key-gamma-fixture',
+  'peer-key-gamma-0123456789abcdef01234567',
+  'FREELLMAPI_COMMIT_SHA: cd65d6485788dfc7828f06c1147cdea207b28322',
+];
 export const expectedAllowlistExpressions = [
   ...allowedLines.map(({ source }) => source),
   ...historicalFalsePositiveLines,
+  ...reviewedWorkstreamLines,
 ];
 
 export function validateGitleaksSetup(workflow, config) {

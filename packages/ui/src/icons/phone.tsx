@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type PhoneIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function PhoneIcon({ size = 24, title, ...props }: PhoneIconProps) {
+const PhoneIcon = forwardRef<SVGSVGElement, PhoneIconProps>(function PhoneIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -26,4 +30,8 @@ export function PhoneIcon({ size = 24, title, ...props }: PhoneIconProps) {
       <path d="M7.2 3.5h3l1.4 4.1-2.1 1.8a15.6 15.6 0 0 0 5.1 5.1l1.8-2.1 4.1 1.4v3a2 2 0 0 1-2.2 2A16.8 16.8 0 0 1 5.2 5.7a2 2 0 0 1 2-2.2Z" />
     </svg>
   );
-}
+});
+
+PhoneIcon.displayName = 'PhoneIcon';
+
+export { PhoneIcon };

@@ -7,9 +7,9 @@ Status: Approved (Opsi 1 — Worker-Driven Reconciliation + Zero-Config Runtime 
 
 Close the operational, security, and lifecycle loops across four subsystems:
 
-1. **Zero-Config Internal Bearer Auth & Network Isolation** (`apps/isp`, `apps/control-plane`, `packages/orm-isp`, `packages/orm-cloud`, `scripts/run-local-services.mjs`, `docker-compose.yml`)
+1. **Zero-Config Internal Bearer Auth & Network Isolation** (`apps/isp`, `apps/control-plane`, `packages/orm-isp`, `packages/orm-cloud`, `scripts/run-local-services.mjs`, `deploy/compose/docker-compose.yml`)
 2. **ISP Closed-Loop Session Sync, Metering, Outbox Retry & RFC 5176 CoA/Disconnect** (`apps/isp`, `packages/orm-isp`, `apps/api` jobs worker/scheduler)
-3. **Cloud Safe Container Naming/Redeploy, Real Streaming Logs SSE & Compose Fixes** (`apps/control-plane`, `packages/orm-cloud`, `docker-compose.yml`)
+3. **Cloud Safe Container Naming/Redeploy, Real Streaming Logs SSE & Compose Fixes** (`apps/control-plane`, `packages/orm-cloud`, `deploy/compose/docker-compose.yml`)
 4. **Active Health Probes for HA Failover** (`packages/orm-isp`, `packages/orm-cloud`, `apps/api` jobs worker/scheduler)
 
 ## 1. Zero-Config Internal Auth & Network Isolation
@@ -34,7 +34,7 @@ Runtime enforcement:
 
 - `GET /health` remains unauthenticated for container/orchestrator liveness probes.
 - All other HTTP endpoints require `Authorization: Bearer <token>` verified via constant-time comparison; missing/invalid credentials fail closed with `401 Unauthorized`.
-- Default HTTP bind addresses use `127.0.0.1` (`127.0.0.1:3000` in `apps/isp`, `127.0.0.1:3003` in `apps/control-plane`). In `docker-compose.yml`, host port mappings bind `127.0.0.1:3002:3000` and `127.0.0.1:3003:3003` while RADIUS UDP (`1812/udp`, `1813/udp`) remains reachable for NAS routers.
+- Default HTTP bind addresses use `127.0.0.1` (`127.0.0.1:3000` in `apps/isp`, `127.0.0.1:3003` in `apps/control-plane`). In `deploy/compose/docker-compose.yml`, host port mappings bind `127.0.0.1:3002:3000` and `127.0.0.1:3003:3003` while RADIUS UDP (`1812/udp`, `1813/udp`) remains reachable for NAS routers.
 - `scripts/run-local-services.mjs` generates an ephemeral CSPRNG `MW_INTERNAL_SECRET` per run if unset and passes it to child processes.
 
 ## 2. ISP Closed-Loop Sync, Metering, Outbox & RFC 5176 CoA
@@ -56,7 +56,7 @@ Runtime enforcement:
 - **`packages/orm-cloud` (`http.ts`):**
   - Forward Bearer auth on all control-plane calls and pass `name: cloudApp.name` in `/api/deploy`.
   - Upgrade `GET /api/cloud/deployments/:id/logs` to fetch live tail logs when `container_id` is present (falling back to stored `deployment.log`), and upgrade `GET /api/cloud/deployments/:id/logs/stream` to proxy live SSE chunks from `control-plane` with client-disconnect abort handling.
-- **`docker-compose.yml`:**
+- **`deploy/compose/docker-compose.yml`:**
   - Fix `control-plane` build context (`./apps/control-plane`, `Dockerfile: Dockerfile`) and `depends_on` service names (`postgres`, `gowa`, `radius`).
   - Pass `MW_INTERNAL_SECRET=${MW_INTERNAL_SECRET:-${JWT_SECRET:-}}` and remove static hardcoded `MW_ISP_ADMIN_TOKEN`.
 

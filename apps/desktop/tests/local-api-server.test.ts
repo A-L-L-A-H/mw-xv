@@ -193,6 +193,68 @@ describe('LocalApiServer & Desktop Importer', () => {
     expect(Array.isArray(inboxBody.data)).toBe(true);
   });
 
+  it('rate-limits the authenticated notification inbox without changing auth or other routes', async () => {
+    const tempHome = makeTempDir('mw-desktop-inbox-rate-limit-');
+    const daemon = await startDesktopSidecarDaemon({
+      repoRoot: process.cwd(),
+      desktopHomeDir: tempHome,
+      sqlitePath: path.join(tempHome, 'local.db'),
+      boardOrigin: 'http://127.0.0.1:5173',
+      apiBaseUrl: 'http://127.0.0.1:4242',
+      healthPort: 0,
+      apiPort: 0,
+      offlineMode: true,
+      installAddonsOnStart: true,
+    });
+    handles.push(daemon);
+
+    const inboxUrl = `${daemon.apiUrl}/notifications/inbox?limit=20`;
+    const unauthenticated = await fetch(inboxUrl);
+    expect(unauthenticated.status).toBe(401);
+    expect(await unauthenticated.json()).toEqual({
+      success: false,
+      error: 'Authentication required',
+    });
+
+    const loginRes = await fetch(`${daemon.apiUrl}/auth/login`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ login: 'local', password: 'local-offline-session' }),
+    });
+    expect(loginRes.status).toBe(200);
+    const loginBody = (await loginRes.json()) as { data: { access_token: string } };
+    const authHeaders = { authorization: `Bearer ${loginBody.data.access_token}` };
+
+    const allowedResponses = await Promise.all(
+      Array.from({ length: 60 }, () => fetch(inboxUrl, { headers: authHeaders }))
+    );
+    expect(allowedResponses.map((response) => response.status)).toEqual(
+      Array.from({ length: 60 }, () => 200)
+    );
+    await Promise.all(allowedResponses.map((response) => response.arrayBuffer()));
+
+    const limited = await fetch(inboxUrl, { headers: authHeaders });
+    expect(limited.status).toBe(429);
+    expect(Number(limited.headers.get('retry-after'))).toBeGreaterThan(0);
+    expect(await limited.json()).toEqual({
+      success: false,
+      error: 'Rate limit exceeded',
+      code: 'RATE_LIMITED',
+      requestId: expect.any(String),
+    });
+
+    const unauthenticatedAfterLimit = await fetch(inboxUrl);
+    expect(unauthenticatedAfterLimit.status).toBe(401);
+    expect(await unauthenticatedAfterLimit.json()).toEqual({
+      success: false,
+      error: 'Authentication required',
+    });
+
+    const otherRoute = await fetch(`${daemon.apiUrl}/auth/me`, { headers: authHeaders });
+    expect(otherRoute.status).toBe(200);
+    await otherRoute.arrayBuffer();
+  });
+
   it('imports moonwitness-tasks/v2 JSON idempotently by external_ref', async () => {
     const tempHome = makeTempDir('mw-desktop-import-');
     const sqlitePath = path.join(tempHome, 'local.db');
@@ -768,6 +830,17 @@ describe('LocalApiServer & Desktop Importer', () => {
       'content-type': 'application/json',
     };
 
+    const preflight = await fetch(`${daemon.apiUrl}/api/models`, {
+      method: 'OPTIONS',
+      headers: {
+        origin: 'http://127.0.0.1:5173',
+        'access-control-request-method': 'GET',
+        'access-control-request-headers': 'content-type,x-company-id',
+      },
+    });
+    expect(preflight.status).toBeLessThan(400);
+    expect(preflight.headers.get('access-control-allow-headers')).toContain('x-company-id');
+
     // 1. Sleep-Dream works in workspace mode
     const sleepWs = await fetch(`${daemon.apiUrl}/api/desktop/ai/sleep-dream`, {
       method: 'POST',
@@ -913,10 +986,33 @@ describe('LocalApiServer & Desktop Importer', () => {
     const missingRes = await fetch(`${daemon.apiUrl}/api/non-existent-route-for-log-test`);
     expect(missingRes.status).toBeGreaterThanOrEqual(400);
 
+    // Unauthenticated requests should return 401
+    const unauthEndpoints = [
+      { method: 'GET', path: '/api/desktop/logs' },
+      { method: 'POST', path: '/api/desktop/logs/ingest' },
+      { method: 'POST', path: '/api/desktop/logs/clear' },
+      { method: 'GET', path: '/api/desktop/logs/bundle' },
+    ];
+    for (const { method, path } of unauthEndpoints) {
+      const res = await fetch(`${daemon.apiUrl}${path}`, { method });
+      expect(res.status).toBe(401);
+      expect(await res.json()).toEqual({ success: false, error: 'Authentication required' });
+    }
+
+    // Login to get token
+    const loginRes = await fetch(`${daemon.apiUrl}/auth/login`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ login: 'local', password: 'local-offline-session' }),
+    });
+    expect(loginRes.status).toBe(200);
+    const loginBody = (await loginRes.json()) as { data: { access_token: string } };
+    const authHeaders = { authorization: `Bearer ${loginBody.data.access_token}` };
+
     // Ingest a webview error in workspace mode
     const ingestRes = await fetch(`${daemon.apiUrl}/api/desktop/logs/ingest`, {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: { 'content-type': 'application/json', ...authHeaders },
       body: JSON.stringify({
         level: 'error',
         source: 'webview',
@@ -934,7 +1030,9 @@ describe('LocalApiServer & Desktop Importer', () => {
     expect(ingestBody.entry.source).toBe('webview');
 
     // List logs in workspace mode
-    const listRes = await fetch(`${daemon.apiUrl}/api/desktop/logs?level=all&source=all`);
+    const listRes = await fetch(`${daemon.apiUrl}/api/desktop/logs?level=all&source=all`, {
+      headers: authHeaders,
+    });
     expect(listRes.status).toBe(200);
     const listBody = (await listRes.json()) as {
       success: boolean;
@@ -951,7 +1049,9 @@ describe('LocalApiServer & Desktop Importer', () => {
     ).toBe(true);
 
     // Fetch diagnostic bundle in workspace mode
-    const bundleRes = await fetch(`${daemon.apiUrl}/api/desktop/logs/bundle`);
+    const bundleRes = await fetch(`${daemon.apiUrl}/api/desktop/logs/bundle`, {
+      headers: authHeaders,
+    });
     expect(bundleRes.status).toBe(200);
     const bundleBody = (await bundleRes.json()) as {
       success: boolean;
@@ -963,9 +1063,14 @@ describe('LocalApiServer & Desktop Importer', () => {
     expect(bundleBody.entryCount).toBeGreaterThanOrEqual(2);
 
     // Clear logs in workspace mode
-    const clearRes = await fetch(`${daemon.apiUrl}/api/desktop/logs/clear`, { method: 'POST' });
+    const clearRes = await fetch(`${daemon.apiUrl}/api/desktop/logs/clear`, {
+      method: 'POST',
+      headers: authHeaders,
+    });
     expect(clearRes.status).toBe(200);
-    const afterClear = (await (await fetch(`${daemon.apiUrl}/api/desktop/logs`)).json()) as {
+    const afterClear = (await (
+      await fetch(`${daemon.apiUrl}/api/desktop/logs`, { headers: authHeaders })
+    ).json()) as {
       entries: unknown[];
       total: number;
     };

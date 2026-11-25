@@ -33,6 +33,18 @@ Files:
 - [Existing legacy source matrix](../../migration/SOURCE-MIGRATION-MATRIX.md)
 - [Retirement gates](../../migration/MIGRATION-ACCEPTANCE.md)
 
+### 2026-11-24 endpoint cross-check (additive)
+
+A later pass re-queried the same owner with a different GitHub API endpoint. The counts are **endpoint-specific and must not be collapsed into one fact**:
+
+| Query                                                               | Result | Note                                                       |
+| ------------------------------------------------------------------- | -----: | ---------------------------------------------------------- |
+| 3 × paginated `GET /search/repositories?q=user:bjo163` (2026-11-23) |    280 | 148 public + 132 private; the census used above            |
+| `GET /search/repositories?q=user:bjo163&per_page=1` (2026-11-24)    |     90 | current search index result                                |
+| `gh repo list bjo163 --limit 500` (2026-11-24)                      |    150 | 148 public + 2 private + 1 archived (`moonwitness-memory`) |
+
+The 148-public figure is stable across the 2026-11-23 and 2026-11-24 observations. `moonwitness-memory` was verified as archived on 2026-11-24 and its README describes a **local** ChatGPT-ZIP ingestion engine (import, SHA-256, SQLite/FTS5, Gemini extraction, optional Drive backup). It is an intake _tool_, not the source export itself; no conversation history was recovered from it. Any future count in this report must name the endpoint and date used. No repository was created, modified, archived or deleted by either pass.
+
 ### Depth of audit
 
 | Level                                     | Count | Work performed                                                              |

@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type NotificationIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function NotificationIcon({ size = 24, title, ...props }: NotificationIconProps) {
+const NotificationIcon = forwardRef<SVGSVGElement, NotificationIconProps>(function NotificationIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -27,4 +31,8 @@ export function NotificationIcon({ size = 24, title, ...props }: NotificationIco
       <path d="M12 3V1.8" />
     </svg>
   );
-}
+});
+
+NotificationIcon.displayName = 'NotificationIcon';
+
+export { NotificationIcon };

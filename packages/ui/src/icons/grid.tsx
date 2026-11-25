@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type GridIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function GridIcon({ size = 24, title, ...props }: GridIconProps) {
+const GridIcon = forwardRef<SVGSVGElement, GridIconProps>(function GridIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -29,4 +33,8 @@ export function GridIcon({ size = 24, title, ...props }: GridIconProps) {
       <rect x="13" y="13" width="8" height="8" rx="1" />
     </svg>
   );
-}
+});
+
+GridIcon.displayName = 'GridIcon';
+
+export { GridIcon };

@@ -1,58 +1,26 @@
 'use client';
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@moonwitness/ui/components/dialog';
-import { Button } from '@moonwitness/ui/components/button';
+import type { ReactNode } from 'react';
+import { ConfirmDialog as UiConfirmDialog } from '@moonwitness/ui/components/confirm-dialog';
 
 export interface ConfirmDialogProps {
   open: boolean;
-  title: string;
-  description: string;
+  onOpenChange?: (open: boolean) => void;
+  title: ReactNode;
+  description?: ReactNode;
+  warningBanner?: ReactNode;
+  consequence?: ReactNode;
   confirmLabel?: string;
   cancelLabel?: string;
   destructive?: boolean;
   busy?: boolean;
+  error?: ReactNode;
   onConfirm: () => void;
   onCancel?: () => void;
+  className?: string;
 }
 
-export function ConfirmDialog({
-  open,
-  title,
-  description,
-  confirmLabel = 'Confirm',
-  cancelLabel = 'Cancel',
-  destructive = false,
-  busy = false,
-  onConfirm,
-  onCancel,
-}: ConfirmDialogProps) {
-  return (
-    <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && !busy && onCancel?.()}>
-      <DialogContent showCloseButton={!busy}>
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button variant="outline" onClick={onCancel} disabled={busy}>
-            {cancelLabel}
-          </Button>
-          <Button
-            variant={destructive ? 'destructive' : 'default'}
-            onClick={onConfirm}
-            disabled={busy}
-          >
-            {busy ? 'Working…' : confirmLabel}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
+/** Board-scoped confirmation wrapper delegated to @moonwitness/ui/components/confirm-dialog. */
+export function ConfirmDialog(props: ConfirmDialogProps) {
+  return <UiConfirmDialog {...props} />;
 }

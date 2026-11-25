@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { sha256Hex } from '@moonwitness/types/node';
 import { execFileSync } from 'node:child_process';
 import { readFile, writeFile } from 'node:fs/promises';
 import { setTimeout as sleep } from 'node:timers/promises';
@@ -17,10 +17,6 @@ const maximumApplyBatchSize = 5;
  * @typedef {{ number: number, title: string, body: string, state: 'open'|'closed', labels?: Array<{name: string}>, milestone?: {number: number, title: string}|null, assignees?: Array<{login: string}>, pull_request?: unknown }} RemoteIssue
  * @typedef {{ taskId: string, operation: 'create'|'update'|'noop'|'conflict', issueNumber?: number, reason?: string, title: string, body: string, labels?: string[], assignees?: string[], managedLabels?: string[], managedAssignees?: string[], milestoneTitle?: string, expectedTitle?: string, expectedManagedBlock?: string, expectedMilestoneTitle?: string, expectedIssueState?: 'open'|'closed', closeIssue?: true }} IssueOperation
  */
-
-function sha256(value) {
-  return createHash('sha256').update(value).digest('hex');
-}
 
 function replaceManagedBlock(body, block) {
   const currentBlock = readManagedBlock(body);
@@ -131,9 +127,21 @@ export function renderTaskCardDetails(markdown, taskId) {
   const deliverable = field('Deliverable');
   const fileScope = field('File scope');
   const verification = field('Verification target');
+  const executionSteps = subsection(card, 'Execution steps');
+  const boundedFileScope = subsection(card, 'Bounded file scope');
+  const verificationSection =
+    subsection(card, 'Verification') || subsection(card, 'Focused verification');
+  const englishSteps = [
+    executionSteps,
+    boundedFileScope && `Bounded file scope:\n${boundedFileScope}`,
+    verificationSection && `Verification:\n${verificationSection}`,
+  ]
+    .filter(Boolean)
+    .join('\n\n');
   return {
     steps:
       subsection(card, 'Langkah pelaksanaan') ||
+      englishSteps ||
       [
         deliverable && `Deliver: ${deliverable}`,
         fileScope && `Stay within file scope: ${fileScope}`,
@@ -141,7 +149,10 @@ export function renderTaskCardDetails(markdown, taskId) {
       ]
         .filter(Boolean)
         .join('\n'),
-    acceptance: subsection(card, 'Verifikasi dan syarat selesai') || field('Acceptance'),
+    acceptance:
+      subsection(card, 'Verifikasi dan syarat selesai') ||
+      subsection(card, 'Acceptance criteria') ||
+      field('Acceptance'),
   };
 }
 
@@ -347,7 +358,7 @@ export function planIssueSync({
       ...(closeIssue ? { closeIssue: true } : {}),
     };
   });
-  const inputHash = sha256(
+  const inputHash = sha256Hex(
     JSON.stringify({
       repositoryId,
       sourceSha,

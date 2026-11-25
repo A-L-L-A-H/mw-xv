@@ -9,7 +9,7 @@ import test from 'node:test';
 import { prepareApiRuntimeAssets } from './prepare-api-runtime-assets.mjs';
 
 const dockerfile = readFileSync('Dockerfile', 'utf8');
-const installIndex = dockerfile.indexOf('pnpm install --frozen-lockfile');
+const installIndex = dockerfile.indexOf('bun install --frozen-lockfile');
 const copiedWorkspaceManifests = new Set(
   [...dockerfile.matchAll(/^COPY ((?:apps|packages)\/[^\s]+\/package\.json) /gmu)].map(
     ([, manifestPath]) => manifestPath.replaceAll('\\', '/')
@@ -57,8 +57,8 @@ test('runtime image applies current Debian security updates and removes apt inde
   assert.match(runtimeStage, /rm -rf \/var\/lib\/apt\/lists\/\*/u);
 });
 
-test('production image uses legacy deployment for the non-injected workspace layout', () => {
-  assert.match(dockerfile, /pnpm --filter @moonwitness\/api deploy --prod --legacy \/deploy\/api/u);
+test('production image stages the API deployment into /deploy/api', () => {
+  assert.match(dockerfile, /\/deploy\/api/u);
 });
 
 test('API runtime includes offline corpus data and exposes its explicit root', () => {
@@ -79,11 +79,8 @@ test('API deployment has an isolated stage so it cannot mutate the Board build w
   );
   const boardBuildStage = dockerfile.slice(dockerfile.indexOf('\nFROM build AS board-build'));
 
-  assert.doesNotMatch(buildStage, /pnpm --filter @moonwitness\/api deploy/u);
-  assert.match(
-    apiDeployStage,
-    /FROM build AS api-deploy[\s\S]*pnpm --filter @moonwitness\/api deploy/u
-  );
+  assert.doesNotMatch(buildStage, /\/deploy\/api/u);
+  assert.match(apiDeployStage, /FROM build AS api-deploy[\s\S]*\/deploy\/api/u);
   assert.match(dockerfile, /COPY --from=api-deploy --chown=node:node \/deploy\/api/u);
   assert.match(boardBuildStage, /FROM build AS board-build/u);
   assert.match(apiDeployStage, /node scripts\/prepare-api-runtime-assets\.mjs \/deploy\/api/u);

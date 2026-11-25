@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
+import { sha256Hex } from '@moonwitness/types/node';
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
@@ -7,7 +7,6 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const releaseWorkflow = path.join(repositoryRoot, '.github/workflows/release.yml');
-const sha256 = (value) => createHash('sha256').update(value).digest('hex');
 
 function parseArguments(args) {
   const options = new Map();
@@ -100,24 +99,29 @@ export function requiredGates(sourceSha, version) {
       id: 'workspace-release-version',
       phase: 'verify',
       status: 'not-run',
-      command: `pnpm release:check v${version}`,
+      command: `bun run release:check v${version}`,
     },
-    { id: 'lint', phase: 'verify', status: 'not-run', command: 'pnpm lint' },
-    { id: 'format', phase: 'verify', status: 'not-run', command: 'pnpm format:check' },
-    { id: 'typecheck', phase: 'verify', status: 'not-run', command: 'pnpm typecheck' },
-    { id: 'generated-docs', phase: 'verify', status: 'not-run', command: 'pnpm docs:check' },
+    { id: 'lint', phase: 'verify', status: 'not-run', command: 'bun run lint' },
+    { id: 'format', phase: 'verify', status: 'not-run', command: 'bun run format:check' },
+    { id: 'typecheck', phase: 'verify', status: 'not-run', command: 'bun run typecheck' },
+    {
+      id: 'generated-docs',
+      phase: 'verify',
+      status: 'not-run',
+      command: 'bun run docs:check:built',
+    },
     {
       id: 'board-lint',
       phase: 'verify',
       status: 'not-run',
-      command: 'pnpm --filter @moonwitness/board lint',
+      command: 'bun --filter @moonwitness/board lint',
     },
-    { id: 'unit', phase: 'verify', status: 'not-run', command: 'pnpm test:unit' },
+    { id: 'unit', phase: 'verify', status: 'not-run', command: 'bun run test:unit:built' },
     {
       id: 'postgres-integration',
       phase: 'verify',
       status: 'not-run',
-      command: 'pnpm test:integration',
+      command: 'bun run test:integration:built',
     },
     { id: 'api-board-image-build', phase: 'verify', status: 'not-run', command: 'docker build' },
     {
@@ -136,7 +140,7 @@ export function requiredGates(sourceSha, version) {
       id: 'production-compose-config',
       phase: 'verify',
       status: 'not-run',
-      command: 'docker compose -f docker-compose.production.yml config --quiet',
+      command: 'docker compose -f deploy/compose/docker-compose.production.yml config --quiet',
     },
     { id: 'api-board-spdx-sbom', phase: 'verify', status: 'not-run' },
     { id: 'artifact-transport-checksum', phase: 'publish', status: 'not-run' },
@@ -190,8 +194,8 @@ export function buildReleaseDryRunReport(
     const before = currentFiles.get(file.path) ?? '';
     fileChanges.push({
       path: file.path,
-      beforeSha256: sha256(before),
-      afterSha256: sha256(file.contents),
+      beforeSha256: sha256Hex(before),
+      afterSha256: sha256Hex(file.contents),
     });
     if (file.path.endsWith('package.json')) {
       const previous = JSON.parse(before);
@@ -277,7 +281,7 @@ async function run(options) {
   const workflow = await readFile(releaseWorkflow, 'utf8');
   const report = buildReleaseDryRunReport(preparation, currentFiles, repository);
   report.channel = channel;
-  report.releaseWorkflowSha256 = sha256(workflow);
+  report.releaseWorkflowSha256 = sha256Hex(workflow);
   const output = `${JSON.stringify(report, null, 2)}\n`;
   const outputPath = options.get('--output');
   if (outputPath) await writeFile(path.resolve(outputPath), output, { flag: 'wx' });

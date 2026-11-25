@@ -1,7 +1,10 @@
 import { defineConfig } from '@playwright/test';
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const basePath = process.env.MW_DOCS_BASE_PATH ?? '/moonwitness-xiv/';
 const baseUrl = `http://127.0.0.1:4178${basePath}`;
+const repositoryRoot = resolve(import.meta.dirname, '../..');
 
 export default defineConfig({
   testDir: './tests',
@@ -17,9 +20,10 @@ export default defineConfig({
   },
   webServer: {
     command:
-      'pnpm --filter @moonwitness/docs portal:build && pnpm --filter @moonwitness/docs exec vite preview --host 127.0.0.1 --port 4178 --strictPort',
+      'bun --filter @moonwitness/docs portal:build && bunx --cwd apps/docs vite preview --host 127.0.0.1 --port 4178 --strictPort',
+    cwd: repositoryRoot,
     url: baseUrl,
     reuseExistingServer: !process.env.CI,
-    timeout: 30_000,
+    timeout: 120_000,
   },
 });

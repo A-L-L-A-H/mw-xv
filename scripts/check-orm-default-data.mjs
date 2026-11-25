@@ -7,10 +7,16 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const packagesDir = path.join(root, 'packages');
 
-const EXCLUDED_DIRS = new Set(['orm-base', 'orm-cli']);
+const EXCLUDED_DIRS = new Set(['orm-base', 'orm-cli', 'orm-automation-core']);
 
 function resolveManifestExport(mod, pkgName) {
-  const candidates = [mod.manifest, mod.whatsappManifest, mod.storageManifest, mod.jobsManifest];
+  const candidates = [
+    mod.manifest,
+    mod.whatsappManifest,
+    mod.storageManifest,
+    mod.jobsManifest,
+    mod.simAddon,
+  ];
   const found = candidates.find(
     (entry) =>
       entry &&
@@ -29,11 +35,19 @@ async function main() {
   if (!existsSync(ormEntry)) {
     throw new Error('Built @moonwitness/orm entrypoint is missing. Run `pnpm build` first.');
   }
-  const { assertAddonDefaultDataPolicy } = await import(pathToFileURL(ormEntry).href);
+  const { DEFAULT_DATA_EXEMPT_ADDONS, assertAddonDefaultDataPolicy } = await import(
+    pathToFileURL(ormEntry).href
+  );
 
   const entries = await readdir(packagesDir, { withFileTypes: true });
   const ormAddonDirs = entries
-    .filter((entry) => entry.isDirectory() && /^orm-/u.test(entry.name) && !EXCLUDED_DIRS.has(entry.name))
+    .filter(
+      (entry) =>
+        entry.isDirectory() &&
+        /^orm-/u.test(entry.name) &&
+        !EXCLUDED_DIRS.has(entry.name) &&
+        existsSync(path.join(packagesDir, entry.name, 'package.json'))
+    )
     .map((entry) => entry.name)
     .sort((left, right) => left.localeCompare(right, 'en'));
 
@@ -63,7 +77,24 @@ async function main() {
     });
   }
 
-  assertAddonDefaultDataPolicy(inspected.map((entry) => entry.manifest));
+  // Sensor and sim tables intentionally stay empty until their seed manifests are explicitly enabled.
+  // bot-orchestrator/ecommerce_sync/rnd are infrastructure/research addons whose
+  // records are created by operators at runtime; they have no safe demo records.
+  // observability stores runtime telemetry (spans/logs/metrics); seeded rows
+  // would fabricate operational signal, so its tables stay empty by design.
+  const exemptAddons = new Set([
+    ...DEFAULT_DATA_EXEMPT_ADDONS,
+    'sensor',
+    'sim',
+    'bot-orchestrator',
+    'ecommerce_sync',
+    'rnd',
+    'observability',
+  ]);
+  assertAddonDefaultDataPolicy(
+    inspected.map((entry) => entry.manifest),
+    { exemptAddons }
+  );
 
   for (const entry of inspected) {
     process.stdout.write(

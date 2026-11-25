@@ -1,4 +1,5 @@
-import { createHash } from 'node:crypto';
+import { sha256Canonical } from './canonical-json.js';
+import { clampBps } from './sort-utils.js';
 import { createRedactor } from './redaction.js';
 
 export type SleepMemoryStatus = 'active' | 'decayed';
@@ -164,43 +165,12 @@ const DEFAULT_MIN_CONFIDENCE_BPS = 3000;
 const DEFAULT_MAX_SUMMARY_ITEMS_PER_TOPIC = 5;
 const DEFAULT_FEEDBACK_WEIGHT_BPS = 1000;
 
-function clampBps(value: number): number {
-  if (!Number.isFinite(value)) {
-    return 0;
-  }
-  return Math.max(0, Math.min(10_000, Math.round(value)));
-}
-
 function parseIsoMs(iso: string | undefined): number {
   if (!iso) {
     return 0;
   }
   const parsed = Date.parse(iso);
   return Number.isFinite(parsed) ? parsed : 0;
-}
-
-function canonicalizeValue(value: unknown): unknown {
-  if (Array.isArray(value)) {
-    return value.map((entry) => canonicalizeValue(entry));
-  }
-  if (value !== null && typeof value === 'object') {
-    const record = value as Record<string, unknown>;
-    const sorted: Record<string, unknown> = {};
-    for (const key of Object.keys(record).sort()) {
-      const entry = record[key];
-      if (entry !== undefined) {
-        sorted[key] = canonicalizeValue(entry);
-      }
-    }
-    return sorted;
-  }
-  return value;
-}
-
-function sha256Canonical(payload: unknown): string {
-  return createHash('sha256')
-    .update(JSON.stringify(canonicalizeValue(payload)))
-    .digest('hex');
 }
 
 function normalizeTopicKey(topicKey: string): string {

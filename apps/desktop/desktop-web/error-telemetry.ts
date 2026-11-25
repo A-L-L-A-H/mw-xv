@@ -205,19 +205,16 @@ export class DesktopErrorBoundary extends Component<
         className: 'flex min-h-dvh items-center justify-center bg-paper p-6 text-ink',
         role: 'alert',
       },
-      React.createElement(
-        Panel,
-        {
-          className: 'w-full max-w-xl',
-          title: 'Desktop View Interrupted',
-          description:
-            'An unexpected rendering error occurred. You can reload safely or copy a redacted diagnostic report for AI troubleshooting.',
-          actions: React.createElement(WarningIcon, {
-            className: 'size-5 text-destructive',
-            'aria-hidden': 'true',
-          }),
-        },
-        React.createElement(
+      React.createElement(Panel, {
+        className: 'w-full max-w-xl',
+        title: 'Desktop View Interrupted',
+        description:
+          'An unexpected rendering error occurred. You can reload safely or copy a redacted diagnostic report for AI troubleshooting.',
+        actions: React.createElement(WarningIcon, {
+          className: 'size-5 text-destructive',
+          'aria-hidden': 'true',
+        }),
+        children: React.createElement(
           'div',
           { className: 'flex flex-col gap-4' },
           React.createElement(
@@ -267,8 +264,8 @@ export class DesktopErrorBoundary extends Component<
               React.createElement('span', null, 'Reload View')
             )
           )
-        )
-      )
+        ),
+      })
     );
   }
 }

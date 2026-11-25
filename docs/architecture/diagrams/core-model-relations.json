@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "addons": ["auth", "base", "jobs", "notification"],
   "generatedFrom": "core addon manifests and model field metadata; no seed values included",
-  "sourceSha256": "7ce0f87bd2c7560ca15efd50e0b560cbb1d832e148ea7da291b4cdbaa461f061",
+  "sourceSha256": "bb14abc41c6073f2161c15b4f02090a6aff65c404e6aa786ab0e65df9341043f",
   "models": [
     {
       "name": "auth.refresh_token",
@@ -121,6 +121,10 @@
       "table": "users"
     },
     {
+      "name": "integration.payment_gateway_connector",
+      "table": "integration_payment_gateway_connectors"
+    },
+    {
       "name": "integration.webhook_delivery",
       "table": "integration_webhook_deliveries"
     },
@@ -215,6 +219,26 @@
     {
       "name": "notification.template",
       "table": "notification_templates"
+    },
+    {
+      "name": "observability.telemetry_log",
+      "table": "observability_logs"
+    },
+    {
+      "name": "observability.telemetry_metric_point",
+      "table": "observability_metric_points"
+    },
+    {
+      "name": "observability.telemetry_metric_series",
+      "table": "observability_metric_series"
+    },
+    {
+      "name": "observability.telemetry_span",
+      "table": "observability_spans"
+    },
+    {
+      "name": "observability.telemetry_state",
+      "table": "observability_state"
     },
     {
       "name": "organization.department",
@@ -597,6 +621,13 @@
       "field": "partner",
       "to": "base.partner",
       "cardinality": "1:1",
+      "kind": "belongsTo"
+    },
+    {
+      "from": "integration.payment_gateway_connector",
+      "field": "company",
+      "to": "base.company",
+      "cardinality": "N:1",
       "kind": "belongsTo"
     },
     {

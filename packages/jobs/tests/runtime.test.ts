@@ -33,6 +33,7 @@ describe('durable job runtime', () => {
   });
 
   it('validates typed payloads, deduplicates enqueue requests, and records a fenced run', async () => {
+    let claimedFencingToken: number | undefined;
     const unregister = registerJobHandler({
       name: 'test.echo',
       version: 1,
@@ -47,6 +48,7 @@ describe('durable job runtime', () => {
         return { message: payload.message };
       },
       async run(payload, context) {
+        claimedFencingToken = context.fencingToken;
         return {
           message: payload.message.toUpperCase(),
           companyId: context.env.context.companyId,
@@ -69,6 +71,7 @@ describe('durable job runtime', () => {
       );
       expect(secondId).toBe(firstId);
       expect(await runOneJob({ workerId: 'worker-a' })).toBe(true);
+      expect(claimedFencingToken).toBe(1);
       expect(await Job.query().findById(firstId)).toMatchObject({
         status: 'succeeded',
         attempts: 1,
@@ -943,6 +946,101 @@ describe('durable job runtime', () => {
       });
     } finally {
       finishDelivery();
+      unregister();
+    }
+  });
+
+  it('flips readiness off before draining and never claims new work after shutdown', async () => {
+    let announceStarted: () => void = () => undefined;
+    let finishHandler: () => void = () => undefined;
+    const started = new Promise<void>((resolve) => {
+      announceStarted = resolve;
+    });
+    const hold = new Promise<void>((resolve) => {
+      finishHandler = resolve;
+    });
+    const order: string[] = [];
+    const unregister = registerJobHandler({
+      name: 'test.drain-readiness',
+      version: 1,
+      parse(payload: unknown): { run: true } {
+        if (typeof payload !== 'object' || payload === null || !('run' in payload))
+          throw new Error('invalid payload');
+        return { run: true };
+      },
+      async run() {
+        announceStarted();
+        await hold;
+        order.push('handler-finished');
+        return { completed: true };
+      },
+    });
+    try {
+      const first = await enqueueJob('test.drain-readiness', { run: true });
+      const second = await enqueueJob('test.drain-readiness', { run: true });
+      const stop = new AbortController();
+      const loop = runWorkerLoop({ workerId: 'readiness-drain-worker' }, stop.signal, 60_000, {
+        drainTimeoutMs: 1_000,
+        onDrainStart: () => order.push('ready-false'),
+        onDrainComplete: (outcome) => order.push(`drained:${outcome.state}`),
+      });
+      await started;
+      stop.abort();
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      expect(order).toEqual(['ready-false']);
+      finishHandler();
+      await loop;
+      expect(order).toEqual(['ready-false', 'handler-finished', 'drained:drained']);
+      expect(await Job.query().findById(first)).toMatchObject({ status: 'succeeded' });
+      expect(await Job.query().findById(second)).toMatchObject({ status: 'queued', attempts: 0 });
+    } finally {
+      finishHandler();
+      unregister();
+    }
+  });
+
+  it('abandons an in-flight job on drain timeout without committing a stale result', async () => {
+    let announceStarted: () => void = () => undefined;
+    const started = new Promise<void>((resolve) => {
+      announceStarted = resolve;
+    });
+    const unregister = registerJobHandler({
+      name: 'test.drain-timeout',
+      version: 1,
+      parse(payload: unknown): { run: true } {
+        if (typeof payload !== 'object' || payload === null || !('run' in payload))
+          throw new Error('invalid payload');
+        return { run: true };
+      },
+      run(_payload, context) {
+        announceStarted();
+        return new Promise<{ completed: boolean }>((resolve) => {
+          context.signal.addEventListener('abort', () => resolve({ completed: true }), {
+            once: true,
+          });
+        });
+      },
+    });
+    try {
+      const jobId = await enqueueJob('test.drain-timeout', { run: true });
+      const stop = new AbortController();
+      let outcomeState = '';
+      const loop = runWorkerLoop({ workerId: 'timeout-drain-worker' }, stop.signal, 60_000, {
+        drainTimeoutMs: 100,
+        onDrainComplete: (outcome) => {
+          outcomeState = outcome.state;
+        },
+      });
+      await started;
+      stop.abort();
+      await loop;
+      expect(outcomeState).toBe('abandoned');
+      expect(await Job.query().findById(jobId)).toMatchObject({
+        status: 'cancelled',
+        lease_owner: null,
+      });
+      expect(await runOneJob({ workerId: 'later-worker' })).toBe(false);
+    } finally {
       unregister();
     }
   });

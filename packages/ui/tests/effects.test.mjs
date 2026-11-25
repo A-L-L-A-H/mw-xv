@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import { test } from 'node:test';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { JSDOM } from 'jsdom';
 import {
   AnimeActionLines,
   AnimeImpactBurst,
@@ -173,4 +175,112 @@ test('phase 3 raw-art primitives and magenta/cyan variants render expected data 
   assert.match(html, /data-accent="magenta" data-surface="ink"/u);
   assert.match(html, /data-treatment="brush" data-variant="magenta"/u);
   assert.match(html, /data-variant="cyan"/u);
+});
+
+test('SSR and pre-intersection animated primitives never freeze at opacity: 0 and gate entrance keyframes', async () => {
+  const componentCss = await readFile(
+    new URL('../src/styles/components.css', import.meta.url),
+    'utf8'
+  );
+  const ssrHtml = renderToStaticMarkup(
+    React.createElement(
+      React.Fragment,
+      null,
+      React.createElement(MangaPanel, null, 'Visible SSR MangaPanel'),
+      React.createElement(GrungeStamp, null, 'STAMP'),
+      React.createElement(SpeechBubble, null, 'Bubble'),
+      React.createElement(InkUnderline),
+      React.createElement(SpeedLines, { count: 3 })
+    )
+  );
+  assert.match(ssrHtml, /mw-ui-manga-panel mw-ui-motion-paused/u);
+  assert.match(ssrHtml, /mw-ui-grunge-stamp mw-ui-motion-paused/u);
+  assert.match(ssrHtml, /mw-ui-speech-bubble mw-ui-motion-paused/u);
+  assert.match(ssrHtml, /data-pulse-active="false"/u);
+
+  assert.match(
+    componentCss,
+    /\.mw-ui-grunge-stamp\.mw-ui-motion-visible\s*\{[^}]*mw-ui-anime-slam/u
+  );
+  assert.match(
+    componentCss,
+    /\.mw-ui-manga-panel\.mw-ui-motion-visible\s*\{[^}]*mw-ui-anime-slam/u
+  );
+  assert.match(
+    componentCss,
+    /\.mw-ui-speech-bubble\.mw-ui-motion-visible\s*\{[^}]*mw-ui-speech-pop/u
+  );
+  assert.match(
+    componentCss,
+    /\.mw-ui-motion-visible\s+\.mw-ui-ink-underline-path\s*\{[^}]*mw-ui-ink-draw/u
+  );
+});
+
+test('useAnimationVisibility re-attaches IntersectionObserver across conditional remounts', async () => {
+  const dom = new JSDOM('<!doctype html><html><body><div id="root"></div></body></html>');
+  const prevWindow = globalThis.window;
+  const prevDocument = globalThis.document;
+  const prevIO = globalThis.IntersectionObserver;
+  globalThis.window = dom.window;
+  globalThis.document = dom.window.document;
+  globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+
+  const observedTargets = [];
+  let disconnectCount = 0;
+  let activeCallback = null;
+  globalThis.IntersectionObserver = class {
+    constructor(cb) {
+      activeCallback = cb;
+    }
+    observe(target) {
+      observedTargets.push(target);
+    }
+    disconnect() {
+      disconnectCount += 1;
+    }
+  };
+
+  try {
+    const { act } = await import('react');
+    const { createRoot } = await import('react-dom/client');
+    const root = createRoot(document.getElementById('root'));
+
+    function ConditionalHost({ show, label }) {
+      return show ? React.createElement(GrungeStamp, null, label) : null;
+    }
+
+    await act(async () => {
+      root.render(React.createElement(ConditionalHost, { show: true, label: 'First' }));
+    });
+    assert.equal(observedTargets.length, 1);
+    assert.match(observedTargets[0].className, /mw-ui-motion-paused/u);
+
+    await act(async () => {
+      activeCallback([{ isIntersecting: true, intersectionRatio: 1 }]);
+    });
+    assert.match(observedTargets[0].className, /mw-ui-motion-visible/u);
+
+    await act(async () => {
+      root.render(React.createElement(ConditionalHost, { show: false, label: 'Hidden' }));
+    });
+    assert.ok(disconnectCount >= 1);
+
+    await act(async () => {
+      root.render(React.createElement(ConditionalHost, { show: true, label: 'Second' }));
+    });
+    assert.equal(observedTargets.length, 2);
+    assert.notEqual(observedTargets[1], observedTargets[0]);
+    assert.match(observedTargets[1].className, /mw-ui-motion-paused/u);
+
+    await act(async () => {
+      activeCallback([{ isIntersecting: true, intersectionRatio: 1 }]);
+    });
+    assert.match(observedTargets[1].className, /mw-ui-motion-visible/u);
+
+    await act(async () => root.unmount());
+  } finally {
+    globalThis.window = prevWindow;
+    globalThis.document = prevDocument;
+    globalThis.IntersectionObserver = prevIO;
+  }
 });

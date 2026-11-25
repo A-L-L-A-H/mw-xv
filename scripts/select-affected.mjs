@@ -18,17 +18,16 @@ const fullScopeFiles = new Set([
   '.gitignore',
   '.gitattributes',
   '.githooks',
-  'pnpm-lock.yaml',
-  'pnpm-workspace.yaml',
+  'bun.lock',
   'tsconfig.base.json',
   'eslint.config.js',
   '.prettierignore',
   '.prettierrc',
   'Dockerfile',
-  'docker-compose.yml',
-  'docker-compose.development.yml',
-  'docker-compose.smoke.yml',
-  'docker-compose.production.yml',
+  'deploy/compose/docker-compose.yml',
+  'deploy/compose/docker-compose.development.yml',
+  'deploy/compose/docker-compose.smoke.yml',
+  'deploy/compose/docker-compose.production.yml',
   'deploy',
 ]);
 
@@ -127,26 +126,20 @@ async function writePlan(result, jsonOutput) {
 }
 
 export async function readWorkspaceProjects(root = cwd()) {
-  const workspaceYaml = await readFile(join(root, 'pnpm-workspace.yaml'), 'utf8');
-  const patterns = [];
-  let readingPackages = false;
-  for (const line of workspaceYaml.split(/\r?\n/u)) {
-    if (/^packages:\s*$/u.test(line)) {
-      readingPackages = true;
-      continue;
-    }
-    if (readingPackages && /^\S/u.test(line)) break;
-    if (!readingPackages) continue;
-    const pattern = /^\s+-\s+['"]?([^'"#]+)['"]?\s*$/u.exec(line)?.[1]?.trim();
-    if (pattern) patterns.push(pattern);
-  }
-  if (patterns.length === 0) throw new Error('pnpm workspace packages are missing');
+  const rootManifest = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
+  const rawWorkspaces = Array.isArray(rootManifest.workspaces)
+    ? rootManifest.workspaces
+    : Array.isArray(rootManifest.workspaces?.packages)
+      ? rootManifest.workspaces.packages
+      : [];
+  const patterns = rawWorkspaces.map((entry) => String(entry).trim()).filter(Boolean);
+  if (patterns.length === 0) throw new Error('workspace packages are missing');
 
   const projects = [];
   const names = new Set();
   for (const pattern of patterns) {
     const match = /^([^*]+)\/\*$/u.exec(pattern);
-    if (!match) throw new Error(`Unsupported pnpm workspace package pattern: ${pattern}`);
+    if (!match) throw new Error(`Unsupported workspace package pattern: ${pattern}`);
     const packageDirectory = join(root, match[1]);
     const entries = await readdir(packageDirectory, { withFileTypes: true });
     entries.sort((left, right) => left.name.localeCompare(right.name));
@@ -197,7 +190,7 @@ async function main() {
   try {
     workspaceProjects = await readWorkspaceProjects();
   } catch {
-    stderr.write('Invalid pnpm workspace graph; using full CI scope.\n');
+    stderr.write('Invalid workspace graph; using full CI scope.\n');
     await writePlan(
       { mode: 'full', reason: 'invalid-workspace-graph', projects: requiredProjects },
       jsonOutput

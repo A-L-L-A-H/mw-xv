@@ -75,14 +75,212 @@ export interface DelegateToMeshNodeResult<
   readonly reasonCode?: string;
 }
 
+const ALLOWED_DELEGATE_PATHS: Readonly<Record<string, '/a2a/delegate' | '/a2a'>> = {
+  '': '/a2a/delegate',
+  '/': '/a2a/delegate',
+  '/a2a/delegate': '/a2a/delegate',
+  '/a2a': '/a2a',
+};
+
+function parseAndNormalizeIpv4Host(hostname: string): string | null {
+  const parts = hostname.split('.');
+  if (parts.length !== 4) return null;
+  const octets: number[] = [];
+  for (const part of parts) {
+    if (!/^(0|[1-9]\d{0,2})$/u.test(part)) return null;
+    const value = Number.parseInt(part, 10);
+    if (!Number.isInteger(value) || value < 0 || value > 255) return null;
+    octets.push(value);
+  }
+  return `${octets[0]}.${octets[1]}.${octets[2]}.${octets[3]}`;
+}
+
+function parseAndNormalizeIpv6Host(hostname: string): string | null {
+  if (!hostname.startsWith('[') || !hostname.endsWith(']')) return null;
+  const raw = hostname.slice(1, -1);
+  if (!raw.includes(':') || raw.includes('%') || raw.includes('.')) return null;
+  const doubleColonParts = raw.split('::');
+  if (doubleColonParts.length > 2) return null;
+
+  const leftParts = doubleColonParts[0] ? doubleColonParts[0].split(':') : [];
+  const rightParts = doubleColonParts[1] ? doubleColonParts[1].split(':') : [];
+  const totalProvided = leftParts.length + rightParts.length;
+  if (doubleColonParts.length === 1) {
+    if (totalProvided !== 8) return null;
+  } else if (totalProvided >= 8) {
+    return null;
+  }
+
+  const parseHexGroup = (group: string): number | null => {
+    if (!/^[0-9a-fA-F]{1,4}$/u.test(group)) return null;
+    const value = Number.parseInt(group, 16);
+    return Number.isInteger(value) && value >= 0 && value <= 0xffff ? value : null;
+  };
+
+  const groups: number[] = [];
+  for (const part of leftParts) {
+    const parsed = parseHexGroup(part);
+    if (parsed === null) return null;
+    groups.push(parsed);
+  }
+  for (let i = 0; i < 8 - totalProvided; i += 1) {
+    groups.push(0);
+  }
+  for (const part of rightParts) {
+    const parsed = parseHexGroup(part);
+    if (parsed === null) return null;
+    groups.push(parsed);
+  }
+  if (groups.length !== 8) return null;
+
+  // Compress the longest run of >= 2 zero groups (RFC 5952) from validated numeric groups.
+  let bestStart = -1;
+  let bestLen = 0;
+  let curStart = -1;
+  let curLen = 0;
+  for (let i = 0; i < 8; i += 1) {
+    if (groups[i] === 0) {
+      if (curStart === -1) curStart = i;
+      curLen += 1;
+      if (curLen > bestLen) {
+        bestStart = curStart;
+        bestLen = curLen;
+      }
+    } else {
+      curStart = -1;
+      curLen = 0;
+    }
+  }
+
+  if (bestLen >= 2) {
+    const leftHex = groups
+      .slice(0, bestStart)
+      .map((g) => g.toString(16))
+      .join(':');
+    const rightHex = groups
+      .slice(bestStart + bestLen)
+      .map((g) => g.toString(16))
+      .join(':');
+    return `[${leftHex}::${rightHex}]`;
+  }
+  return `[${groups.map((g) => g.toString(16)).join(':')}]`;
+}
+
+function hasControlChar(value: string): boolean {
+  for (let i = 0; i < value.length; i += 1) {
+    const code = value.charCodeAt(i);
+    if (code <= 0x1f || code === 0x7f) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function resolveDelegateUrl(targetEndpoint: string): string {
   const trimmed = targetEndpoint.trim();
-  const withScheme = trimmed.includes('://') ? trimmed : `http://${trimmed}`;
-  const parsed = new URL(withScheme);
-  if (parsed.pathname === '/' || parsed.pathname === '') {
-    parsed.pathname = '/a2a/delegate';
+  if (!trimmed || /\s/u.test(trimmed) || hasControlChar(trimmed)) {
+    throw new A2AProtocolError(
+      'PUBLIC_ENDPOINT_FORBIDDEN',
+      'A2A target endpoint must not contain whitespace or control characters.'
+    );
   }
-  return parsed.toString();
+  const lower = trimmed.toLowerCase();
+  if (
+    lower.includes('@') ||
+    lower.includes('\\') ||
+    lower.includes('..') ||
+    lower.includes('%2e') ||
+    lower.includes('%2f') ||
+    lower.includes('%5c') ||
+    lower.includes('?') ||
+    lower.includes('#')
+  ) {
+    throw new A2AProtocolError(
+      'PUBLIC_ENDPOINT_FORBIDDEN',
+      'A2A target endpoint contains forbidden URL characters or traversal sequences.'
+    );
+  }
+
+  const withScheme = trimmed.includes('://') ? trimmed : `http://${trimmed}`;
+  let parsed: URL;
+  try {
+    parsed = new URL(withScheme);
+  } catch {
+    throw new A2AProtocolError(
+      'PUBLIC_ENDPOINT_FORBIDDEN',
+      'A2A target endpoint must be a valid HTTP(S) private EasyTier mesh URL.'
+    );
+  }
+
+  const protocol =
+    parsed.protocol === 'https:' ? 'https' : parsed.protocol === 'http:' ? 'http' : null;
+  if (!protocol) {
+    throw new A2AProtocolError(
+      'PUBLIC_ENDPOINT_FORBIDDEN',
+      'A2A target endpoint must use http or https.'
+    );
+  }
+  if (parsed.username !== '' || parsed.password !== '') {
+    throw new A2AProtocolError(
+      'PUBLIC_ENDPOINT_FORBIDDEN',
+      'A2A target endpoint must not contain embedded credentials.'
+    );
+  }
+  if (parsed.search !== '' || parsed.hash !== '') {
+    throw new A2AProtocolError(
+      'PUBLIC_ENDPOINT_FORBIDDEN',
+      'A2A target endpoint must not contain query parameters or fragments.'
+    );
+  }
+
+  if (!isPrivateMeshHost(parsed.hostname)) {
+    throw new A2AProtocolError(
+      'PUBLIC_ENDPOINT_FORBIDDEN',
+      'A2A target endpoint must be a private EasyTier mesh IP.'
+    );
+  }
+
+  const normalizedHost =
+    parseAndNormalizeIpv4Host(parsed.hostname) ?? parseAndNormalizeIpv6Host(parsed.hostname);
+  if (!normalizedHost) {
+    throw new A2AProtocolError(
+      'PUBLIC_ENDPOINT_FORBIDDEN',
+      'A2A target endpoint host must be a valid IPv4 or IPv6 literal.'
+    );
+  }
+
+  let portSuffix = '';
+  if (parsed.port !== '') {
+    if (!/^\d{1,5}$/u.test(parsed.port)) {
+      throw new A2AProtocolError(
+        'PUBLIC_ENDPOINT_FORBIDDEN',
+        'A2A target endpoint port must be a valid TCP port.'
+      );
+    }
+    const portNum = Number.parseInt(parsed.port, 10);
+    if (!Number.isInteger(portNum) || portNum < 1 || portNum > 65535) {
+      throw new A2AProtocolError(
+        'PUBLIC_ENDPOINT_FORBIDDEN',
+        'A2A target endpoint port must be between 1 and 65535.'
+      );
+    }
+    portSuffix = `:${portNum}`;
+  }
+
+  const normalizedPath = Object.prototype.hasOwnProperty.call(
+    ALLOWED_DELEGATE_PATHS,
+    parsed.pathname
+  )
+    ? ALLOWED_DELEGATE_PATHS[parsed.pathname]
+    : undefined;
+  if (!normalizedPath) {
+    throw new A2AProtocolError(
+      'PUBLIC_ENDPOINT_FORBIDDEN',
+      'A2A target endpoint path is not allowlisted.'
+    );
+  }
+
+  return `${protocol}://${normalizedHost}${portSuffix}${normalizedPath}`;
 }
 
 export class A2AMeshClient {
@@ -94,7 +292,9 @@ export class A2AMeshClient {
   constructor(options: A2AMeshClientOptions) {
     this.signingSecret = options.signingSecret;
     this.riskGate = options.riskGate ?? new DesktopRiskGate();
-    this.fetchFn = options.fetchFn ?? ((input, init) => fetch(input, init));
+    this.fetchFn =
+      options.fetchFn ??
+      ((input, init) => fetch(resolveDelegateUrl(input), { ...init, redirect: 'manual' }));
     this.defaultTtlMs = options.defaultTtlMs ?? 60_000;
   }
 
@@ -107,6 +307,7 @@ export class A2AMeshClient {
         'A2A target endpoint must be a private EasyTier mesh IP.'
       );
     }
+    const url = resolveDelegateUrl(input.targetEndpoint);
     if (input.sourceEndpoint !== undefined && !isPrivateMeshHost(input.sourceEndpoint)) {
       throw new A2AProtocolError(
         'PUBLIC_ENDPOINT_FORBIDDEN',
@@ -152,7 +353,6 @@ export class A2AMeshClient {
       this.signingSecret
     );
 
-    const url = resolveDelegateUrl(input.targetEndpoint);
     const response = await this.fetchFn(url, {
       method: 'POST',
       headers: {
@@ -160,6 +360,7 @@ export class A2AMeshClient {
         'X-A2A-Protocol': envelope.protocolVersion,
       },
       body: JSON.stringify(envelope),
+      redirect: 'manual',
     });
 
     const rawText = await response.text();

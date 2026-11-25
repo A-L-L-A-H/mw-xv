@@ -26,6 +26,11 @@ if (metricsToken && metricsToken.length < 32) {
   throw new Error('METRICS_TOKEN must be at least 32 characters when configured');
 }
 
+const observabilityIngestToken = process.env.OBSERVABILITY_INGEST_TOKEN || undefined;
+if (observabilityIngestToken && observabilityIngestToken.length < 32) {
+  throw new Error('OBSERVABILITY_INGEST_TOKEN must be at least 32 characters when configured');
+}
+
 function readPort(value: string | undefined): number {
   const port = Number(value ?? 3000);
   if (!Number.isInteger(port) || port < 1 || port > 65535) {
@@ -97,14 +102,93 @@ function readS3StorageConfig(): EnvConfig['s3Storage'] {
   };
 }
 
+/**
+ * Cloud coding-agent settings. Kept separate from EnvConfig because worker-only
+ * values and secret references must never reach Board DTOs.
+ */
+function readCloudAgentConfig() {
+  const origin = process.env.AI_FREELLMAPI_ORIGIN ?? 'http://freellmapi:3001';
+  let parsed: URL;
+  try {
+    parsed = new URL(origin);
+  } catch {
+    throw new Error('AI_FREELLMAPI_ORIGIN must be an exact http(s) origin');
+  }
+  if (
+    (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') ||
+    parsed.username ||
+    parsed.password ||
+    parsed.search ||
+    parsed.hash ||
+    (parsed.pathname !== '' && parsed.pathname !== '/')
+  ) {
+    throw new Error(
+      'AI_FREELLMAPI_ORIGIN must be an exact origin without path, query or credentials'
+    );
+  }
+  const defaultModel = process.env.FREELLMAPI_DEFAULT_MODEL?.trim();
+  if (defaultModel !== undefined && !/^[A-Za-z0-9][A-Za-z0-9._:\-/]{0,191}$/u.test(defaultModel)) {
+    throw new Error('FREELLMAPI_DEFAULT_MODEL contains unsupported characters');
+  }
+  const sandboxOrigin = process.env.AGENT_SANDBOX_URL ?? 'http://agent-sandbox:3020';
+  let sandboxParsed: URL;
+  try {
+    sandboxParsed = new URL(sandboxOrigin);
+  } catch {
+    throw new Error('AGENT_SANDBOX_URL must be an exact http(s) origin');
+  }
+  if (
+    (sandboxParsed.protocol !== 'http:' && sandboxParsed.protocol !== 'https:') ||
+    sandboxParsed.username ||
+    sandboxParsed.password ||
+    sandboxParsed.search ||
+    sandboxParsed.hash ||
+    (sandboxParsed.pathname !== '' && sandboxParsed.pathname !== '/')
+  ) {
+    throw new Error('AGENT_SANDBOX_URL must be an exact origin');
+  }
+
+  // Curated sandbox refs are deployment configuration, never derived from an
+  // execution fingerprint. The effect factory fails closed when any is absent.
+  const sandboxImageRef = process.env.MW_CLOUD_AGENT_IMAGE_REF?.trim();
+  if (sandboxImageRef !== undefined && !/^.+$@sha256:[a-f0-9]{64}$/u.test(sandboxImageRef)) {
+    throw new Error('MW_CLOUD_AGENT_IMAGE_REF must be pinned to a sha256 digest');
+  }
+  const sandboxSnapshotId = process.env.MW_CLOUD_AGENT_SNAPSHOT_ID?.trim();
+  if (
+    sandboxSnapshotId !== undefined &&
+    !/^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/u.test(sandboxSnapshotId)
+  ) {
+    throw new Error('MW_CLOUD_AGENT_SNAPSHOT_ID contains unsupported characters');
+  }
+  const sandboxBaseCommit = process.env.MW_CLOUD_AGENT_BASE_COMMIT?.trim();
+  if (sandboxBaseCommit !== undefined && !/^[a-f0-9]{40,64}$/u.test(sandboxBaseCommit)) {
+    throw new Error('MW_CLOUD_AGENT_BASE_COMMIT must be a 40 or 64 character hex commit');
+  }
+
+  return Object.freeze({
+    origin: `${parsed.protocol}//${parsed.host}`,
+    defaultModel,
+    secretRef: process.env.MW_AI_FREELLM_SECRET_REF ?? 'MW_AI_FREELLM_KEY',
+    sandboxOrigin: `${sandboxParsed.protocol}//${sandboxParsed.host}`,
+    sandboxTokenRef: process.env.AGENT_SANDBOX_TOKEN_REF ?? 'AGENT_SANDBOX_TOKEN',
+    sandboxImageRef,
+    sandboxSnapshotId,
+    sandboxBaseCommit,
+  });
+}
+
+export const cloudAgentConfig = readCloudAgentConfig();
+
 const databaseUrl = readDatabaseUrl(
   process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@127.0.0.1:5432/moonwitness_db'
 );
 const databaseRuntime = readDatabaseRuntimeLimits(process.env);
 
-export const config: EnvConfig = {
+export const config: EnvConfig & { observabilityIngestToken?: string } = {
   superadminPassword: process.env.SUPERADMIN_PASSWORD || undefined,
   metricsToken,
+  observabilityIngestToken,
   attachmentStorageDirectory: path.resolve(
     repositoryRoot,
     process.env.ATTACHMENT_STORAGE_DIR || 'storage/attachments'

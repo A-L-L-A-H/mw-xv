@@ -19,13 +19,12 @@ coverage/
 apps/board/next-env.d.ts
 playwright-report/
 .qoder-tmp/
-apps/todo/target/
-apps/todo/web/node_modules/
-apps/todo/web/dist/
-apps/todo/web/package-lock.json
 apps/desktop/src-tauri/resources/
 apps/desktop/src-tauri/target/
 apps/desktop/src-tauri/gen/
 apps/desktop/dist-board/
 .DS_Store
 eslint-output.txt
+eslint-output.json
+depcruise-report.txt
+*.tsbuildinfo

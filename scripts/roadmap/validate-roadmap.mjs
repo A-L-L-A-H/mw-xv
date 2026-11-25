@@ -4,6 +4,10 @@ import process from 'node:process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { milestonePattern, parseTaskId, taskIdPattern, taskIdSource } from './task-ids.mjs';
 
+function isRecord(value) {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const allowedTaskKeys = new Set([
   'id',
@@ -36,10 +40,6 @@ const allowedRootKeys = new Set(['schemaVersion', 'description', 'tasks']);
  * @property {TaskStatus=} status
  * @property {string=} evidence
  */
-
-function isRecord(value) {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 /** Return duplicate property names, scoped to each JSON object rather than globally. */
 export function findDuplicateJsonObjectKeys(source) {

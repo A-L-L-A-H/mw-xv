@@ -1,0 +1,96 @@
+import { defineAddon, seed, ref } from '@moonwitness/orm';
+import { PublicTool, PublicUsage, PublicMetric, PublicFeedback } from './models/index.js';
+import { views } from './views.js';
+import { publicHttpPlugin } from './http-plugin.js';
+
+export const manifest = defineAddon({
+  name: 'public-services',
+  version: '1.0.0',
+  depends: ['base'],
+  models: [PublicTool, PublicUsage, PublicMetric, PublicFeedback],
+  httpPlugins: [publicHttpPlugin],
+  data: [
+    seed(PublicTool, 'public.tool.trend_radar', {
+      company: ref('base.company_default'),
+      slug: 'trend-radar',
+      name: 'Trend Radar',
+      description:
+        'Real-time signal detection for emerging technology trends. Query with ?topic=ai to get top 10 signals.',
+      kind: 'api',
+      handler: 'trend-radar',
+      rate_limit: 60,
+      is_active: false,
+      charity_mode: false,
+      attribution_text: 'Powered by MoonWitness signal engine',
+    }),
+    seed(PublicTool, 'public.tool.income_calculator', {
+      company: ref('base.company_default'),
+      slug: 'income-calculator',
+      name: 'Income Calculator',
+      description: 'MRR/runway estimator with churn modeling. Input: {mrr, churn, months}.',
+      kind: 'api',
+      handler: 'income-calculator',
+      rate_limit: 30,
+      is_active: false,
+      charity_mode: true,
+      attribution_text: 'Revenue share supports open-source education',
+    }),
+    seed(PublicTool, 'public.tool.content_ideas', {
+      company: ref('base.company_default'),
+      slug: 'content-ideas',
+      name: 'Content Ideas Generator',
+      description:
+        'Generates 20 viral-ready content concepts from trend data. Query with ?niche=tech.',
+      kind: 'api',
+      handler: 'content-ideas',
+      rate_limit: 20,
+      is_active: false,
+      charity_mode: false,
+      attribution_text: 'Ideas sourced from public trend signals',
+    }),
+    seed(PublicTool, 'public.tool.hashtags', {
+      company: ref('base.company_default'),
+      slug: 'hashtags',
+      name: 'Hashtag Generator',
+      description:
+        'Platform-optimized hashtags for maximum reach. Query with ?platform=instagram&topic=design.',
+      kind: 'api',
+      handler: 'hashtags',
+      rate_limit: 50,
+      is_active: false,
+      charity_mode: false,
+      attribution_text: 'Tags optimized per platform best practices',
+    }),
+    seed(PublicTool, 'public.tool.portfolio', {
+      company: ref('base.company_default'),
+      slug: 'portfolio',
+      name: 'Portfolio Showcase',
+      description:
+        'Auto-generated portfolio from factory content assets and income stream highlights.',
+      kind: 'page',
+      handler: 'portfolio',
+      rate_limit: 100,
+      is_active: false,
+      charity_mode: false,
+      attribution_text: 'Showcasing MoonWitness ecosystem projects',
+    }),
+  ],
+  views,
+  menus: [
+    { model: PublicTool.modelName, label: 'Public Tools', group: 'Public Services', sequence: 10 },
+    {
+      model: PublicUsage.modelName,
+      label: 'Usage Logs',
+      group: 'Public Services',
+      sequence: 20,
+      developmentOnly: true,
+    },
+    {
+      model: PublicMetric.modelName,
+      label: 'Daily Metrics',
+      group: 'Public Services',
+      sequence: 30,
+    },
+    { model: PublicFeedback.modelName, label: 'Feedback', group: 'Public Services', sequence: 40 },
+  ],
+});

@@ -5,11 +5,17 @@ import { basename } from 'node:path';
 import { promisify } from 'node:util';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
+import { ghJson, runGh } from '../lib/gh-cli.mjs';
 import { reconcileReleaseAssets } from '../reconcile-release-assets.mjs';
 
 const execFile = promisify(execFileCallback);
 const STABLE_TAG = /^v(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)$/u;
 const SOURCE_SHA = /^[a-f0-9]{40}$/u;
+const ghDocsOptions = {
+  maxBuffer: 10 * 1024 * 1024,
+  errorMessage: 'GitHub documentation release asset operation failed',
+  jsonErrorMessage: 'GitHub returned invalid JSON for the documentation release',
+};
 
 async function validateRelease({ tag, sourceSha, release, resolveTagCommit, file, adapter }) {
   if (typeof tag !== 'string' || !STABLE_TAG.test(tag)) {
@@ -60,24 +66,6 @@ export async function reconcileVersionedDocsAsset({
   });
 }
 
-async function runGh(args) {
-  try {
-    const { stdout } = await execFile('gh', args, { maxBuffer: 10 * 1024 * 1024 });
-    return stdout;
-  } catch {
-    throw new Error('GitHub documentation release asset operation failed');
-  }
-}
-
-async function readJsonGh(args) {
-  const output = await runGh(args);
-  try {
-    return JSON.parse(output);
-  } catch {
-    throw new Error('GitHub returned invalid JSON for the documentation release');
-  }
-}
-
 async function resolveTagCommit(tag) {
   try {
     const { stdout } = await execFile('git', ['rev-parse', '--verify', `${tag}^{commit}`]);
@@ -115,7 +103,7 @@ async function main() {
     digest: `sha256:${createHash('sha256').update(contents).digest('hex')}`,
     size: contents.byteLength,
   };
-  const release = await readJsonGh(['api', `repos/${repository}/releases/tags/${tag}`]);
+  const release = await ghJson([`repos/${repository}/releases/tags/${tag}`], ghDocsOptions);
   const results = await reconcileVersionedDocsAsset({
     tag,
     sourceSha,
@@ -124,19 +112,17 @@ async function main() {
     file,
     adapter: {
       async listAssets(releaseId) {
-        const pages = await readJsonGh([
-          'api',
-          '--paginate',
-          '--slurp',
-          `repos/${repository}/releases/${releaseId}/assets?per_page=100`,
-        ]);
+        const pages = await ghJson(
+          [`repos/${repository}/releases/${releaseId}/assets?per_page=100`],
+          { ...ghDocsOptions, paginate: true }
+        );
         if (!Array.isArray(pages) || pages.some((page) => !Array.isArray(page))) {
           throw new Error('GitHub returned invalid documentation release asset pages');
         }
         return pages.flat();
       },
       async uploadAsset(releaseTag, path) {
-        await runGh(['release', 'upload', releaseTag, path, '--repo', repository]);
+        await runGh(['release', 'upload', releaseTag, path, '--repo', repository], ghDocsOptions);
       },
     },
   });

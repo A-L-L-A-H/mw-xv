@@ -1,5 +1,5 @@
-const SUBSCRIBER_SECRET = 'fttx-001-radius-secret';
 import { Subscription, SubscriptionInvoiceLine } from '@moonwitness/orm-subscription';
+import { DEFAULT_ISP_SERVICE_URL } from '@moonwitness/types';
 import { ISPNAS, ISPRadiusOutbox, ISPRadiusSession, ISPSubscriber } from './models/index.js';
 import { resolveIspAdminToken, type IspAdminTokenOptions } from './auth.js';
 import { dispatchIspDisconnect } from './reconcile.js';
@@ -405,6 +405,14 @@ function normalizeDate(value: string | Date): string {
   return value;
 }
 
+function trimTrailingSlashes(value: string): string {
+  let end = value.length;
+  while (end > 0 && value[end - 1] === '/') {
+    end -= 1;
+  }
+  return end === value.length ? value : value.slice(0, end);
+}
+
 function isoNow(): string {
   return new Date().toISOString().slice(0, 19);
 }
@@ -601,7 +609,7 @@ export async function enforceOverdueSubscriberSuspensions(
     let disconnectDispatched = false;
     if (options.fetchImpl) {
       const result = await dispatchIspDisconnect({
-        baseUrl: (options.ispServiceUrl ?? 'http://127.0.0.1:3002').replace(/\/+$/u, ''),
+        baseUrl: trimTrailingSlashes(options.ispServiceUrl ?? DEFAULT_ISP_SERVICE_URL),
         token: resolveIspAdminToken({
           adminToken: options.adminToken,
           jwtSecret: options.jwtSecret,

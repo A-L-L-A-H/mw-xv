@@ -2,6 +2,7 @@ import knex from 'knex';
 import { createServer } from 'node:net';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
+  readWorkerHealthHost,
   readWorkerHealthPort,
   startWorkerHealthServer,
   type WorkerHealthServer,
@@ -104,7 +105,9 @@ describe('worker health endpoints', () => {
     });
     expect(metrics.status).toBe(200);
     expect(metrics.headers.get('content-type')).toContain('text/plain');
-    expect(await metrics.text()).toContain('moonwitness_whatsapp_gateway_request_duration');
+    const metricsBody = await metrics.text();
+    expect(metricsBody).toContain('moonwitness_whatsapp_gateway_request_duration');
+    expect(metricsBody).toContain('moonwitness_cloud_operations_total');
 
     health.setReady(false);
     expect((await fetch(`${baseUrl}/livez`)).status).toBe(200);
@@ -120,5 +123,52 @@ describe('worker health endpoints', () => {
     await db.destroy();
     db = undefined;
     expect((await fetch(`${baseUrl}/readyz`)).status).toBe(503);
+  });
+
+  it('uses the shared health contract with safe fields and drain-first readiness', async () => {
+    expect(readWorkerHealthHost(undefined, 'WORKER_HEALTH_HOST')).toBe('127.0.0.1');
+    expect(() => readWorkerHealthHost('0.0.0.0', 'WORKER_HEALTH_HOST')).toThrow(
+      'WORKER_HEALTH_HOST must be a loopback interface'
+    );
+    db = knex({
+      client: 'better-sqlite3',
+      connection: { filename: ':memory:' },
+      useNullAsDefault: true,
+    });
+    await db!.schema.createTable('_orm_addons', (table) => {
+      table.string('name').primary();
+      table.string('version').notNullable();
+      table.timestamp('installed_at').notNullable().defaultTo(db!.fn.now());
+      table.timestamp('upgraded_at').notNullable().defaultTo(db!.fn.now());
+    });
+    health = await startWorkerHealthServer({
+      db,
+      host: '127.0.0.1',
+      name: 'contract-worker',
+      port: await reservePort(),
+    });
+    if (!health) throw new Error('A nonzero test port is required to start the probe server');
+    const address = health.app.server.address();
+    if (!address || typeof address === 'string') throw new Error('Health server is not listening');
+    const baseUrl = `http://127.0.0.1:${address.port}`;
+    const alive = await (await fetch(`${baseUrl}/livez`)).json();
+    expect(alive).toMatchObject({ status: 'alive', worker: 'contract-worker' });
+    expect(alive).toHaveProperty('pid');
+    expect(alive).toHaveProperty('uptimeSeconds');
+    const readiness = await (await fetch(`${baseUrl}/readyz`)).json();
+    expect(readiness).toMatchObject({
+      status: 'ready',
+      ready: true,
+      state: 'ready',
+      dependencies: [{ name: 'database', status: 'up' }],
+    });
+    // Readiness flips false before drain work starts; liveness stays true.
+    health.beginDrain('SIGTERM');
+    expect(health.contract.isReady()).toBe(false);
+    expect(health.contract.state).toBe('draining');
+    expect((await fetch(`${baseUrl}/livez`)).status).toBe(200);
+    expect((await fetch(`${baseUrl}/readyz`)).status).toBe(503);
+    const text = JSON.stringify(readiness);
+    expect(text).not.toMatch(/jwt|secret|token|password/iu);
   });
 });

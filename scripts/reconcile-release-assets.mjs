@@ -1,15 +1,18 @@
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
-import { execFile as execFileCallback } from 'node:child_process';
 import { basename } from 'node:path';
-import { promisify } from 'node:util';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
+import { ghJson, runGh } from './lib/gh-cli.mjs';
 
-const execFile = promisify(execFileCallback);
 const TAG_PATTERN =
   /^v(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/u;
 const DIGEST_PATTERN = /^sha256:[a-f0-9]{64}$/u;
+const ghAssetOptions = {
+  maxBuffer: 10 * 1024 * 1024,
+  errorMessage: 'GitHub CLI release asset operation failed',
+  jsonErrorMessage: 'GitHub CLI returned invalid JSON for release assets',
+};
 
 export function validateReleaseAssets({ tag, releaseId, isDraft, files, adapter }) {
   if (typeof tag !== 'string' || !TAG_PATTERN.test(tag)) throw new Error('Invalid release tag');
@@ -135,24 +138,6 @@ export async function reconcileReleaseAssets({
   return results;
 }
 
-async function runGh(args) {
-  try {
-    const { stdout } = await execFile('gh', args, { maxBuffer: 10 * 1024 * 1024 });
-    return stdout;
-  } catch {
-    throw new Error('GitHub CLI release asset operation failed');
-  }
-}
-
-async function readJsonGh(args) {
-  const output = await runGh(args);
-  try {
-    return JSON.parse(output);
-  } catch {
-    throw new Error('GitHub CLI returned invalid JSON for release assets');
-  }
-}
-
 async function main() {
   const repository = process.env.GH_REPOSITORY;
   const tag = process.env.RELEASE_TAG;
@@ -161,7 +146,7 @@ async function main() {
   }
   if (typeof tag !== 'string' || !TAG_PATTERN.test(tag)) throw new Error('Invalid release tag');
 
-  const release = await readJsonGh(['api', `repos/${repository}/releases/tags/${tag}`]);
+  const release = await ghJson([`repos/${repository}/releases/tags/${tag}`], ghAssetOptions);
   if (
     typeof release !== 'object' ||
     release === null ||
@@ -196,19 +181,17 @@ async function main() {
     files,
     adapter: {
       async listAssets(releaseId) {
-        const pages = await readJsonGh([
-          'api',
-          '--paginate',
-          '--slurp',
-          `repos/${repository}/releases/${releaseId}/assets?per_page=100`,
-        ]);
+        const pages = await ghJson(
+          [`repos/${repository}/releases/${releaseId}/assets?per_page=100`],
+          { ...ghAssetOptions, paginate: true }
+        );
         if (!Array.isArray(pages) || pages.some((page) => !Array.isArray(page))) {
           throw new Error('GitHub returned an invalid release asset page');
         }
         return pages.flat();
       },
       async uploadAsset(releaseTag, path) {
-        await runGh(['release', 'upload', releaseTag, path]);
+        await runGh(['release', 'upload', releaseTag, path], ghAssetOptions);
       },
     },
   });

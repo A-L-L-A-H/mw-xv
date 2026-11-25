@@ -72,6 +72,11 @@ const addonManifestPaths = [
     sourceRoot: 'packages/orm-knowledge/src',
     manifest: 'manifest.ts',
   },
+  {
+    entry: 'packages/orm-observability/dist/manifest.js',
+    sourceRoot: 'packages/orm-observability/src',
+    manifest: 'manifest.ts',
+  },
 ];
 
 function compareText(left, right) {

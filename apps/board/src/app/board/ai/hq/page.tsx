@@ -4,11 +4,14 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Badge } from '@moonwitness/ui/components/badge';
 import { Button } from '@moonwitness/ui/components/button';
+import { CharacterDisplay } from '@moonwitness/ui/components/character-stage';
+import { FilterFacetBar, type FilterFacet } from '@moonwitness/ui/components/filter-facet-bar';
 import { Input } from '@moonwitness/ui/components/input';
 import { MetricTile } from '@moonwitness/ui/components/metric-tile';
 import { Panel } from '@moonwitness/ui/components/panel';
 import { SelectField } from '@moonwitness/ui/components/select-field';
 import { Skeleton } from '@moonwitness/ui/components/skeleton';
+import { SpeechBubble } from '@moonwitness/ui/components/speech-bubble';
 import {
   Table,
   TableBody,
@@ -70,6 +73,20 @@ export default function AiCompanyHqPage() {
   const dueObligationsCount = obligations.filter(
     (o) => o.status === 'open' || o.status === 'reverification_due'
   ).length;
+
+  const activeFacets: FilterFacet[] = [
+    ...(searchText.trim() ? [{ id: 'search', label: 'Search', value: searchText.trim() }] : []),
+    ...(roleFilter !== 'all' ? [{ id: 'role', label: 'Role', value: roleFilter }] : []),
+    ...(statusFilter !== 'all' ? [{ id: 'status', label: 'Status', value: statusFilter }] : []),
+  ];
+
+  const kuroExpression = agentsQuery.isError
+    ? 'surprised'
+    : inFlightRunsCount > 0
+      ? 'determined'
+      : dueObligationsCount > 0
+        ? 'curious'
+        : 'happy';
 
   const handleRefreshAll = () => {
     void agentsQuery.refetch();
@@ -202,6 +219,43 @@ export default function AiCompanyHqPage() {
           </div>
         }
       />
+
+      <FilterFacetBar
+        facets={activeFacets}
+        onFacetRemove={(facetId) => {
+          if (facetId === 'search') setSearchText('');
+          else if (facetId === 'role') setRoleFilter('all');
+          else if (facetId === 'status') setStatusFilter('all');
+        }}
+      >
+        {activeFacets.length > 0 ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="xs"
+            onClick={() => {
+              setSearchText('');
+              setRoleFilter('all');
+              setStatusFilter('all');
+            }}
+          >
+            Clear all
+          </Button>
+        ) : null}
+      </FilterFacetBar>
+
+      <div className="flex flex-col gap-3 border-2 border-ink bg-paper p-3 shadow-ink-sm sm:flex-row sm:items-center">
+        <CharacterDisplay characterId="kuro-signal" expression={kuroExpression} size="sm" />
+        <SpeechBubble
+          speaker="Kuro Signal · AI Ops Companion"
+          tail="left"
+          variant={dueObligationsCount > 0 ? 'shout' : 'speech'}
+        >
+          {agentsQuery.isError
+            ? 'Registry telemetry interrupted. Retry HQ sync to inspect active service principals.'
+            : `${activeAgentsCount} active service principal(s), ${inFlightRunsCount} in-flight run(s), and ${dueObligationsCount} open obligation(s).`}
+        </SpeechBubble>
+      </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         {/* Agent Registry Table */}

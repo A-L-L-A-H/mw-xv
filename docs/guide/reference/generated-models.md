@@ -1,6 +1,6 @@
 # Generated model and addon reference
 
-Source fingerprint: `10580fc3bfe88875848ec51aec2845417cd645547a08b479b58973e236327b0a`. Seed values and field defaults are intentionally omitted.
+Source fingerprint: `7fbde6a21aad1e77ee78aaac16875a8231494dee8eb8332be2754d9c6f9a372c`. Seed values and field defaults are intentionally omitted.
 
 ## Addon `auth`
 
@@ -172,6 +172,7 @@ Models: 25; declared views: 25; menu entries: 25; seed rows: 739.
 | `base.user`                  | `users`                  | `password`             | password  | No       | Yes      | No         | —                       |
 | `base.user`                  | `users`                  | `role`                 | enum      | No       | Yes      | [redacted] | —                       |
 | `base.user`                  | `users`                  | `timezone`             | string    | No       | Yes      | No         | —                       |
+| `base.user`                  | `users`                  | `token_version`        | integer   | No       | Yes      | [redacted] | —                       |
 | `ir.feature_flag`            | `ir_feature_flags`       | `company`              | belongsTo | No       | Yes      | No         | `base.company`          |
 | `ir.feature_flag`            | `ir_feature_flags`       | `description`          | text      | No       | Yes      | No         | —                       |
 | `ir.feature_flag`            | `ir_feature_flags`       | `enabled`              | boolean   | No       | Yes      | [redacted] | —                       |
@@ -572,6 +573,57 @@ Models: 3; declared views: 3; menu entries: 3; seed rows: 9.
 | ----------------- | --------------------------- | ---- | ------ | ----- | ------ |
 | `base.group_user` | `notification.notification` | Yes  | No     | No    | No     |
 | `base.group_user` | `notification.preference`   | Yes  | No     | No    | No     |
+
+## Addon `observability`
+
+Version: `1.0.0`; dependencies: none.
+
+Models: 5; declared views: 0; menu entries: 0; seed rows: 1.
+
+| Model                                   | Table                         | Field            | Kind    | Required | Optional | Default    | Relation |
+| --------------------------------------- | ----------------------------- | ---------------- | ------- | -------- | -------- | ---------- | -------- |
+| `observability.telemetry_log`           | `observability_logs`          | `agent_name`     | text    | No       | Yes      | No         | —        |
+| `observability.telemetry_log`           | `observability_logs`          | `log_id`         | text    | Yes      | No       | No         | —        |
+| `observability.telemetry_log`           | `observability_logs`          | `payload_json`   | text    | Yes      | No       | No         | —        |
+| `observability.telemetry_log`           | `observability_logs`          | `run_id`         | text    | No       | Yes      | No         | —        |
+| `observability.telemetry_log`           | `observability_logs`          | `service_name`   | text    | Yes      | No       | No         | —        |
+| `observability.telemetry_log`           | `observability_logs`          | `severity`       | enum    | Yes      | No       | No         | —        |
+| `observability.telemetry_log`           | `observability_logs`          | `span_id`        | text    | No       | Yes      | No         | —        |
+| `observability.telemetry_log`           | `observability_logs`          | `timestamp_ms`   | float   | Yes      | No       | No         | —        |
+| `observability.telemetry_log`           | `observability_logs`          | `trace_id`       | text    | No       | Yes      | No         | —        |
+| `observability.telemetry_metric_point`  | `observability_metric_points` | `payload_json`   | text    | Yes      | No       | No         | —        |
+| `observability.telemetry_metric_point`  | `observability_metric_points` | `series_id`      | text    | Yes      | No       | No         | —        |
+| `observability.telemetry_metric_point`  | `observability_metric_points` | `timestamp_ms`   | float   | Yes      | No       | No         | —        |
+| `observability.telemetry_metric_series` | `observability_metric_series` | `description`    | text    | No       | Yes      | No         | —        |
+| `observability.telemetry_metric_series` | `observability_metric_series` | `latest_time_ms` | float   | Yes      | No       | No         | —        |
+| `observability.telemetry_metric_series` | `observability_metric_series` | `metric_type`    | enum    | Yes      | No       | No         | —        |
+| `observability.telemetry_metric_series` | `observability_metric_series` | `name`           | text    | Yes      | No       | No         | —        |
+| `observability.telemetry_metric_series` | `observability_metric_series` | `payload_json`   | text    | Yes      | No       | No         | —        |
+| `observability.telemetry_metric_series` | `observability_metric_series` | `scope_name`     | text    | No       | Yes      | No         | —        |
+| `observability.telemetry_metric_series` | `observability_metric_series` | `series_id`      | text    | Yes      | No       | No         | —        |
+| `observability.telemetry_metric_series` | `observability_metric_series` | `service_name`   | text    | Yes      | No       | No         | —        |
+| `observability.telemetry_metric_series` | `observability_metric_series` | `unit`           | text    | No       | Yes      | No         | —        |
+| `observability.telemetry_span`          | `observability_spans`         | `agent_name`     | text    | No       | Yes      | No         | —        |
+| `observability.telemetry_span`          | `observability_spans`         | `duration_ms`    | float   | Yes      | No       | No         | —        |
+| `observability.telemetry_span`          | `observability_spans`         | `end_time_ms`    | float   | Yes      | No       | No         | —        |
+| `observability.telemetry_span`          | `observability_spans`         | `name`           | text    | Yes      | No       | No         | —        |
+| `observability.telemetry_span`          | `observability_spans`         | `parent_span_id` | text    | No       | Yes      | No         | —        |
+| `observability.telemetry_span`          | `observability_spans`         | `payload_json`   | text    | Yes      | No       | No         | —        |
+| `observability.telemetry_span`          | `observability_spans`         | `run_id`         | text    | Yes      | No       | No         | —        |
+| `observability.telemetry_span`          | `observability_spans`         | `service_name`   | text    | Yes      | No       | No         | —        |
+| `observability.telemetry_span`          | `observability_spans`         | `span_id`        | text    | Yes      | No       | No         | —        |
+| `observability.telemetry_span`          | `observability_spans`         | `start_time_ms`  | float   | Yes      | No       | No         | —        |
+| `observability.telemetry_span`          | `observability_spans`         | `status`         | enum    | Yes      | No       | No         | —        |
+| `observability.telemetry_span`          | `observability_spans`         | `trace_id`       | text    | Yes      | No       | No         | —        |
+| `observability.telemetry_state`         | `observability_state`         | `key`            | string  | Yes      | No       | No         | —        |
+| `observability.telemetry_state`         | `observability_state`         | `value`          | integer | No       | Yes      | [redacted] | —        |
+
+### Menus and seed coverage
+
+| Menu model | Label | Group | Sequence | Visibility |
+| ---------- | ----- | ----- | -------: | ---------- |
+
+- Seed coverage: `observability.telemetry_state` has 1 declared seed row(s); seed values are not included.
 
 ## Addon `organization`
 

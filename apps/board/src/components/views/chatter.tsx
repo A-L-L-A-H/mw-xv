@@ -31,6 +31,7 @@ import { Textarea } from '@moonwitness/ui/components/textarea';
 import { Label } from '@moonwitness/ui/components/label';
 import { Doodle } from '@moonwitness/ui/components/effects';
 import { cn } from '@/lib/utils';
+import { ConfirmDialog } from './confirm-dialog';
 
 interface ChatterProps {
   model: string;
@@ -110,6 +111,13 @@ export function Chatter({ model, recordId }: ChatterProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [now, setNow] = useState(() => Date.now());
+  const [deleteTarget, setDeleteTarget] = useState<{
+    kind: 'activity' | 'attachment';
+    id: number;
+    label: string;
+  } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 60_000);
@@ -209,14 +217,36 @@ export function Chatter({ model, recordId }: ChatterProps) {
     }
   };
 
-  const handleDeleteActivity = async (activityId: number) => {
+  const requestDelete = (target: NonNullable<typeof deleteTarget>) => {
+    if (isDeleting) return;
+    setDeleteError(null);
+    setDeleteTarget(target);
+  };
+
+  const closeDeleteDialog = () => {
+    if (isDeleting) return;
+    setDeleteTarget(null);
+    setDeleteError(null);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget || isDeleting) return;
+    setIsDeleting(true);
+    setDeleteError(null);
+    const targetModel = deleteTarget.kind === 'activity' ? 'base.activity' : 'base.attachment';
     try {
-      await client.model('base.activity').unlink(activityId, { hard: true });
-      queryClient.invalidateQueries({
-        queryKey: ['records', 'base.activity'],
-      });
+      await client.model(targetModel).unlink(deleteTarget.id, { hard: true });
+      await queryClient.invalidateQueries({ queryKey: ['records', targetModel] });
+      setDeleteTarget(null);
     } catch (err) {
-      console.error('Failed to delete activity:', err);
+      const message =
+        err instanceof Error
+          ? err.message
+          : `Failed to delete ${deleteTarget.kind}. Please try again.`;
+      setDeleteError(message);
+      toast.error(message);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -242,17 +272,6 @@ export function Chatter({ model, recordId }: ChatterProps) {
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
-    }
-  };
-
-  const handleDeleteAttachment = async (attachmentId: number) => {
-    try {
-      await client.model('base.attachment').unlink(attachmentId, { hard: true });
-      queryClient.invalidateQueries({
-        queryKey: ['records', 'base.attachment'],
-      });
-    } catch (err) {
-      console.error('Failed to delete attachment:', err);
     }
   };
 
@@ -563,13 +582,17 @@ export function Chatter({ model, recordId }: ChatterProps) {
 
                     <div className="flex items-center gap-1">
                       <Button
+                        type="button"
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleDeleteActivity(act.id)}
+                        onClick={() =>
+                          requestDelete({ kind: 'activity', id: act.id, label: act.summary })
+                        }
                         className="size-7 text-ink-faint hover:text-destructive hover:bg-destructive/10"
                         title="Delete activity"
+                        aria-label={`Delete activity: ${act.summary}`}
                       >
-                        <DeleteIcon className="size-3.5" />
+                        <DeleteIcon className="size-3.5" aria-hidden="true" />
                       </Button>
                     </div>
                   </div>
@@ -674,13 +697,17 @@ export function Chatter({ model, recordId }: ChatterProps) {
                         <DownloadIcon className="size-3.5" />
                       </Button>
                       <Button
+                        type="button"
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleDeleteAttachment(file.id)}
+                        onClick={() =>
+                          requestDelete({ kind: 'attachment', id: file.id, label: file.name })
+                        }
                         className="size-7 text-ink-faint hover:text-destructive hover:bg-destructive/10"
                         title="Delete attachment"
+                        aria-label={`Delete attachment: ${file.name}`}
                       >
-                        <DeleteIcon className="size-3.5" />
+                        <DeleteIcon className="size-3.5" aria-hidden="true" />
                       </Button>
                     </div>
                   </div>
@@ -803,6 +830,22 @@ export function Chatter({ model, recordId }: ChatterProps) {
           )}
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title={`Delete ${deleteTarget?.kind ?? 'item'}?`}
+        description={
+          deleteTarget
+            ? `Permanently delete "${deleteTarget.label}"? This action cannot be undone.`
+            : ''
+        }
+        confirmLabel="Delete permanently"
+        destructive
+        busy={isDeleting}
+        error={deleteError ?? undefined}
+        onConfirm={() => void confirmDelete()}
+        onCancel={closeDeleteDialog}
+      />
     </div>
   );
 }

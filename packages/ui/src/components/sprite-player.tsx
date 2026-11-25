@@ -7,6 +7,7 @@ import {
   type ScenePlaybackSnapshot,
 } from '../lib/scene-playback.js';
 import { getActiveSceneHarness } from '../lib/scene-test-harness.js';
+import { useReducedMotion } from '../lib/use-reduced-motion.js';
 
 export interface SpriteClipMetadata {
   readonly id: string;
@@ -31,6 +32,7 @@ export interface SpritePlayerProps {
   readonly pauseOffscreen?: boolean;
   readonly className?: string;
   readonly style?: CSSProperties;
+  readonly frameStyle?: CSSProperties;
   readonly onFrameChange?: (frameIndex: number) => void;
 }
 
@@ -97,10 +99,11 @@ export function SpritePlayer({
   pauseOffscreen = true,
   className,
   style,
+  frameStyle,
   onFrameChange,
 }: SpritePlayerProps) {
   const harness = getActiveSceneHarness();
-  const effectiveReducedMotion = Boolean(reducedMotion ?? harness?.reducedMotion ?? false);
+  const effectiveReducedMotion = useReducedMotion(reducedMotion);
   const effectivePinnedFrame = pinnedFrame ?? harness?.fixedFrame;
   const effectivePaused = Boolean(paused || harness?.paused === true);
   const fixedTimeMs = harness?.fixedTimeMs;
@@ -250,6 +253,7 @@ export function SpritePlayer({
         height={scaledHeight}
         decoding="async"
         style={{
+          ...frameStyle,
           display: 'block',
           width: '100%',
           height: '100%',

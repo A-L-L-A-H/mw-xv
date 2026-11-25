@@ -1,3 +1,5 @@
+import { MILLISECONDS_PER_MINUTE } from '@moonwitness/types';
+
 export type NotificationChannel = 'desktop' | 'whatsapp' | 'email' | 'webhook';
 
 export type NotificationSeverity = 'info' | 'low' | 'medium' | 'high' | 'critical';
@@ -92,7 +94,7 @@ export function isWithinQuietHours(timestampMs: number, window: QuietHoursWindow
   validateMinuteOfDay(window.endMinuteOfDay, 'endMinuteOfDay');
 
   const offsetMin = window.timezoneOffsetMinutes ?? 0;
-  const localMs = timestampMs + offsetMin * 60_000;
+  const localMs = timestampMs + offsetMin * MILLISECONDS_PER_MINUTE;
   const date = new Date(localMs);
   const minuteOfDay = date.getUTCHours() * 60 + date.getUTCMinutes();
 

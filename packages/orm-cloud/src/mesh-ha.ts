@@ -1,4 +1,9 @@
 import { createHash } from 'node:crypto';
+import {
+  PRIVATE_MESH_CIDRS,
+  isPrivateMeshHost as isSharedPrivateMeshHost,
+  isPrivateMeshIp as isSharedPrivateMeshIp,
+} from '@moonwitness/types';
 import { selectHealthyDeploymentTarget, type HaTargetCandidate } from './ha.js';
 
 export type MeshDockerStatus = 'running' | 'degraded' | 'stopped' | 'offline';
@@ -72,31 +77,16 @@ interface MeshHaCandidate extends HaTargetCandidate {
 const DEFAULT_MIN_STANDBY_HEADROOM_MB = 128;
 const DEFAULT_MAX_CPU_LOAD_PERCENT = 90;
 
+export { PRIVATE_MESH_CIDRS };
+
+/** Validates that a host string or HTTP(S) URL targets a private mesh IP address. */
+export function isPrivateMeshHost(hostOrUrl: string): boolean {
+  return isSharedPrivateMeshHost(hostOrUrl);
+}
+
+/** Backwards-compatible IP-only surface, excluding loopback addresses. */
 export function isPrivateMeshIp(ip: string): boolean {
-  const parts = ip.trim().split('.');
-  if (parts.length !== 4) return false;
-
-  const octets: number[] = [];
-  for (const part of parts) {
-    if (!/^\d{1,3}$/u.test(part)) return false;
-    const value = Number(part);
-    if (!Number.isInteger(value) || value < 0 || value > 255) return false;
-    octets.push(value);
-  }
-
-  const [a, b] = octets;
-  if (a === undefined || b === undefined) return false;
-
-  // 10.0.0.0/8 (RFC1918)
-  if (a === 10) return true;
-  // 100.64.0.0/10 (CGNAT / EasyTier / WireGuard mesh)
-  if (a === 100 && b >= 64 && b <= 127) return true;
-  // 172.16.0.0/12 (RFC1918)
-  if (a === 172 && b >= 16 && b <= 31) return true;
-  // 192.168.0.0/16 (RFC1918)
-  if (a === 192 && b === 168) return true;
-
-  return false;
+  return isSharedPrivateMeshIp(ip);
 }
 
 function isNodeHealthyForServing(node: MeshVpsNode | undefined): boolean {

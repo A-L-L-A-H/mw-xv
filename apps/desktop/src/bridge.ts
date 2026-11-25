@@ -1,5 +1,11 @@
 import { randomUUID } from 'node:crypto';
-import { AccessDeniedError, ValidationError, type Domain } from '@moonwitness/types';
+import {
+  AccessDeniedError,
+  DEFAULT_BOARD_ORIGIN,
+  DEFAULT_LOCALHOST_BOARD_ORIGIN,
+  ValidationError,
+  type Domain,
+} from '@moonwitness/types';
 import { LocalSidecarController } from './local-sidecar.js';
 import { LocalMcpHostRegistry } from './mcp-host.js';
 import { DesktopRiskGate, NativeHumanApprovalIssuer, isLoopbackEndpointUrl } from './risk-gate.js';
@@ -19,6 +25,8 @@ import type {
   DesktopStreamEventKind,
   DesktopStreamSubscribeOptions,
   DesktopStreamSubscription,
+  DesktopUpdateCheckSummary,
+  DesktopUpdateInstallSummary,
   EnqueuePcwEnvelopeInput,
   GitWorktreeLease,
   LocalMcpServerConfig,
@@ -28,6 +36,7 @@ import type {
   RiskEvaluationRequest,
   UpstreamPcwSyncTransport,
 } from './types.js';
+import { DEFAULT_CURRENT_DESKTOP_VERSION } from './updater.js';
 import { WorktreeSandbox } from './worktree-sandbox.js';
 
 const SECRET_REF_REGEX = /^MW_AI_(?:C[1-9][0-9]*_)?[A-Z0-9_]{1,100}$/u;
@@ -153,8 +162,8 @@ export class DesktopEventStreamHub {
 }
 
 export const DEFAULT_ALLOWED_IPC_ORIGINS: readonly string[] = Object.freeze([
-  'http://127.0.0.1:5173',
-  'http://localhost:5173',
+  DEFAULT_BOARD_ORIGIN,
+  DEFAULT_LOCALHOST_BOARD_ORIGIN,
   'tauri://localhost',
   'http://tauri.localhost',
   'https://tauri.localhost',
@@ -366,6 +375,17 @@ export function createDesktopHarnessBridge(
         activeLeases: sandbox.listLeases().filter((lease) => lease.status === 'active'),
         sidecar: sidecar.getState(),
         mcpServers: mcpHost.listServers(),
+      };
+    },
+    async checkForUpdates(): Promise<DesktopUpdateCheckSummary> {
+      return {
+        status: 'up-to-date',
+        currentVersion: DEFAULT_CURRENT_DESKTOP_VERSION,
+      };
+    },
+    async installUpdate(): Promise<DesktopUpdateInstallSummary> {
+      return {
+        status: 'up-to-date',
       };
     },
     verifySenderOrigin(origin: string, windowLabel = 'main'): boolean {

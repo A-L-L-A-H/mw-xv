@@ -39,7 +39,7 @@ The owner-approved TaskOS migration and deterministic Visual Universe projection
 
 ## TaskOS data contract
 
-The current canonical registry is **627 records**. The prior 1,358-record registry (Git blob `d56499936761dcc062704d06588ee2679fd1aae2`) is preserved at `docs/tasks/archives/tasks-legacy-1358-2026-11-23.json`. Its 861 historical references to root `todo.md` were reconciled: 854 completed IDs remain as historical evidence and seven open IDs are retained as blocked.
+The current canonical registry is **627 records**. The prior 1,358-record registry (Git blob `d56499936761dcc062704d06588ee2679fd1aae2`) is preserved at `docs/tasks/archives/tasks-legacy-1358-2026-11-23.json`. Its 861 historical references to root `docs/tasks/sources/todo.md` were reconciled: 854 completed IDs remain as historical evidence and seven open IDs are retained as blocked.
 
 The source-backed migration design contains **627 records**:
 
@@ -57,7 +57,7 @@ The source-backed migration design contains **627 records**:
 
 Expected candidate state distribution: **468 done, 49 doing, 89 todo, 21 blocked**.
 
-A complete identity check has already reconciled the 861 legacy rows whose `sourceRef.file` was the root `todo.md`: all 854 legacy `done` IDs match the 854 checked entries in the archived checklist, and all 7 legacy `todo` IDs match the 7 unchecked archive entries, with zero missing/extra IDs. The seven retained open IDs are `MW-CFG-003.3`, `MW-CICD-002`, `MW-CICD-002.3`, `MW-CICD-004`, `MW-CICD-004.2`, `MW-CICD-004.3`, and `MW-DOC-004.3`; they map to `blocked` pending re-triage. Legacy blob SHA: `d56499936761dcc062704d06588ee2679fd1aae2`; archive blob SHA: `f29ec364530195484f668287c5616bf91984554f`. A regression test for this exact mapping is committed and passed in the exact-SHA unit-test job on both push and pull-request CI runs [45088485869](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088485869) and [45088491241](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088491241).
+A complete identity check has already reconciled the 861 legacy rows whose `sourceRef.file` was the root `docs/tasks/sources/todo.md`: all 854 legacy `done` IDs match the 854 checked entries in the archived checklist, and all 7 legacy `todo` IDs match the 7 unchecked archive entries, with zero missing/extra IDs. The seven retained open IDs are `MW-CFG-003.3`, `MW-CICD-002`, `MW-CICD-002.3`, `MW-CICD-004`, `MW-CICD-004.2`, `MW-CICD-004.3`, and `MW-DOC-004.3`; they map to `blocked` pending re-triage. Legacy blob SHA: `d56499936761dcc062704d06588ee2679fd1aae2`; archive blob SHA: `f29ec364530195484f668287c5616bf91984554f`. A regression test for this exact mapping is committed and passed in the exact-SHA unit-test job on both push and pull-request CI runs [45088485869](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088485869) and [45088491241](https://github.com/A-L-L-A-H/mw-xv/actions/runs/45088491241).
 
 The 731-record difference is fully reconciled, not an unexplained deletion. The canonical replacement was approved by the owner; do not rerun the one-time importer with `--write` or modify the archived legacy blob. The seven archived open rows remain blocked pending re-triage.
 
@@ -81,7 +81,7 @@ The full legacy-to-candidate identity reconciliation remains:
 
 - Legacy registry: 1,358 unique codes.
 - Shared legacy/candidate identities: 504.
-- Excluded: exactly 854 legacy `done` records with the stale root-`todo.md` source reference; they remain in the archived checklist and untouched legacy registry snapshot.
+- Excluded: exactly 854 legacy `done` records with the stale root-`docs/tasks/sources/todo.md` source reference; they remain in the archived checklist and untouched legacy registry snapshot.
 - Added: 123 new identities (14 AI Corporation PR lifecycle + 109 Visual Universe).
 - The seven open legacy IDs remain in the candidate as `blocked`, pending re-triage.
 - Arithmetic: `1,358 - 854 + 123 = 627`.
@@ -113,7 +113,7 @@ pnpm test:taskos
 pnpm tasks:validate
 pnpm automation:check:roadmap
 pnpm tasks:sweep -- --check
-node MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/tools/sync-task-state.mjs --check
+node docs/bundles/visual-universe-pack/tools/sync-task-state.mjs --check
 ```
 
 If the Visual Universe projection check reports stale files, review its deterministic output and regenerate only those projections from canonical TaskOS; do not edit `task.json`, `TASKS.md`, or individual task cards as independent status sources. Keep the previous registry backup untouched.

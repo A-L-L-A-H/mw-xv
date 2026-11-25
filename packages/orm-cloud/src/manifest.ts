@@ -1,5 +1,6 @@
 import { defineAddon, ref, seed } from '@moonwitness/orm';
 import { ModelAccess } from '@moonwitness/orm-base';
+import { DEFAULT_CONTROL_PLANE_URL, DEFAULT_ISP_SERVICE_URL } from '@moonwitness/types';
 import {
   CloudApp,
   CloudDeployment,
@@ -22,7 +23,7 @@ export const manifest = defineAddon({
       name: 'Local Docker Agent (Control Plane)',
       code: 'docker_agent',
       type: 'docker_agent',
-      endpoint: 'http://127.0.0.1:3003',
+      endpoint: DEFAULT_CONTROL_PLANE_URL,
       region: 'local',
       is_active: true,
     }),
@@ -60,7 +61,7 @@ export const manifest = defineAddon({
       environment: 'production',
       docker_host: 'unix:///var/run/docker.sock',
       port: 3003,
-      api_url: 'http://127.0.0.1:3003',
+      api_url: DEFAULT_CONTROL_PLANE_URL,
       is_active: true,
     }),
     seed(CloudApp, 'cloud.app_isp_radius_node', {
@@ -76,7 +77,7 @@ export const manifest = defineAddon({
       port: 3000,
       host_port: 3002,
       domain: 'isp.moonwitness.local',
-      health_check_url: 'http://127.0.0.1:3002/health',
+      health_check_url: `${DEFAULT_ISP_SERVICE_URL}/health`,
       monthly_price_minor: 29000,
       currency: 'USD',
       is_active: true,
@@ -120,6 +121,48 @@ export const manifest = defineAddon({
       create: false,
       write: false,
       unlink: false,
+    }),
+    // Explicit cloud operation grants for administrators: every HTTP route in
+    // CLOUD_ROUTE_ACCESS_MATRIX maps to one of these model permissions.
+    seed(ModelAccess, 'cloud.access_superadmin_provider', {
+      group: ref('base.group_superadmin'),
+      model_name: CloudProvider.modelName,
+      read: true,
+      create: true,
+      write: true,
+      unlink: true,
+    }),
+    seed(ModelAccess, 'cloud.access_superadmin_server', {
+      group: ref('base.group_superadmin'),
+      model_name: CloudServer.modelName,
+      read: true,
+      create: true,
+      write: true,
+      unlink: true,
+    }),
+    seed(ModelAccess, 'cloud.access_superadmin_target', {
+      group: ref('base.group_superadmin'),
+      model_name: CloudDeploymentTarget.modelName,
+      read: true,
+      create: true,
+      write: true,
+      unlink: true,
+    }),
+    seed(ModelAccess, 'cloud.access_superadmin_app', {
+      group: ref('base.group_superadmin'),
+      model_name: CloudApp.modelName,
+      read: true,
+      create: true,
+      write: true,
+      unlink: true,
+    }),
+    seed(ModelAccess, 'cloud.access_superadmin_deployment', {
+      group: ref('base.group_superadmin'),
+      model_name: CloudDeployment.modelName,
+      read: true,
+      create: true,
+      write: true,
+      unlink: true,
     }),
   ],
   views,

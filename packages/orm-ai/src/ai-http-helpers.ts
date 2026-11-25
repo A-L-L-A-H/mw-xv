@@ -4,10 +4,19 @@ import { validateDiffScope, type PcwCheckStatus } from '@moonwitness/ai-runtime'
 import { registerJobHandler } from '@moonwitness/jobs';
 import { AuditLog, Company, CompanyMembership } from '@moonwitness/orm-base';
 import type { WorkflowRole } from '@moonwitness/orm-workflow';
-import { Agent, AgentRun, ExecutionPolicy } from './models.js';
+import { isRecord } from '@moonwitness/types';
+import { runDurableAgentRun } from './agent-run-executor.js';
+import { getCloudAgentEffect } from './cloud-agent-effect-factory.js';
+import { ExecutionPolicy } from './models.js';
 
-export function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+export type { AddonHttpReply, AddonHttpRequestBase } from '@moonwitness/orm';
+export type { WorkflowRole } from '@moonwitness/orm-workflow';
+export { isRecord };
+
+export interface AiCompanyContext {
+  readonly userId: number;
+  readonly companyId: number;
+  readonly role: WorkflowRole;
 }
 
 export function toStringArray(value: unknown): string[] {
@@ -45,40 +54,18 @@ export function ensureAiJobHandlersRegistered(): void {
         version: 1,
         parse: parseAiRunJobPayload,
         async run(payload, context) {
-          const run = await AgentRun.query().findOne({
-            id: payload.agentRunId,
-            company_id: payload.companyId,
-          });
-          if (!run) return { skipped: true };
-          if (context.signal.aborted || run.status === 'cancelled') {
-            await AgentRun.query()
-              .findById(run.id)
-              .patch({ status: 'cancelled', finished_at: new Date().toISOString() });
-            return { status: 'cancelled' };
+          if (context.companyId !== undefined && context.companyId !== payload.companyId) {
+            throw new Error('Cross-company agent run dispatch rejected');
           }
-          const agent = await Agent.query().findOne({
-            id: run.agent_id,
-            company_id: payload.companyId,
-          });
-          if (!agent || agent.is_emergency_stopped || agent.status !== 'active') {
-            await AgentRun.query().findById(run.id).patch({
-              status: 'cancelled',
-              error_code: 'AGENT_HALTED',
-              error_summary: 'Agent is not active or has been emergency-stopped',
-              finished_at: new Date().toISOString(),
-            });
-            return { status: 'cancelled' };
+          // A hosting app (API/worker bootstrap) installs the fully composed
+          // effect via setCloudAgentEffect(). Without it there is no safe way
+          // to execute a run: fail closed so the run is marked failed with no
+          // evidence rather than silently completing.
+          const effect = getCloudAgentEffect();
+          if (!effect) {
+            throw new Error('Cloud coding-agent effect is not configured');
           }
-          const nowIso = new Date().toISOString();
-          await AgentRun.query()
-            .findById(run.id)
-            .patch({
-              status: 'completed',
-              step_count: (run.step_count ?? 0) + 1,
-              started_at: run.started_at ?? nowIso,
-              finished_at: nowIso,
-            });
-          return { status: 'completed', agentRunId: run.id };
+          return runDurableAgentRun(payload, context, effect);
         },
       });
     } catch {
@@ -110,7 +97,7 @@ export async function hasCompanyAccess(
 export async function requireAiCompanyContext(
   req: AddonHttpRequestBase,
   reply: AddonHttpReply
-): Promise<{ userId: number; companyId: number; role: WorkflowRole } | null> {
+): Promise<AiCompanyContext | null> {
   reply.header?.('Cache-Control', 'private, no-store');
   const auth = req.auth;
   if (!auth) {

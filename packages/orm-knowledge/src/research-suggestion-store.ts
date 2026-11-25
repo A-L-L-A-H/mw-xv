@@ -1,4 +1,3 @@
-import { createHash } from 'node:crypto';
 import {
   validateResearchSuggestionEnvelope,
   validateResearchSuggestionEnvelopeWithResolver,
@@ -9,6 +8,7 @@ import {
 import type { Knex } from 'knex';
 import { canonicalResearchJson } from './research-release.js';
 import type { AuthenticatedResearchReviewer } from './research-review.js';
+import { assertActiveCompanyActor, digest, fail, validActor } from './store-helpers.js';
 
 const suggestionIdPattern = /^mw:suggestion:[a-z0-9][a-z0-9._-]{0,179}$/u;
 
@@ -37,43 +37,8 @@ export interface StoredResearchSuggestionVersion {
   readonly idempotent: boolean;
 }
 
-function fail(message: string): never {
-  throw new TypeError(message);
-}
-
-function digest(value: string): string {
-  return createHash('sha256').update(value, 'utf8').digest('hex');
-}
-
-function validActor(actor: AuthenticatedResearchReviewer): boolean {
-  return (
-    Number.isSafeInteger(actor.userId) &&
-    actor.userId > 0 &&
-    Number.isSafeInteger(actor.companyId) &&
-    actor.companyId > 0 &&
-    (actor.role === 'user' || actor.role === 'superadmin')
-  );
-}
-
-async function assertActiveCompanyActor(
-  trx: Knex.Transaction,
-  actor: AuthenticatedResearchReviewer
-): Promise<void> {
-  const user = await trx('users')
-    .where({ id: actor.userId, role: actor.role, active: true })
-    .forUpdate()
-    .first('id');
-  const company = await trx('companies')
-    .where({ id: actor.companyId, active: true })
-    .forUpdate()
-    .first('id');
-  const membership = await trx('company_memberships')
-    .where({ user_id: actor.userId, company_id: actor.companyId, active: true })
-    .forUpdate()
-    .first('id');
-  if (!user || !company || !membership)
-    fail('Research suggestion is unavailable in this company context');
-}
+const RESEARCH_SUGGESTION_UNAVAILABLE =
+  'Research suggestion is unavailable in this company context';
 
 async function validatedSuggestions(
   value: unknown,
@@ -108,7 +73,7 @@ export async function storeResearchSuggestions(
   };
   const results: StoredResearchSuggestionVersion[] = [];
   await db.transaction(async (trx) => {
-    await assertActiveCompanyActor(trx, actor);
+    await assertActiveCompanyActor(trx, actor, RESEARCH_SUGGESTION_UNAVAILABLE);
     // Serializes version allocation without allowing model or generated text to mutate canonical graph data.
     await trx('companies').where({ id: actor.companyId }).forUpdate().first('id');
     // Resolve after authorization and under the same transaction used for insertion so a
@@ -218,7 +183,7 @@ export async function listResearchSuggestionVersions(
     fail('Research suggestion list context is invalid');
   }
   return db.transaction(async (trx) => {
-    await assertActiveCompanyActor(trx, actor);
+    await assertActiveCompanyActor(trx, actor, RESEARCH_SUGGESTION_UNAVAILABLE);
     const page = (await trx('knowledge_research_suggestion_versions')
       .where({ company_id: actor.companyId })
       .groupBy('suggestion_id')
@@ -319,7 +284,7 @@ export async function readResearchSuggestionVersion(
     fail('Research suggestion read context is invalid');
   }
   return db.transaction(async (trx) => {
-    await assertActiveCompanyActor(trx, actor);
+    await assertActiveCompanyActor(trx, actor, RESEARCH_SUGGESTION_UNAVAILABLE);
     const query = trx('knowledge_research_suggestion_versions').where({
       company_id: actor.companyId,
       suggestion_id: suggestionId,

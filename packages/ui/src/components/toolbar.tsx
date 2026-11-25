@@ -5,7 +5,7 @@ export type ToolbarProps = ComponentProps<'div'> & {
   actions?: ReactNode;
 };
 
-export function Toolbar({ filters, actions, className, ...props }: ToolbarProps) {
+export function Toolbar({ filters, actions, children, className, ...props }: ToolbarProps) {
   return (
     <div
       className={['mw-ui-toolbar', className].filter(Boolean).join(' ')}
@@ -13,6 +13,7 @@ export function Toolbar({ filters, actions, className, ...props }: ToolbarProps)
       {...props}
     >
       {filters ? <div className="mw-ui-toolbar-filters">{filters}</div> : null}
+      {children}
       {actions ? <div className="mw-ui-toolbar-actions">{actions}</div> : null}
     </div>
   );

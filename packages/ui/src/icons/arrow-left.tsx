@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type ArrowLeftIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function ArrowLeftIcon({ size = 24, title, ...props }: ArrowLeftIconProps) {
+const ArrowLeftIcon = forwardRef<SVGSVGElement, ArrowLeftIconProps>(function ArrowLeftIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -26,4 +30,8 @@ export function ArrowLeftIcon({ size = 24, title, ...props }: ArrowLeftIconProps
       <path d="M20 12H5m6 6-6-6 6-6" />
     </svg>
   );
-}
+});
+
+ArrowLeftIcon.displayName = 'ArrowLeftIcon';
+
+export { ArrowLeftIcon };

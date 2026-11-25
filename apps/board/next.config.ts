@@ -18,6 +18,11 @@ const proxyPrefixes = [
   '/workflows/:path*',
 ];
 
+const isDev = process.env.NODE_ENV === 'development';
+const scriptSrc = isDev
+  ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
+  : "script-src 'self' 'unsafe-inline'";
+
 const nextConfig: NextConfig = {
   distDir: process.env.MW_BOARD_DIST_DIR ?? '.next',
   output: 'standalone',
@@ -33,6 +38,13 @@ const nextConfig: NextConfig = {
           { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+          {
+            key: 'Content-Security-Policy',
+            value:
+              "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; " +
+              `form-action 'self'; ${scriptSrc}; style-src 'self' 'unsafe-inline'; ` +
+              "img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:",
+          },
         ],
       },
     ];
@@ -44,7 +56,6 @@ const nextConfig: NextConfig = {
     return [
       { source: '/profile', destination: '/board/profile', permanent: true },
       { source: '/settings', destination: '/board/settings', permanent: true },
-      { source: '/knowledge', destination: '/board/knowledge', permanent: true },
       { source: '/stories/workbench', destination: '/board/stories/workbench', permanent: true },
       { source: '/m/:model/:id', destination: '/board/m/:model/:id', permanent: true },
       { source: '/m/:model', destination: '/board/m/:model', permanent: true },

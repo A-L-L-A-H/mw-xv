@@ -3,6 +3,7 @@ import test from 'node:test';
 import {
   findNodeVersionDrift,
   findPnpmVersionDrift,
+  findBunVersionDrift,
   findUnpinnedActions,
   pnpmSetupOrderValid,
   workflowInstallsFrozenWorkspaceAfterSetup,
@@ -163,6 +164,39 @@ test('accepts immutable external actions with version comments and local actions
     },
   ]);
   assert.deepEqual(findings, []);
+});
+
+test('checks exact bun version across setup-bun action and workflow uses', () => {
+  assert.deepEqual(
+    findBunVersionDrift(
+      [
+        {
+          path: '.github/actions/setup-bun/action.yml',
+          content: "default: '1.4.5'",
+        },
+        {
+          path: '.github/workflows/ci.yml',
+          content: "bun-version: '1.4.5'",
+        },
+      ],
+      '1.4.5'
+    ),
+    []
+  );
+  assert.equal(
+    findBunVersionDrift(
+      [{ path: '.github/actions/setup-bun/action.yml', content: "default: '1.3.4'" }],
+      '1.4.5'
+    )[0]?.reason,
+    'must match the root packageManager bun@1.4.5'
+  );
+  assert.equal(
+    findBunVersionDrift(
+      [{ path: '.github/workflows/ci.yml', content: "bun-version: '1.3.4'" }],
+      '1.4.5'
+    )[0]?.reason,
+    'must match the root packageManager bun@1.4.5'
+  );
 });
 
 test('rejects mutable tags, short SHAs, and missing version comments', () => {

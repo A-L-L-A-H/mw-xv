@@ -74,7 +74,7 @@ const processSteps = [
     label: 'CONNECT',
     title: 'People and records',
     body: 'Keep partner and organization context connected.',
-    artwork: '/illustrations/editorial-people.webp',
+    artwork: '/illustrations/editorial-signal.webp',
     crop: 'people',
   },
   {
@@ -82,7 +82,7 @@ const processSteps = [
     label: 'UNDERSTAND',
     title: 'Knowledge in context',
     body: 'Bring working knowledge alongside the record.',
-    artwork: '/illustrations/editorial-knowledge.webp',
+    artwork: '/illustrations/editorial-archive.webp',
     crop: 'knowledge',
   },
   {
@@ -90,7 +90,7 @@ const processSteps = [
     label: 'SHAPE',
     title: 'Story workbench',
     body: 'Organize narrative work around connected information.',
-    artwork: '/illustrations/editorial-stories.webp',
+    artwork: '/illustrations/editorial-rain.webp',
     crop: 'stories',
   },
   {
@@ -168,6 +168,7 @@ export default function HomePage() {
                 number={card.number}
                 surface="ink"
                 frame="grunge"
+                size="sm"
                 accent={card.number === '02' ? 'cyan' : 'magenta'}
               />
               <div className="home-card-art" aria-hidden="true">
@@ -186,7 +187,13 @@ export default function HomePage() {
                 <h2 className="mw-ui-interactive-title">{card.title}</h2>
                 <p>{card.body}</p>
                 <Link
-                  href={card.id === 'stories' ? '/login' : '/register'}
+                  href={
+                    card.id === 'knowledge'
+                      ? '/knowledge'
+                      : card.id === 'stories'
+                        ? '/login'
+                        : '/register'
+                  }
                   className="home-card-link"
                 >
                   Explore <ArrowRightIcon aria-hidden="true" />
@@ -200,7 +207,7 @@ export default function HomePage() {
       <section className="home-connection" id="about" aria-labelledby="connection-title">
         <div className="home-connection-art" aria-hidden="true">
           <Image
-            src="/illustrations/home-hero-desktop.webp"
+            src="/illustrations/moon-city-orbit.webp"
             alt=""
             fill
             sizes="(max-width: 800px) 100vw, 60vw"
@@ -232,6 +239,8 @@ export default function HomePage() {
           number="04"
           surface="ink"
           frame="grunge"
+          size="lg"
+          treatment="brush"
           accent="yellow"
         />
         <HorizontalFilmstrip
@@ -282,6 +291,7 @@ export default function HomePage() {
           </span>
         </div>
         <div className="home-footer-actions">
+          <Link href="/knowledge">Public knowledge</Link>
           <Link href="/login">Sign in</Link>
           <Link href="/register">Create an account</Link>
         </div>

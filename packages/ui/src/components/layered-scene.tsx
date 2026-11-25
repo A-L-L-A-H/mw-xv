@@ -20,6 +20,7 @@ import {
 } from '../lib/scene-camera.js';
 import { useScenePlayback } from '../lib/scene-playback.js';
 import { getActiveSceneHarness } from '../lib/scene-test-harness.js';
+import { useReducedMotion } from '../lib/use-reduced-motion.js';
 
 export type SceneLayerMediaKind = 'image' | 'vector' | 'video-frame';
 
@@ -233,7 +234,7 @@ export function LayeredScene({
   style,
 }: LayeredSceneProps) {
   const harness = getActiveSceneHarness();
-  const effectiveReducedMotion = Boolean(reducedMotion ?? harness?.reducedMotion ?? false);
+  const effectiveReducedMotion = useReducedMotion(reducedMotion);
   const playback = useScenePlayback({
     autoPlay: forceStatic || effectiveReducedMotion ? false : autoPlay,
     durationMs,
@@ -365,6 +366,7 @@ export function LayeredScene({
       data-scene-id={sceneId}
       data-scene-state={sceneState}
       data-scene-time={String(Math.round(playback.snapshot.timeMs))}
+      data-reduced-motion={isReduced ? 'true' : 'false'}
       onKeyDown={enableKeyboardCamera ? handleKeyDown : undefined}
       onPointerMove={enablePointerParallax ? handlePointerMove : undefined}
       onPointerLeave={enablePointerParallax ? handlePointerLeave : undefined}

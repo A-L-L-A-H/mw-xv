@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@moonwitness/ui/components/button';
+import { Checkbox } from '@moonwitness/ui/components/checkbox';
 import {
   LayeredScene,
   type SceneLayerDescriptor,
@@ -17,43 +18,28 @@ import skylineMidUrl from '@moonwitness/assets/environments/moon-city-skyline-mi
 import foregroundUrl from '@moonwitness/assets/environments/moon-city-foreground.svg';
 import railingUrl from '@moonwitness/assets/environments/moon-city-prop-railing.svg';
 import wiresUrl from '@moonwitness/assets/environments/moon-city-prop-wires.svg';
-import idleFrame1 from '@moonwitness/assets/animation/crew-01-idle/crew-01-idle-frame-01.svg';
-import idleFrame2 from '@moonwitness/assets/animation/crew-01-idle/crew-01-idle-frame-02.svg';
 import fallbackHeroDesktop from '@moonwitness/assets/illustrations/home-hero-desktop.webp';
 import fallbackHeroMobile from '@moonwitness/assets/illustrations/home-hero-mobile.webp';
 import moonCitySceneBundle from '@moonwitness/assets/scenes/moon-city-scene.json';
+import idleFrame1 from '@moonwitness/assets/animation/crew-01-idle/crew-01-idle-frame-01.svg';
+import idleFrame2 from '@moonwitness/assets/animation/crew-01-idle/crew-01-idle-frame-02.svg';
 
-const HERO_SCENE = (() => {
-  const scene = moonCitySceneBundle.scenes.find((entry) => entry.id === 'moon-city-hero');
-  if (!scene) throw new Error('Canonical Moon City hero scene is missing');
-  return scene;
-})();
+const HERO_SCENE = moonCitySceneBundle.scenes.find((entry) => entry.id === 'moon-city-hero')!;
+const SCENE_LAYER_SOURCES = [
+  skyUrl,
+  moonUrl,
+  cloudsFarUrl,
+  skylineFarUrl,
+  cloudsNearUrl,
+  skylineMidUrl,
+  foregroundUrl,
+  railingUrl,
+  wiresUrl,
+];
 
-const SCENE_LAYER_SOURCES: Record<string, string> = {
-  'environments/moon-city-sky.svg': skyUrl,
-  'environments/moon-city-moon.svg': moonUrl,
-  'environments/moon-city-clouds-far.svg': cloudsFarUrl,
-  'environments/moon-city-skyline-far.svg': skylineFarUrl,
-  'environments/moon-city-clouds-near.svg': cloudsNearUrl,
-  'environments/moon-city-skyline-mid.svg': skylineMidUrl,
-  'environments/moon-city-foreground.svg': foregroundUrl,
-  'environments/moon-city-prop-railing.svg': railingUrl,
-  'environments/moon-city-prop-wires.svg': wiresUrl,
-};
-
-const SCENE_FALLBACK_SOURCES: Record<string, string> = {
-  'illustrations/home-hero-desktop.webp': fallbackHeroDesktop,
-  'illustrations/home-hero-mobile.webp': fallbackHeroMobile,
-};
-
-const SCENE_FRAME_SOURCES: Record<string, string> = {
-  'animation/crew-01-idle/crew-01-idle-frame-01.svg': idleFrame1,
-  'animation/crew-01-idle/crew-01-idle-frame-02.svg': idleFrame2,
-};
-
-const INITIAL_LAYERS: readonly SceneLayerDescriptor[] = HERO_SCENE.layers.map((layer) => ({
+const INITIAL_LAYERS: readonly SceneLayerDescriptor[] = HERO_SCENE.layers.map((layer, index) => ({
   id: layer.id,
-  src: SCENE_LAYER_SOURCES[layer.asset],
+  src: SCENE_LAYER_SOURCES[index],
   mediaKind: 'vector',
   zOrder: layer.order,
   opacity: layer.opacity,
@@ -76,19 +62,30 @@ const SCENE_BREAKPOINTS: readonly SceneBreakpointDescriptor[] = HERO_SCENE.break
   })
 );
 
-const IDLE_CLIP_DEFINITION = moonCitySceneBundle.clips.find((clip) => clip.id === 'crew-01-idle');
-if (!IDLE_CLIP_DEFINITION) throw new Error('Canonical crew-01-idle clip is missing');
+const IDLE_CLIP_DEFINITION = moonCitySceneBundle.clips.find((clip) => clip.id === 'crew-01-idle')!;
+const IDLE_FRAMES = [idleFrame1, idleFrame2];
 
 const IDLE_CLIP: SpriteClipMetadata = {
   id: IDLE_CLIP_DEFINITION.id,
-  frames: IDLE_CLIP_DEFINITION.frames.map((frame) => SCENE_FRAME_SOURCES[frame.asset]),
+  // Frame count/timing come from the canonical clip; only two stills are shipped to keep the
+  // lazy scene chunk under budget.
+  frames: IDLE_CLIP_DEFINITION.frames.map((_, index) => IDLE_FRAMES[Math.min(index, 1)]),
   durationMs: IDLE_CLIP_DEFINITION.frames.reduce((total, frame) => total + frame.durationMs, 0),
   loop: IDLE_CLIP_DEFINITION.loop,
   pingPong: IDLE_CLIP_DEFINITION.direction === 'ping-pong',
-  fallbackAsset: SCENE_FRAME_SOURCES[IDLE_CLIP_DEFINITION.frames[0].asset],
+  fallbackAsset: idleFrame1,
   width: 160,
   height: 160,
 };
+
+/**
+ * The in-scene crew plane reuses the canonical idle clip but keeps its own DOM hook so the
+ * standalone sprite specimen (data-sprite-clip="crew-01-idle") stays independently testable.
+ * The plane itself is exposed as [data-layer-id="crew-01"] with a z-order between the rooftop
+ * (70) / railing (80) and the foreground wires (85).
+ */
+const SCENE_CREW_CLIP: SpriteClipMetadata = { ...IDLE_CLIP, id: 'crew-01-idle-scene' };
+const CREW_PLANE_Z_ORDER = 82;
 
 export function SceneLab() {
   const harness = getActiveSceneHarness() ?? {};
@@ -97,6 +94,12 @@ export function SceneLab() {
   const [composition, setComposition] = useState<'desktop' | 'mobile'>('desktop');
   const [showGuides, setShowGuides] = useState(true);
   const [staticMode, setStaticMode] = useState(Boolean(harness.reducedMotion));
+  const [prefersReducedMotion] = useState(() =>
+    Boolean(
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
+    )
+  );
   const [spritePlaying, setSpritePlaying] = useState(!harness.paused && !harness.reducedMotion);
   const [timelineStatus, setTimelineStatus] = useState<TimelineStatus>('idle');
   const [timelineTimeMs, setTimelineTimeMs] = useState(harness.fixedTimeMs ?? 0);
@@ -162,6 +165,7 @@ export function SceneLab() {
 
   const viewportWidth = composition === 'mobile' ? 390 : 1280;
   const displayedLayers = activeLayers;
+  const crewReducedMotion = staticMode || prefersReducedMotion || Boolean(harness.reducedMotion);
 
   return (
     <div className="scene-lab" data-testid="scene-lab">
@@ -209,6 +213,8 @@ export function SceneLab() {
         <Button variant="default" onClick={() => timelineRef.current?.complete()}>
           Complete timeline
         </Button>
+        {/* Narrow harness exception: the shared package has no range primitive. Keep native
+            timeline semantics, a visible label, and an explicit accessible value. */}
         <label className="scene-lab-scrubber">
           Timeline position {timelineTimeMs} ms
           <input
@@ -219,6 +225,7 @@ export function SceneLab() {
             value={timelineTimeMs}
             onChange={(event) => timelineRef.current?.seek(Number(event.currentTarget.value))}
             aria-label="Timeline position"
+            aria-valuetext={`${timelineTimeMs} milliseconds`}
           />
         </label>
       </div>
@@ -236,13 +243,27 @@ export function SceneLab() {
           layers={displayedLayers}
           breakpoints={SCENE_BREAKPOINTS}
           viewportWidth={viewportWidth}
-          staticFallback={SCENE_FALLBACK_SOURCES[HERO_SCENE.staticFallback]}
-          accessibilityFallback={SCENE_FALLBACK_SOURCES[HERO_SCENE.accessibilityFallback]}
+          staticFallback={fallbackHeroDesktop}
+          accessibilityFallback={fallbackHeroMobile}
           forceStatic={staticMode}
           enableKeyboardCamera={!staticMode}
           enablePointerParallax={!staticMode}
           style={{ width: '100%', height: composition === 'mobile' ? 420 : 340 }}
         />
+        <div
+          className="scene-lab-crew-layer"
+          data-layer-id="crew-01"
+          data-z-order={String(CREW_PLANE_Z_ORDER)}
+          style={{ zIndex: CREW_PLANE_Z_ORDER }}
+        >
+          <SpritePlayer
+            clip={SCENE_CREW_CLIP}
+            label="crew-01 idle in Moon City"
+            playing={spritePlaying}
+            reducedMotion={crewReducedMotion}
+            frameStyle={{ filter: 'var(--scene-crew-filter)' }}
+          />
+        </div>
         {showGuides && (
           <div className="scene-lab-guides" aria-hidden="true" data-testid="scene-safe-guides">
             <div className="scene-lab-safe-zone" />
@@ -265,11 +286,7 @@ export function SceneLab() {
               return (
                 <li key={layer.id} data-plane-id={layer.id} data-plane-order={layer.zOrder}>
                   <label>
-                    <input
-                      type="checkbox"
-                      checked={!hidden}
-                      onChange={() => toggleLayer(layer.id)}
-                    />
+                    <Checkbox checked={!hidden} onChange={() => toggleLayer(layer.id)} />
                     <span>
                       {layer.id} (z={layer.zOrder} · pivot {layer.pivot?.x ?? 0.5},
                       {layer.pivot?.y ?? 0.5} · px {layer.parallax?.x ?? 0})

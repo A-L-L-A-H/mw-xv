@@ -124,15 +124,15 @@ test('stale recovery claims are rejected only for a non-empty registry', () => {
   ].join('\n');
   assert.equal(findStaleRecoveryNarrative(stale, 0).length, 0);
   assert.deepEqual(findStaleRecoveryNarrative(stale, 627), [
-    'todo.md still declares recovery BLOCKED',
-    'todo.md still describes the registry as zero-byte',
-    'todo.md still contains a do-not-resume recovery instruction',
-    'todo.md still says TaskOS is unavailable',
+    'docs/tasks/sources/todo.md still declares recovery BLOCKED',
+    'docs/tasks/sources/todo.md still describes the registry as zero-byte',
+    'docs/tasks/sources/todo.md still contains a do-not-resume recovery instruction',
+    'docs/tasks/sources/todo.md still says TaskOS is unavailable',
   ]);
   assert.deepEqual(findStaleRecoveryNarrative('Registry status: RECOVERED / ACTIVE', 627), []);
 });
 
-test('committed todo.md recovery narrative matches the valid registry', async () => {
+test('committed docs/tasks/sources/todo.md recovery narrative matches the valid registry', async () => {
   const result = await validateTasks();
   assert.equal(result.valid, true, result.errors.join('\n'));
   assert.ok(result.taskCount > 0);

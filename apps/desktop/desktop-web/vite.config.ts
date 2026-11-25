@@ -4,11 +4,30 @@ import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/postcss';
 import { defineConfig, type Plugin } from 'vite';
+import { createSkinInitScript } from '@moonwitness/ui/themes';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const boardRoot = path.resolve(__dirname, '../../board');
-const assetsFontsDir = path.resolve(__dirname, '../../../packages/assets/fonts');
+const assetsFontsDir = path.resolve(
+  path.dirname(fileURLToPath(import.meta.resolve('@moonwitness/assets/fonts.css'))),
+  'fonts'
+);
 const distBoardDir = path.resolve(__dirname, '../dist-board');
+
+function skinPrepaintPlugin(): Plugin {
+  return {
+    name: 'mw-skin-prepaint',
+    transformIndexHtml() {
+      return [
+        {
+          tag: 'script',
+          children: createSkinInitScript(),
+          injectTo: 'head-prepend',
+        },
+      ];
+    },
+  };
+}
 
 function copyBoardRouteHtmlPlugin(): Plugin {
   return {
@@ -42,7 +61,7 @@ export default defineConfig({
   root: __dirname,
   base: '/',
   publicDir: path.join(boardRoot, 'public'),
-  plugins: [react(), copyBoardRouteHtmlPlugin()],
+  plugins: [react(), skinPrepaintPlugin(), copyBoardRouteHtmlPlugin()],
   css: {
     postcss: {
       plugins: [tailwindcss()],

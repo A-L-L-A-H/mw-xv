@@ -1,17 +1,27 @@
-#!/usr/bin/env sh
-set -eu
+#!/usr/bin/env bash
+set -euo pipefail
 
-echo "Running shared UI design, desktop, lint, API addon boundary, and typecheck gates before push..."
-pnpm ui:check
-pnpm lint:ui
-pnpm api:addon:check
-pnpm --filter @moonwitness/board typecheck
+# Local pre-push gate: fast, static-only checks (CI-parity duplicates removed).
+# Heavy gates (full typecheck, full lint, unit tests, docs build, e2e) run
+# exclusively in CI; the promotion policy gate protects main.
 
-echo "Running fast CI-parity checks before push..."
+echo "Running fast static gates before push..."
+
+# Shared UI boundaries (static AST scanners, seconds)
+bun run board:ui:check
+bun run desktop:ui:check
+bun run ui:design:check
+
+# Addon/agent boundaries
+bun run api:addon:check
+bun run agent:boundary:check
+
+# Automation hygiene (static)
 node scripts/check-action-pins.mjs
 node scripts/check-action-tag-pins.mjs
 node scripts/check-gitleaks-config.mjs
 node scripts/check-docs.mjs
 node scripts/roadmap/validate-roadmap.mjs
 node scripts/tasks/validate-tasks.mjs
-node scripts/evolution/check-constitution.mjs
+
+echo "Fast static pre-push gates passed. Heavy checks (typecheck, lint, unit tests, docs) run in CI."

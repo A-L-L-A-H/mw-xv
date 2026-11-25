@@ -1,3 +1,4 @@
+import { isRecord } from '@moonwitness/types';
 import {
   createJsonSchemaValidator,
   hashCanonicalJson,
@@ -270,10 +271,6 @@ const validContextModes = new Set<SemanticContextMode>([
   'narration',
   'analysis',
 ]);
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 function hasOnlyKeys(value: Record<string, unknown>, allowed: readonly string[]): boolean {
   const allowedSet = new Set(allowed);

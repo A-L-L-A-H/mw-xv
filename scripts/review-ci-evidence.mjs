@@ -2,6 +2,9 @@ import { readFile } from 'node:fs/promises';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
+import { CI_GATE_CHECK_NAME } from './ci-gate.mjs';
+
+const fullShaPattern = /^[a-f0-9]{40}$/u;
 
 function flattenPages(value, key) {
   const values = Array.isArray(value) ? value.flat(Infinity) : [value];
@@ -30,6 +33,9 @@ function matchingRuns(runs, headSha, pullRequestNumber) {
 }
 
 export function selectReviewCiRun(runs, headSha, pullRequestNumber) {
+  if (!fullShaPattern.test(headSha)) {
+    throw new Error('A full 40-character head SHA is required.');
+  }
   const run = matchingRuns(runs, headSha, pullRequestNumber)[0];
   if (!run) {
     throw new Error(`No pull_request CI run exists for PR #${pullRequestNumber} at ${headSha}.`);
@@ -41,19 +47,26 @@ export function selectReviewCiRun(runs, headSha, pullRequestNumber) {
 }
 
 export function verifyReviewCiEvidence(runs, jobs, headSha, pullRequestNumber, runId) {
+  if (!fullShaPattern.test(headSha)) {
+    throw new Error('A full 40-character head SHA is required.');
+  }
   const run = selectReviewCiRun(runs, headSha, pullRequestNumber);
   if (String(run.id) !== String(runId)) {
     throw new Error(
       `The supplied CI run ${runId} is not the latest run for this exact PR and SHA.`
     );
   }
-  const technicalGate = flattenPages(jobs, 'jobs').find((job) => job.name === 'ci-technical-gate');
-  if (technicalGate?.status !== 'completed' || technicalGate.conclusion !== 'success') {
+  // Select the newest gate job, never the first one: a stale failed attempt
+  // must not win over the terminal attempt for the exact run.
+  const gate = flattenPages(jobs, 'jobs')
+    .filter((job) => job?.name === CI_GATE_CHECK_NAME)
+    .sort((left, right) => Number(right.id ?? 0) - Number(left.id ?? 0))[0];
+  if (gate?.status !== 'completed' || gate.conclusion !== 'success') {
     throw new Error(
-      `The exact-head technical gate for CI run ${runId} did not succeed (status: ${technicalGate?.status ?? 'missing'}, conclusion: ${technicalGate?.conclusion ?? 'missing'}).`
+      `The exact-head ${CI_GATE_CHECK_NAME} for CI run ${runId} did not succeed (status: ${gate?.status ?? 'missing'}, conclusion: ${gate?.conclusion ?? 'missing'}).`
     );
   }
-  return `Verified successful ci-technical-gate for PR #${pullRequestNumber} at ${headSha} (run ${runId}).`;
+  return `Verified successful ${CI_GATE_CHECK_NAME} for PR #${pullRequestNumber} at ${headSha} (run ${runId}).`;
 }
 
 async function readJson(path) {

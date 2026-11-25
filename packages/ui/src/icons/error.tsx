@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type ErrorIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function ErrorIcon({ size = 24, title, ...props }: ErrorIconProps) {
+const ErrorIcon = forwardRef<SVGSVGElement, ErrorIconProps>(function ErrorIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -27,4 +31,8 @@ export function ErrorIcon({ size = 24, title, ...props }: ErrorIconProps) {
       <path d="m9 9 6 6m0-6-6 6" />
     </svg>
   );
-}
+});
+
+ErrorIcon.displayName = 'ErrorIcon';
+
+export { ErrorIcon };

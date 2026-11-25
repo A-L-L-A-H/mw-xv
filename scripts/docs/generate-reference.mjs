@@ -49,6 +49,7 @@ export function normalizeModel(model) {
         'belongsTo',
         'hasMany',
         'password',
+        'float',
       ]);
       if (!field || typeof field !== 'object' || !validKinds.has(field.kind)) {
         throw new Error(`Unknown field kind for '${model.modelName}.${name}'`);
@@ -271,6 +272,7 @@ export async function collectReferenceMetadata() {
   const integrationPath = path.join(root, 'packages/orm-integration/dist/manifest.js');
   const whatsappPath = path.join(root, 'packages/orm-whatsapp/dist/manifest.js');
   const witnessPath = path.join(root, 'packages/orm-knowledge/dist/manifest.js');
+  const observabilityPath = path.join(root, 'packages/orm-observability/dist/manifest.js');
   const [
     { manifest: base },
     { manifest: auth },
@@ -284,6 +286,7 @@ export async function collectReferenceMetadata() {
     { manifest: integration },
     { whatsappManifest: whatsapp },
     { manifest: witness },
+    { manifest: observability },
   ] = await Promise.all([
     import(pathToFileURL(basePath).href),
     import(pathToFileURL(authPath).href),
@@ -297,6 +300,7 @@ export async function collectReferenceMetadata() {
     import(pathToFileURL(integrationPath).href),
     import(pathToFileURL(whatsappPath).href),
     import(pathToFileURL(witnessPath).href),
+    import(pathToFileURL(observabilityPath).href),
   ]);
   const addons = [
     base,
@@ -311,6 +315,7 @@ export async function collectReferenceMetadata() {
     integration,
     whatsapp,
     witness,
+    observability,
   ]
     .sort((left, right) => compare(left.name, right.name))
     .map((addon) => {
@@ -404,6 +409,7 @@ export async function collectReferenceMetadata() {
     ...(await filesUnder('packages/orm-integration/src', '.ts')),
     ...(await filesUnder('packages/orm-whatsapp/src', '.ts')),
     ...(await filesUnder('packages/orm-knowledge/src', '.ts')),
+    ...(await filesUnder('apps/agent-observability/src', '.ts')),
   ].sort(compare);
   const envSources = await Promise.all(
     envSourcePaths.map(async (file) => ({

@@ -1,6 +1,14 @@
 import { defineAddon, ref, seed } from '@moonwitness/orm';
 import { ModelAccess } from '@moonwitness/orm-base';
-import { ComplianceFramework, ComplianceControl, ComplianceAssessment, ComplianceFinding, ComplianceRemediation, CompliancePolicy, ComplianceEvidence } from './models/index.js';
+import {
+  ComplianceFramework,
+  ComplianceControl,
+  ComplianceAssessment,
+  ComplianceFinding,
+  ComplianceRemediation,
+  CompliancePolicy,
+  ComplianceEvidence,
+} from './models/index.js';
 import { views } from './views.js';
 import { httpPlugin } from './http-plugin.js';
 
@@ -8,7 +16,15 @@ export const manifest = defineAddon({
   name: 'compliance',
   version: '1.0.0',
   depends: ['base', 'crm'],
-  models: [ComplianceFramework, ComplianceControl, ComplianceAssessment, ComplianceFinding, ComplianceRemediation, CompliancePolicy, ComplianceEvidence],
+  models: [
+    ComplianceFramework,
+    ComplianceControl,
+    ComplianceAssessment,
+    ComplianceFinding,
+    ComplianceRemediation,
+    CompliancePolicy,
+    ComplianceEvidence,
+  ],
   httpPlugins: [httpPlugin],
   data: [
     seed(ComplianceFramework, 'compliance.framework_iso27001', {
@@ -33,13 +49,15 @@ export const manifest = defineAddon({
       name: 'SOC 2 Type II',
       version: '2017',
       category: 'industry',
-      description: 'Service Organization Control 2 for security, availability, processing integrity, confidentiality, privacy',
+      description:
+        'Service Organization Control 2 for security, availability, processing integrity, confidentiality, privacy',
       status: 'active',
       issuer: 'AICPA',
       effective_date: '2017-01-01',
       expiry_date: '2027-01-01',
       owner: ref('base.user_superadmin'),
-      reference_url: 'https://www.aicpa.org/interestareas/frc/assurance/downloadabledocuments/soc-2-guide.pdf',
+      reference_url:
+        'https://www.aicpa.org/interestareas/frc/assurance/downloadabledocuments/soc-2-guide.pdf',
       tags: '["security", "availability", "confidentiality"]',
       notes: 'Required for SaaS vendors',
     }),
@@ -94,12 +112,15 @@ export const manifest = defineAddon({
       control_id: 'ISO27001-A.5.1',
       framework: ref('compliance.framework_iso27001'),
       name: 'Policies for Information Security',
-      description: 'A set of policies for information security shall be defined, approved by management, published and communicated to employees and relevant interested parties',
+      description:
+        'A set of policies for information security shall be defined, approved by management, published and communicated to employees and relevant interested parties',
       control_type: 'preventive',
       status: 'active',
       risk_category: 'Governance',
-      control_objective: 'To provide management direction and support for information security in accordance with business requirements and relevant laws and regulations',
-      testing_procedure: 'Review policy documentation, verify management approval, confirm publication and communication to staff',
+      control_objective:
+        'To provide management direction and support for information security in accordance with business requirements and relevant laws and regulations',
+      testing_procedure:
+        'Review policy documentation, verify management approval, confirm publication and communication to staff',
       frequency: 'annual',
       automation_level: 'manual',
       owner: ref('base.user_superadmin'),
@@ -114,17 +135,21 @@ export const manifest = defineAddon({
       control_id: 'ISO27001-A.5.10',
       framework: ref('compliance.framework_iso27001'),
       name: 'Acceptable Use of Information and Other Associated Assets',
-      description: 'Rules for the acceptable use of information and other associated assets shall be identified, documented and implemented',
+      description:
+        'Rules for the acceptable use of information and other associated assets shall be identified, documented and implemented',
       control_type: 'preventive',
       status: 'active',
       risk_category: 'Asset Management',
-      control_objective: 'To ensure that users understand their responsibilities regarding acceptable use of information assets',
-      testing_procedure: 'Review acceptable use policy, verify acknowledgment by staff, check for violations',
+      control_objective:
+        'To ensure that users understand their responsibilities regarding acceptable use of information assets',
+      testing_procedure:
+        'Review acceptable use policy, verify acknowledgment by staff, check for violations',
       frequency: 'annual',
       automation_level: 'semi_automated',
       owner: ref('base.user_superadmin'),
       reviewer: ref('base.user_superadmin'),
-      evidence_requirements: '["acceptable_use_policy", "acknowledgment_records", "violation_logs"]',
+      evidence_requirements:
+        '["acceptable_use_policy", "acknowledgment_records", "violation_logs"]',
       related_controls: '["ISO27001-A.5.1", "ISO27001-A.8.1"]',
       tags: '["asset-management", "acceptable-use"]',
       notes: '',
@@ -134,17 +159,20 @@ export const manifest = defineAddon({
       control_id: 'SOC2-CC6.1',
       framework: ref('compliance.framework_soc2'),
       name: 'Logical Access Security Software',
-      description: 'The entity implements logical access security software, infrastructure, and architectures over protected information assets to protect them from security events',
+      description:
+        'The entity implements logical access security software, infrastructure, and architectures over protected information assets to protect them from security events',
       control_type: 'detective',
       status: 'active',
       risk_category: 'Access Control',
       control_objective: 'To restrict logical access to protected information assets',
-      testing_procedure: 'Review access control lists, test authentication mechanisms, verify logging and monitoring',
+      testing_procedure:
+        'Review access control lists, test authentication mechanisms, verify logging and monitoring',
       frequency: 'quarterly',
       automation_level: 'fully_automated',
       owner: ref('base.user_superadmin'),
       reviewer: ref('base.user_superadmin'),
-      evidence_requirements: '["access_control_matrix", "authentication_logs", "monitoring_alerts"]',
+      evidence_requirements:
+        '["access_control_matrix", "authentication_logs", "monitoring_alerts"]',
       related_controls: '["SOC2-CC6.2", "SOC2-CC6.3"]',
       tags: '["access-control", "authentication", "monitoring"]',
       notes: 'Critical for SOC 2 Type II',
@@ -154,17 +182,21 @@ export const manifest = defineAddon({
       control_id: 'GDPR-ART32',
       framework: ref('compliance.framework_gdpr'),
       name: 'Security of Processing',
-      description: 'Implement appropriate technical and organisational measures to ensure a level of security appropriate to the risk',
+      description:
+        'Implement appropriate technical and organisational measures to ensure a level of security appropriate to the risk',
       control_type: 'preventive',
       status: 'active',
       risk_category: 'Data Protection',
-      control_objective: 'Ensure confidentiality, integrity, availability and resilience of processing systems',
-      testing_procedure: 'Review encryption, pseudonymisation, access controls, incident response procedures',
+      control_objective:
+        'Ensure confidentiality, integrity, availability and resilience of processing systems',
+      testing_procedure:
+        'Review encryption, pseudonymisation, access controls, incident response procedures',
       frequency: 'continuous',
       automation_level: 'fully_automated',
       owner: ref('base.user_superadmin'),
       reviewer: ref('base.user_superadmin'),
-      evidence_requirements: '["encryption_config", "access_control_review", "incident_response_plan"]',
+      evidence_requirements:
+        '["encryption_config", "access_control_review", "incident_response_plan"]',
       related_controls: '["GDPR-ART25", "GDPR-ART33"]',
       tags: '["data-protection", "encryption", "privacy-by-design"]',
       notes: 'Article 32 GDPR',
@@ -255,7 +287,8 @@ export const manifest = defineAddon({
       period_start: '2026-04-01',
       period_end: '2026-06-30',
       status: 'planned',
-      scope: '["Req.1", "Req.2", "Req.3", "Req.4", "Req.5", "Req.6", "Req.7", "Req.8", "Req.9", "Req.10", "Req.11", "Req.12"]',
+      scope:
+        '["Req.1", "Req.2", "Req.3", "Req.4", "Req.5", "Req.6", "Req.7", "Req.8", "Req.9", "Req.10", "Req.11", "Req.12"]',
       assessor: ref('base.user_superadmin'),
       reviewer: ref('base.user_superadmin'),
       overall_score: 0,
@@ -279,13 +312,16 @@ export const manifest = defineAddon({
       assessment: ref('compliance.assessment_iso27001_2026_q1'),
       control: ref('compliance.control_iso27001_a5_1'),
       title: 'Information Security Policy Not Communicated to Contractors',
-      description: 'The information security policy has been approved by management but has not been formally communicated to contractor personnel with system access',
+      description:
+        'The information security policy has been approved by management but has not been formally communicated to contractor personnel with system access',
       severity: 'high',
       status: 'open',
       risk_rating: 16,
       root_cause: 'Onboarding process for contractors does not include policy acknowledgment step',
-      impact: 'Contractors may not understand security obligations, increasing risk of policy violations',
-      recommendation: 'Update contractor onboarding to include mandatory policy acknowledgment and annual re-certification',
+      impact:
+        'Contractors may not understand security obligations, increasing risk of policy violations',
+      recommendation:
+        'Update contractor onboarding to include mandatory policy acknowledgment and annual re-certification',
       reported_by: ref('base.user_superadmin'),
       assigned_to: ref('base.user_superadmin'),
       target_resolution_date: '2026-04-30',
@@ -298,13 +334,15 @@ export const manifest = defineAddon({
       assessment: ref('compliance.assessment_gdpr_2026_annual'),
       control: ref('compliance.control_gdpr_art32'),
       title: 'Database Encryption at Rest Not Enabled for All PII Tables',
-      description: 'Three database tables containing personal identifiable information (PII) do not have transparent data encryption (TDE) enabled',
+      description:
+        'Three database tables containing personal identifiable information (PII) do not have transparent data encryption (TDE) enabled',
       severity: 'critical',
       status: 'in_progress',
       risk_rating: 20,
       root_cause: 'Legacy tables migrated before encryption policy enforcement',
       impact: 'Data breach could expose unencrypted PII, violating GDPR Article 32',
-      recommendation: 'Enable TDE on all PII-containing tables; implement automated compliance check for new tables',
+      recommendation:
+        'Enable TDE on all PII-containing tables; implement automated compliance check for new tables',
       reported_by: ref('base.user_superadmin'),
       assigned_to: ref('base.user_superadmin'),
       target_resolution_date: '2026-03-31',
@@ -317,13 +355,15 @@ export const manifest = defineAddon({
       assessment: ref('compliance.assessment_soc2_2026_h1'),
       control: ref('compliance.control_soc2_cc6_1'),
       title: 'Multi-Factor Authentication Not Enforced for All Admin Accounts',
-      description: 'Five administrative accounts in the production environment do not have MFA enforced',
+      description:
+        'Five administrative accounts in the production environment do not have MFA enforced',
       severity: 'high',
       status: 'open',
       risk_rating: 18,
       root_cause: 'Legacy service accounts exempted from MFA policy during migration',
       impact: 'Compromised admin credentials could lead to unauthorized system access',
-      recommendation: 'Enforce MFA on all admin accounts; replace service accounts with managed identities',
+      recommendation:
+        'Enforce MFA on all admin accounts; replace service accounts with managed identities',
       reported_by: ref('base.user_superadmin'),
       assigned_to: ref('base.user_superadmin'),
       target_resolution_date: '2026-07-15',
@@ -336,7 +376,8 @@ export const manifest = defineAddon({
       assessment: ref('compliance.assessment_pci_2026_q2'),
       control: null,
       title: 'Cardholder Data Retention Exceeds Defined Period',
-      description: 'Cardholder data retained for 18 months exceeds the 12-month retention policy defined in data retention schedule',
+      description:
+        'Cardholder data retained for 18 months exceeds the 12-month retention policy defined in data retention schedule',
       severity: 'medium',
       status: 'risk_accepted',
       risk_rating: 10,
@@ -346,7 +387,8 @@ export const manifest = defineAddon({
       reported_by: ref('base.user_superadmin'),
       assigned_to: ref('base.user_superadmin'),
       target_resolution_date: '2026-08-31',
-      risk_acceptance_rationale: 'Risk accepted with compensating control: encrypted storage and restricted access',
+      risk_acceptance_rationale:
+        'Risk accepted with compensating control: encrypted storage and restricted access',
       risk_accepted_by: ref('base.user_superadmin'),
       risk_accepted_date: '2026-06-20',
       tags: '["retention", "cardholder-data", "pci-dss"]',
@@ -359,7 +401,8 @@ export const manifest = defineAddon({
       finding: ref('compliance.finding_iso27001_a5_1_missing'),
       title: 'Implement Contractor Policy Acknowledgment Process',
       description: 'Add policy acknowledgment step to contractor onboarding workflow in HR system',
-      action_plan: '1. Update HR onboarding checklist\n2. Add digital acknowledgment form\n3. Configure automated reminders for annual re-certification\n4. Test with pilot group\n5. Roll out to all contractors',
+      action_plan:
+        '1. Update HR onboarding checklist\n2. Add digital acknowledgment form\n3. Configure automated reminders for annual re-certification\n4. Test with pilot group\n5. Roll out to all contractors',
       status: 'pending',
       priority: 'high',
       owner: ref('base.user_superadmin'),
@@ -377,7 +420,8 @@ export const manifest = defineAddon({
       finding: ref('compliance.finding_gdpr_art32_encryption'),
       title: 'Enable TDE on PII Database Tables',
       description: 'Apply transparent data encryption to the three identified PII tables',
-      action_plan: '1. Schedule maintenance window\n2. Enable TDE on users, customers, employees tables\n3. Verify encryption status\n4. Update compliance monitoring rules\n5. Document in evidence repository',
+      action_plan:
+        '1. Schedule maintenance window\n2. Enable TDE on users, customers, employees tables\n3. Verify encryption status\n4. Update compliance monitoring rules\n5. Document in evidence repository',
       status: 'in_progress',
       priority: 'critical',
       owner: ref('base.user_superadmin'),
@@ -385,7 +429,8 @@ export const manifest = defineAddon({
       start_date: '2026-03-01',
       target_completion_date: '2026-03-31',
       cost_estimate_minor: 200000,
-      evidence_references: '["tde_config_users.sql", "tde_config_customers.sql", "tde_config_employees.sql"]',
+      evidence_references:
+        '["tde_config_users.sql", "tde_config_customers.sql", "tde_config_employees.sql"]',
       tags: '["encryption", "database", "pii", "tde"]',
       notes: 'Two of three tables completed',
     }),
@@ -394,8 +439,10 @@ export const manifest = defineAddon({
       remediation_no: 'REMED-SOC2-2026-H1-001',
       finding: ref('compliance.finding_soc2_cc6_1_mfa'),
       title: 'Enforce MFA on All Admin Accounts',
-      description: 'Enable multi-factor authentication for the five identified admin accounts and replace service accounts',
-      action_plan: '1. Identify all admin accounts without MFA\n2. Enable MFA via identity provider\n3. Create managed identities for service accounts\n4. Decommission legacy service accounts\n5. Verify MFA enforcement via conditional access policies',
+      description:
+        'Enable multi-factor authentication for the five identified admin accounts and replace service accounts',
+      action_plan:
+        '1. Identify all admin accounts without MFA\n2. Enable MFA via identity provider\n3. Create managed identities for service accounts\n4. Decommission legacy service accounts\n5. Verify MFA enforcement via conditional access policies',
       status: 'pending',
       priority: 'high',
       owner: ref('base.user_superadmin'),
@@ -412,8 +459,10 @@ export const manifest = defineAddon({
       remediation_no: 'REMED-PCI-2026-Q2-001',
       finding: ref('compliance.finding_pci_dss_req3'),
       title: 'Fix Cardholder Data Purging Job and Add Monitoring',
-      description: 'Repair the automated purging job and implement alerting for retention policy violations',
-      action_plan: '1. Debug and fix purging job failure\n2. Run manual purge for over-retained data\n3. Add monitoring alert for data age > 12 months\n4. Test alert with sample data\n5. Document fix in change management',
+      description:
+        'Repair the automated purging job and implement alerting for retention policy violations',
+      action_plan:
+        '1. Debug and fix purging job failure\n2. Run manual purge for over-retained data\n3. Add monitoring alert for data age > 12 months\n4. Test alert with sample data\n5. Document fix in change management',
       status: 'completed',
       priority: 'medium',
       owner: ref('base.user_superadmin'),
@@ -422,10 +471,12 @@ export const manifest = defineAddon({
       target_completion_date: '2026-07-15',
       actual_completion_date: '2026-07-10',
       verification_date: '2026-07-12',
-      verification_notes: 'Purging job fixed, monitoring alert validated, over-retained data purged',
+      verification_notes:
+        'Purging job fixed, monitoring alert validated, over-retained data purged',
       cost_estimate_minor: 150000,
       actual_cost_minor: 120000,
-      evidence_references: '["purging_job_fix.patch", "monitoring_alert_config.json", "purge_execution_log.txt"]',
+      evidence_references:
+        '["purging_job_fix.patch", "monitoring_alert_config.json", "purge_execution_log.txt"]',
       tags: '["retention", "automation", "monitoring", "pci"]',
       notes: 'Completed and verified',
     }),
@@ -435,8 +486,10 @@ export const manifest = defineAddon({
       policy_no: 'POL-INFOSEC-001',
       framework: ref('compliance.framework_iso27001'),
       title: 'Information Security Policy',
-      description: 'Overarching policy defining the organization\'s approach to information security management',
-      content: 'This policy establishes the framework for managing information security across the organization...',
+      description:
+        "Overarching policy defining the organization's approach to information security management",
+      content:
+        'This policy establishes the framework for managing information security across the organization...',
       status: 'published',
       version: '3.2',
       effective_date: '2026-01-01',
@@ -493,7 +546,8 @@ export const manifest = defineAddon({
       framework: ref('compliance.framework_iso27001'),
       title: 'Information Security Incident Response Policy',
       description: 'Policy defining the incident response lifecycle and responsibilities',
-      content: 'All information security incidents shall be reported, assessed, and managed according to this policy...',
+      content:
+        'All information security incidents shall be reported, assessed, and managed according to this policy...',
       status: 'published',
       version: '2.0',
       effective_date: '2026-01-01',
@@ -553,7 +607,8 @@ export const manifest = defineAddon({
       assessment: ref('compliance.assessment_gdpr_2026_annual'),
       control: ref('compliance.control_gdpr_art32'),
       title: 'Database TDE Configuration for PII Tables',
-      description: 'SQL configuration scripts showing TDE enabled on users, customers, employees tables',
+      description:
+        'SQL configuration scripts showing TDE enabled on users, customers, employees tables',
       evidence_type: 'document',
       status: 'submitted',
       file_path: '/evidence/gdpr/tde_configuration_20260315.sql',
@@ -571,7 +626,8 @@ export const manifest = defineAddon({
       assessment: ref('compliance.assessment_pci_2026_q2'),
       control: null,
       title: 'Cardholder Data Purge Execution Log',
-      description: 'Automated job log showing successful purge of cardholder data exceeding 12-month retention',
+      description:
+        'Automated job log showing successful purge of cardholder data exceeding 12-month retention',
       evidence_type: 'log',
       status: 'accepted',
       file_path: '/evidence/pci/purge_log_20260710.txt',

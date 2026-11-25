@@ -67,12 +67,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - uses: ./.github/actions/setup-pnpm
+      - uses: ./.github/actions/setup-bun
         with:
           node-version: '24'
-          pnpm-version: '11.17.0'
+          bun-version: '1.4.5'
       - name: Install frozen workspace dependencies
-        run: pnpm install --frozen-lockfile --no-runtime
+        run: bun install --frozen-lockfile
       - name: Verify workspace release version
         id: version
         env:
@@ -80,22 +80,60 @@ jobs:
         run: |
           version="$RELEASE_VERSION"
           if [[ "$version" != v* ]]; then version="v$version"; fi
-          pnpm release:check "$version"
+          bun run release:check "$version"
           echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: Verify Node parity, workflow pins, and secret policy
+        run: |
+          bun run node:parity --strict
+          bun run automation:check:secrets
+          bun run automation:check:action-pins
+          bun run automation:check:action-tags
+      - name: Block CRITICAL dependency advisories
+        run: bun audit --audit-level=critical
+      - name: Install pinned gitleaks CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          version='8.30.1'
+          archive="$RUNNER_TEMP/gitleaks_${version}_linux_x64.tar.gz"
+          curl --fail --silent --show-error --location \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${version}/gitleaks_${version}_linux_x64.tar.gz" \
+            --output "$archive"
+          expected='551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb'
+          actual="$(sha256sum "$archive" | cut -d' ' -f1)"
+          if [ "$actual" != "$expected" ]; then
+            echo "::error::gitleaks checksum mismatch: expected $expected, got $actual"
+            exit 1
+          fi
+          tar -xzf "$archive" -C "$RUNNER_TEMP" gitleaks
+          install -m 0755 "$RUNNER_TEMP/gitleaks" /usr/local/bin/gitleaks
+      - name: Scan full Git history for secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          gitleaks detect \
+            --source . \
+            --config .gitleaks.toml \
+            --baseline-path .gitleaks-baseline.json \
+            --report-format json \
+            --report-path "$RUNNER_TEMP/gitleaks-report.json" \
+            --redact \
+            --no-banner \
+            --exit-code 1
       - if: github.ref_type != 'tag' || (github.event_name == 'workflow_dispatch' && !inputs.publish)
-        run: pnpm lint
+        run: bun run lint
       - if: github.ref_type != 'tag' || (github.event_name == 'workflow_dispatch' && !inputs.publish)
-        run: pnpm format:check
+        run: bun run format:check
       - if: github.ref_type != 'tag' || (github.event_name == 'workflow_dispatch' && !inputs.publish)
-        run: pnpm typecheck
+        run: bun run typecheck
       - if: github.ref_type != 'tag' || (github.event_name == 'workflow_dispatch' && !inputs.publish)
-        run: pnpm docs:check:built
+        run: bun run docs:check:built
       - if: github.ref_type != 'tag' || (github.event_name == 'workflow_dispatch' && !inputs.publish)
-        run: pnpm --filter @moonwitness/board lint
+        run: bun --filter @moonwitness/board lint
       - if: github.ref_type != 'tag' || (github.event_name == 'workflow_dispatch' && !inputs.publish)
-        run: pnpm test:unit:built
+        run: bun run test:unit:built
       - if: github.ref_type != 'tag' || (github.event_name == 'workflow_dispatch' && !inputs.publish)
-        run: pnpm test:integration:built
+        run: bun run test:integration:built
       - name: Build the release images once with immutable source metadata
         env:
           RELEASE_VERSION: ${{ steps.version.outputs.version }}
@@ -158,7 +196,10 @@ jobs:
           WHATSAPP_GATEWAY_PASSWORD: ci-only-whatsapp-password
           ATTACHMENT_S3_ACCESS_KEY: GKci-only-access-key-id
           ATTACHMENT_S3_SECRET_KEY: ci-only-attachment-secret-that-is-at-least-32-characters-long
-        run: docker compose -f docker-compose.yml -f docker-compose.production.yml config --quiet
+          MW_AI_FREELLM_KEY: ci-only-freellm-inference-key
+          AGENT_SANDBOX_TOKEN: ci-only-agent-sandbox-token
+          ENCRYPTION_KEY: ci-only-freellm-encryption-key
+        run: docker compose -f deploy/compose/docker-compose.yml -f deploy/compose/docker-compose.production.yml config --quiet
       - name: Export the verified images and record their transport digest
         if: github.ref_type == 'tag'
         env:
@@ -268,6 +309,11 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Refuse publication while the fleet is paused
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: node scripts/fleet-stop.mjs probe --repo "$GH_REPO"
       - name: Verify the exact release artifact identity
         env:
           GH_TOKEN: ${{ github.token }}

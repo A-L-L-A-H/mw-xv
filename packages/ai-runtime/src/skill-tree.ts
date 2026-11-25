@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { sha256Canonical } from './canonical-json.js';
 import { createRedactor, type RedactionContext } from './redaction.js';
 
 export type SkillDomain = 'orm' | 'board' | 'paas' | 'desktop' | 'knowledge';
@@ -114,30 +114,6 @@ const DEFAULT_MIN_SAMPLES = 5;
 const DEFAULT_POSITIVE_THRESHOLD_BPS = 200;
 const DEFAULT_REVOCATION_THRESHOLD_BPS = -500;
 
-function canonicalizeValue(value: unknown): unknown {
-  if (value === null || typeof value !== 'object') {
-    return value;
-  }
-  if (Array.isArray(value)) {
-    return value.map((entry) => canonicalizeValue(entry));
-  }
-  const record = value as Record<string, unknown>;
-  const sortedKeys = Object.keys(record).sort();
-  const normalized: Record<string, unknown> = {};
-  for (const key of sortedKeys) {
-    const entry = record[key];
-    if (entry !== undefined) {
-      normalized[key] = canonicalizeValue(entry);
-    }
-  }
-  return normalized;
-}
-
-function computeCanonicalSha256(payload: unknown): string {
-  const canonicalJson = JSON.stringify(canonicalizeValue(payload));
-  return createHash('sha256').update(canonicalJson, 'utf8').digest('hex');
-}
-
 function buildRedactor(secrets?: readonly string[]): RedactionContext {
   const redactor = createRedactor();
   if (secrets) {
@@ -245,7 +221,7 @@ export function scoreSkillTransferability(
 
   return {
     ...corePayload,
-    assessmentSha256: computeCanonicalSha256(corePayload),
+    assessmentSha256: sha256Canonical(corePayload),
   };
 }
 
@@ -371,7 +347,7 @@ export function buildCollectiveSkillTree(
 
   return {
     ...coreTree,
-    treeSha256: computeCanonicalSha256(coreTree),
+    treeSha256: sha256Canonical(coreTree),
   };
 }
 
@@ -446,7 +422,7 @@ export function pruneDegradedSkillNodes(tree: CollectiveSkillTree): SkillTreePru
 
   return {
     ...coreReport,
-    treeSha256: computeCanonicalSha256({
+    treeSha256: sha256Canonical({
       sourceTreeSha256: tree.treeSha256,
       ...coreReport,
     }),

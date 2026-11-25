@@ -59,6 +59,11 @@
         },
         { "title": "Recovery", "kind": "how-to", "path": "docs/guide/how-to/recovery.md" },
         {
+          "title": "Deployment dan evaluation gates",
+          "kind": "how-to",
+          "path": "docs/guide/how-to/evaluation-gates.md"
+        },
+        {
           "title": "Release dan upgrade",
           "kind": "how-to",
           "path": "docs/guide/how-to/release-upgrade.md"
@@ -67,6 +72,36 @@
           "title": "Portal dokumentasi",
           "kind": "how-to",
           "path": "docs/guide/how-to/developer-portal.md"
+        },
+        {
+          "title": "Operasi fleet otonom",
+          "kind": "how-to",
+          "path": "docs/guide/how-to/autonomous-fleet-operations.md"
+        }
+      ]
+    },
+    {
+      "title": "Pengetahuan & arsip",
+      "items": [
+        {
+          "title": "Total Idea Archive — Master Index",
+          "kind": "reference",
+          "path": "docs/knowledge/idea-archive/README.md"
+        },
+        {
+          "title": "Canon Registry",
+          "kind": "reference",
+          "path": "docs/knowledge/idea-archive/CANON-REGISTRY.md"
+        },
+        {
+          "title": "Unresolved Decisions",
+          "kind": "reference",
+          "path": "docs/knowledge/idea-archive/UNRESOLVED-DECISIONS.md"
+        },
+        {
+          "title": "Indeks naratif V10",
+          "kind": "reference",
+          "path": "docs/knowledge/narratives/INDEX.md"
         }
       ]
     },

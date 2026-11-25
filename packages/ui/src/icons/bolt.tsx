@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type BoltIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function BoltIcon({ size = 24, title, ...props }: BoltIconProps) {
+const BoltIcon = forwardRef<SVGSVGElement, BoltIconProps>(function BoltIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -26,4 +30,8 @@ export function BoltIcon({ size = 24, title, ...props }: BoltIconProps) {
       <path d="m13 2-8 11h6l-1 9 9-12h-6l1-8Z" />
     </svg>
   );
-}
+});
+
+BoltIcon.displayName = 'BoltIcon';
+
+export { BoltIcon };

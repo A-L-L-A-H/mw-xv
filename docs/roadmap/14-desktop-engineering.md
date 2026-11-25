@@ -8,7 +8,7 @@ M13 extends the existing MoonWitness Desktop local-first harness. It does not cr
 
 - **Status:** complete (2026-11-22; audit deliverables and evidence verified on `dev` base `f3abe0937894b1fd309f675bd7bd86a15ee46e70`; no feature code implemented in M13.01)
 - **Prerequisites:** M12.05, M12.06, M12.07, M12.11, M12.13; Desktop architecture baseline ADR 0008 is accepted.
-- **Granular activation item:** DSK-0.12 in [the Desktop engineering ledger](../../todo-desktop.md).
+- **Granular activation item:** DSK-0.12 in [the Desktop engineering ledger](../tasks/sources/todo-desktop.md).
 - **Source reference:** [bjo163/rocksouldx](https://github.com/bjo163/rocksouldx), catalogued as `ADAPT` in the [source migration matrix](../migration/SOURCE-MIGRATION-MATRIX.md). The matrix's `3157a62...` value is a README blob SHA, **not** a repository commit SHA; resolve and record the actual source commit before relying on any source file.
 - **Deliverables:** `docs/architecture/rock-soul-flow-reuse-map.md` and `docs/roadmap/evidence/M13.01.md`.
 - **Codex handoff:** [ROCKSOUL FLOW — local Codex instructions](rock-soul-flow-codex-handoff.md).
@@ -35,7 +35,7 @@ This table is an inspection guide, not a claim that any listed capability is com
 ### Execution steps
 
 1. Inspect the target checkout's exact `dev` SHA, clean/dirty state, applicable `AGENTS.md` files, package scripts and current roadmap status.
-2. Read ADR 0008, the Desktop architecture, ADR 0007, the AI runtime/PCW contracts, `todo-desktop.md`, and the ROCKSOUL migration disposition.
+2. Read ADR 0008, the Desktop architecture, ADR 0007, the AI runtime/PCW contracts, `docs/tasks/sources/todo-desktop.md`, and the ROCKSOUL migration disposition.
 3. Inspect the legacy ROCKSOUL FLOW source read-only. Record the exact source repository, branch, commit SHA, relevant paths and applicable licenses/notices. Do not mistake a README blob SHA for a commit SHA.
 4. For each capability, record: requirement, target owner, exact source paths, caller/API, tests, status (`implemented`, `partial`, `missing`, or `blocked`), duplicate-authority risk, security/risk boundary, and evidence gap.
 5. Recommend exactly one smallest next vertical slice with bounded files, acceptance criteria, dependencies, tests and rollback considerations. Do not implement that slice in M13.01; it becomes a separately reviewed M13.02 (or later) card after the audit.

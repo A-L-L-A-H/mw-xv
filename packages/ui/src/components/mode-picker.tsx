@@ -1,9 +1,9 @@
 'use client';
 
 import { type ComponentProps } from 'react';
-import { useModalFocus } from '../lib/use-modal-focus.js';
 import { Badge } from './badge.js';
 import { Button } from './button.js';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from './dialog.js';
 import { CheckCircleIcon, CloseIcon, CodeIcon, ColumnsIcon, SparkleIcon } from '../icons/index.js';
 
 export type DesktopExperienceMode = 'workspace' | 'developer';
@@ -63,117 +63,118 @@ export function ModePicker({
   className,
   ...props
 }: ModePickerProps) {
-  const containerRef = useModalFocus<HTMLDivElement>(onDismiss);
-
-  const classes = [
-    'mw-ui-mode-picker fixed inset-0 flex items-center justify-center bg-night/80 p-4 backdrop-blur-sm',
-    className,
-  ]
-    .filter(Boolean)
-    .join(' ');
-
   return (
-    <div
-      ref={containerRef}
-      data-slot="mode-picker"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="mw-mode-picker-title"
-      aria-describedby="mw-mode-picker-description"
-      className={classes}
-      tabIndex={-1}
-      {...props}
+    <Dialog
+      open
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) onDismiss?.();
+      }}
     >
-      <div className="relative w-full max-w-2xl border-4 border-ink bg-paper p-6 text-ink shadow-ink sm:p-8">
-        <div className="flex items-start justify-between gap-4 border-b-2 border-dashed border-ink/25 pb-4">
-          <div className="space-y-1">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink-faint">
-              MoonWitness Desktop
-            </p>
-            <h2
-              id="mw-mode-picker-title"
-              className="font-display text-2xl uppercase tracking-wide text-ink"
-            >
-              {title}
-            </h2>
-            <p id="mw-mode-picker-description" className="text-sm text-ink-soft">
-              {description}
-            </p>
-          </div>
-          {onDismiss && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              onClick={onDismiss}
-              aria-label="Close mode selector"
-            >
-              <CloseIcon className="size-4" aria-hidden="true" />
-            </Button>
-          )}
-        </div>
-
-        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {MODE_OPTIONS.map((option) => {
-            const isSelected = currentMode === option.id;
-            const Icon = option.id === 'workspace' ? ColumnsIcon : CodeIcon;
-            return (
-              <div
-                key={option.id}
-                data-mode-option={option.id}
-                data-selected={isSelected ? 'true' : 'false'}
-                className={`flex flex-col justify-between gap-4 border-2 p-4 transition-colors ${
-                  isSelected
-                    ? 'border-ink bg-primary/15 shadow-ink-sm'
-                    : 'border-ink/40 bg-paper-raised hover:border-ink'
-                }`}
-              >
-                <div className="space-y-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="grid size-10 shrink-0 place-items-center border-2 border-ink bg-paper text-ink shadow-ink-sm">
-                      <Icon className="size-5" aria-hidden="true" />
-                    </span>
-                    <Badge variant={option.badgeVariant}>{option.badge}</Badge>
-                  </div>
-
-                  <div>
-                    <h3 className="font-display text-lg uppercase tracking-wide text-ink">
-                      {option.label}
-                    </h3>
-                    <p className="font-mono text-xs text-ink-faint">{option.subtitle}</p>
-                  </div>
-
-                  <ul className="space-y-1.5 text-xs text-ink-soft">
-                    {option.highlights.map((item) => (
-                      <li key={item} className="flex items-center gap-2">
-                        {option.id === 'workspace' ? (
-                          <CheckCircleIcon
-                            className="size-3.5 shrink-0 text-ink"
-                            aria-hidden="true"
-                          />
-                        ) : (
-                          <SparkleIcon className="size-3.5 shrink-0 text-ink" aria-hidden="true" />
-                        )}
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
+      <DialogContent
+        data-slot="mode-picker"
+        aria-modal="true"
+        className={['mw-ui-mode-picker max-w-2xl p-0 sm:max-w-2xl', className]
+          .filter(Boolean)
+          .join(' ')}
+        showCloseButton={false}
+        onEscapeKeyDown={(event) => {
+          if (!onDismiss) event.preventDefault();
+        }}
+        onPointerDownOutside={(event) => {
+          if (!onDismiss) event.preventDefault();
+        }}
+        {...props}
+      >
+        <div className="p-6 sm:p-8">
+          <div className="flex items-start justify-between gap-4 border-b-2 border-dashed border-ink/25 pb-4">
+            <div className="space-y-1">
+              <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink-faint">
+                MoonWitness Desktop
+              </p>
+              <DialogTitle className="font-display text-2xl uppercase tracking-wide text-ink">
+                {title}
+              </DialogTitle>
+              <DialogDescription className="text-sm text-ink-soft">{description}</DialogDescription>
+            </div>
+            {onDismiss ? (
+              <DialogClose asChild>
                 <Button
                   type="button"
-                  variant={isSelected ? 'default' : 'outline'}
-                  className="w-full"
-                  aria-pressed={isSelected}
-                  onClick={() => onSelect(option.id)}
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="Close mode selector"
                 >
-                  {isSelected ? `Active: ${option.label}` : `Use ${option.label}`}
+                  <CloseIcon className="size-4" aria-hidden="true" />
                 </Button>
-              </div>
-            );
-          })}
+              </DialogClose>
+            ) : null}
+          </div>
+
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {MODE_OPTIONS.map((option) => {
+              const isSelected = currentMode === option.id;
+              const Icon = option.id === 'workspace' ? ColumnsIcon : CodeIcon;
+              return (
+                <div
+                  key={option.id}
+                  data-mode-option={option.id}
+                  data-selected={isSelected ? 'true' : 'false'}
+                  className={`flex flex-col justify-between gap-4 border-2 p-4 transition-colors ${
+                    isSelected
+                      ? 'border-ink bg-primary/15 shadow-ink-sm'
+                      : 'border-ink/40 bg-paper-raised hover:border-ink'
+                  }`}
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="grid size-10 shrink-0 place-items-center border-2 border-ink bg-paper text-ink shadow-ink-sm">
+                        <Icon className="size-5" aria-hidden="true" />
+                      </span>
+                      <Badge variant={option.badgeVariant}>{option.badge}</Badge>
+                    </div>
+
+                    <div>
+                      <h3 className="font-display text-lg uppercase tracking-wide text-ink">
+                        {option.label}
+                      </h3>
+                      <p className="font-mono text-xs text-ink-faint">{option.subtitle}</p>
+                    </div>
+
+                    <ul className="space-y-1.5 text-xs text-ink-soft">
+                      {option.highlights.map((item) => (
+                        <li key={item} className="flex items-center gap-2">
+                          {option.id === 'workspace' ? (
+                            <CheckCircleIcon
+                              className="size-3.5 shrink-0 text-ink"
+                              aria-hidden="true"
+                            />
+                          ) : (
+                            <SparkleIcon
+                              className="size-3.5 shrink-0 text-ink"
+                              aria-hidden="true"
+                            />
+                          )}
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <Button
+                    type="button"
+                    variant={isSelected ? 'default' : 'outline'}
+                    className="w-full"
+                    aria-pressed={isSelected}
+                    onClick={() => onSelect(option.id)}
+                  >
+                    {isSelected ? `Active: ${option.label}` : `Use ${option.label}`}
+                  </Button>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

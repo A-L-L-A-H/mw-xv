@@ -109,3 +109,22 @@ export function bad(x: any) {
   assert.ok(codes.has('MISSING_REDACTOR'));
   assert.ok(codes.has('MISSING_SHA256_DIGEST'));
 });
+
+test('accepts sha256 via centralized canonical-json import instead of inline createHash', () => {
+  const goodSource = `
+import { sha256Canonical, sha256Hex } from './canonical-json.js';
+import { createRedactor } from './redaction.js';
+
+export function digest(value: unknown): string {
+  const { redact } = createRedactor({} as never);
+  return sha256Canonical(redact(value as Record<string, unknown>));
+}
+`;
+  const violations = checkM15ModuleSource(
+    'packages/ai-runtime/src/speculative-tree.ts',
+    goodSource
+  );
+  const shaViolations = violations.filter((v) => v.code === 'MISSING_SHA256_DIGEST');
+
+  assert.equal(shaViolations.length, 0);
+});

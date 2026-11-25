@@ -175,7 +175,15 @@ export const views = [
   defineView(PolicyVersion, {
     title: 'Policy Versions',
     list: {
-      columns: ['policy', 'version', 'status', 'authored_by', 'effective_from', 'effective_to', 'is_active'],
+      columns: [
+        'policy',
+        'version',
+        'status',
+        'authored_by',
+        'effective_from',
+        'effective_to',
+        'is_active',
+      ],
       order: 'id desc',
       decorations: [
         { color: 'success', domain: [['status', '=', 'in_force']] },
@@ -213,7 +221,15 @@ export const views = [
   defineView(Regulation, {
     title: 'Regulations',
     list: {
-      columns: ['name', 'number', 'institution', 'status', 'issued_on', 'enforced_from', 'is_active'],
+      columns: [
+        'name',
+        'number',
+        'institution',
+        'status',
+        'issued_on',
+        'enforced_from',
+        'is_active',
+      ],
       order: 'id desc',
       decorations: [
         { color: 'success', domain: [['status', '=', 'in_force']] },
@@ -254,7 +270,15 @@ export const views = [
   defineView(PublicProgram, {
     title: 'Public Programs',
     list: {
-      columns: ['name', 'code', 'institution', 'status', 'starts_on', 'ends_on', 'target_beneficiaries'],
+      columns: [
+        'name',
+        'code',
+        'institution',
+        'status',
+        'starts_on',
+        'ends_on',
+        'target_beneficiaries',
+      ],
       order: 'id desc',
       decorations: [
         { color: 'success', domain: [['status', '=', 'running']] },
@@ -273,7 +297,14 @@ export const views = [
         {
           title: 'Execution',
           columns: 2,
-          fields: ['starts_on', 'ends_on', 'target_beneficiaries', 'outcome_notes', 'is_active', 'external_ref'],
+          fields: [
+            'starts_on',
+            'ends_on',
+            'target_beneficiaries',
+            'outcome_notes',
+            'is_active',
+            'external_ref',
+          ],
         },
       ],
     },
@@ -296,7 +327,15 @@ export const views = [
   defineView(BudgetAllocation, {
     title: 'Budget Allocations',
     list: {
-      columns: ['name', 'program', 'institution', 'fiscal_year', 'amount_minor', 'currency', 'status'],
+      columns: [
+        'name',
+        'program',
+        'institution',
+        'fiscal_year',
+        'amount_minor',
+        'currency',
+        'status',
+      ],
       order: 'id desc',
       decorations: [
         { color: 'success', domain: [['status', '=', 'released']] },
@@ -309,7 +348,15 @@ export const views = [
         {
           title: 'Allocation',
           columns: 2,
-          fields: ['name', 'program', 'institution', 'fiscal_year', 'amount_minor', 'currency', 'status'],
+          fields: [
+            'name',
+            'program',
+            'institution',
+            'fiscal_year',
+            'amount_minor',
+            'currency',
+            'status',
+          ],
         },
         {
           title: 'Approval & Detail',

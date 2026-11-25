@@ -229,6 +229,33 @@ export const data = [
     name: 'AI Work Contract Review',
     config: JSON.stringify(workContractReviewWorkflow),
   }),
+  seed(WorkflowDefinition, 'ai.workflow_agent_run_approval_v1', {
+    code: 'ai.agent_run_approval',
+    version: 1,
+    name: 'AI Cloud Coding Run Approval',
+    config: JSON.stringify({
+      startState: 'pending_approval',
+      startRoles: ['user', 'superadmin', 'system'],
+      timeoutMinutes: 1440,
+      resourceModels: [AgentRun.modelName],
+      transitions: [
+        {
+          action: 'approve',
+          from: 'pending_approval',
+          to: 'approved',
+          roles: ['user', 'superadmin'],
+          requiredApprovals: 1,
+          requireDifferentActor: true,
+        },
+        {
+          action: 'reject',
+          from: 'pending_approval',
+          to: 'rejected',
+          roles: ['user', 'superadmin'],
+        },
+      ],
+    }),
+  }),
   seed(WorkflowDefinition, 'ai.workflow_capability_escalation_v1', {
     code: 'ai.capability_escalation',
     version: 1,

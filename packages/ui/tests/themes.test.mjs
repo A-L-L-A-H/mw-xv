@@ -60,9 +60,12 @@ test('default themeRegistry exposes all built-in skins and resolves unknown skin
   assert.equal(themeRegistry.has('moonwitness-ink'), true);
   assert.equal(themeRegistry.has('moonwitness-compact'), true);
   assert.equal(themeRegistry.has('moonwitness-high-contrast'), true);
+  assert.equal(themeRegistry.has('moonwitness-riot'), true);
   assert.equal(themeRegistry.has('non-existent'), false);
 
   assert.equal(themeRegistry.get('moonwitness-compact')?.defaultDensity, 'compact');
+  assert.equal(themeRegistry.get('moonwitness-riot')?.defaultMode, 'dark');
+  assert.equal(themeRegistry.get('moonwitness-riot')?.defaultDensity, 'comfortable');
   assert.equal(themeRegistry.resolve('unknown-skin').id, DEFAULT_SKIN_ID);
   assert.equal(themeRegistry.resolve(undefined).id, DEFAULT_SKIN_ID);
   assert.equal(themeRegistry.resolve(null).id, DEFAULT_SKIN_ID);
@@ -132,7 +135,7 @@ test('createThemeRegistry supports custom registration and rejects duplicate or 
         defaultDensity: 'comfortable',
         swatch: { background: '#fff', surface: '#fff', foreground: '#000', accent: '#ff0' },
       }),
-    /Invalid skin id/
+    /Invalid skin metadata/
   );
 });
 
@@ -156,6 +159,14 @@ test('all built-in skins meet WCAG AA contrast across light and dark modes', () 
     'violet-readable',
   ];
 
+  const brushPairs = [
+    ['primary-foreground', 'primary'],
+    ['on-magenta', 'magenta'],
+    ['secondary-foreground', 'secondary'],
+    ['surface-foreground', 'surface'],
+    ['destructive-foreground', 'destructive'],
+  ];
+
   for (const skin of themeRegistry.list()) {
     for (const mode of skin.supportedModes) {
       const selectors = [':root'];
@@ -171,6 +182,15 @@ test('all built-in skins meet WCAG AA contrast across light and dark modes', () 
         assert.ok(
           contrast(fg, bg) >= 4.5,
           `${skin.id} (${mode}): ${fgName} (${fg}) on ${bgName} (${bg}) is below 4.5:1`
+        );
+      }
+
+      for (const [fgName, bgName] of brushPairs) {
+        const fg = resolveToken(fgName, selectors);
+        const bg = resolveToken(bgName, selectors);
+        assert.ok(
+          contrast(fg, bg) >= 4.5,
+          `${skin.id} (${mode}): brush ${fgName} (${fg}) on ${bgName} (${bg}) is below 4.5:1`
         );
       }
 

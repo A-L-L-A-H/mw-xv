@@ -66,6 +66,26 @@ export const RESPONSIVE_DERIVATIVE_PRESETS = Object.freeze({
     allowAvif: false,
     focalPoint: { x: 0.76, y: 0.48 },
   },
+  'editorial-card': {
+    variant: 'editorial-card',
+    width: 800,
+    height: 450,
+    format: 'webp',
+    quality: 76,
+    maxBytes: 150_000,
+    allowAvif: false,
+    focalPoint: { x: 0.5, y: 0.5 },
+  },
+  'orbit-band': {
+    variant: 'orbit-band',
+    width: 1600,
+    height: 900,
+    format: 'webp',
+    quality: 74,
+    maxBytes: 400_000,
+    allowAvif: false,
+    focalPoint: { x: 0.5, y: 0.42 },
+  },
   'card-preview': {
     variant: 'card-preview',
     width: 800,
@@ -88,6 +108,10 @@ const VARIANT_TO_PRESET = new Map([
   ['homepage-knowledge-card', 'card-preview'],
   ['homepage-people-card', 'card-preview'],
   ['homepage-stories-card', 'card-preview'],
+  ['homepage-signal-card', 'editorial-card'],
+  ['homepage-archive-card', 'editorial-card'],
+  ['homepage-rain-card', 'editorial-card'],
+  ['homepage-orbit-band', 'orbit-band'],
   ['card-preview', 'card-preview'],
 ]);
 

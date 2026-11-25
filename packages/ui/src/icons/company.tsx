@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type CompanyIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function CompanyIcon({ size = 24, title, ...props }: CompanyIconProps) {
+const CompanyIcon = forwardRef<SVGSVGElement, CompanyIconProps>(function CompanyIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -27,4 +31,8 @@ export function CompanyIcon({ size = 24, title, ...props }: CompanyIconProps) {
       <path d="M6.5 10.5v1m0 3v1m6-2v1m0 3v1m4.5-8v1m0 3v1m0 3v1" />
     </svg>
   );
-}
+});
+
+CompanyIcon.displayName = 'CompanyIcon';
+
+export { CompanyIcon };

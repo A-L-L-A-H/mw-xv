@@ -1,0 +1,34 @@
+{
+  "name": "@moonwitness/orm-observability",
+  "version": "1.0.0-rc.1",
+  "description": "Reusable asynchronous telemetry persistence for AgentScope",
+  "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "tsc -p tsconfig.check.json && vitest run"
+  },
+  "dependencies": {
+    "@moonwitness/orm": "workspace:*",
+    "better-sqlite3": "^13.0.3",
+    "knex": "^3.3.0"
+  },
+  "devDependencies": {
+    "@fastify/jwt": "10.2.5",
+    "@fastify/rate-limit": "^11.2.0",
+    "@types/better-sqlite3": "^9.6.0",
+    "fastify": "^5.12.6",
+    "typescript": "~5.7.3",
+    "vitest": "5.0.3"
+  }
+}

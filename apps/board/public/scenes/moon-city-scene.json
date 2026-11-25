@@ -10,82 +10,163 @@
           "id": "sky",
           "asset": "environments/moon-city-sky.svg",
           "order": 0,
-          "position": { "x": 0.5, "y": 0.5 },
+          "position": {
+            "x": 0.5,
+            "y": 0.5
+          },
           "opacity": 1,
-          "pivot": { "x": 0.5, "y": 0.5 },
-          "parallax": { "x": 0.0, "y": 0.0 }
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "parallax": {
+            "x": 0.0,
+            "y": 0.0
+          }
         },
         {
           "id": "moon",
           "asset": "environments/moon-city-moon.svg",
           "order": 10,
-          "position": { "x": 0.72, "y": 0.24 },
+          "position": {
+            "x": 0.72,
+            "y": 0.24
+          },
           "opacity": 1,
-          "pivot": { "x": 0.72, "y": 0.24 },
-          "parallax": { "x": 0.04, "y": 0.03 }
+          "pivot": {
+            "x": 0.72,
+            "y": 0.24
+          },
+          "parallax": {
+            "x": 0.04,
+            "y": 0.03
+          }
         },
         {
           "id": "clouds-far",
           "asset": "environments/moon-city-clouds-far.svg",
           "order": 20,
-          "position": { "x": 0.5, "y": 0.28 },
+          "position": {
+            "x": 0.5,
+            "y": 0.28
+          },
           "opacity": 0.85,
-          "pivot": { "x": 0.5, "y": 0.28 },
-          "parallax": { "x": 0.08, "y": 0.04 }
+          "pivot": {
+            "x": 0.5,
+            "y": 0.28
+          },
+          "parallax": {
+            "x": 0.08,
+            "y": 0.04
+          }
         },
         {
           "id": "skyline-far",
           "asset": "environments/moon-city-skyline-far.svg",
           "order": 30,
-          "position": { "x": 0.5, "y": 0.75 },
+          "position": {
+            "x": 0.5,
+            "y": 0.75
+          },
           "opacity": 1,
-          "pivot": { "x": 0.5, "y": 0.75 },
-          "parallax": { "x": 0.14, "y": 0.06 }
+          "pivot": {
+            "x": 0.5,
+            "y": 0.75
+          },
+          "parallax": {
+            "x": 0.14,
+            "y": 0.06
+          }
         },
         {
           "id": "clouds-near",
           "asset": "environments/moon-city-clouds-near.svg",
           "order": 40,
-          "position": { "x": 0.5, "y": 0.34 },
+          "position": {
+            "x": 0.5,
+            "y": 0.34
+          },
           "opacity": 0.9,
-          "pivot": { "x": 0.5, "y": 0.34 },
-          "parallax": { "x": 0.22, "y": 0.08 }
+          "pivot": {
+            "x": 0.5,
+            "y": 0.34
+          },
+          "parallax": {
+            "x": 0.22,
+            "y": 0.08
+          }
         },
         {
           "id": "skyline-mid",
           "asset": "environments/moon-city-skyline-mid.svg",
           "order": 50,
-          "position": { "x": 0.5, "y": 0.8 },
+          "position": {
+            "x": 0.5,
+            "y": 0.8
+          },
           "opacity": 1,
-          "pivot": { "x": 0.5, "y": 0.8 },
-          "parallax": { "x": 0.32, "y": 0.12 }
+          "pivot": {
+            "x": 0.5,
+            "y": 0.8
+          },
+          "parallax": {
+            "x": 0.32,
+            "y": 0.12
+          }
         },
         {
           "id": "rooftop-foreground",
           "asset": "environments/moon-city-foreground.svg",
           "order": 70,
-          "position": { "x": 0.5, "y": 0.92 },
+          "position": {
+            "x": 0.5,
+            "y": 0.92
+          },
           "opacity": 1,
-          "pivot": { "x": 0.5, "y": 0.92 },
-          "parallax": { "x": 0.55, "y": 0.18 }
+          "pivot": {
+            "x": 0.5,
+            "y": 0.92
+          },
+          "parallax": {
+            "x": 0.55,
+            "y": 0.18
+          }
         },
         {
           "id": "prop-railing",
           "asset": "environments/moon-city-prop-railing.svg",
           "order": 80,
-          "position": { "x": 0.5, "y": 0.95 },
+          "position": {
+            "x": 0.5,
+            "y": 0.95
+          },
           "opacity": 1,
-          "pivot": { "x": 0.5, "y": 0.95 },
-          "parallax": { "x": 0.65, "y": 0.22 }
+          "pivot": {
+            "x": 0.5,
+            "y": 0.95
+          },
+          "parallax": {
+            "x": 0.65,
+            "y": 0.22
+          }
         },
         {
           "id": "prop-wires",
           "asset": "environments/moon-city-prop-wires.svg",
           "order": 85,
-          "position": { "x": 0.5, "y": 0.12 },
+          "position": {
+            "x": 0.5,
+            "y": 0.12
+          },
           "opacity": 0.92,
-          "pivot": { "x": 0.5, "y": 0.12 },
-          "parallax": { "x": 0.72, "y": 0.24 }
+          "pivot": {
+            "x": 0.5,
+            "y": 0.12
+          },
+          "parallax": {
+            "x": 0.72,
+            "y": 0.24
+          }
         }
       ],
       "breakpoints": [
@@ -97,10 +178,23 @@
           "layerOverrides": [
             {
               "layerId": "moon",
-              "position": { "x": 0.52, "y": 0.2 },
-              "parallax": { "x": 0.02, "y": 0.02 }
+              "position": {
+                "x": 0.52,
+                "y": 0.2
+              },
+              "parallax": {
+                "x": 0.02,
+                "y": 0.02
+              }
             },
-            { "layerId": "prop-wires", "opacity": 0.45, "parallax": { "x": 0.18, "y": 0.08 } }
+            {
+              "layerId": "prop-wires",
+              "opacity": 0.45,
+              "parallax": {
+                "x": 0.18,
+                "y": 0.08
+              }
+            }
           ]
         },
         {
@@ -116,24 +210,57 @@
       "id": "moon-city-cloud-drift-far",
       "loop": true,
       "direction": "forward",
-      "pivot": { "x": 0.5, "y": 0.28 },
-      "frames": [{ "asset": "environments/moon-city-clouds-far.svg", "durationMs": 24000 }]
+      "pivot": {
+        "x": 0.5,
+        "y": 0.28
+      },
+      "frames": [
+        {
+          "asset": "environments/moon-city-clouds-far.svg",
+          "durationMs": 24000
+        }
+      ]
     },
     {
       "id": "moon-city-cloud-drift-near",
       "loop": true,
       "direction": "forward",
-      "pivot": { "x": 0.5, "y": 0.34 },
-      "frames": [{ "asset": "environments/moon-city-clouds-near.svg", "durationMs": 14000 }]
+      "pivot": {
+        "x": 0.5,
+        "y": 0.34
+      },
+      "frames": [
+        {
+          "asset": "environments/moon-city-clouds-near.svg",
+          "durationMs": 14000
+        }
+      ]
     },
     {
       "id": "crew-01-idle",
       "loop": true,
       "direction": "ping-pong",
-      "pivot": { "x": 0.5, "y": 0.9 },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9
+      },
       "frames": [
-        { "asset": "animation/crew-01-idle/crew-01-idle-frame-01.svg", "durationMs": 900 },
-        { "asset": "animation/crew-01-idle/crew-01-idle-frame-02.svg", "durationMs": 900 }
+        {
+          "asset": "animation/crew-01-idle/crew-01-idle-frame-01.svg",
+          "durationMs": 720
+        },
+        {
+          "asset": "animation/crew-01-idle/crew-01-idle-frame-02.svg",
+          "durationMs": 720
+        },
+        {
+          "asset": "animation/crew-01-idle/crew-01-idle-frame-03.svg",
+          "durationMs": 720
+        },
+        {
+          "asset": "animation/crew-01-idle/crew-01-idle-frame-04.svg",
+          "durationMs": 720
+        }
       ]
     }
   ]

@@ -2,7 +2,8 @@ import { createHash, randomUUID } from 'node:crypto';
 import type { Knex } from 'knex';
 import type { AddonHttpPlugin } from '@moonwitness/orm';
 import { Registry } from '@moonwitness/orm';
-import { validateDiffScope } from '@moonwitness/ai-runtime';
+import { runOfflineEvaluationGates } from '@moonwitness/ai-evaluation';
+import { isProviderCloudEgress, validateDiffScope } from '@moonwitness/ai-runtime';
 import { cancelJob, enqueueJob, Job } from '@moonwitness/jobs';
 import type { AttachmentStorage } from '@moonwitness/orm-storage';
 import {
@@ -55,10 +56,31 @@ import {
   requireAiCompanyContext,
   toStringArray,
 } from './ai-http-helpers.js';
+import {
+  computeExecutionFingerprint,
+  enqueueApprovedAgentRun,
+  startAgentRunApproval,
+} from './agent-run-executor.js';
+import {
+  discoverGatewayModels,
+  DiscoveryError,
+  selectCodingAgentModel,
+  upsertDiscoveredModels,
+} from './freellmapi-discovery.js';
 
 export const AI_CORPORATION_ROUTE_PREFIXES = ['/api/ai', '/ai'] as const;
 
 const SHA256_HEX_REGEX = /^[a-f0-9]{64}$/iu;
+/** Static gate definitions only; never a verdict. Verdicts come from the evaluation contract. */
+const AI_EVAL_GATE_LABELS: Readonly<Record<string, string>> = {
+  G0: 'Governed Assistant',
+  G1: 'Bounded Actor',
+  G2: 'Persistent Worker',
+  G3: 'Coordinated Team',
+  G4: 'Adaptive Organization',
+  G5: 'Experience-Driven Improvement',
+  G6: 'Cross-Domain Transfer Research',
+};
 const PROJECT_TASK_MODEL = 'project.task';
 const PROJECT_STAGE_MODEL = 'project.stage';
 const PROJECT_TASK_DEPENDENCY_MODEL = 'project.task_dependency';
@@ -518,6 +540,98 @@ export const aiCorporationHttpPlugin: AddonHttpPlugin = async (app, options) => 
       await recordAiAudit(ctx.userId, ProviderProfile.modelName, existing.id, 'write', patch);
       return { success: true, data: { ...updated.toJSON(), secret_masked: '••••••••' } };
     });
+
+    // Operator-only FreeLLMAPI model discovery. Never returns a raw key and
+    // never invents a model id: rows come from the gateway's real /v1/models.
+    app.get<{ Params: { id: string } }>(
+      `${prefix}/providers/:id/discovered-models`,
+      async (req, reply) => {
+        const ctx = await requireAiCompanyContext(req, reply);
+        if (!ctx) return;
+        if (ctx.role !== 'superadmin') {
+          return reply
+            .code(403)
+            .send({ success: false, error: 'Operator role required for gateway discovery' });
+        }
+        const id = Number(req.params.id);
+        if (!Number.isSafeInteger(id) || id < 1) {
+          return reply.code(400).send({ success: false, error: 'Invalid provider ID' });
+        }
+        const provider = await ProviderProfile.query().findOne({
+          id,
+          company_id: ctx.companyId,
+          active: true,
+        });
+        if (!provider || provider.kind !== 'freellmapi') {
+          return reply.code(404).send({ success: false, error: 'FreeLLMAPI provider not found' });
+        }
+        try {
+          const models = await discoverGatewayModels({ secretRef: provider.secret_ref });
+          const persisted = await upsertDiscoveredModels({
+            companyId: ctx.companyId,
+            providerId: provider.id,
+            models,
+          });
+          await recordAiAudit(ctx.userId, ProviderProfile.modelName, provider.id, 'discover', {
+            modelCount: models.length,
+          });
+          return {
+            success: true,
+            data: persisted.map((item) => ({ ...item, secret_reference: provider.secret_ref })),
+          };
+        } catch (error) {
+          if (error instanceof DiscoveryError) {
+            return reply
+              .code(error.statusCode)
+              .send({ success: false, code: error.code, error: error.message });
+          }
+          throw error;
+        }
+      }
+    );
+
+    app.post<{ Params: { id: string } }>(
+      `${prefix}/providers/:id/select-default-model`,
+      async (req, reply) => {
+        const ctx = await requireAiCompanyContext(req, reply);
+        if (!ctx) return;
+        if (ctx.role !== 'superadmin') {
+          return reply
+            .code(403)
+            .send({ success: false, error: 'Operator role required to select a gateway model' });
+        }
+        const id = Number(req.params.id);
+        if (!Number.isSafeInteger(id) || id < 1) {
+          return reply.code(400).send({ success: false, error: 'Invalid provider ID' });
+        }
+        const body = isRecord(req.body) ? req.body : {};
+        if (typeof body.model_id !== 'string' || body.model_id.trim() === '') {
+          return reply.code(400).send({ success: false, error: 'model_id is required' });
+        }
+        try {
+          const selected = await selectCodingAgentModel({
+            companyId: ctx.companyId,
+            providerId: id,
+            modelId: body.model_id.trim(),
+          });
+          await recordAiAudit(
+            ctx.userId,
+            ProviderProfile.modelName,
+            id,
+            'select_default_model',
+            selected
+          );
+          return { success: true, data: selected };
+        } catch (error) {
+          if (error instanceof DiscoveryError) {
+            return reply
+              .code(error.statusCode)
+              .send({ success: false, code: error.code, error: error.message });
+          }
+          throw error;
+        }
+      }
+    );
 
     // =========================================================================
     // 4. Work Contracts & PCW Verification (/api/ai/work-contracts)
@@ -1148,8 +1262,75 @@ export const aiCorporationHttpPlugin: AddonHttpPlugin = async (app, options) => 
         return reply.code(400).send({ success: false, error: 'Invalid agent run configuration' });
       }
 
-      const createdRun = await AgentRun.query().insertAndFetch(runPayload);
+      const fingerprint = computeExecutionFingerprint({
+        contract: { id: contract.id, code: String(contract.code) },
+        agent: { id: agent.id, code: String(agent.code) },
+        grant: {
+          id: grant.id,
+          policyVersion: Number(grant.policy_version ?? 0),
+          expiresAt: grant.expires_at ?? undefined,
+        },
+        provider: { id: provider.id, code: String(provider.code), kind: String(provider.kind) },
+        model: { id: modelProfile.id, modelId: String(modelProfile.model_id) },
+        policy: {
+          id: policy.id,
+          version: Number(policy.policy_version ?? 0),
+          maxRiskTier: String(policy.max_risk_tier ?? 'R0'),
+        },
+        repository: {
+          snapshotId:
+            typeof rawExecutionPacket === 'object' && rawExecutionPacket !== null
+              ? String(rawExecutionPacket.contentSha256 ?? '')
+              : undefined,
+          allowedPaths: toStringArray(
+            rawWorktreeLease?.allowedPaths ?? rawWorktreeLease?.allowed_paths
+          ),
+        },
+        classification: String(contract.data_classification ?? 'local_only'),
+        limits: {
+          maxSteps: Number(policy.max_steps ?? 0),
+          maxTokens: Number(policy.max_tokens_per_run ?? 0),
+          maxCostMicros: Number(policy.max_cost_micros_per_run ?? 0),
+        },
+        secretRefName: String(provider.secret_ref ?? ''),
+      });
+
+      const requiresApproval =
+        isProviderCloudEgress(provider as never) &&
+        (String(policy.max_risk_tier) === 'R3' || String(contract.risk_tier) === 'R3');
+      const createdRun = await AgentRun.query().insertAndFetch({
+        ...runPayload,
+        execution_fingerprint: fingerprint,
+      });
       ensureAiJobHandlersRegistered();
+
+      if (requiresApproval) {
+        if (!appDb) {
+          return reply.code(500).send({ success: false, error: 'Database handle unavailable' });
+        }
+        const approval = await startAgentRunApproval({
+          db: appDb,
+          companyId: ctx.companyId,
+          actorId: ctx.userId,
+          role: ctx.role,
+          runId: createdRun.id,
+          fingerprint,
+        });
+        const pendingRun = await AgentRun.query().patchAndFetchById(createdRun.id, {
+          approval_workflow_id: approval.id,
+        });
+        await recordAiAudit(ctx.userId, AgentRun.modelName, createdRun.id, 'approval_requested', {
+          approval_workflow_id: approval.id,
+          execution_fingerprint: fingerprint,
+        });
+        return reply.code(202).send({
+          success: true,
+          data: pendingRun,
+          approval: { id: approval.id, currentState: approval.currentState },
+          executionFingerprint: fingerprint,
+        });
+      }
+
       const jobId = await enqueueJob(
         'ai.agent_run.execute',
         { agentRunId: createdRun.id, companyId: ctx.companyId },
@@ -1166,8 +1347,80 @@ export const aiCorporationHttpPlugin: AddonHttpPlugin = async (app, options) => 
       await recordAiAudit(ctx.userId, AgentRun.modelName, linkedRun.id, 'dispatch', {
         job_id: jobId,
         correlation_id: correlationId,
+        execution_fingerprint: fingerprint,
       });
       return reply.code(201).send({ success: true, data: linkedRun });
+    });
+
+    app.post<{ Params: { id: string } }>(`${prefix}/runs/:id/approve`, async (req, reply) => {
+      const ctx = await requireAiCompanyContext(req, reply);
+      if (!ctx) return;
+      if (!appDb) {
+        return reply.code(500).send({ success: false, error: 'Database handle unavailable' });
+      }
+      const id = Number(req.params.id);
+      if (!Number.isSafeInteger(id) || id < 1) {
+        return reply.code(400).send({ success: false, error: 'Invalid run ID' });
+      }
+      const run = await AgentRun.query().findOne({ id, company_id: ctx.companyId, active: true });
+      if (!run || run.approval_workflow_id === null || run.approval_workflow_id === undefined) {
+        return reply.code(404).send({ success: false, error: 'Run has no approval workflow' });
+      }
+      if (run.job_id !== null && run.job_id !== undefined) {
+        return reply.code(409).send({ success: false, error: 'Run was already dispatched' });
+      }
+      const approval = await WorkflowInstance.query().findOne({
+        id: run.approval_workflow_id,
+        company_id: ctx.companyId,
+        active: true,
+      });
+      if (!approval || String(approval.status) !== 'active') {
+        return reply.code(409).send({ success: false, error: 'Approval is not active' });
+      }
+      const body = isRecord(req.body) ? req.body : {};
+      if (
+        typeof body.execution_fingerprint === 'string' &&
+        body.execution_fingerprint !== run.execution_fingerprint
+      ) {
+        return reply.code(409).send({ success: false, error: 'Execution fingerprint mismatch' });
+      }
+      try {
+        const result = await enqueueApprovedAgentRun({
+          db: appDb,
+          instanceId: approval.id,
+          companyId: ctx.companyId,
+          actorId: ctx.userId,
+          role: ctx.role,
+          expectedRevision:
+            typeof body.expected_revision === 'number' ? body.expected_revision : approval.revision,
+          idempotencyKey: `run-${run.id}-${String(run.execution_fingerprint ?? '').slice(0, 32)}`,
+          runId: run.id,
+          async enqueue(runId, companyId, idempotencyKey) {
+            return enqueueJob(
+              'ai.agent_run.execute',
+              { agentRunId: runId, companyId },
+              {
+                companyId,
+                requestedBy: ctx.userId,
+                idempotencyKey: `job-${idempotencyKey}`,
+              }
+            );
+          },
+        });
+        const linkedRun = await AgentRun.query().patchAndFetchById(run.id, {
+          job_id: result.jobId,
+        });
+        await recordAiAudit(ctx.userId, AgentRun.modelName, run.id, 'approval_dispatch', {
+          job_id: result.jobId,
+          approval_workflow_id: approval.id,
+        });
+        return { success: true, data: linkedRun };
+      } catch (err) {
+        if (err instanceof WorkflowError) {
+          return reply.code(409).send({ success: false, error: err.message });
+        }
+        throw err;
+      }
     });
 
     app.post<{ Params: { id: string } }>(`${prefix}/runs/:id/cancel`, async (req, reply) => {
@@ -1653,6 +1906,8 @@ export const aiCorporationHttpPlugin: AddonHttpPlugin = async (app, options) => 
     // 11. Evaluation Summary (/api/ai/eval-summary)
     // =========================================================================
     app.get(`${prefix}/eval-summary`, async (req, reply) => {
+      // Operator authorization: authentication, active company membership and
+      // cross-tenant guards are enforced by requireAiCompanyContext.
       const ctx = await requireAiCompanyContext(req, reply);
       if (!ctx) return;
       const [
@@ -1674,47 +1929,105 @@ export const aiCorporationHttpPlugin: AddonHttpPlugin = async (app, options) => 
         WorkforceAssignment.query().where({ company_id: ctx.companyId, active: true }).resultSize(),
         Job.query().where({ company_id: ctx.companyId, active: true }).resultSize(),
       ]);
+      const counts = {
+        agents: agentCount,
+        workContracts: contractCount,
+        agentRuns: runCount,
+        artifacts: artifactCount,
+        obligations: obligationCount,
+        taskforces: taskforceCount,
+        workforceAssignments: assignmentCount,
+        jobs: jobCount,
+      };
+
+      // The only evaluation source is the deterministic, offline contract. It
+      // validates provenance, replay determinism and gate coverage internally;
+      // a failed or unverified report must never turn into a readiness claim.
+      let report: Awaited<ReturnType<typeof runOfflineEvaluationGates>> | null = null;
+      let capturedAt: string | null = null;
+      let noDataReason = 'offline-evaluation-unavailable';
+      try {
+        const candidate = await runOfflineEvaluationGates();
+        const hasProvenance =
+          Boolean(candidate.corpus.sourceSha?.trim()) &&
+          Boolean(candidate.corpus.fixtureHash?.trim()) &&
+          SHA256_HEX_REGEX.test(candidate.corpus.reportSha256) &&
+          SHA256_HEX_REGEX.test(candidate.gates.reportSha256) &&
+          SHA256_HEX_REGEX.test(candidate.ablation.reportSha256) &&
+          candidate.corpus.runCount > 0 &&
+          candidate.gates.gateIds.length > 0 &&
+          candidate.ablation.arms.length > 0;
+        if (!candidate.ok || candidate.checks.some((check) => !check.passed)) {
+          noDataReason = 'offline-evaluation-gates-failed';
+        } else if (!hasProvenance) {
+          noDataReason = 'offline-evaluation-provenance-invalid';
+        } else {
+          capturedAt = new Date().toISOString();
+          // Persist the provenance of the report served to this operator.
+          await recordAiAudit(ctx.userId, 'ai.eval_summary', ctx.companyId, 'read', {
+            sourceSha: candidate.corpus.sourceSha,
+            fixtureHash: candidate.corpus.fixtureHash,
+            reportSha256: candidate.corpus.reportSha256,
+            gatesReportSha256: candidate.gates.reportSha256,
+            ablationReportSha256: candidate.ablation.reportSha256,
+            capturedAt,
+            mode: candidate.mode,
+            syntheticFixture: candidate.syntheticFixture,
+            realModelUsed: candidate.realModelUsed,
+            checksPassed: candidate.checks.filter((check) => check.passed).length,
+            checksTotal: candidate.checks.length,
+          });
+          report = candidate;
+        }
+      } catch {
+        // Fail closed: no report means no verdicts, rates, or regression totals.
+        noDataReason = 'offline-evaluation-unavailable';
+      }
+
+      if (!report || !capturedAt) {
+        return {
+          success: true,
+          data: null,
+          meta: { reason: noDataReason, companyId: ctx.companyId, counts },
+        };
+      }
 
       return {
         success: true,
         data: {
           companyId: ctx.companyId,
-          agiClaimed: false,
-          counts: {
-            agents: agentCount,
-            workContracts: contractCount,
-            agentRuns: runCount,
-            artifacts: artifactCount,
-            obligations: obligationCount,
-            taskforces: taskforceCount,
-            workforceAssignments: assignmentCount,
-            jobs: jobCount,
+          agiClaimed: report.gates.agiClaimed,
+          counts,
+          // The offline contract verifies the evaluation harness against
+          // deterministic fixtures. It does NOT evaluate a live model or a
+          // production deployment, so no PASS verdict, pass rate, readiness
+          // level or regression total is inferred from fixture output.
+          reportAvailable: true,
+          sourceSha: report.corpus.sourceSha,
+          fixtureHash: report.corpus.fixtureHash,
+          reportSha256: report.corpus.reportSha256,
+          capturedAt,
+          offlineGate: {
+            mode: report.mode,
+            syntheticFixture: report.syntheticFixture,
+            realModelUsed: report.realModelUsed,
+            ok: report.ok,
+            checks: report.checks,
+            corpus: report.corpus,
+            gatesReportSha256: report.gates.reportSha256,
+            gateIds: report.gates.gateIds,
+            ablationArms: report.ablation.arms,
+            ablationReportSha256: report.ablation.reportSha256,
           },
-          capabilityGates: [
-            { gate: 'G0', label: 'Governed Assistant', passed: true, safetyRegressions: 0 },
-            { gate: 'G1', label: 'Bounded Actor', passed: true, safetyRegressions: 0 },
-            { gate: 'G2', label: 'Persistent Worker', passed: true, safetyRegressions: 0 },
-            { gate: 'G3', label: 'Coordinated Team', passed: true, safetyRegressions: 0 },
-            { gate: 'G4', label: 'Adaptive Organization', passed: true, safetyRegressions: 0 },
-            {
-              gate: 'G5',
-              label: 'Experience-Driven Improvement',
-              passed: true,
-              safetyRegressions: 0,
-            },
-            {
-              gate: 'G6',
-              label: 'Cross-Domain Transfer Research',
-              passed: true,
-              safetyRegressions: 0,
-            },
-          ],
-          ablationConditions: {
-            'no-memory': { passRate: 0.75, harmRate: 0 },
-            'episodic-only': { passRate: 0.85, harmRate: 0 },
-            'skill-only': { passRate: 0.88, harmRate: 0 },
-            combined: { passRate: 0.94, harmRate: 0 },
-          },
+          capabilityGates: report.gates.gateIds.map((gate) => ({
+            gate,
+            label: AI_EVAL_GATE_LABELS[gate] ?? gate,
+            passed: null,
+            safetyRegressions: null,
+          })),
+          ablationConditions: Object.fromEntries(
+            report.ablation.arms.map((arm) => [arm, { passRate: null, harmRate: null }])
+          ),
         },
       };
     });

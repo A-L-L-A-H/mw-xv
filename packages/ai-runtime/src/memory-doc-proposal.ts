@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { sha256Hex } from './canonical-json.js';
 import { normalizeDataClassification } from './classification-router.js';
 import type { MemoryCandidateRecord, SkillVersionRecord } from './memory-evaluator.js';
 import { createRedactor, type RedactionContext } from './redaction.js';
@@ -64,10 +64,6 @@ export interface MemoryDocProposalBundle {
   readonly proposals: readonly MemoryDocProposalItem[];
   readonly skipped: readonly MemoryDocSkippedItem[];
   readonly contentSha256: string;
-}
-
-function sha256Hex(value: string): string {
-  return createHash('sha256').update(value, 'utf8').digest('hex');
 }
 
 function normalizeDocPath(rawPath: string): string {

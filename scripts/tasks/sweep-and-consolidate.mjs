@@ -5,6 +5,8 @@ import { fileURLToPath } from 'node:url';
 import prettier from 'prettier';
 import { validateTaskRegistryData } from './validate-tasks.mjs';
 import { AUDIT_TASKS } from './sources/audit-tasks.mjs';
+import { YT_TASKS } from './sources/yt-tasks.mjs';
+import { SM_TASKS } from './sources/sm-tasks.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const prettierConfig = await prettier.resolveConfig(fileURLToPath(import.meta.url), {
@@ -123,8 +125,18 @@ export async function sweepAndConsolidate({
     addTask(aud);
   }
 
-  // 3. Ingest todo-wa.md (WhatsApp checklist)
-  const todoWaPath = path.join(rootDir, 'todo-wa.md');
+  // 2b. Ingest YouTube Tasks (YT-001..YT-007)
+  for (const yt of YT_TASKS) {
+    addTask(yt);
+  }
+
+  // 2c. Ingest Social Media Tasks (SM-001..SM-035)
+  for (const sm of SM_TASKS) {
+    addTask(sm);
+  }
+
+  // 3. Ingest docs/tasks/sources/todo-wa.md (WhatsApp checklist)
+  const todoWaPath = path.join(rootDir, 'docs/tasks/sources/todo-wa.md');
   try {
     const waText = await fs.readFile(todoWaPath, 'utf8');
     for (const line of waText.split(/\r?\n/)) {
@@ -172,10 +184,10 @@ export async function sweepAndConsolidate({
             commands: ['pnpm test:whatsapp'],
             expected: 'WhatsApp gateway test suites pass',
           },
-          evidence: { paths: [], detailFile: 'todo-wa.md', commitSha: null },
+          evidence: { paths: [], detailFile: 'docs/tasks/sources/todo-wa.md', commitSha: null },
           references: ['docs/operations/whatsapp.md'],
           blockedReason: null,
-          sourceRef: { file: 'todo-wa.md', legacyId: rawCode },
+          sourceRef: { file: 'docs/tasks/sources/todo-wa.md', legacyId: rawCode },
           url: '',
           comments: [],
         });
@@ -188,11 +200,13 @@ export async function sweepAndConsolidate({
     );
   }
 
-  // Root todo.md is a navigation pointer. Verify it remains a pointer and never parse it as a backlog.
-  const rootTodoPath = path.join(rootDir, 'todo.md');
+  // Root docs/tasks/sources/todo.md is a navigation pointer. Verify it remains a pointer and never parse it as a backlog.
+  const rootTodoPath = path.join(rootDir, 'docs/tasks/sources/todo.md');
   const rootTodoText = await fs.readFile(rootTodoPath, 'utf8');
   if (!rootTodoText.includes('docs/tasks/tasks.json')) {
-    throw new Error('Root todo.md must remain a pointer to the canonical TaskOS registry.');
+    throw new Error(
+      'Root docs/tasks/sources/todo.md must remain a pointer to the canonical TaskOS registry.'
+    );
   }
 
   // Import only unchecked records from the archived MW checklist. They remain blocked until re-triaged.
@@ -259,7 +273,7 @@ export async function sweepAndConsolidate({
   // Import the AI Corporation PR lifecycle IDs. Only PR.14 is still open and is a human approval gate.
   const aiCorporationTodoPath = path.join(
     rootDir,
-    'moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md'
+    'docs/bundles/ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md'
   );
   try {
     const aiTodoText = await fs.readFile(aiCorporationTodoPath, 'utf8');
@@ -303,7 +317,7 @@ export async function sweepAndConsolidate({
         },
         evidence: {
           paths: [],
-          detailFile: 'moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md',
+          detailFile: 'docs/bundles/ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md',
           commitSha: null,
         },
         references: ['docs/roadmap/evidence/M12.14.md'],
@@ -311,7 +325,7 @@ export async function sweepAndConsolidate({
           ? null
           : 'Maintainer approval is an explicit human gate; automation must not self-approve.',
         sourceRef: {
-          file: 'moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md',
+          file: 'docs/bundles/ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md',
           legacyId: code,
         },
         url: '',
@@ -330,9 +344,12 @@ export async function sweepAndConsolidate({
     );
   }
 
-  // 5. Ingest todo-desktop.md
+  // 5. Ingest docs/tasks/sources/todo-desktop.md
   try {
-    const dskText = await fs.readFile(path.join(rootDir, 'todo-desktop.md'), 'utf8');
+    const dskText = await fs.readFile(
+      path.join(rootDir, 'docs/tasks/sources/todo-desktop.md'),
+      'utf8'
+    );
     for (const line of dskText.split(/\r?\n/)) {
       const match = /^\s*-\s*\[([ xX])\]\s+\*\*(DSK-[0-9.]+)\*\*\s+(.*)$/.exec(line);
       if (match) {
@@ -365,10 +382,14 @@ export async function sweepAndConsolidate({
           scope: { packages: ['@moonwitness/desktop'], files: [] },
           acceptanceCriteria: [{ id: `${code}-ac-1`, text: title, done: isDone }],
           validation: { commands: ['pnpm --filter @moonwitness/desktop test'], expected: 'Pass' },
-          evidence: { paths: [], detailFile: 'todo-desktop.md', commitSha: null },
+          evidence: {
+            paths: [],
+            detailFile: 'docs/tasks/sources/todo-desktop.md',
+            commitSha: null,
+          },
           references: [],
           blockedReason: null,
-          sourceRef: { file: 'todo-desktop.md', legacyId: code },
+          sourceRef: { file: 'docs/tasks/sources/todo-desktop.md', legacyId: code },
           url: '',
           comments: [],
         });
@@ -376,7 +397,7 @@ export async function sweepAndConsolidate({
     }
   } catch (error) {
     throw new Error(
-      `Failed to ingest required Desktop task source todo-desktop.md: ${error.message}`,
+      `Failed to ingest required Desktop task source docs/tasks/sources/todo-desktop.md: ${error.message}`,
       { cause: error }
     );
   }
@@ -450,7 +471,7 @@ export async function sweepAndConsolidate({
   // metadata is retained for the generated work-package mirror.
   const visualPackPath = path.join(
     rootDir,
-    'MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-source-2026-11-23.json'
+    'docs/bundles/visual-universe-pack/legacy/task-source-2026-11-23.json'
   );
   try {
     const visualPack = JSON.parse(await fs.readFile(visualPackPath, 'utf8'));
@@ -460,7 +481,7 @@ export async function sweepAndConsolidate({
 
     const visualCardNotesPath = path.join(
       rootDir,
-      'MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-cards-2026-11-23/notes-addendum.json'
+      'docs/bundles/visual-universe-pack/legacy/task-cards-2026-11-23/notes-addendum.json'
     );
     const visualCardNotes = JSON.parse(await fs.readFile(visualCardNotesPath, 'utf8'));
     if (
@@ -473,7 +494,7 @@ export async function sweepAndConsolidate({
     const visualTaskIds = new Set(visualPack.tasks.map((task) => task.id));
     const visualCardArchiveManifestPath = path.join(
       rootDir,
-      'MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-cards-2026-11-23/manifest.json'
+      'docs/bundles/visual-universe-pack/legacy/task-cards-2026-11-23/manifest.json'
     );
     const visualCardArchiveManifest = JSON.parse(
       await fs.readFile(visualCardArchiveManifestPath, 'utf8')
@@ -489,7 +510,7 @@ export async function sweepAndConsolidate({
     }
     if (
       visualCardNotes.sourceSnapshot !==
-      'MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-cards-2026-11-23/manifest.json'
+      'docs/bundles/visual-universe-pack/legacy/task-cards-2026-11-23/manifest.json'
     ) {
       throw new Error(
         'Visual Universe task-card notes addendum points to an unexpected archive manifest.'
@@ -547,7 +568,7 @@ export async function sweepAndConsolidate({
     }
 
     for (const sourceTask of visualPack.tasks) {
-      const expectedCardPath = `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/tasks/${sourceTask.phase}/${sourceTask.id}.md`;
+      const expectedCardPath = `docs/bundles/visual-universe-pack/tasks/${sourceTask.phase}/${sourceTask.id}.md`;
       if (!archivedCardsByPath.has(expectedCardPath)) {
         throw new Error(
           `Immutable Visual Universe task-card archive is missing "${expectedCardPath}".`
@@ -644,7 +665,7 @@ export async function sweepAndConsolidate({
           paths: [
             ...new Set((sourceTask.evidence ?? []).map((entry) => entry.artifact).filter(Boolean)),
           ],
-          detailFile: `MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/tasks/${sourceTask.phase}/${sourceTask.id}.md`,
+          detailFile: `docs/bundles/visual-universe-pack/tasks/${sourceTask.phase}/${sourceTask.id}.md`,
           commitSha: sourceTask.commit ?? null,
         },
         references: sourceTask.scope_hints ?? [],
@@ -653,7 +674,7 @@ export async function sweepAndConsolidate({
             ? sourceTask.notes || 'Blocked in the delegated Visual Universe work package.'
             : null,
         sourceRef: {
-          file: 'MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/legacy/task-source-2026-11-23.json',
+          file: 'docs/bundles/visual-universe-pack/legacy/task-source-2026-11-23.json',
           legacyId: sourceTask.id,
         },
         url: '',

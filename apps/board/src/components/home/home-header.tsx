@@ -88,6 +88,9 @@ export function HomeHeader() {
         {renderLinks()}
       </nav>
       <div className="home-header-actions">
+        <Link href="/knowledge" className="home-text-link hidden md:inline-flex">
+          Public knowledge
+        </Link>
         <div className="home-desktop-sound">
           <SoundToggle />
         </div>
@@ -119,6 +122,11 @@ export function HomeHeader() {
               {renderLinks(true)}
             </nav>
             <div className="home-mobile-sheet-actions">
+              <SheetClose asChild>
+                <Link href="/knowledge" className="home-text-link">
+                  Public knowledge
+                </Link>
+              </SheetClose>
               <SoundToggle />
               <Button asChild treatment="brush" size="lg">
                 <SheetClose asChild>

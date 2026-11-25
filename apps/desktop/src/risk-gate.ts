@@ -1,6 +1,10 @@
 import { createHmac, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
-import { isIP } from 'node:net';
-import { AccessDeniedError, ValidationError } from '@moonwitness/types';
+import {
+  AccessDeniedError,
+  ValidationError,
+  isLoopbackEndpointUrl as isSharedLoopbackEndpointUrl,
+  isLoopbackHostname as isSharedLoopbackHostname,
+} from '@moonwitness/types';
 import type {
   DataClassification,
   DesktopActionKind,
@@ -145,35 +149,21 @@ export function redactSensitiveValue<T>(
   return { value: out as T, redacted: anyRedacted };
 }
 
+const DESKTOP_LOOPBACK_PROTOCOLS = ['ws:', 'tauri:'] as const;
+const DESKTOP_LOOPBACK_HOSTNAMES = ['ipc.localhost', 'tauri.localhost'] as const;
+
 export function isLoopbackHostname(hostname: string): boolean {
-  const normalized = hostname.replace(/^\[|\]$/gu, '').toLowerCase();
-  return (
-    normalized === '127.0.0.1' ||
-    normalized === 'localhost' ||
-    normalized === '::1' ||
-    normalized === 'ipc.localhost' ||
-    normalized === 'tauri.localhost'
-  );
+  return isSharedLoopbackHostname(hostname, {
+    extraHostnames: DESKTOP_LOOPBACK_HOSTNAMES,
+    allowIpv4LoopbackSubnet: false,
+  });
 }
 
 export function isLoopbackEndpointUrl(endpointUrl: string): boolean {
-  try {
-    const parsed = new URL(endpointUrl);
-    if (
-      parsed.protocol !== 'http:' &&
-      parsed.protocol !== 'https:' &&
-      parsed.protocol !== 'ws:' &&
-      parsed.protocol !== 'tauri:'
-    ) {
-      return false;
-    }
-    if (parsed.username || parsed.password || parsed.hash) return false;
-    const host = parsed.hostname.replace(/^\[|\]$/gu, '').toLowerCase();
-    if (isLoopbackHostname(host)) return true;
-    return isIP(host) === 4 && host.startsWith('127.');
-  } catch {
-    return false;
-  }
+  return isSharedLoopbackEndpointUrl(endpointUrl, {
+    allowedProtocols: DESKTOP_LOOPBACK_PROTOCOLS,
+    extraHostnames: DESKTOP_LOOPBACK_HOSTNAMES,
+  });
 }
 
 export function isSecretOrSensitivePath(targetPath: string): boolean {

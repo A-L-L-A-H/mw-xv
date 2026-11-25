@@ -1,7 +1,15 @@
-import crypto from 'node:crypto';
+import { BASIS_POINTS_TOTAL } from '@moonwitness/types';
+import { sha256Hex } from '@moonwitness/types/node';
 import type { Knex } from 'knex';
-import { ShariaContract, ZakatAssessment, ProfitSharingDistribution, WaqfAsset, HalalComplianceAudit } from './models/index.js';
-import { Company, Partner, User, ConfigParameter, ConfigParameterValueType } from '@moonwitness/orm-base';
+import {
+  ShariaContract,
+  ZakatAssessment,
+  ProfitSharingDistribution,
+  WaqfAsset,
+  HalalComplianceAudit,
+} from './models/index.js';
+import type { ConfigParameterValueType } from '@moonwitness/orm-base';
+import { Company, Partner, User, ConfigParameter } from '@moonwitness/orm-base';
 
 const MOCK_WAQF_TRAILS = new Map<number, string[]>();
 
@@ -10,7 +18,8 @@ export interface ZakatCalculationInput {
   assessmentDate: string;
   hijriYear: number;
   zakatType: 'maal' | 'fitrah' | 'profession' | 'trade' | 'agriculture' | 'livestock' | 'rikaz';
-  assetCategory: 'gold' | 'silver' | 'cash' | 'receivables' | 'inventory' | 'investment' | 'property' | 'other';
+  assetCategory:
+    'gold' | 'silver' | 'cash' | 'receivables' | 'inventory' | 'investment' | 'property' | 'other';
   grossAssetsMinor: number;
   deductibleLiabilitiesMinor: number;
   nisabGoldPricePerGramMinor?: number;
@@ -95,34 +104,39 @@ export interface WaqfMerkleResult {
 function parseProfitSharingRatio(ratio: string): { customerBps: number; companyBps: number } {
   const [customer, company] = ratio.split(':').map(Number);
   if (!Number.isFinite(customer) || !Number.isFinite(company) || customer < 0 || company < 0) {
-    throw new Error('Invalid profit sharing ratio format. Expected "customer:company" with positive numbers.');
+    throw new Error(
+      'Invalid profit sharing ratio format. Expected "customer:company" with positive numbers.'
+    );
   }
   const total = customer + company;
   if (total === 0) throw new Error('Profit sharing ratio cannot sum to zero');
-  return { customerBps: Math.round((customer / total) * 10000), companyBps: Math.round((company / total) * 10000) };
-}
-
-function sha256(input: string): string {
-  return crypto.createHash('sha256').update(input).digest('hex');
+  return {
+    customerBps: Math.round((customer / total) * BASIS_POINTS_TOTAL),
+    companyBps: Math.round((company / total) * BASIS_POINTS_TOTAL),
+  };
 }
 
 function buildMerkleRoot(hashes: string[]): string {
-  if (hashes.length === 0) return sha256('empty');
+  if (hashes.length === 0) return sha256Hex('empty');
   let level = [...hashes];
   while (level.length > 1) {
     const next: string[] = [];
     for (let i = 0; i < level.length; i += 2) {
       const left = level[i];
       const right = i + 1 < level.length ? level[i + 1] : left;
-      next.push(sha256(left + right));
+      next.push(sha256Hex(left + right));
     }
     level = next;
   }
   return level[0];
 }
 
-export async function calculateZakat(db: Knex, input: ZakatCalculationInput): Promise<ZakatCalculationResult> {
-  const nisabPrice = input.nisabGoldPricePerGramMinor ?? await getNisabGoldPrice(db, input.companyId);
+export async function calculateZakat(
+  db: Knex,
+  input: ZakatCalculationInput
+): Promise<ZakatCalculationResult> {
+  const nisabPrice =
+    input.nisabGoldPricePerGramMinor ?? (await getNisabGoldPrice(db, input.companyId));
   const rateBps = input.zakatRateBps ?? 250;
 
   const NISAB_GOLD_GRAMS = 85;
@@ -131,7 +145,9 @@ export async function calculateZakat(db: Knex, input: ZakatCalculationInput): Pr
   // Rikaz (buried treasure) is due at a flat 20% regardless of nisab; all other
   // zakat types are only due once net zakatable wealth reaches nisab.
   const nisabMet = input.zakatType === 'rikaz' || netZakatableMinor >= nisabThresholdMinor;
-  const zakatDueMinor = nisabMet ? Math.floor((netZakatableMinor * rateBps) / 10000) : 0;
+  const zakatDueMinor = nisabMet
+    ? Math.floor((netZakatableMinor * rateBps) / BASIS_POINTS_TOTAL)
+    : 0;
 
   return {
     nisabThresholdMinor,
@@ -147,21 +163,32 @@ export async function calculateZakat(db: Knex, input: ZakatCalculationInput): Pr
 async function getNisabGoldPrice(db: Knex, companyId: number): Promise<number> {
   const param = await db('base_config_parameters')
     .where({ key: 'sharia.nisab_gold_price_per_gram_minor', active: true })
-    .andWhere(builder => builder.where({ company_id: companyId }).orWhereNull('company_id'))
+    .andWhere((builder) => builder.where({ company_id: companyId }).orWhereNull('company_id'))
     .orderBy('id', 'desc')
     .first();
-  if (param?.value) return parseTypedConfigValue(param.value, param.value_type as ConfigParameterValueType) as number;
+  if (param?.value)
+    return parseTypedConfigValue(
+      param.value,
+      param.value_type as ConfigParameterValueType
+    ) as number;
 
   const fallback = await db('base_config_parameters')
     .where({ key: 'sharia.nisab_gold_price_per_gram_minor', company_id: null, active: true })
     .orderBy('id', 'desc')
     .first();
-  if (fallback?.value) return parseTypedConfigValue(fallback.value, fallback.value_type as ConfigParameterValueType) as number;
+  if (fallback?.value)
+    return parseTypedConfigValue(
+      fallback.value,
+      fallback.value_type as ConfigParameterValueType
+    ) as number;
 
   return 12000000;
 }
 
-export async function distributeProfitSharing(db: Knex, input: ProfitSharingInput): Promise<ProfitSharingResult> {
+export async function distributeProfitSharing(
+  db: Knex,
+  input: ProfitSharingInput
+): Promise<ProfitSharingResult> {
   const contract = await db(ShariaContract.tableName).where({ id: input.contractId }).first();
   if (!contract) throw new Error(`ShariaContract ${input.contractId} not found`);
 
@@ -169,7 +196,7 @@ export async function distributeProfitSharing(db: Knex, input: ProfitSharingInpu
   const netProfitMinor = input.grossProfitMinor - input.operatingExpensesMinor;
   if (netProfitMinor < 0) throw new Error('Net profit cannot be negative');
 
-  const customerShareMinor = Math.floor((netProfitMinor * ratio.customerBps) / 10000);
+  const customerShareMinor = Math.floor((netProfitMinor * ratio.customerBps) / BASIS_POINTS_TOTAL);
   const companyShareMinor = netProfitMinor - customerShareMinor;
 
   const journalLines: JournalLine[] = [
@@ -181,8 +208,12 @@ export async function distributeProfitSharing(db: Knex, input: ProfitSharingInpu
       description: `Profit sharing distribution for contract ${contract.contract_no} (${input.periodStart} to ${input.periodEnd})`,
     },
     {
-      accountCode: contract.type === 'mudharabah' || contract.type === 'musyarakah' ? '2450' : '2400',
-      accountName: contract.type === 'mudharabah' || contract.type === 'musyarakah' ? 'Customer Mudharabah/Musyarakah Payable' : 'Customer Murabahah/Ijarah Payable',
+      accountCode:
+        contract.type === 'mudharabah' || contract.type === 'musyarakah' ? '2450' : '2400',
+      accountName:
+        contract.type === 'mudharabah' || contract.type === 'musyarakah'
+          ? 'Customer Mudharabah/Musyarakah Payable'
+          : 'Customer Murabahah/Ijarah Payable',
       debitMinor: 0,
       creditMinor: customerShareMinor,
       description: `Customer share (${ratio.customerBps / 100}%) for contract ${contract.contract_no}`,
@@ -212,7 +243,7 @@ export async function distributeProfitSharing(db: Knex, input: ProfitSharingInpu
     approvedBy: input.approvedById,
     timestamp: new Date().toISOString(),
   });
-  const merkleRoot = sha256(journalPayload);
+  const merkleRoot = sha256Hex(journalPayload);
   const journalEntryRef = `JE-SHARIA-${input.distributionDate.replace(/-/g, '')}-${contract.contract_no}`;
 
   await db(ProfitSharingDistribution.tableName).insert({
@@ -235,7 +266,14 @@ export async function distributeProfitSharing(db: Knex, input: ProfitSharingInpu
     write_uid: input.approvedById,
   });
 
-  return { netProfitMinor, customerShareMinor, companyShareMinor, journalEntryRef, journalLines, merkleRoot };
+  return {
+    netProfitMinor,
+    customerShareMinor,
+    companyShareMinor,
+    journalEntryRef,
+    journalLines,
+    merkleRoot,
+  };
 }
 
 export function validateShariaContract(input: ContractValidationInput): ContractValidationResult {
@@ -244,14 +282,16 @@ export function validateShariaContract(input: ContractValidationInput): Contract
   if (!input.ribaFreeConfirmed) violations.push('Riba-free confirmation is required');
   if (!input.ghararFreeConfirmed) violations.push('Gharar-free confirmation is required');
   if (input.assetValueMinor <= 0) violations.push('Asset value must be positive');
-  if (!input.dsnMuiReference || !input.dsnMuiReference.trim()) violations.push('DSN-MUI reference is required');
+  if (!input.dsnMuiReference || !input.dsnMuiReference.trim())
+    violations.push('DSN-MUI reference is required');
 
   switch (input.type) {
     case 'murabahah': {
       if (input.profitMarginMinor === undefined || input.profitMarginMinor <= 0) {
         violations.push('Murabahah requires positive profit_margin_minor');
       }
-      if (input.assetValueMinor <= 0) violations.push('Murabahah requires positive asset_value_minor');
+      if (input.assetValueMinor <= 0)
+        violations.push('Murabahah requires positive asset_value_minor');
       break;
     }
     case 'mudharabah': {
@@ -284,15 +324,18 @@ export function validateShariaContract(input: ContractValidationInput): Contract
   return { valid: violations.length === 0, violations, contractType: input.type };
 }
 
-export async function computeWaqfMerkle(db: Knex, input: WaqfMerkleInput): Promise<WaqfMerkleResult> {
+export async function computeWaqfMerkle(
+  db: Knex,
+  input: WaqfMerkleInput
+): Promise<WaqfMerkleResult> {
   const asset = await findWaqfAsset(db, input.assetId);
 
-  const trail = input.trail.map(node => ({
+  const trail = input.trail.map((node) => ({
     ...node,
-    hash: sha256(JSON.stringify({ ...node, hash: undefined })),
+    hash: sha256Hex(JSON.stringify({ ...node, hash: undefined })),
   }));
 
-  const hashes = trail.map(n => n.hash);
+  const hashes = trail.map((n) => n.hash);
   const merkleRoot = buildMerkleRoot(hashes);
 
   const verified = asset === null || asset.merkle_root === merkleRoot;
@@ -300,24 +343,35 @@ export async function computeWaqfMerkle(db: Knex, input: WaqfMerkleInput): Promi
   return { merkleRoot, trail, verified };
 }
 
-export async function appendWaqfMerkleEvent(db: Knex, assetId: number, event: Omit<MerkleTrailNode, 'hash'>): Promise<WaqfMerkleResult> {
+export async function appendWaqfMerkleEvent(
+  db: Knex,
+  assetId: number,
+  event: Omit<MerkleTrailNode, 'hash'>
+): Promise<WaqfMerkleResult> {
   const asset = await findWaqfAsset(db, assetId);
 
-  const existingTrailStr = asset?.merkle_trail ?? (MOCK_WAQF_TRAILS.get(assetId) ? JSON.stringify(MOCK_WAQF_TRAILS.get(assetId)) : '[]');
+  const existingTrailStr =
+    asset?.merkle_trail ??
+    (MOCK_WAQF_TRAILS.get(assetId) ? JSON.stringify(MOCK_WAQF_TRAILS.get(assetId)) : '[]');
   const existingTrail: MerkleTrailNode[] = existingTrailStr ? JSON.parse(existingTrailStr) : [];
-  const newNode: MerkleTrailNode = { ...event, hash: sha256(JSON.stringify(event)) };
+  const newNode: MerkleTrailNode = { ...event, hash: sha256Hex(JSON.stringify(event)) };
   const updatedTrail = [...existingTrail, newNode];
-  const hashes = updatedTrail.map(n => n.hash);
+  const hashes = updatedTrail.map((n) => n.hash);
   const merkleRoot = buildMerkleRoot(hashes);
 
   if (typeof db === 'function') {
-    await db(WaqfAsset.tableName).where({ id: assetId }).update({
-      merkle_trail: JSON.stringify(updatedTrail),
-      merkle_root: merkleRoot,
-      write_uid: 1,
-    });
+    await db(WaqfAsset.tableName)
+      .where({ id: assetId })
+      .update({
+        merkle_trail: JSON.stringify(updatedTrail),
+        merkle_root: merkleRoot,
+        write_uid: 1,
+      });
   } else {
-    MOCK_WAQF_TRAILS.set(assetId, updatedTrail.map(n => JSON.stringify(n)));
+    MOCK_WAQF_TRAILS.set(
+      assetId,
+      updatedTrail.map((n) => JSON.stringify(n))
+    );
   }
 
   return { merkleRoot, trail: updatedTrail, verified: true };
@@ -325,14 +379,14 @@ export async function appendWaqfMerkleEvent(db: Knex, assetId: number, event: Om
 
 async function findWaqfAsset(
   db: Knex,
-  assetId: number,
+  assetId: number
 ): Promise<{ merkle_root?: string | null; merkle_trail?: string | null } | null> {
   if (typeof db !== 'function') {
     const trail = MOCK_WAQF_TRAILS.get(assetId);
     if (trail) {
       return {
-        merkle_root: buildMerkleRoot(trail.map(n => JSON.parse(n).hash)),
-        merkle_trail: JSON.stringify(trail.map(n => JSON.parse(n))),
+        merkle_root: buildMerkleRoot(trail.map((n) => JSON.parse(n).hash)),
+        merkle_trail: JSON.stringify(trail.map((n) => JSON.parse(n))),
       };
     }
     return null;
@@ -350,7 +404,11 @@ function parseTypedConfigValue(raw: string, valueType: ConfigParameterValueType)
     case 'boolean':
       return raw === 'true' || raw === '1';
     case 'json':
-      try { return JSON.parse(raw); } catch { return raw; }
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return raw;
+      }
     case 'string':
     default:
       return raw;

@@ -6,6 +6,7 @@ export type PaginationProps = Omit<ComponentProps<'nav'>, 'children'> & {
   onPageChange: (page: number) => void;
   label?: string;
   formatPage?: (page: number, pageCount: number) => ReactNode;
+  trailing?: ReactNode;
 };
 
 export function Pagination({
@@ -14,6 +15,7 @@ export function Pagination({
   onPageChange,
   label = 'Pagination',
   formatPage = (current, total) => `Page ${current} of ${total}`,
+  trailing,
   className,
   ...props
 }: PaginationProps) {
@@ -40,6 +42,9 @@ export function Pagination({
       >
         Next
       </button>
+      {trailing !== undefined && trailing !== null ? (
+        <div className="mw-ui-pagination-trailing">{trailing}</div>
+      ) : null}
     </nav>
   );
 }

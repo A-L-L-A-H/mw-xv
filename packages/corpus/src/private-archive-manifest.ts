@@ -2,7 +2,9 @@ import { createHash, randomUUID } from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import { link, lstat, mkdir, open, realpath, rm } from 'node:fs/promises';
 import path from 'node:path';
+import { isRecord } from '@moonwitness/types';
 import { canonicalizeJson } from '@moonwitness/knowledge';
+import { safeRelativePath } from './path-safety.js';
 import privateArchiveImportManifestSchema from '../schemas/private-archive-import-manifest.schema.json' with { type: 'json' };
 import {
   createJsonSchemaValidator,
@@ -67,12 +69,8 @@ const validateSchema = createJsonSchemaValidator(
   'does not match the private archive import manifest contract'
 );
 
-function isObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
 function semanticIssues(value: unknown): KnowledgeValidationIssue[] {
-  if (!isObject(value) || !isObject(value.source) || !isObject(value.consent)) return [];
+  if (!isRecord(value) || !isRecord(value.source) || !isRecord(value.consent)) return [];
   const issues: KnowledgeValidationIssue[] = [];
   if (value.source.kind !== value.consent.sourceKind) {
     issues.push({
@@ -103,22 +101,6 @@ export function validatePrivateArchiveImportManifest(value: unknown): KnowledgeV
   const structural = validateSchema(value);
   const issues = [...(structural.valid ? [] : structural.issues), ...semanticIssues(value)];
   return issues.length === 0 ? { valid: true, issues: [] } : { valid: false, issues };
-}
-
-function safeRelativePath(value: string, label: string): string {
-  if (
-    path.isAbsolute(value) ||
-    /^[a-zA-Z]:/u.test(value) ||
-    value.includes('\\') ||
-    value.includes('\0')
-  ) {
-    throw new TypeError(`${label} must be a safe relative POSIX path`);
-  }
-  const segments = value.split('/');
-  if (segments.some((segment) => segment.length === 0 || segment === '.' || segment === '..')) {
-    throw new TypeError(`${label} must not contain empty, dot, or parent segments`);
-  }
-  return segments.join(path.sep);
 }
 
 async function resolveRegularFile(

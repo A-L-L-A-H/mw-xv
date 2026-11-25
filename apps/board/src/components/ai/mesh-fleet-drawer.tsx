@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  AddonIcon,
   CheckIcon,
   CodeIcon,
   GlobeIcon,
@@ -12,6 +11,7 @@ import {
   SecurityIcon,
   SignalIcon,
 } from '@moonwitness/ui/icons';
+import { MeshNodeCard, type MeshNodeContainerItem } from '@/components/cloud/mesh-node-card';
 import { Badge } from '@moonwitness/ui/components/badge';
 import { Button } from '@moonwitness/ui/components/button';
 import { Input } from '@moonwitness/ui/components/input';
@@ -24,13 +24,7 @@ import { useDesktopMode } from '@/lib/desktop-mode';
 import { scopedQueryKey } from '@/lib/query-scope';
 import { VpsOnboardingCard } from './vps-onboarding-card';
 
-export interface MeshRemoteContainer {
-  id: string;
-  name: string;
-  image: string;
-  status: string;
-  health: 'healthy' | 'unhealthy' | 'starting' | 'unknown';
-}
+export type MeshRemoteContainer = MeshNodeContainerItem;
 
 export interface MeshFleetNode {
   id: string;
@@ -49,15 +43,6 @@ export interface DesktopMeshStatusPayload {
   created?: boolean;
   joinCommand: string;
   nodes: MeshFleetNode[];
-}
-
-function getHealthBadgeVariant(
-  health: MeshRemoteContainer['health']
-): 'primary' | 'destructive' | 'magenta' | 'default' {
-  if (health === 'healthy') return 'primary';
-  if (health === 'unhealthy') return 'destructive';
-  if (health === 'starting') return 'magenta';
-  return 'default';
 }
 
 function getNodeStatusBadgeVariant(
@@ -275,49 +260,15 @@ export function MeshFleetDrawer() {
         ) : (
           <div className="grid gap-4 lg:grid-cols-2">
             {nodes.map((node) => (
-              <div
+              <MeshNodeCard
                 key={node.id}
-                className="space-y-3 rounded-lg border border-border/60 bg-card/50 p-4"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <div>
-                    <div className="text-sm font-semibold">{node.hostname}</div>
-                    <div className="font-mono text-xs text-muted-foreground">{node.meshIp}</div>
-                  </div>
-                  <Badge variant={getNodeStatusBadgeVariant(node.status)}>{node.status}</Badge>
-                </div>
-
-                {node.containers.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">No remote containers reported.</p>
-                ) : (
-                  <div className="space-y-2">
-                    {node.containers.map((container) => (
-                      <div
-                        key={container.id}
-                        className="flex items-center justify-between gap-2 rounded-md border border-border/40 bg-background/60 px-3 py-2 text-xs"
-                      >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <AddonIcon className="size-3.5 shrink-0 text-muted-foreground" />
-                          <div className="min-w-0">
-                            <div className="truncate font-medium">{container.name}</div>
-                            <div className="truncate font-mono text-[11px] text-muted-foreground">
-                              {container.image}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex shrink-0 items-center gap-2">
-                          <span className="text-[11px] text-muted-foreground">
-                            {container.status}
-                          </span>
-                          <Badge variant={getHealthBadgeVariant(container.health)}>
-                            {container.health}
-                          </Badge>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+                title={node.hostname}
+                subtitle={node.meshIp}
+                statusLabel={node.status}
+                statusVariant={getNodeStatusBadgeVariant(node.status)}
+                containers={node.containers}
+                emptyContainersText="No remote containers reported."
+              />
             ))}
           </div>
         )}

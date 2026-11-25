@@ -1,4 +1,5 @@
 import assert, { deepEqual, equal } from 'node:assert/strict';
+import { existsSync } from 'node:fs';
 import { mkdir, mkdtemp, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -20,8 +21,8 @@ test('shared automation configuration and the master roadmap select full validat
   equal(hasFullScopeChange(['ROADMAP.md']), true);
   equal(hasFullScopeChange(['.gitleaks.toml']), true);
   equal(hasFullScopeChange(['.dockerignore']), true);
-  equal(hasFullScopeChange(['docker-compose.yml']), true);
-  equal(hasFullScopeChange(['docker-compose.smoke.yml']), true);
+  equal(hasFullScopeChange(['deploy/compose/docker-compose.yml']), true);
+  equal(hasFullScopeChange(['deploy/compose/docker-compose.smoke.yml']), true);
   equal(hasFullScopeChange(['.githooks/pre-commit']), true);
   equal(hasFullScopeChange(['.gitattributes']), true);
   equal(hasFullScopeChange(['deploy/coolify/app.dockerfile']), true);
@@ -32,15 +33,20 @@ test('every shared-configuration entry names something that is in the repository
   const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
   const rootEntries = await readdir(repositoryRoot, { withFileTypes: true });
   const present = new Set(rootEntries.map((entry) => entry.name));
-  deepEqual([...fullScopeFiles].filter((entry) => !present.has(entry)).sort(), []);
+  deepEqual(
+    [...fullScopeFiles]
+      .filter((entry) => !present.has(entry) && !existsSync(join(repositoryRoot, entry)))
+      .sort(),
+    []
+  );
 });
 
-test('reads workspace dependency closure directly from manifests without requiring pnpm install', async () => {
+test('reads workspace dependency closure directly from manifests without requiring bun install', async () => {
   const root = await mkdtemp(join(tmpdir(), 'moonwitness-affected-'));
   try {
     await writeFile(
-      join(root, 'pnpm-workspace.yaml'),
-      "packages:\n  - 'apps/*'\n  - 'packages/*'\n"
+      join(root, 'package.json'),
+      JSON.stringify({ name: 'fixture-root', private: true, workspaces: ['apps/*', 'packages/*'] })
     );
     await mkdir(join(root, 'apps', 'api'), { recursive: true });
     await mkdir(join(root, 'apps', 'logs'), { recursive: true });
@@ -88,7 +94,10 @@ test('reads workspace dependency closure directly from manifests without requiri
 test('a workspace directory without a manifest is reported instead of dropped', async () => {
   const root = await mkdtemp(join(tmpdir(), 'moonwitness-affected-graph-'));
   try {
-    await writeFile(join(root, 'pnpm-workspace.yaml'), "packages:\n  - 'packages/*'\n");
+    await writeFile(
+      join(root, 'package.json'),
+      JSON.stringify({ name: 'fixture-root', private: true, workspaces: ['packages/*'] })
+    );
     await mkdir(join(root, 'packages', 'orm'), { recursive: true });
     await writeFile(
       join(root, 'packages', 'orm', 'package.json'),

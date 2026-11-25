@@ -114,8 +114,10 @@ func newTestServer(t *testing.T, dockerBin string) (http.Handler, string) {
 
 // initSchemaFor runs the schema DDL against an explicit DB handle.
 func initSchemaFor(db *sql.DB) error {
-	_, err := db.Exec(schemaDDL)
-	return err
+	if _, err := db.Exec(schemaDDL); err != nil {
+		return err
+	}
+	return initPaasSchema(db)
 }
 
 // ---------------------------------------------------------------------------
@@ -723,4 +725,240 @@ func TestDockerArgsBuiltFromMeta(t *testing.T) {
 func TestRemoveExistingContainerIgnoresMissing(t *testing.T) {
 	dockerBin := writeDockerMock(t)
 	removeExistingContainer(context.Background(), dockerBin, "mw-nonexistent")
+}
+
+// ---------------------------------------------------------------------------
+// CF-003: explicit route matrix, token contract and bounded health
+// ---------------------------------------------------------------------------
+
+func TestControlPlaneRouteMatrix(t *testing.T) {
+	seen := make(map[string]bool)
+	publicCount := 0
+	for _, route := range controlPlaneRouteMatrix {
+		if seen[route.pattern] {
+			t.Fatalf("duplicate route in matrix: %s", route.pattern)
+		}
+		seen[route.pattern] = true
+		if route.family == "" {
+			t.Fatalf("route %s has no family", route.pattern)
+		}
+		if route.access == accessPublic {
+			publicCount++
+			if route.pattern != "/health" {
+				t.Fatalf("unexpected public route: %s", route.pattern)
+			}
+			if len(route.methods) != 1 || route.methods[0] != http.MethodGet {
+				t.Fatalf("public health must be GET-only, got %v", route.methods)
+			}
+		}
+	}
+	if publicCount != 1 {
+		t.Fatalf("expected exactly one public route, got %d", publicCount)
+	}
+	for _, tc := range []struct {
+		pattern string
+		access  controlPlaneAccess
+	}{
+		{"/api/deploy", accessPrivileged},
+		{"/api/containers/", accessPrivileged},
+		{"/paas/backups/restore", accessPrivileged},
+		{"/paas/apps/deploy-git", accessPrivileged},
+		{"/mesh/status", accessAuthenticated},
+		{"/api/services", accessAuthenticated},
+		{"/paas/webhooks/github/", accessWebhookSignature},
+		{"/a2a/delegate", accessA2APeer},
+	} {
+		got, ok := controlPlaneAccessForPattern(tc.pattern)
+		if !ok || got != tc.access {
+			t.Fatalf("%s access = %v (found=%v), want %v", tc.pattern, got, ok, tc.access)
+		}
+	}
+}
+
+func TestProtectedRouteFamiliesRejectMalformedAndWrongAudienceCredentials(t *testing.T) {
+	dockerBin := writeDockerMock(t)
+	handler, token := newTestServer(t, dockerBin)
+
+	families := []struct {
+		method string
+		path   string
+	}{
+		{http.MethodGet, "/mesh/status"},
+		{http.MethodGet, "/services"},
+		{http.MethodPost, "/deploy"},
+		{http.MethodGet, "/api/services"},
+		{http.MethodPost, "/api/deploy"},
+		{http.MethodGet, "/api/deployments"},
+		{http.MethodGet, "/api/containers/abc123/logs"},
+		{http.MethodGet, "/paas/apps"},
+		{http.MethodPost, "/paas/apps/deploy"},
+		{http.MethodPost, "/paas/apps/deploy-git"},
+		{http.MethodPost, "/paas/backups/restore"},
+	}
+
+	wrongAudience := func(secret, domainLabel string) string {
+		mac := hmac.New(sha256.New, []byte(secret))
+		mac.Write([]byte(domainLabel))
+		return hex.EncodeToString(mac.Sum(nil))
+	}
+
+	badAuth := []string{
+		"",
+		"Bearer wrong-token",
+		"bearer " + token,
+		"Bearer " + token + " extra",
+		"Bearer  " + token,
+		"Bearer" + token,
+		"Basic " + token,
+		"Bearer " + wrongAudience("shared-secret", "moonwitness-other-service-v1"),
+		"Bearer " + wrongAudience("shared-secret", "moonwitness-control-plane-admin-v0"),
+	}
+
+	for _, family := range families {
+		for _, authz := range badAuth {
+			req := httptest.NewRequest(family.method, family.path, nil)
+			if authz != "" {
+				req.Header.Set("Authorization", authz)
+			}
+			rec := httptest.NewRecorder()
+			handler.ServeHTTP(rec, req)
+			if rec.Code != http.StatusUnauthorized {
+				t.Fatalf("%s %s with Authorization=%q: expected 401, got %d: %s", family.method, family.path, authz, rec.Code, rec.Body.String())
+			}
+			if strings.Contains(rec.Body.String(), token) {
+				t.Fatalf("%s %s echoed the credential: %s", family.method, family.path, rec.Body.String())
+			}
+		}
+
+		req := httptest.NewRequest(family.method, family.path, nil)
+		req.Header.Set("Authorization", "Bearer "+token)
+		rec := httptest.NewRecorder()
+		handler.ServeHTTP(rec, req)
+		if rec.Code == http.StatusUnauthorized {
+			t.Fatalf("%s %s with canonical token: unexpected 401: %s", family.method, family.path, rec.Body.String())
+		}
+	}
+}
+
+func TestIssuerConsumerAgreementAndRotation(t *testing.T) {
+	dir := t.TempDir()
+	dbPath := filepath.Join(dir, "control-plane.db")
+	t.Setenv("MW_CONTROL_PLANE_TOKEN", "")
+	t.Setenv("MW_INTERNAL_SECRET", "secret-v1")
+	t.Setenv("JWT_SECRET", "")
+
+	current, err := resolveAdminToken(dbPath)
+	if err != nil {
+		t.Fatalf("resolveAdminToken: %v", err)
+	}
+	mac := hmac.New(sha256.New, []byte("secret-v1"))
+	mac.Write([]byte(controlPlaneAuthDomain))
+	if current != hex.EncodeToString(mac.Sum(nil)) {
+		t.Fatalf("issuer/consumer derivation diverged: got %q", current)
+	}
+	if !validServiceBearer("Bearer "+current, current) {
+		t.Fatal("canonical token was rejected")
+	}
+
+	// Rotating the shared secret makes tokens derived from the previous secret
+	// (the equivalent of an expired service credential) invalid.
+	t.Setenv("MW_INTERNAL_SECRET", "secret-v2")
+	rotated, err := resolveAdminToken(dbPath)
+	if err != nil {
+		t.Fatalf("resolveAdminToken after rotation: %v", err)
+	}
+	if rotated == current {
+		t.Fatal("rotation did not change the derived token")
+	}
+	if validServiceBearer("Bearer "+current, rotated) {
+		t.Fatal("rotated-out credential was accepted")
+	}
+	if !validServiceBearer("Bearer "+rotated, rotated) {
+		t.Fatal("new credential was rejected")
+	}
+}
+
+func TestHealthPayloadIsBoundedAndMethodGated(t *testing.T) {
+	dockerBin := writeDockerMock(t)
+	handler, _ := newTestServer(t, dockerBin)
+
+	postReq := httptest.NewRequest(http.MethodPost, "/health", nil)
+	postRec := httptest.NewRecorder()
+	handler.ServeHTTP(postRec, postReq)
+	if postRec.Code != http.StatusMethodNotAllowed {
+		t.Fatalf("POST /health: expected 405, got %d", postRec.Code)
+	}
+
+	req := httptest.NewRequest(http.MethodGet, "/health", nil)
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("GET /health: expected 200, got %d", rec.Code)
+	}
+	var payload struct {
+		Status   string `json:"status"`
+		Database struct {
+			Status string `json:"status"`
+			Error  string `json:"error"`
+		} `json:"database"`
+		Docker string `json:"docker"`
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &payload); err != nil {
+		t.Fatalf("decode health: %v", err)
+	}
+	if payload.Status != "ok" && payload.Status != "degraded" {
+		t.Fatalf("unbounded health status: %q", payload.Status)
+	}
+	if payload.Database.Status != "ok" && payload.Database.Status != "error" {
+		t.Fatalf("unbounded database status: %q", payload.Database.Status)
+	}
+	if payload.Database.Error != "" {
+		t.Fatalf("health leaked database error text: %q", payload.Database.Error)
+	}
+	if payload.Docker != "ok" && payload.Docker != "unknown" {
+		t.Fatalf("unbounded docker status: %q", payload.Docker)
+	}
+	if strings.Contains(strings.ToLower(rec.Body.String()), "sqlite") ||
+		strings.Contains(strings.ToLower(rec.Body.String()), "password") {
+		t.Fatalf("health leaked operational detail: %s", rec.Body.String())
+	}
+}
+
+func TestPrivilegedPaasRoutesRejectRawInternalSecret(t *testing.T) {
+	dockerBin := writeDockerMock(t)
+	t.Setenv("MW_INTERNAL_SECRET", "super-internal-secret-value")
+	t.Setenv("MW_CONTROL_PLANE_TOKEN", "")
+
+	dbPath := filepath.Join(t.TempDir(), "control-plane.db")
+	adminToken, err := resolveAdminToken(dbPath)
+	if err != nil {
+		t.Fatalf("resolveAdminToken: %v", err)
+	}
+	db, err := sql.Open("sqlite", filepath.Join(t.TempDir(), "privileged.db"))
+	if err != nil {
+		t.Fatalf("open sqlite: %v", err)
+	}
+	defer db.Close()
+	if err := initSchemaFor(db); err != nil {
+		t.Fatalf("init schema: %v", err)
+	}
+	handler := buildMux(db, dockerBin, adminToken)
+
+	for _, path := range []string{"/paas/apps/deploy-git", "/paas/backups/restore"} {
+		req := httptest.NewRequest(http.MethodPost, path, strings.NewReader("{}"))
+		req.Header.Set("X-Control-Plane-Token", "super-internal-secret-value")
+		rec := httptest.NewRecorder()
+		handler.ServeHTTP(rec, req)
+		if rec.Code != http.StatusUnauthorized {
+			t.Fatalf("%s accepted raw internal secret as privileged credential: %d", path, rec.Code)
+		}
+
+		req = httptest.NewRequest(http.MethodPost, path, strings.NewReader("{}"))
+		req.Header.Set("X-Control-Plane-Token", adminToken)
+		rec = httptest.NewRecorder()
+		handler.ServeHTTP(rec, req)
+		if rec.Code == http.StatusUnauthorized {
+			t.Fatalf("%s rejected canonical privileged token: %s", path, rec.Body.String())
+		}
+	}
 }

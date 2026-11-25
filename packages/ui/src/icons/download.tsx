@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type DownloadIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function DownloadIcon({ size = 24, title, ...props }: DownloadIconProps) {
+const DownloadIcon = forwardRef<SVGSVGElement, DownloadIconProps>(function DownloadIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -26,4 +30,8 @@ export function DownloadIcon({ size = 24, title, ...props }: DownloadIconProps) 
       <path d="M12 4v12m-5-5 5 5 5-5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" />
     </svg>
   );
-}
+});
+
+DownloadIcon.displayName = 'DownloadIcon';
+
+export { DownloadIcon };

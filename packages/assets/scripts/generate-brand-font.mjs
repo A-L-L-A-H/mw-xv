@@ -1,10 +1,11 @@
 import { createHash } from 'node:crypto';
-import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { argv, stdout } from 'node:process';
 import { fileURLToPath } from 'node:url';
 import opentype from 'opentype.js';
 import subsetFont from 'subset-font';
+import { atomicWrite } from './atomic-write.mjs';
 import { replaceGeneratedAssets } from './manifest-ownership.mjs';
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -3066,12 +3067,6 @@ export async function generateBrandFontBuffers() {
     glyphCount: glyphs.length,
     characters: charset,
   };
-}
-
-async function atomicWrite(filePath, content) {
-  const temporaryPath = `${filePath}.tmp-${process.pid}`;
-  await writeFile(temporaryPath, content);
-  await rename(temporaryPath, filePath);
 }
 
 export async function runBrandFontGenerator() {

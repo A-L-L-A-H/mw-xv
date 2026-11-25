@@ -6,6 +6,8 @@ export type SectionRibbonProps = Omit<ComponentProps<'header'>, 'children'> & {
   accent?: 'magenta' | 'cyan' | 'yellow';
   surface?: 'paper' | 'ink';
   frame?: 'line' | 'torn' | 'scuffed' | 'grunge';
+  size?: 'sm' | 'md' | 'lg';
+  treatment?: 'display' | 'brush';
   action?: ReactNode;
   headingLevel?: 2 | 3 | 4;
 };
@@ -16,6 +18,8 @@ export function SectionRibbon({
   accent = 'magenta',
   surface = 'paper',
   frame = 'line',
+  size = 'md',
+  treatment = 'display',
   action,
   headingLevel = 2,
   className,
@@ -27,7 +31,9 @@ export function SectionRibbon({
       className={['mw-ui-section-ribbon', className].filter(Boolean).join(' ')}
       data-accent={accent}
       data-frame={frame}
+      data-size={size}
       data-surface={surface}
+      data-treatment={treatment}
       {...props}
     >
       <div className="mw-ui-section-ribbon-title">

@@ -1,5 +1,6 @@
-import { createHash } from 'node:crypto';
 import { createRedactor, type RedactionContext } from './redaction.js';
+import { clampBps } from './sort-utils.js';
+import { sha256Hex, toCanonicalJson as canonicalJson } from './canonical-json.js';
 
 export type WorldModelReasonCode = 'UNEXPECTED_SIDE_EFFECT' | 'PREDICTION_MISMATCH';
 
@@ -106,36 +107,9 @@ export interface EvaluateWorldModelConsistencyOptions {
 }
 
 const DEFAULT_SURPRISE_THRESHOLD_BPS = 2500;
-const MAX_BPS = 10_000;
-
-function sha256Hex(value: string): string {
-  return createHash('sha256').update(value, 'utf8').digest('hex');
-}
-
-function canonicalJson(value: unknown): string {
-  if (value === null || typeof value !== 'object') {
-    return JSON.stringify(value);
-  }
-  if (Array.isArray(value)) {
-    return `[${value.map((entry) => canonicalJson(entry)).join(',')}]`;
-  }
-  const record = value as Record<string, unknown>;
-  const keys = Object.keys(record)
-    .filter((key) => record[key] !== undefined)
-    .sort((left, right) => left.localeCompare(right));
-  const pairs = keys.map((key) => `${JSON.stringify(key)}:${canonicalJson(record[key])}`);
-  return `{${pairs.join(',')}}`;
-}
 
 function normalizePath(filePath: string): string {
   return filePath.replace(/\\/gu, '/').replace(/^\.\//u, '').trim();
-}
-
-function clampBps(value: number): number {
-  if (!Number.isFinite(value)) {
-    return 0;
-  }
-  return Math.max(0, Math.min(MAX_BPS, Math.round(value)));
 }
 
 export function evaluateWorldModelConsistency(
@@ -404,7 +378,7 @@ export function evaluateWorldModelConsistency(
   }
 
   const surpriseScoreBps =
-    totalChecks === 0 ? 0 : clampBps((mismatchedChecks / totalChecks) * MAX_BPS);
+    totalChecks === 0 ? 0 : clampBps((mismatchedChecks / totalChecks) * 10_000);
 
   const reasonCodes = [...new Set(findings.map((finding) => finding.reasonCode))].sort((a, b) =>
     a.localeCompare(b)

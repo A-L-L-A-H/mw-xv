@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type VolumeIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function VolumeIcon({ size = 24, title, ...props }: VolumeIconProps) {
+const VolumeIcon = forwardRef<SVGSVGElement, VolumeIconProps>(function VolumeIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -26,4 +30,8 @@ export function VolumeIcon({ size = 24, title, ...props }: VolumeIconProps) {
       <path d="M4 10v4h4l5 4V6l-5 4H4Zm12-1a5 5 0 0 1 0 6m2-9a9 9 0 0 1 0 12" />
     </svg>
   );
-}
+});
+
+VolumeIcon.displayName = 'VolumeIcon';
+
+export { VolumeIcon };

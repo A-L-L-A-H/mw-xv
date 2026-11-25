@@ -1,4 +1,5 @@
-import { createHash } from 'node:crypto';
+import { isRecord } from '@moonwitness/types';
+import { sha256Hex } from '@moonwitness/types/node';
 import { createJsonSchemaValidator, type KnowledgeValidationResult } from '@moonwitness/knowledge';
 import type { Knex } from 'knex';
 import storyVersionSchema from '../../../ontology/domains/story-version.schema.json' with { type: 'json' };
@@ -77,14 +78,6 @@ const validateSchema = createJsonSchemaValidator(
   'does not match the versioned story/page contract'
 );
 
-function sha256(value: string): string {
-  return createHash('sha256').update(value, 'utf8').digest('hex');
-}
-
-function isObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
 function isAuthenticatedEditor(value: AuthenticatedStoryEditor): boolean {
   return (
     Number.isSafeInteger(value.userId) &&
@@ -99,7 +92,7 @@ function isAuthenticatedEditor(value: AuthenticatedStoryEditor): boolean {
 export function validateStoryVersion(value: unknown): KnowledgeValidationResult {
   const schemaResult = validateSchema(value);
   if (!schemaResult.valid) return schemaResult;
-  if (!isObject(value) || !Array.isArray(value.pages) || value.pages.length > maxStoryPages) {
+  if (!isRecord(value) || !Array.isArray(value.pages) || value.pages.length > maxStoryPages) {
     return {
       valid: false,
       issues: [{ path: '/pages', keyword: 'maxItems', message: 'must contain 1–100 pages' }],
@@ -107,7 +100,7 @@ export function validateStoryVersion(value: unknown): KnowledgeValidationResult 
   }
   const pageIds = new Set<string>();
   for (const [index, rawPage] of value.pages.entries()) {
-    if (!isObject(rawPage)) continue;
+    if (!isRecord(rawPage)) continue;
     if (rawPage.page_order !== index + 1) {
       return {
         valid: false,
@@ -196,7 +189,7 @@ async function readVersionRow(
   const storyJson = String(row.story_json);
   if (
     typeof row.story_digest !== 'string' ||
-    sha256(storyJson) !== row.story_digest ||
+    sha256Hex(storyJson) !== row.story_digest ||
     Buffer.byteLength(storyJson, 'utf8') > maxStoryBytes
   ) {
     return null;
@@ -211,7 +204,7 @@ async function readVersionRow(
     if (
       canonicalResearchJson(story) !== storyJson ||
       !validateStoryVersion(story).valid ||
-      !isObject(story) ||
+      !isRecord(story) ||
       story.story_id !== row.story_id ||
       story.version !== Number(row.version) ||
       story.title !== row.title ||
@@ -235,7 +228,7 @@ async function readVersionRow(
       stored.page_id !== page.page_id ||
       Number(stored.page_order) !== page.page_order ||
       stored.original_text !== page.original_text ||
-      stored.original_text_digest !== sha256(page.original_text) ||
+      stored.original_text_digest !== sha256Hex(page.original_text) ||
       (page.media === undefined
         ? stored.media_ref_json !== null
         : typeof stored.media_ref_json !== 'string' ||
@@ -282,7 +275,7 @@ export async function storeStoryVersion(
   if (!validation.valid) throw new TypeError('Story version failed its schema or page-order check');
   const storyJson = canonicalResearchJson(input.story);
   const story = JSON.parse(storyJson) as StoryVersionDocument;
-  const storyDigest = sha256(storyJson);
+  const storyDigest = sha256Hex(storyJson);
   return db.transaction(async (trx) => {
     const actor = input.authenticatedActor;
     await assertActiveCompanyEditor(trx, actor);
@@ -344,7 +337,7 @@ export async function storeStoryVersion(
         page_id: page.page_id,
         page_order: page.page_order,
         original_text: page.original_text,
-        original_text_digest: sha256(page.original_text),
+        original_text_digest: sha256Hex(page.original_text),
         media_ref_json: page.media === undefined ? null : canonicalResearchJson(page.media),
       }))
     );

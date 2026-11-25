@@ -1,0 +1,80 @@
+{
+  "snapshot": "visual-universe-task-cards/2026-11-23",
+  "sourceTaskSnapshot": "docs/bundles/visual-universe-pack/legacy/task-source-2026-11-23.json",
+  "entryCount": 109,
+  "chunks": [
+    {
+      "path": "docs/bundles/visual-universe-pack/legacy/task-cards-2026-11-23/chunk-01.json",
+      "range": {
+        "start": 1,
+        "end": 12
+      }
+    },
+    {
+      "path": "docs/bundles/visual-universe-pack/legacy/task-cards-2026-11-23/chunk-02.json",
+      "range": {
+        "start": 13,
+        "end": 24
+      }
+    },
+    {
+      "path": "docs/bundles/visual-universe-pack/legacy/task-cards-2026-11-23/chunk-03.json",
+      "range": {
+        "start": 25,
+        "end": 36
+      }
+    },
+    {
+      "path": "docs/bundles/visual-universe-pack/legacy/task-cards-2026-11-23/chunk-04.json",
+      "range": {
+        "start": 37,
+        "end": 48
+      }
+    },
+    {
+      "path": "docs/bundles/visual-universe-pack/legacy/task-cards-2026-11-23/chunk-05.json",
+      "range": {
+        "start": 49,
+        "end": 60
+      }
+    },
+    {
+      "path": "docs/bundles/visual-universe-pack/legacy/task-cards-2026-11-23/chunk-06.json",
+      "range": {
+        "start": 61,
+        "end": 72
+      }
+    },
+    {
+      "path": "docs/bundles/visual-universe-pack/legacy/task-cards-2026-11-23/chunk-07.json",
+      "range": {
+        "start": 73,
+        "end": 84
+      }
+    },
+    {
+      "path": "docs/bundles/visual-universe-pack/legacy/task-cards-2026-11-23/chunk-08.json",
+      "range": {
+        "start": 85,
+        "end": 96
+      }
+    },
+    {
+      "path": "docs/bundles/visual-universe-pack/legacy/task-cards-2026-11-23/chunk-09.json",
+      "range": {
+        "start": 97,
+        "end": 109
+      }
+    }
+  ],
+  "noteAddendum": "docs/bundles/visual-universe-pack/legacy/task-cards-2026-11-23/notes-addendum.json",
+  "notesSummary": {
+    "genericAtomicNotes": 91,
+    "taskSpecificNotes": 2,
+    "taskSpecificTaskIds": [
+      "W1-001",
+      "W5-012"
+    ]
+  },
+  "createdAt": "2026-11-23"
+}

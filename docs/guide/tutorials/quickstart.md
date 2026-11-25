@@ -1,8 +1,10 @@
 # Quickstart lingkungan lokal
 
 **Pembaca:** developer yang baru membuka repository. **Prasyarat:** Node.js 22, pnpm 11,
-Docker Compose, dan akses ke repository. Semua perintah di halaman ini menargetkan database
-development lokal; jangan arahkan ke database bersama atau production.
+Docker Compose, dan akses ke repository. Semua perintah di halaman ini dijalankan dari root
+repository dan menargetkan database development lokal; jangan arahkan ke database bersama atau
+production. File Compose berada di `deploy/compose/` (bukan di root), sehingga selalu sertakan
+`-f deploy/compose/docker-compose.yml`; build context di dalam file sudah memakai `../..`.
 
 ## 1. Siapkan environment dan PostgreSQL
 
@@ -12,12 +14,12 @@ commit file `.env` atau menyalin nilai environment dari deployment.
 
 ```bash
 cp .env.example .env
-docker compose up -d postgres
+docker compose -f deploy/compose/docker-compose.yml up -d postgres
 pnpm install --frozen-lockfile
 ```
 
 Di PowerShell, salin template dengan `Copy-Item .env.example .env`. Compose memakai port loopback
-`127.0.0.1:5432`; tunggu sampai `docker compose ps` menampilkan service `postgres` berjalan sebelum
+`127.0.0.1:5432`; tunggu sampai `docker compose -f deploy/compose/docker-compose.yml ps` menampilkan service `postgres` berjalan sebelum
 memulai API.
 
 ## 2. Build dan jalankan API serta Board
@@ -53,28 +55,28 @@ Buat database sementara dari service Compose dan arahkan `POSTGRES_TEST_URL` ke 
 `moonwitness_db` atau database yang berisi data yang ingin disimpan.
 
 ```bash
-docker compose exec -T postgres createdb -U postgres moonwitness_local_test
-pg_user="$(docker compose exec -T postgres printenv POSTGRES_USER | tr -d '\r\n')"
-pg_password="$(docker compose exec -T postgres printenv POSTGRES_PASSWORD | tr -d '\r\n')"
+docker compose -f deploy/compose/docker-compose.yml exec -T postgres createdb -U postgres moonwitness_local_test
+pg_user="$(docker compose -f deploy/compose/docker-compose.yml exec -T postgres printenv POSTGRES_USER | tr -d '\r\n')"
+pg_password="$(docker compose -f deploy/compose/docker-compose.yml exec -T postgres printenv POSTGRES_PASSWORD | tr -d '\r\n')"
 export POSTGRES_TEST_URL='postgresql://'
 POSTGRES_TEST_URL+="${pg_user}:${pg_password}@127.0.0.1:5432/moonwitness_local_test"
 pnpm test:integration
-docker compose exec -T postgres dropdb -U postgres moonwitness_local_test
+docker compose -f deploy/compose/docker-compose.yml exec -T postgres dropdb -U postgres moonwitness_local_test
 ```
 
 Di PowerShell, gunakan perintah berikut untuk menyiapkan environment tanpa menampilkan kredensial:
 
 ```powershell
-$pgUser = (docker compose exec -T postgres printenv POSTGRES_USER).Trim()
-$pgPassword = (docker compose exec -T postgres printenv POSTGRES_PASSWORD).Trim()
+$pgUser = (docker compose -f deploy/compose/docker-compose.yml exec -T postgres printenv POSTGRES_USER).Trim()
+$pgPassword = (docker compose -f deploy/compose/docker-compose.yml exec -T postgres printenv POSTGRES_PASSWORD).Trim()
 $env:POSTGRES_TEST_URL = 'postgresql://'
 $env:POSTGRES_TEST_URL += "${pgUser}:${pgPassword}@127.0.0.1:5432/moonwitness_local_test"
 pnpm test:integration
-docker compose exec -T postgres dropdb -U postgres moonwitness_local_test
+docker compose -f deploy/compose/docker-compose.yml exec -T postgres dropdb -U postgres moonwitness_local_test
 ```
 
 Jika tes gagal, tetap hapus database sementara setelah memeriksa bahwa namanya tepat `moonwitness_local_test`:
-`docker compose exec -T postgres dropdb -U postgres moonwitness_local_test`. Jalankan tes secara serial
+`docker compose -f deploy/compose/docker-compose.yml exec -T postgres dropdb -U postgres moonwitness_local_test`. Jalankan tes secara serial
 untuk database tersebut; setiap run E2E paralel perlu nama database disposable yang berbeda.
 
 ## 5. Verifikasi perubahan
@@ -89,5 +91,5 @@ test PostgreSQL dan performance pada schema acak di database yang ditunjuk `POST
 perintah tes tidak membuat atau menghapus database luarnya. Hasil yang diharapkan adalah command
 berakhir dengan exit code 0. Jangan jalankan test pada database berisi data penting.
 
-Untuk menghentikan service lokal, jalankan `docker compose down`. Tambahkan `-v` hanya bila memang
+Untuk menghentikan service lokal, jalankan `docker compose -f deploy/compose/docker-compose.yml down`. Tambahkan `-v` hanya bila memang
 ingin menghapus volume database development dan seluruh seed/perubahan lokal.

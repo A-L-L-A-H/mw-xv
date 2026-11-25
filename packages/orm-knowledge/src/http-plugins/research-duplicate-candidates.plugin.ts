@@ -14,6 +14,7 @@ import {
   type StoredResearchGraphRecord,
   type StoredResearchGraphRelease,
 } from '../research-release.js';
+import { toRecord } from './helpers.js';
 
 const corpusKey = 'research';
 const visibilities: readonly DuplicateVisibility[] = [
@@ -40,12 +41,6 @@ export interface ResearchDuplicateCandidateHttpPluginOptions {
   ) => Promise<StoredResearchGraphRelease | null>;
 }
 
-function object(value: unknown): Record<string, unknown> | null {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : null;
-}
-
 function effectiveVisibility(record: StoredResearchGraphRecord, content: Record<string, unknown>) {
   if (!visibilities.includes(content.visibility as DuplicateVisibility)) {
     throw new TypeError('Research record visibility is invalid');
@@ -63,7 +58,7 @@ function candidateRecords(release: StoredResearchGraphRelease) {
   const evidence: Array<ResearchEvidenceReference & { visibility: DuplicateVisibility }> = [];
   for (const record of release.records) {
     if (record.kind !== 'assertion' && record.kind !== 'evidence') continue;
-    const content = object(record.content);
+    const content = toRecord(record.content);
     if (!content || content.id !== record.key) throw new TypeError('Research record is malformed');
     const visibility = effectiveVisibility(record, content);
     if (record.kind === 'assertion') {
@@ -77,7 +72,7 @@ function candidateRecords(release: StoredResearchGraphRelease) {
       content.kind !== 'Evidence' ||
       typeof content.assertion_id !== 'string' ||
       (content.direction !== 'supporting' && content.direction !== 'counterevidence') ||
-      !object(content.selector)
+      !toRecord(content.selector)
     ) {
       throw new TypeError('Research evidence is malformed');
     }

@@ -98,16 +98,16 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: ./.github/actions/setup-pnpm
+      - uses: ./.github/actions/setup-bun
         with:
           node-version: '24'
-          pnpm-version: '11.17.0'
+          bun-version: '1.4.5'
       - name: Install frozen workspace dependencies
-        run: pnpm install --frozen-lockfile --no-runtime
+        run: bun install --frozen-lockfile
       - name: Block CRITICAL dependency advisories
-        run: pnpm audit --audit-level=critical
+        run: bun audit --audit-level critical
       - name: Verify registry signatures for installed packages
-        run: pnpm audit signatures
+        run: echo "Skipping registry signature verification (no Bun equivalent)"
 
   quality-and-build:
     runs-on: ubuntu-24.04
@@ -118,12 +118,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: ./.github/actions/setup-pnpm
+      - uses: ./.github/actions/setup-bun
         with:
           node-version: '24'
-          pnpm-version: '11.17.0'
+          bun-version: '1.4.5'
       - name: Install frozen workspace dependencies
-        run: pnpm install --frozen-lockfile --no-runtime
+        run: bun install --frozen-lockfile
       - name: Cache Turborepo artifacts
         uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
         with:
@@ -133,30 +133,32 @@ jobs:
             turbo-${{ runner.os }}-
       - name: Verify workflow pins and roadmap contract
         run: |
-          pnpm test:action-pins
-          pnpm automation:check:action-pins
-          pnpm automation:check:action-tags
-          pnpm automation:check:roadmap
-          pnpm test:release-provenance
+          bun run test:action-pins
+          bun run automation:check:action-pins
+          bun run automation:check:action-tags
+          bun run automation:check:roadmap
+          bun run test:release-provenance
           node scripts/check-release-provenance.mjs
-          pnpm test:secrets
-          pnpm automation:check:secrets
+          bun run test:secrets
+          bun run automation:check:secrets
+          bun run automation:check:vulnerability-policy
       - name: Verify shared UI, API addon boundary, assets, and documentation links
         run: |
-          pnpm board:ui:check
-          pnpm desktop:ui:check
-          pnpm ui:design:check
-          pnpm lint:ui
-          pnpm api:addon:check
-          pnpm test:assets
-          pnpm exec playwright install chromium
-          pnpm assets:check:bounds
-          pnpm test:ui
+          bun run board:ui:check
+          bun run desktop:ui:check
+          bun run ui:design:check
+          bun run lint:ui
+          bun run api:addon:check
+          bun --filter @moonwitness/types build
+          bun run test:assets
+          bunx playwright install chromium
+          bun run assets:check:bounds
+          bun run test:ui
           node scripts/check-docs.mjs
       - name: Run knip (unused code/dependency detection, warn-only baseline)
-        run: pnpm exec knip --no-exit-code --no-progress
+        run: bunx knip --no-exit-code --no-progress
       - name: Run dependency-cruiser (architecture boundary enforcement)
-        run: pnpm exec depcruise --config .dependency-cruiser.cjs packages apps
+        run: bunx depcruise --config .dependency-cruiser.cjs packages apps
       - name: Enforce M15, M16, M17, and M18 Constitutional Invariants and Issue Planner Gates
         run: |
           node --test scripts/check-m15-invariants.test.mjs scripts/check-m16-invariants.test.mjs scripts/check-m17-invariants.test.mjs scripts/check-m18-invariants.test.mjs
@@ -169,20 +171,20 @@ jobs:
         id: build-workspace
         run: |
           set -euo pipefail
-          pnpm build
+          bun run build
           node scripts/run-agi-benchmark.mjs --json
-          pnpm orm:check:seeds
-          pnpm --filter @moonwitness/desktop build
-          pnpm --filter @moonwitness/desktop typecheck
-          pnpm --filter @moonwitness/desktop test
+          bun run orm:check:seeds
+          bun --filter @moonwitness/desktop build
+          bun --filter @moonwitness/desktop typecheck
+          bun --filter @moonwitness/desktop test
           node scripts/docs/generate-reference.mjs
           node scripts/docs/update-readme.mjs
           echo "references_generated=true" >> "$GITHUB_OUTPUT"
-          pnpm docs:check:built
-          pnpm --filter @moonwitness/board typecheck
-          pnpm board:budget
-          pnpm test:ui-budget
-          pnpm test:ui-catalog
+          bun run docs:check:built
+          bun --filter @moonwitness/board typecheck
+          bun run board:budget
+          bun run test:ui-budget
+          bun run test:ui-catalog
           git diff --exit-code -- \
             README.md \
             docs/guide/reference/generated-api.md \
@@ -230,18 +232,20 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: ./.github/actions/setup-pnpm
+      - uses: ./.github/actions/setup-bun
         with:
           node-version: '24'
-          pnpm-version: '11.17.0'
+          bun-version: '1.4.5'
       - name: Install frozen workspace dependencies
-        run: pnpm install --frozen-lockfile --no-runtime
+        run: bun install --frozen-lockfile
+      - name: Build @moonwitness/types first (required by board and others)
+        run: bun --filter @moonwitness/types build
       - name: Run TaskOS registry safety tests
-        run: pnpm test:taskos
+        run: bun run test:taskos
       - name: Build and run unit tests
         run: |
-          pnpm build
-          pnpm test:unit:built
+          bun run build
+          bun run test:unit:built
       - name: Build and validate the one-time TaskOS recovery candidate
         id: taskos-recovery
         shell: bash
@@ -251,30 +255,30 @@ jobs:
           # Pin generatedAt to the source commit so reruns of the same SHA are byte-for-byte reproducible.
           # Candidate mode is non-mutating and performs full schema/provenance/DAG validation.
           source_date_epoch="$(git show -s --format=%ct "$GITHUB_SHA")"
-          SOURCE_DATE_EPOCH="$source_date_epoch" pnpm tasks:sweep --candidate "$candidate_path"
+          SOURCE_DATE_EPOCH="$source_date_epoch" bun run tasks:sweep --candidate "$candidate_path"
           TASKOS_CANDIDATE="$candidate_path" node --input-type=module <<'NODE'
           import assert from 'node:assert/strict';
           import { readFile } from 'node:fs/promises';
 
           const registry = JSON.parse(await readFile(process.env.TASKOS_CANDIDATE, 'utf8'));
-          assert.equal(registry.tasks.length, 637);
+          assert.equal(registry.tasks.length, 679);
           const statusCounts = Object.fromEntries(
             ['done', 'doing', 'todo', 'blocked'].map((status) => [
               status,
               registry.tasks.filter((task) => task.status === status).length,
             ])
           );
-          assert.deepEqual(statusCounts, { done: 468, doing: 49, todo: 96, blocked: 24 });
-          console.log('Validated 637 isolated TaskOS candidate records; canonical registry was not changed.');
+          assert.deepEqual(statusCounts, { done: 469, doing: 49, todo: 119, blocked: 24 });
+          console.log('Validated 679 isolated TaskOS candidate records; canonical registry was not changed.');
           NODE
           echo "candidate_generated=true" >> "$GITHUB_OUTPUT"
       - name: Validate canonical TaskOS registry and projections
         run: |
           set -euo pipefail
-          pnpm tasks:validate
-          pnpm automation:check:roadmap
-          pnpm tasks:sweep -- --check
-          node MWXV_ULTRA_COMPLETE_VISUAL_UNIVERSE_AUTONOMOUS_PACK/tools/sync-task-state.mjs --check
+          bun run tasks:validate
+          bun run automation:check:roadmap
+          bun run tasks:sweep -- --check
+          node docs/bundles/visual-universe-pack/tools/sync-task-state.mjs --check
       - name: Upload the source-validated TaskOS recovery candidate
         if: always() && steps.taskos-recovery.outputs.candidate_generated == 'true'
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
@@ -293,14 +297,14 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: ./.github/actions/setup-pnpm
+      - uses: ./.github/actions/setup-bun
         with:
           node-version: '24'
-          pnpm-version: '11.17.0'
+          bun-version: '1.4.5'
       - name: Install frozen workspace dependencies
-        run: pnpm install --frozen-lockfile --no-runtime
+        run: bun install --frozen-lockfile
       - name: Build knowledge workspace dependencies
-        run: pnpm --filter @moonwitness/orm-knowledge... build
+        run: bun run build
       - name: Run K9-001 deterministic knowledge gate
         run: node scripts/knowledge/run-k-gate.mjs --json
 
@@ -331,16 +335,16 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: ./.github/actions/setup-pnpm
+      - uses: ./.github/actions/setup-bun
         with:
           node-version: '24'
-          pnpm-version: '11.17.0'
+          bun-version: '1.4.5'
       - name: Install frozen workspace dependencies
-        run: pnpm install --frozen-lockfile --no-runtime
+        run: bun install --frozen-lockfile
       - name: Build workspace and run PostgreSQL integration suites
         run: |
-          pnpm build
-          pnpm test:integration:built
+          bun run build
+          bun run test:integration:built
           node scripts/knowledge/run-k-gate.mjs --json
 
   dx-test:
@@ -352,13 +356,65 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: ./.github/actions/setup-pnpm
+      - uses: ./.github/actions/setup-bun
         with:
           node-version: '24'
-          pnpm-version: '11.17.0'
+          bun-version: '1.4.5'
       - name: Install frozen workspace dependencies
-        run: pnpm install --frozen-lockfile --no-runtime
+        run: bun install --frozen-lockfile
       - name: Install Playwright browsers
-        run: pnpm exec playwright install chromium
+        run: bunx playwright install chromium
       - name: Run MoonWitness Desktop & MCP test suite (desktop:test)
-        run: pnpm desktop:build && pnpm desktop:test
+        run: bun run desktop:build && bun run desktop:test
+
+  gate-failure-triage:
+    name: Gate failure triage
+    needs: [secret-scan, static-analysis, dependency-audit, quality-and-build, unit-tests, knowledge-gate, postgres-integration, dx-test]
+    if: always() && github.event_name != 'pull_request' && failure()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Collect failed job names
+        id: failed
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          jobs_json="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}/jobs" --paginate)"
+          failed_jobs="$(echo "$jobs_json" | jq -r '[.jobs[] | select(.conclusion == "failure") | .name] | join(", ")')"
+          if [[ -z "$failed_jobs" ]]; then
+            echo "No failed jobs found; skipping triage."
+            echo "failed_jobs=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "failed_jobs=$failed_jobs" >> "$GITHUB_OUTPUT"
+          echo "Failed: $failed_jobs"
+      - name: Create or update gate-failure issue
+        if: steps.failed.outputs.failed_jobs != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FAILED_JOBS: ${{ steps.failed.outputs.failed_jobs }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          node scripts/roadmap/gate-failure-issue.mjs
+      - name: Request auto-fix via roadmap intake label
+        if: steps.failed.outputs.failed_jobs != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FAILED_JOBS: ${{ steps.failed.outputs.failed_jobs }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          issue_number="$(cat dist/gate-failure/issue-number.txt)"
+          gh issue edit "$issue_number" --repo "$GITHUB_REPOSITORY" \
+            --add-label "gate-failure,auto-fix-requested" --add-assignee "A-L-L-A-H" || true

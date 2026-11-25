@@ -74,7 +74,7 @@ const releasePlan = `
     if: github.ref == 'refs/heads/dev'
 permissions:
   contents: read
-      - run: pnpm release:dry-run -- --output report.json
+      - run: bun run release:dry-run -- --output report.json
       - uses: actions/upload-artifact@0123456789012345678901234567890123456789
 `;
 const promote = `
@@ -493,6 +493,19 @@ test('rejects untrusted release dispatch, stale preparation SHA, and missing fol
   assert.ok(findings.some((finding) => finding.includes('explicit dispatch on a version tag')));
   assert.ok(findings.some((finding) => finding.includes('input SHA different from the event SHA')));
   assert.ok(findings.some((finding) => finding.includes('explicitly dispatch full CI')));
+});
+
+test('accepts the GH_REPO alias for dependency-candidate promotion dispatch', () => {
+  const findings = policies({
+    dependencyCandidate: dependencyCandidate.replace(
+      'gh workflow run promote.yml --repo "$GITHUB_REPOSITORY" --ref dev',
+      'gh workflow run promote.yml --repo "$GH_REPO" --ref dev'
+    ),
+  });
+  assert.ok(
+    !findings.some((finding) => finding.includes('explicitly dispatch promotion')),
+    `unexpected findings: ${findings.join('; ')}`
+  );
 });
 
 test('rejects write-capable or non-reviewable release dry-run workflows', () => {

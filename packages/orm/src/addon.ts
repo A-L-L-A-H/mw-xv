@@ -321,6 +321,117 @@ export type AddonHttpPlugin<TApp = AddonHttpApp, TOptions = AddonHttpHostContext
   options: TOptions
 ) => unknown | Promise<unknown>;
 
+export interface AuthenticatedContext {
+  readonly userId: number;
+  readonly role: string;
+  readonly companyId: number;
+}
+
+export interface GroupGrant {
+  readonly model_name: string;
+  readonly read: boolean;
+  readonly create: boolean;
+  readonly write: boolean;
+  readonly unlink: boolean;
+}
+
+export interface RequestAuth {
+  readonly userId: number;
+  readonly role: string;
+  readonly companyId?: number;
+  readonly groupPermissions?: readonly GroupGrant[];
+}
+
+export type ModelAccessOperation = 'read' | 'create' | 'write' | 'unlink';
+
+export interface RequireAuthorizedModelAccessOptions {
+  readonly adminOnly?: boolean;
+  readonly onDenied?: () => void;
+}
+
+export function requireAuth(
+  req: AddonHttpRequestBase,
+  reply: AddonHttpReply
+): AuthenticatedContext | null {
+  if (!req.auth) {
+    reply.code(401).send({ success: false, error: 'Authentication required' });
+    return null;
+  }
+  const companyId = req.auth.companyId;
+  if (typeof companyId !== 'number' || !Number.isInteger(companyId) || companyId <= 0) {
+    reply.code(403).send({ success: false, error: 'Active company is required' });
+    return null;
+  }
+  return {
+    userId: req.auth.userId,
+    role: req.auth.role ?? 'user',
+    companyId,
+  };
+}
+
+/** Extract authenticated request metadata when a numeric userId is present. */
+export function requestAuth(req: AddonHttpRequestBase | object): RequestAuth | null {
+  const auth = (req as { auth?: RequestAuth | null } | null | undefined)?.auth;
+  return auth && typeof auth.userId === 'number' ? auth : null;
+}
+
+/** Parse a route parameter into a positive safe integer id, or null when invalid. */
+export function parsePositiveId(raw: string): number | null {
+  const id = Number(raw);
+  return Number.isSafeInteger(id) && id > 0 ? id : null;
+}
+
+/** Check whether the authenticated caller has the requested model CRUD permission. */
+export function hasModelAccess(
+  auth: RequestAuth,
+  modelName: string,
+  op: ModelAccessOperation
+): boolean {
+  if (auth.role === 'system' || auth.role === 'superadmin') return true;
+  if (auth.role !== 'user') return false;
+  return (auth.groupPermissions ?? []).some((g) => g.model_name === modelName && g[op] === true);
+}
+
+/** Enforce authentication, active positive company context, model ACL, and optional admin role. */
+export function requireAuthorizedModelAccess(
+  req: AddonHttpRequestBase | object,
+  reply: AddonHttpReply,
+  modelNames: string | readonly string[],
+  op: ModelAccessOperation,
+  options?: RequireAuthorizedModelAccessOptions
+): { auth: RequestAuth; companyId: number } | null {
+  const deny = (statusCode: number, error: string): null => {
+    options?.onDenied?.();
+    void reply.code(statusCode).send({ success: false, error });
+    return null;
+  };
+
+  const auth = requestAuth(req);
+  if (!auth) {
+    return deny(401, 'Authentication required');
+  }
+  if (!auth.companyId || !Number.isSafeInteger(auth.companyId) || auth.companyId <= 0) {
+    return deny(403, 'Active company context required');
+  }
+  const models = typeof modelNames === 'string' ? [modelNames] : modelNames;
+  const allowed = models.some((modelName) => hasModelAccess(auth, modelName, op));
+  if (!allowed) {
+    return deny(403, `Access denied for ${models.join('|')}:${op}`);
+  }
+  if (options?.adminOnly && auth.role !== 'system' && auth.role !== 'superadmin') {
+    return deny(403, 'Admin role required');
+  }
+  return { auth, companyId: auth.companyId };
+}
+
+/** Require an initialized Knex database handle on an addon HTTP request context. */
+export function requireAddonDb(req: AddonHttpRequestBase): Knex {
+  const app = req as unknown as { server?: { db?: Knex } };
+  const db = app.server?.db;
+  if (!db) throw new Error('Database not available on request context');
+  return db;
+}
+
 export type AddonLifecycleStatus = 'uninstalled' | 'installed' | 'disabled' | 'upgrade_failed';
 
 export interface Addon {
@@ -657,13 +768,18 @@ async function installData(db: Knex.Transaction, data: readonly SeedRecord[]) {
     for (const [name, value] of Object.entries(record.values)) {
       const field = record.model.fields[name];
       if (!field) throw new Error(`Unknown seed field: ${record.model.modelName}.${name}`);
-      if (typeof value === 'object' && value !== null) {
+      if (typeof value === 'object' && value !== null && '$ref' in value) {
         const linked = await ensure(value.$ref);
         const targetModel = resolveFieldTarget(field.target);
         if (targetModel?.modelName !== linked.model)
           throw new Error(`Invalid relation for ${record.id}.${name}`);
         values[columnName(name, field)] = linked.record_id;
-      } else values[columnName(name, field)] = value;
+      } else if (field.kind === 'json') {
+        values[columnName(name, field)] =
+          typeof value === 'object' || Array.isArray(value)
+            ? JSON.stringify(value ?? null)
+            : (value as string | number | boolean | null);
+      } else values[columnName(name, field)] = value as string | number | boolean | null;
     }
     return values;
   }

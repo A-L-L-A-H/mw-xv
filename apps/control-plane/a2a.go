@@ -2,8 +2,10 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"crypto/hmac"
 	"crypto/sha256"
+	"crypto/x509"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -16,7 +18,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -26,7 +27,48 @@ const (
 	maxA2ATTLMs           = 300_000
 	defaultA2AClockSkewMs = 30_000
 	maxA2ABodyBytes       = 1 << 20 // 1 MiB
+
+	a2aKeyIDHeader        = "X-A2A-Key-ID"
+	defaultA2AForwardMS   = 5_000
+	maxA2AForwardMS       = 30_000
+	defaultA2AForwardTries = 2
+	maxA2AForwardTries    = 2
+	maxA2AErrorBodyBytes  = 64 << 10
 )
+
+// privateMeshCIDRs is the single canonical Go declaration of the private mesh
+// address space. It mirrors PRIVATE_MESH_CIDRS exported by
+// packages/ai-runtime/src/a2a-protocol.ts. Any change here must be mirrored in
+// the TypeScript export and verified by TestPrivateMeshCIDRParity.
+const privateMeshCIDRs = "10.0.0.0/8,100.64.0.0/10,172.16.0.0/12,192.168.0.0/16,fd00::/8"
+
+var parsedPrivateMeshCIDRs = mustParsePrivateMeshCIDRs(privateMeshCIDRs)
+
+func mustParsePrivateMeshCIDRs(list string) []*net.IPNet {
+	var out []*net.IPNet
+	for _, entry := range strings.Split(list, ",") {
+		_, network, err := net.ParseCIDR(strings.TrimSpace(entry))
+		if err != nil {
+			panic("invalid canonical private mesh CIDR: " + entry)
+		}
+		out = append(out, network)
+	}
+	return out
+}
+
+// IsPrivateMeshIP reports whether ip belongs to the canonical private mesh
+// range list. Both A2A admission and git SSRF protection use this one list.
+func IsPrivateMeshIP(ip net.IP) bool {
+	if ip == nil {
+		return false
+	}
+	for _, network := range parsedPrivateMeshCIDRs {
+		if network.Contains(ip) {
+			return true
+		}
+	}
+	return false
+}
 
 // A2AEnvelope mirrors SignedA2AEnvelope in packages/ai-runtime/src/a2a-protocol.ts.
 type A2AEnvelope struct {
@@ -48,7 +90,8 @@ type A2AEnvelope struct {
 	Signature          string         `json:"signature"`
 }
 
-// A2ADelegateResponse is returned by POST /a2a/delegate on success.
+// A2ADelegateResponse is returned by POST /a2a/delegate on success. The
+// Control Plane only relays the upstream durable receiver's receipt.
 type A2ADelegateResponse struct {
 	Status          string `json:"status"`
 	MessageID       string `json:"messageId"`
@@ -64,84 +107,57 @@ type A2AErrorResponse struct {
 	ReasonCode string `json:"reasonCode"`
 }
 
-// A2ANonceCache tracks seen nonces within their TTL window to prevent replay attacks.
-type A2ANonceCache struct {
-	mu      sync.Mutex
-	entries map[string]int64 // nonce -> expiresAtMs
+// A2APeerRegistration binds a verified mesh transport identity (mTLS client
+// certificate SPKI pin) to a registered A2A peer/agent key identity. This is
+// the Go-side mirror of the canonical peer registry owned by @moonwitness/orm-a2a.
+type A2APeerRegistration struct {
+	PeerID     string `json:"peerId"`
+	AgentID    string `json:"agentId"`
+	CompanyID  int64  `json:"companyId"`
+	KeyID      string `json:"keyId"`
+	SPKISHA256 string `json:"spkiSha256"`
 }
 
-// NewA2ANonceCache creates an empty replay nonce cache.
-func NewA2ANonceCache() *A2ANonceCache {
-	return &A2ANonceCache{
-		entries: make(map[string]int64),
-	}
-}
-
-// CheckAndRecord prunes expired nonces, returns false if nonce was already seen,
-// and records the nonce otherwise.
-func (c *A2ANonceCache) CheckAndRecord(nonce string, expiresAtMs, nowMs int64) bool {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	for k, exp := range c.entries {
-		if nowMs > exp {
-			delete(c.entries, k)
-		}
-	}
-	if _, exists := c.entries[nonce]; exists {
-		return false
-	}
-	c.entries[nonce] = expiresAtMs
-	return true
-}
-
-// A2AFencingTracker enforces strictly monotonic fencingToken values per company+sourceAgent.
-type A2AFencingTracker struct {
-	mu       sync.Mutex
-	lastSeen map[string]int64
-}
-
-// NewA2AFencingTracker creates an empty fencing token tracker.
-func NewA2AFencingTracker() *A2AFencingTracker {
-	return &A2AFencingTracker{
-		lastSeen: make(map[string]int64),
-	}
-}
-
-// CheckAndAdvance verifies token > lastSeen for (companyID, sourceAgentID) and advances it.
-func (f *A2AFencingTracker) CheckAndAdvance(companyID int64, sourceAgentID string, token int64) bool {
-	f.mu.Lock()
-	defer f.mu.Unlock()
-
-	key := fmt.Sprintf("%d::%s", companyID, sourceAgentID)
-	if prev, ok := f.lastSeen[key]; ok && token <= prev {
-		return false
-	}
-	f.lastSeen[key] = token
-	return true
-}
-
-// A2AManager verifies inbound A2A delegation envelopes over the private EasyTier mesh.
+// A2AManager is a thin, fail-closed forwarder. Replay detection, fencing,
+// persistence and receipt authority live only in the durable API receiver.
 type A2AManager struct {
 	signingSecret     string
 	expectedCompanyID int64
-	nonceCache        *A2ANonceCache
-	fencing           *A2AFencingTracker
+	forwardOrigin     string // canonical private-mesh origin, e.g. http://100.64.0.20:3000
+	forwardTimeout    time.Duration
+	forwardAttempts   int
+	forwardRetryDelay time.Duration
+	httpClient        *http.Client
+	peerRegistrations []A2APeerRegistration
+	peerCA            *x509.CertPool
 	nowFunc           func() time.Time
 }
 
-// NewA2AManager creates an A2AManager with explicit configuration.
-func NewA2AManager(signingSecret string, expectedCompanyID int64) *A2AManager {
+// NewA2AManager creates an A2AManager with explicit configuration. An empty
+// forwardOrigin leaves the forwarder disabled (all requests fail closed).
+func NewA2AManager(signingSecret string, expectedCompanyID int64, forwardOrigin string) *A2AManager {
+	origin, err := normalizePrivateMeshOrigin(forwardOrigin)
+	if err != nil {
+		origin = ""
+	}
+	timeout := defaultA2AForwardMS * time.Millisecond
 	return &A2AManager{
 		signingSecret:     strings.TrimSpace(signingSecret),
 		expectedCompanyID: expectedCompanyID,
-		nonceCache:        NewA2ANonceCache(),
-		fencing:           NewA2AFencingTracker(),
+		forwardOrigin:     origin,
+		forwardTimeout:    timeout,
+		forwardAttempts:   defaultA2AForwardTries,
+		forwardRetryDelay: 25 * time.Millisecond,
+		httpClient:        newA2AForwardHTTPClient(timeout),
 		nowFunc:           time.Now,
 	}
 }
 
-// NewA2AManagerFromEnv creates an A2AManager from MW_A2A_SIGNING_SECRET and MW_A2A_COMPANY_ID.
+// NewA2AManagerFromEnv creates an A2AManager from environment configuration.
+// Required settings: MW_A2A_SIGNING_SECRET, MW_A2A_COMPANY_ID,
+// MW_A2A_FORWARD_ORIGIN, MW_A2A_PEER_REGISTRY_JSON and a peer CA. Missing or
+// invalid settings do not enable local authority; they leave forwarding or
+// peer verification disabled so every request is rejected.
 func NewA2AManagerFromEnv() *A2AManager {
 	secret := strings.TrimSpace(os.Getenv("MW_A2A_SIGNING_SECRET"))
 	var companyID int64
@@ -150,11 +166,146 @@ func NewA2AManagerFromEnv() *A2AManager {
 			companyID = parsed
 		}
 	}
-	return NewA2AManager(secret, companyID)
+
+	timeout := boundedA2ATimeout(os.Getenv("MW_A2A_FORWARD_TIMEOUT_MS"))
+	attempts := boundedA2AAttempts(os.Getenv("MW_A2A_FORWARD_MAX_ATTEMPTS"))
+	mgr := NewA2AManager(secret, companyID, os.Getenv("MW_A2A_FORWARD_ORIGIN"))
+	mgr.forwardTimeout = timeout
+	mgr.forwardAttempts = attempts
+	mgr.httpClient = newA2AForwardHTTPClient(timeout)
+	mgr.peerRegistrations = parseA2APeerRegistrations(os.Getenv("MW_A2A_PEER_REGISTRY_JSON"))
+	mgr.peerCA = loadA2APeerCA(os.Getenv("MW_A2A_PEER_CA_PEM"), os.Getenv("MW_A2A_PEER_CA_FILE"))
+	return mgr
+}
+
+func boundedA2ATimeout(raw string) time.Duration {
+	value := strings.TrimSpace(raw)
+	if value == "" {
+		return defaultA2AForwardMS * time.Millisecond
+	}
+	parsed, err := strconv.Atoi(value)
+	if err != nil || parsed < 100 || parsed > maxA2AForwardMS {
+		return defaultA2AForwardMS * time.Millisecond
+	}
+	return time.Duration(parsed) * time.Millisecond
+}
+
+func boundedA2AAttempts(raw string) int {
+	value := strings.TrimSpace(raw)
+	if value == "" {
+		return defaultA2AForwardTries
+	}
+	parsed, err := strconv.Atoi(value)
+	if err != nil || parsed < 1 || parsed > maxA2AForwardTries {
+		return defaultA2AForwardTries
+	}
+	return parsed
+}
+
+// normalizePrivateMeshOrigin accepts only an http(s) origin with a private
+// mesh IP literal host, no credentials, no path, no query and no fragment.
+func normalizePrivateMeshOrigin(raw string) (string, error) {
+	trimmed := strings.TrimSpace(raw)
+	if trimmed == "" {
+		return "", errors.New("forward origin is required")
+	}
+	parsed, err := url.Parse(trimmed)
+	if err != nil {
+		return "", errors.New("invalid forward origin")
+	}
+	if parsed.Scheme != "http" && parsed.Scheme != "https" {
+		return "", errors.New("forward origin must use http or https")
+	}
+	if parsed.User != nil {
+		return "", errors.New("forward origin must not contain credentials")
+	}
+	if parsed.Path != "" && parsed.Path != "/" {
+		return "", errors.New("forward origin must not contain a path")
+	}
+	if parsed.RawQuery != "" || parsed.Fragment != "" {
+		return "", errors.New("forward origin must not contain a query or fragment")
+	}
+	if !IsPrivateMeshHost(parsed.Hostname()) {
+		return "", errors.New("forward origin must be a private mesh IP")
+	}
+	return parsed.Scheme + "://" + parsed.Host, nil
+}
+
+func newA2AForwardHTTPClient(timeout time.Duration) *http.Client {
+	dialer := &net.Dialer{Timeout: timeout, KeepAlive: 30 * time.Second}
+	transport := &http.Transport{
+		Proxy: nil, // never route a private-mesh forward through an ambient proxy
+		DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+			host, port, err := net.SplitHostPort(addr)
+			if err != nil || !IsPrivateMeshIP(net.ParseIP(host)) {
+				return nil, errors.New("a2a forward target is not a private mesh IP")
+			}
+			return dialer.DialContext(ctx, network, net.JoinHostPort(host, port))
+		},
+		ForceAttemptHTTP2:     false,
+		MaxIdleConns:          4,
+		IdleConnTimeout:       30 * time.Second,
+		TLSHandshakeTimeout:   timeout,
+		ResponseHeaderTimeout: timeout,
+	}
+	return &http.Client{
+		Transport: transport,
+		Timeout:   timeout,
+		CheckRedirect: func(*http.Request, []*http.Request) error {
+			return http.ErrUseLastResponse // redirects are never followed
+		},
+	}
+}
+
+func parseA2APeerRegistrations(raw string) []A2APeerRegistration {
+	trimmed := strings.TrimSpace(raw)
+	if trimmed == "" {
+		return nil
+	}
+	var registrations []A2APeerRegistration
+	if err := json.Unmarshal([]byte(trimmed), &registrations); err != nil {
+		log.Print("a2a peer registry is invalid; all peer authentication will fail closed")
+		return nil
+	}
+	out := registrations[:0]
+	for _, reg := range registrations {
+		reg.PeerID = strings.TrimSpace(reg.PeerID)
+		reg.AgentID = strings.TrimSpace(reg.AgentID)
+		reg.KeyID = strings.TrimSpace(reg.KeyID)
+		reg.SPKISHA256 = strings.ToLower(strings.TrimSpace(reg.SPKISHA256))
+		if reg.PeerID == "" || reg.AgentID == "" || reg.CompanyID <= 0 || reg.KeyID == "" || reg.SPKISHA256 == "" {
+			continue
+		}
+		out = append(out, reg)
+	}
+	return out
+}
+
+func loadA2APeerCA(inlinePEM, caFile string) *x509.CertPool {
+	pemData := strings.TrimSpace(inlinePEM)
+	if path := strings.TrimSpace(caFile); path != "" {
+		if data, err := os.ReadFile(path); err == nil {
+			pemData = string(data)
+		} else {
+			log.Print("a2a peer CA file could not be read; all peer authentication will fail closed")
+			return nil
+		}
+	}
+	if pemData == "" {
+		return nil
+	}
+	pemData = strings.ReplaceAll(pemData, `\n`, "\n")
+	pool := x509.NewCertPool()
+	if !pool.AppendCertsFromPEM([]byte(pemData)) {
+		log.Print("a2a peer CA is invalid; all peer authentication will fail closed")
+		return nil
+	}
+	return pool
 }
 
 // IsPrivateMeshHost returns true only for private EasyTier P2P mesh IP ranges:
 // 10.0.0.0/8, 100.64.0.0/10, 172.16.0.0/12, 192.168.0.0/16, and fd00::/8.
+// The ranges come from the single canonical privateMeshCIDRs declaration.
 func IsPrivateMeshHost(hostOrURL string) bool {
 	trimmed := strings.TrimSpace(hostOrURL)
 	if trimmed == "" {
@@ -182,30 +333,7 @@ func IsPrivateMeshHost(hostOrURL string) bool {
 	if host == "" || strings.Contains(host, "%") {
 		return false
 	}
-
-	ip := net.ParseIP(host)
-	if ip == nil {
-		return false
-	}
-
-	if ip4 := ip.To4(); ip4 != nil {
-		if ip4[0] == 10 {
-			return true // 10.0.0.0/8
-		}
-		if ip4[0] == 100 && ip4[1] >= 64 && ip4[1] <= 127 {
-			return true // 100.64.0.0/10 (RFC 6598 / EasyTier)
-		}
-		if ip4[0] == 172 && ip4[1] >= 16 && ip4[1] <= 31 {
-			return true // 172.16.0.0/12
-		}
-		if ip4[0] == 192 && ip4[1] == 168 {
-			return true // 192.168.0.0/16
-		}
-		return false
-	}
-
-	// IPv6 ULA fd00::/8 (reject IPv4-mapped IPv6 addresses since To4() == nil already)
-	return len(ip) == net.IPv6len && ip[0] == 0xfd
+	return IsPrivateMeshIP(net.ParseIP(host))
 }
 
 // CanonicalJSON marshals v into compact JSON with lexicographically sorted object keys
@@ -253,6 +381,9 @@ type a2aReject struct {
 	message    string
 }
 
+// verifyRequest validates the signed envelope only. It deliberately does not
+// check replay nonces or fencing tokens: the durable API receiver is the sole
+// authority for those values.
 func (m *A2AManager) verifyRequest(rawBody []byte, remoteAddr string) (*A2AEnvelope, *a2aReject) {
 	if len(strings.TrimSpace(m.signingSecret)) < 16 {
 		return nil, &a2aReject{
@@ -427,23 +558,53 @@ func (m *A2AManager) verifyRequest(rawBody []byte, remoteAddr string) (*A2AEnvel
 		}
 	}
 
-	if !m.nonceCache.CheckAndRecord(env.Nonce, env.ExpiresAt, nowMs) {
-		return nil, &a2aReject{
-			status:     http.StatusConflict,
-			reasonCode: "REPLAY_NONCE_DETECTED",
-			message:    "A2A envelope nonce has already been processed.",
-		}
-	}
-
-	if !m.fencing.CheckAndAdvance(env.CompanyID, env.SourceAgentID, env.FencingToken) {
-		return nil, &a2aReject{
-			status:     http.StatusConflict,
-			reasonCode: "STALE_FENCING_TOKEN",
-			message:    "A2A fencingToken must be strictly monotonic.",
-		}
-	}
-
 	return &env, nil
+}
+
+// verifyTransportPeer implements the Control Plane half of CF-017/CF-018: a
+// signed envelope is not sufficient. The request must arrive over a verified
+// TLS connection whose client certificate chain is trusted by the configured
+// CA and whose SPKI pin maps to the registered peer/agent/key identity.
+// Forwarded identity headers are never consulted.
+func (m *A2AManager) verifyTransportPeer(r *http.Request, env *A2AEnvelope) *a2aReject {
+	if r.TLS == nil || len(r.TLS.PeerCertificates) == 0 {
+		return &a2aReject{http.StatusUnauthorized, "PEER_CERT_MISSING", "A2A delegation requires a verified mesh peer certificate."}
+	}
+	leaf := r.TLS.PeerCertificates[0]
+	now := m.nowFunc()
+	if now.Before(leaf.NotBefore) {
+		return &a2aReject{http.StatusUnauthorized, "PEER_CERT_NOT_YET_VALID", "A2A peer certificate is not yet valid."}
+	}
+	if now.After(leaf.NotAfter) {
+		return &a2aReject{http.StatusUnauthorized, "PEER_CERT_EXPIRED", "A2A peer certificate has expired."}
+	}
+	if m.peerCA == nil {
+		return &a2aReject{http.StatusUnauthorized, "PEER_CERT_UNTRUSTED", "No trusted A2A peer CA is configured."}
+	}
+	if _, err := leaf.Verify(x509.VerifyOptions{
+		Roots:     m.peerCA,
+		CurrentTime: now,
+		KeyUsages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+	}); err != nil {
+		return &a2aReject{http.StatusUnauthorized, "PEER_CERT_UNTRUSTED", "A2A peer certificate is not trusted."}
+	}
+
+	pin := sha256.Sum256(leaf.RawSubjectPublicKeyInfo)
+	spkiHex := hex.EncodeToString(pin[:])
+	presentedKeyID := strings.TrimSpace(r.Header.Get(a2aKeyIDHeader))
+	for _, reg := range m.peerRegistrations {
+		if !strings.EqualFold(reg.SPKISHA256, spkiHex) {
+			continue
+		}
+		if reg.AgentID != env.SourceAgentID || reg.CompanyID != env.CompanyID {
+			continue
+		}
+		if presentedKeyID != "" && presentedKeyID != reg.KeyID {
+			return &a2aReject{http.StatusForbidden, "PEER_KEY_MISMATCH", "A2A key identity does not match the registered peer."}
+		}
+		return nil
+	}
+	return &a2aReject{http.StatusForbidden, "PEER_IDENTITY_MISMATCH", "A2A peer certificate is not registered for this agent and company."}
 }
 
 func decodeRawEnvelopeMap(rawBody []byte) (map[string]any, error) {
@@ -459,61 +620,215 @@ func decodeRawEnvelopeMap(rawBody []byte) (map[string]any, error) {
 	return out, nil
 }
 
-// HandleDelegate serves POST /a2a/delegate.
+// a2aForwardHeaders are never propagated upstream. Hop-by-hop fields would be
+// regenerated by net/http; Authorization and X-Forwarded-* identity headers
+// must never be used to establish peer identity at the durable receiver.
+var a2aForwardHeaders = map[string]bool{
+	"authorization":            true,
+	"proxy-authorization":      true,
+	"connection":               true,
+	"proxy-connection":         true,
+	"keep-alive":               true,
+	"te":                       true,
+	"trailer":                  true,
+	"transfer-encoding":        true,
+	"upgrade":                  true,
+	"x-forwarded-for":          true,
+	"x-forwarded-host":         true,
+	"x-forwarded-proto":        true,
+	"x-real-ip":                true,
+	"x-client-cert":            true,
+	"x-forwarded-client-cert":  true,
+	"x-a2a-peer-identity":      true,
+}
+
+func copyA2AForwardHeaders(dst, src http.Header) {
+	for name, values := range src {
+		if a2aForwardHeaders[strings.ToLower(name)] {
+			continue
+		}
+		for _, value := range values {
+			dst.Add(name, value)
+		}
+	}
+}
+
+var a2aKnownReasonCodes = map[string]bool{
+	"PUBLIC_ENDPOINT_FORBIDDEN":       true,
+	"COMPANY_ISOLATION_VIOLATION":     true,
+	"DELEGATION_DEPTH_EXCEEDED":       true,
+	"CLASSIFICATION_VIOLATION":        true,
+	"SERVER_ONLY_ACCEPTED_AUTHORITY":  true,
+	"INVALID_FENCING_TOKEN":           true,
+	"STALE_FENCING_TOKEN":             true,
+	"INVALID_TTL":                     true,
+	"ENVELOPE_EXPIRED":                true,
+	"ENVELOPE_NOT_YET_VALID":          true,
+	"REPLAY_NONCE_DETECTED":           true,
+	"INVALID_NONCE":                   true,
+	"INVALID_SIGNATURE":               true,
+	"INVALID_SECRET":                  true,
+	"INVALID_PROTOCOL_VERSION":        true,
+	"INVALID_ENVELOPE":                true,
+	"ENVELOPE_TOO_LARGE":              true,
+	"SOURCE_ENDPOINT_MISMATCH":        true,
+	"TARGET_ENDPOINT_MISMATCH":        true,
+	"UPSTREAM_REJECTED":               true,
+	"UPSTREAM_REDIRECT_REJECTED":      true,
+	"UPSTREAM_UNAVAILABLE":            true,
+	"FORWARD_NOT_CONFIGURED":          true,
+}
+
+func a2aSafeErrorForReason(code string) string {
+	switch code {
+	case "REPLAY_NONCE_DETECTED":
+		return "A2A envelope nonce was already accepted by the durable receiver."
+	case "STALE_FENCING_TOKEN":
+		return "A2A fencing token is stale at the durable receiver."
+	case "ENVELOPE_EXPIRED", "ENVELOPE_NOT_YET_VALID", "INVALID_TTL":
+		return "A2A envelope validity window was rejected by the durable receiver."
+	case "INVALID_SIGNATURE":
+		return "A2A envelope signature was rejected by the durable receiver."
+	default:
+		return "A2A delegation was rejected by the durable receiver."
+	}
+}
+
+func isTransientA2AStatus(status int) bool {
+	switch status {
+	case http.StatusRequestTimeout, http.StatusTooManyRequests,
+		http.StatusBadGateway, http.StatusServiceUnavailable, http.StatusGatewayTimeout:
+		return true
+	default:
+		return false
+	}
+}
+
+// forward sends the original raw body to the configured private-mesh API
+// receiver. It never invents a receipt and never advances replay/fencing state.
+func (m *A2AManager) forward(ctx context.Context, rawBody []byte, inboundHeader http.Header, env *A2AEnvelope) (*A2ADelegateResponse, *a2aReject) {
+	if m.forwardOrigin == "" {
+		return nil, &a2aReject{http.StatusServiceUnavailable, "FORWARD_NOT_CONFIGURED", "A2A forwarding origin is not configured."}
+	}
+
+	target := m.forwardOrigin + "/a2a/delegate"
+	var lastRej *a2aReject
+	for attempt := 1; attempt <= m.forwardAttempts; attempt++ {
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, target, bytes.NewReader(rawBody))
+		if err != nil {
+			return nil, &a2aReject{http.StatusBadGateway, "UPSTREAM_UNAVAILABLE", "A2A forward request could not be constructed."}
+		}
+		copyA2AForwardHeaders(req.Header, inboundHeader)
+
+		resp, err := m.httpClient.Do(req)
+		if err != nil {
+			if errors.Is(err, context.DeadlineExceeded) {
+				lastRej = &a2aReject{http.StatusGatewayTimeout, "UPSTREAM_UNAVAILABLE", "A2A forward timed out."}
+			} else {
+				lastRej = &a2aReject{http.StatusBadGateway, "UPSTREAM_UNAVAILABLE", "A2A durable receiver is unavailable."}
+			}
+			if attempt < m.forwardAttempts && m.forwardRetryDelay >= 0 {
+				select {
+				case <-ctx.Done():
+					return nil, lastRej
+				case <-time.After(m.forwardRetryDelay):
+					continue
+				}
+			}
+			return nil, lastRej
+		}
+
+		respBody, readErr := io.ReadAll(io.LimitReader(resp.Body, maxA2AErrorBodyBytes))
+		_ = resp.Body.Close()
+		if readErr != nil {
+			return nil, &a2aReject{http.StatusBadGateway, "UPSTREAM_REJECTED", "A2A durable receiver response could not be read."}
+		}
+
+		if resp.StatusCode >= http.StatusMultipleChoices && resp.StatusCode < http.StatusBadRequest {
+			return nil, &a2aReject{http.StatusBadGateway, "UPSTREAM_REDIRECT_REJECTED", "A2A forwarding rejects redirects."}
+		}
+
+		if resp.StatusCode == http.StatusAccepted {
+			var receipt A2ADelegateResponse
+			if err := json.Unmarshal(respBody, &receipt); err != nil ||
+				receipt.Status != "queued" || receipt.MessageID != env.MessageID ||
+				receipt.CompanyID != env.CompanyID {
+				return nil, &a2aReject{http.StatusBadGateway, "UPSTREAM_REJECTED", "A2A durable receiver returned an invalid receipt."}
+			}
+			return &receipt, nil
+		}
+
+		reasonCode := "UPSTREAM_REJECTED"
+		var upstream A2AErrorResponse
+		if json.Unmarshal(respBody, &upstream) == nil && a2aKnownReasonCodes[upstream.ReasonCode] {
+			reasonCode = upstream.ReasonCode
+		}
+		status := http.StatusBadGateway
+		if resp.StatusCode >= 400 && resp.StatusCode < 500 {
+			status = resp.StatusCode
+		}
+		lastRej = &a2aReject{status, reasonCode, a2aSafeErrorForReason(reasonCode)}
+		if isTransientA2AStatus(resp.StatusCode) && attempt < m.forwardAttempts {
+			select {
+			case <-ctx.Done():
+				return nil, lastRej
+			case <-time.After(m.forwardRetryDelay):
+				continue
+			}
+		}
+		return nil, lastRej
+	}
+	if lastRej == nil {
+		lastRej = &a2aReject{http.StatusBadGateway, "UPSTREAM_UNAVAILABLE", "A2A durable receiver is unavailable."}
+	}
+	return nil, lastRej
+}
+
+// HandleDelegate serves POST /a2a/delegate as a thin forwarding boundary.
 func (m *A2AManager) HandleDelegate() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusMethodNotAllowed)
-			_ = json.NewEncoder(w).Encode(A2AErrorResponse{
-				Error:      "method not allowed",
-				ReasonCode: "METHOD_NOT_ALLOWED",
-			})
+			writeA2AError(w, http.StatusMethodNotAllowed, "METHOD_NOT_ALLOWED", "method not allowed")
 			return
 		}
 
 		body, err := io.ReadAll(io.LimitReader(r.Body, maxA2ABodyBytes))
 		if err != nil {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusBadRequest)
-			_ = json.NewEncoder(w).Encode(A2AErrorResponse{
-				Error:      RedactA2ASecret("failed to read request body", m.signingSecret),
-				ReasonCode: "INVALID_ENVELOPE",
-			})
+			writeA2AError(w, http.StatusBadRequest, "INVALID_ENVELOPE", "failed to read request body")
 			return
 		}
 
 		env, rej := m.verifyRequest(body, r.RemoteAddr)
+		if rej == nil {
+			rej = m.verifyTransportPeer(r, env)
+		}
 		if rej != nil {
 			redactedMsg := RedactA2ASecret(rej.message, m.signingSecret)
-			log.Printf("a2a delegate rejected reason=%s remote=%s msg=%s", rej.reasonCode, r.RemoteAddr, redactedMsg)
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(rej.status)
-			_ = json.NewEncoder(w).Encode(A2AErrorResponse{
-				Error:      redactedMsg,
-				ReasonCode: rej.reasonCode,
-			})
+			log.Printf("a2a delegate rejected reason=%s remote=%s msg=%s", SanitizeLogValue(rej.reasonCode), SanitizeLogValue(r.RemoteAddr), SanitizeLogValue(redactedMsg))
+			writeA2AError(w, rej.status, rej.reasonCode, redactedMsg)
 			return
 		}
 
-		log.Printf(
-			"a2a delegate queued messageId=%s companyId=%d depth=%d fencingToken=%d remote=%s",
-			RedactA2ASecret(env.MessageID, m.signingSecret),
-			env.CompanyID,
-			env.DelegationDepth,
-			env.FencingToken,
-			r.RemoteAddr,
-		)
+		totalTimeout := m.forwardTimeout * time.Duration(m.forwardAttempts)
+		ctx, cancel := context.WithTimeout(r.Context(), totalTimeout)
+		defer cancel()
 
+		receipt, fwdRej := m.forward(ctx, body, r.Header, env)
+		if fwdRej != nil {
+			log.Printf("a2a delegate forward failed reason=%s messageId=%s", SanitizeLogValue(fwdRej.reasonCode), SanitizeLogValue(RedactA2ASecret(env.MessageID, m.signingSecret)))
+			writeA2AError(w, fwdRej.status, fwdRej.reasonCode, fwdRej.message)
+			return
+		}
+
+		log.Printf("a2a delegate forwarded messageId=%s companyId=%d", SanitizeLogValue(RedactA2ASecret(receipt.MessageID, m.signingSecret)), receipt.CompanyID)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusAccepted)
-		_ = json.NewEncoder(w).Encode(A2ADelegateResponse{
-			Status:          "queued",
-			MessageID:       env.MessageID,
-			CompanyID:       env.CompanyID,
-			DelegationDepth: env.DelegationDepth,
-			FencingToken:    env.FencingToken,
-			ReceivedAt:      m.nowFunc().UTC().Format(time.RFC3339),
-		})
+		_ = json.NewEncoder(w).Encode(receipt)
 	}
+}
+
+func writeA2AError(w http.ResponseWriter, status int, reasonCode, message string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	_ = json.NewEncoder(w).Encode(A2AErrorResponse{Error: message, ReasonCode: reasonCode})
 }

@@ -2,6 +2,7 @@ import { defineModel, fields } from '@moonwitness/orm';
 import { Company } from '@moonwitness/orm-base';
 import { Partner } from '@moonwitness/orm-base';
 import { User } from '@moonwitness/orm-base';
+import { BASIS_POINTS_TOTAL } from '@moonwitness/types';
 
 export type TicketStatus = 'new' | 'open' | 'pending' | 'on_hold' | 'resolved' | 'closed';
 export type TicketPriority = 'P1' | 'P2' | 'P3' | 'P4';
@@ -21,7 +22,11 @@ export const SlaPolicy = defineModel('helpdesk.sla_policy', {
     }),
     first_response_minutes: fields.integer({ required: true, label: 'First Response (minutes)' }),
     resolution_minutes: fields.integer({ required: true, label: 'Resolution (minutes)' }),
-    business_hours_only: fields.boolean({ required: true, default: false, label: 'Business Hours Only' }),
+    business_hours_only: fields.boolean({
+      required: true,
+      default: false,
+      label: 'Business Hours Only',
+    }),
     applies_to_queue: fields.string({
       required: true,
       default: 'all',
@@ -66,10 +71,22 @@ export const SupportTicket = defineModel('helpdesk.support_ticket', {
     company: fields.belongsTo(Company, { required: true, label: 'Company' }),
     assigned_agent: fields.belongsTo(User, { label: 'Assigned Agent' }),
     sla_policy: fields.belongsTo(SlaPolicy, { label: 'SLA Policy' }),
-    first_response_due_at: fields.string({ pattern: '^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}', label: 'First Response Due At' }),
-    resolution_due_at: fields.string({ pattern: '^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}', label: 'Resolution Due At' }),
-    first_responded_at: fields.string({ pattern: '^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}', label: 'First Responded At' }),
-    resolved_at: fields.string({ pattern: '^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}', label: 'Resolved At' }),
+    first_response_due_at: fields.string({
+      pattern: '^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}',
+      label: 'First Response Due At',
+    }),
+    resolution_due_at: fields.string({
+      pattern: '^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}',
+      label: 'Resolution Due At',
+    }),
+    first_responded_at: fields.string({
+      pattern: '^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}',
+      label: 'First Responded At',
+    }),
+    resolved_at: fields.string({
+      pattern: '^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}',
+      label: 'Resolved At',
+    }),
     sla_breached: fields.boolean({ required: true, default: false, label: 'SLA Breached' }),
     escalation_level: fields.integer({ required: true, default: 0, label: 'Escalation Level' }),
     source_ref: fields.string({ label: 'Source Reference (whatsapp msg id / isp incident id)' }),
@@ -135,12 +152,16 @@ export const KnowledgeDeflection = defineModel('helpdesk.knowledge_deflection', 
     knowledge_article_ref: fields.string({ required: true, label: 'Knowledge Article Ref' }),
     suggestion_text: fields.text({ required: true, label: 'Suggestion Text' }),
     accepted: fields.boolean({ required: true, default: false, label: 'Accepted' }),
-    deflected: fields.boolean({ required: true, default: false, label: 'Deflected (resolved without agent)' }),
+    deflected: fields.boolean({
+      required: true,
+      default: false,
+      label: 'Deflected (resolved without agent)',
+    }),
     confidence: fields.integer({
       required: true,
       default: 0,
-      label: 'Confidence (bps 0-10000)',
-      pattern: '^(?:10000|\\d{1,4})$',
+      label: `Confidence (bps 0-${BASIS_POINTS_TOTAL})`,
+      pattern: `^(?:${BASIS_POINTS_TOTAL}|\\d{1,4})$`,
     }),
   },
 });

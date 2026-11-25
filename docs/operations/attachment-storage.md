@@ -57,14 +57,14 @@ ATTACHMENT_S3_FORCE_PATH_STYLE=true
 
 `ATTACHMENT_S3_ENDPOINT` harus berupa URL HTTPS tanpa user/password di dalam URL. `ATTACHMENT_S3_REGION` harus sama dengan `[s3_api].s3_region` pada `garage.toml` — konfigurasi proyek menetapkan `garage`, bukan `us-east-1`, dan operator perlu mencocokkannya dengan cluster aktif. Bila salah, Garage menolak request SigV4 dengan `AuthorizationHeaderMalformed` yang menyebut region yang diharapkan. Path-style addressing aktif secara default dan didukung Garage. Aplikasi memeriksa akses bucket pada readiness probe.
 
-Overlay `docker-compose.production.yml` mengaktifkan driver `s3` secara default untuk API serta semua worker, memakai endpoint Garage, memasang volume lokal legacy read-only, dan menolak startup jika kredensial aplikasi belum diisi. Overlay `docker-compose.development.yml` default ke driver `local` agar stack naik dengan satu perintah; isi `ATTACHMENT_STORAGE_DRIVER=s3` plus key Garage di `.env` untuk menguji bucket asli.
+Overlay `deploy/compose/docker-compose.production.yml` mengaktifkan driver `s3` secara default untuk API serta semua worker, memakai endpoint Garage, memasang volume lokal legacy read-only, dan menolak startup jika kredensial aplikasi belum diisi. Overlay `deploy/compose/docker-compose.development.yml` default ke driver `local` agar stack naik dengan satu perintah; isi `ATTACHMENT_STORAGE_DRIVER=s3` plus key Garage di `.env` untuk menguji bucket asli.
 
 Simpan file deploy lokal sebagai `.env.production` (file tersebut diabaikan Git), isi variabel dari secret manager, lalu jalankan preflight sebelum Compose. Preflight gagal jika variabel wajib kosong, driver bukan `s3`, endpoint bukan HTTPS, endpoint memiliki credential inline, nama bucket tidak valid, atau access key mengandung spasi/garis miring. Diagnostik hanya menyebut nama variabel dan tidak mencetak nilainya:
 
 ```powershell
 Copy-Item .env.production.example .env.production
 pnpm attachments:production-preflight
-docker compose --env-file .env.production -f docker-compose.yml -f docker-compose.production.yml config --quiet
+docker compose --env-file .env.production -f deploy/compose/docker-compose.yml -f deploy/compose/docker-compose.production.yml config --quiet
 ```
 
 Setelah provisioning bucket, gunakan file env yang sama untuk deploy. Jangan menyimpan hasil `docker compose config` ke log CI karena konfigurasi hasil render memuat nilai environment.

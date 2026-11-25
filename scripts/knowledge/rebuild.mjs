@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { createHash } from 'node:crypto';
+import { sha256Hex } from '@moonwitness/types/node';
 import { Buffer } from 'node:buffer';
 import { lstat, mkdir, readFile, readdir, realpath, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -50,10 +50,6 @@ const sourceDefinitions = [
     }),
   },
 ];
-
-function sha256(bytes) {
-  return createHash('sha256').update(bytes).digest('hex');
-}
 
 function compareText(left, right) {
   return left < right ? -1 : left > right ? 1 : 0;
@@ -116,7 +112,11 @@ async function readIndex(rootDirectory, indexPath) {
   const bytes = await readFile(path.join(rootDirectory, indexPath));
   const value = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes));
   if (!value || !Array.isArray(value.entries)) throw new TypeError(`Invalid index: ${indexPath}`);
-  return { bytes, entries: value.entries, sourceIndex: { path: indexPath, sha256: sha256(bytes) } };
+  return {
+    bytes,
+    entries: value.entries,
+    sourceIndex: { path: indexPath, sha256: sha256Hex(bytes) },
+  };
 }
 
 async function materializeSource(rootDirectory, outputDirectory, definition, entry) {
@@ -126,12 +126,12 @@ async function materializeSource(rootDirectory, outputDirectory, definition, ent
     new TextDecoder('utf-8', { fatal: true }).decode(sourceManifestBytes)
   );
   const artifactBytes = passage.originalBytes;
-  const digest = sha256(artifactBytes);
+  const digest = sha256Hex(artifactBytes);
   if (digest !== entry.sha256 || digest !== passage.sha256) {
     throw new TypeError('Verified passage bytes do not match the pinned source digest');
   }
 
-  const manifestSha256 = sha256(sourceManifestBytes);
+  const manifestSha256 = sha256Hex(sourceManifestBytes);
   const manifestRelative = `source-manifests/${manifestSha256}.json`;
   const artifactRelative = `artifacts/sha256/${digest.slice(0, 2)}/${digest}`;
   for (const relativePath of [manifestRelative, artifactRelative]) {

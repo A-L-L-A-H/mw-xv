@@ -92,6 +92,7 @@ export class MoonWitnessClient implements HttpClient {
   private readonly listeners = new Set<SessionListener>();
 
   private tokens: AuthTokens | null = null;
+  private tokensMutated = false;
   private currentCompanyId?: number;
   private refreshPromise: Promise<AuthTokens> | null = null;
   private static readonly refreshes = new WeakMap<TokenStorage, Map<string, Promise<AuthTokens>>>();
@@ -121,11 +122,16 @@ export class MoonWitnessClient implements HttpClient {
    */
   private hydrate(): Promise<void> {
     const apply = (raw: string | null) => {
+      if (this.tokensMutated) return;
       try {
         this.tokens = raw ? (JSON.parse(raw) as AuthTokens) : null;
       } catch {
         this.tokens = null;
       }
+      // Async storages (e.g. cookie-backed BFF sessions) resolve after the
+      // first render. Notify subscribers so the UI learns about the restored
+      // session without waiting for a login/refresh event.
+      if (this.tokens) for (const listener of this.listeners) listener(this.tokens.user);
     };
     const raw = this.storage.getItem(this.storageKey);
     if (raw instanceof Promise) return raw.then(apply, () => apply(null));
@@ -144,12 +150,25 @@ export class MoonWitnessClient implements HttpClient {
     return () => this.listeners.delete(listener);
   }
 
-  private async saveTokens(tokens: AuthTokens | null): Promise<void> {
+  private async saveTokens(
+    tokens: AuthTokens | null,
+    options?: { preserveGeneration?: boolean }
+  ): Promise<void> {
+    this.tokensMutated = true;
+    const prev = this.tokens;
+    const unchanged =
+      prev !== null &&
+      tokens !== null &&
+      prev.access_token === tokens.access_token &&
+      prev.user.id === tokens.user.id &&
+      prev.user.company_id === tokens.user.company_id;
     this.tokens = tokens;
     if (tokens) await this.storage.setItem(this.storageKey, JSON.stringify(tokens));
     else await this.storage.removeItem(this.storageKey);
     for (const listener of this.listeners) listener(tokens?.user ?? null);
-    this.metadataGeneration += 1;
+    if (!options?.preserveGeneration && !unchanged) {
+      this.metadataGeneration += 1;
+    }
   }
 
   get currentUser(): UserProfile | null {
@@ -280,7 +299,9 @@ export class MoonWitnessClient implements HttpClient {
 
   async getMe(): Promise<UserProfile> {
     const res = await this.request<{ data: UserProfile }>('/auth/me');
-    if (this.tokens) await this.saveTokens({ ...this.tokens, user: res.data });
+    if (this.tokens) {
+      await this.saveTokens({ ...this.tokens, user: res.data }, { preserveGeneration: true });
+    }
     return res.data;
   }
 

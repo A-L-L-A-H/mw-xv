@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
+import { assertNonEmpty } from '@moonwitness/types';
 import {
   buildChunkManifest,
   encryptArtifactEnvelope,
@@ -106,12 +107,6 @@ const BACKUP_ARTIFACT_CONTENT_TYPE = 'application/vnd.moonwitness.postgres-backu
 const HEX_256 = /^[a-f0-9]{64}$/u;
 const ISO_8601_UTC = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/u;
 
-function assertNonEmpty(value: string, label: string): void {
-  if (typeof value !== 'string' || value.trim().length === 0) {
-    throw new Error(`${label} must be a non-empty string`);
-  }
-}
-
 function assertRetentionPolicy(policy: BackupRetentionPolicy): void {
   for (const value of [policy.hourlyCount, policy.dailyCount, policy.weeklyCount]) {
     if (!Number.isSafeInteger(value) || value < 1) {
@@ -151,10 +146,6 @@ function weeklyBucketStartMs(timestamp: string, anchorDay: number): number {
   const weekday = new Date(dayStart).getUTCDay();
   const daysSinceAnchor = (weekday - anchorDay + 7) % 7;
   return dayStart - daysSinceAnchor * 86_400_000;
-}
-
-function canonicalString(value: string): string {
-  return JSON.stringify(value);
 }
 
 function canonicalPolicySha256(policy: BackupRetentionPolicy): string {

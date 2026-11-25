@@ -8,6 +8,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const navigationPath = path.join(root, 'docs/guide/navigation.json');
 const metadataPath = path.join(root, 'docs/guide/reference/generated-platform.json');
 const outputPath = path.join(root, 'dist/docs/guide.bundle.json');
+const allowedPagePrefixes = ['docs/guide/', 'docs/knowledge/'];
 export function createGuideBundle(navigation, pageContents, sourceFingerprint) {
   if (
     navigation?.schemaVersion !== 1 ||
@@ -24,10 +25,12 @@ export function createGuideBundle(navigation, pageContents, sourceFingerprint) {
     const items = section.items.map((item) => {
       if (
         typeof item?.path !== 'string' ||
-        !item.path.startsWith('docs/guide/') ||
+        !allowedPagePrefixes.some((prefix) => item.path.startsWith(prefix)) ||
         item.path.includes('\\')
       ) {
-        throw new Error(`Documentation page must stay under docs/guide: ${String(item.path)}`);
+        throw new Error(
+          `Documentation page must stay under ${allowedPagePrefixes.join(' or ')}: ${String(item.path)}`
+        );
       }
       const segments = item.path.split('/');
       if (segments.some((segment) => segment === '..' || segment === '.' || segment.length === 0)) {
@@ -71,7 +74,7 @@ export async function buildGuide() {
       const relativePath = item?.path;
       if (
         typeof relativePath !== 'string' ||
-        !relativePath.startsWith('docs/guide/') ||
+        !allowedPagePrefixes.some((prefix) => relativePath.startsWith(prefix)) ||
         relativePath.includes('\\') ||
         relativePath.split('/').some((part) => !part || part === '.' || part === '..')
       ) {

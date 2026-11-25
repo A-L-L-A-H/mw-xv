@@ -1,5 +1,5 @@
 import type { JsonObject, JsonValue } from '@moonwitness/types';
-import { isJsonObject, isRecord } from '@moonwitness/types';
+import { DEFAULT_OLLAMA_URL, isJsonObject, isRecord } from '@moonwitness/types';
 import { createRedactor } from '../redaction.js';
 import { composeAttemptSignal } from '../resilience.js';
 import { buildTokenUsage, estimateRequestInputTokens, estimateTokenCount } from '../usage.js';
@@ -228,7 +228,7 @@ export class OllamaAdapter implements AiProvider {
     this.fetchFn = config.fetch ?? globalThis.fetch;
     this.resolveAddresses = config.resolveAddresses;
 
-    const rawEndpoint = config.endpoint ?? config.baseUrl ?? 'http://127.0.0.1:11434';
+    const rawEndpoint = config.endpoint ?? config.baseUrl ?? DEFAULT_OLLAMA_URL;
     this.endpointUrl = this.allowNonLoopback
       ? validateCloudOrEndpointUrl(rawEndpoint, {
           allowLoopbackHttp: true,

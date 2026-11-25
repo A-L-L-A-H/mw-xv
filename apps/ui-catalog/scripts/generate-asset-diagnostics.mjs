@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runAssetQa } from '../../../packages/assets/scripts/asset-qa.mjs';
@@ -44,7 +44,9 @@ const report = {
 
 const outputPath = resolve(catalogRoot, 'generated/asset-diagnostics.json');
 await mkdir(dirname(outputPath), { recursive: true });
-await writeFile(outputPath, `${JSON.stringify(report, null, 2)}\n`);
+const tempPath = `${outputPath}.tmp-${process.pid}`;
+await writeFile(tempPath, `${JSON.stringify(report, null, 2)}\n`);
+await rename(tempPath, outputPath);
 if (!assetQa.ok || sceneErrors.length > 0) {
   process.stderr.write(`Asset diagnostics failed; report written to ${outputPath}\n`);
   process.exitCode = 1;

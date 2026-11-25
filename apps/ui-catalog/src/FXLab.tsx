@@ -73,7 +73,6 @@ export function FXLab() {
   };
 
   const handleTransitionComplete = () => setTransitionState('entered');
-  const handleTransitionCancel = () => setTransitionState('cancelled');
 
   useEffect(() => {
     if (!userActivated) return;
@@ -107,68 +106,29 @@ export function FXLab() {
   return (
     <div className="fx-lab" data-testid="fx-lab">
       <div className="fx-lab-toolbar">
-        <Button
-          variant={preset === 'rain' ? 'magenta' : 'default'}
-          size="sm"
-          onClick={() => {
-            setPreset('rain');
-            setActivePreset('rain');
-          }}
-        >
-          Rain
-        </Button>
-        <Button
-          variant={preset === 'dust' ? 'magenta' : 'default'}
-          size="sm"
-          onClick={() => {
-            setPreset('dust');
-            setActivePreset('dust');
-          }}
-        >
-          Dust
-        </Button>
-        <Button
-          variant={preset === 'stars' ? 'magenta' : 'default'}
-          size="sm"
-          onClick={() => {
-            setPreset('stars');
-            setActivePreset('stars');
-          }}
-        >
-          Stars
-        </Button>
-        <Button
-          variant={preset === 'sparks' ? 'magenta' : 'default'}
-          size="sm"
-          onClick={() => {
-            setPreset('sparks');
-            setActivePreset('sparks');
-          }}
-        >
-          Sparks
-        </Button>
-
-        <Button
-          variant={intensity === 'subtle' ? 'magenta' : 'default'}
-          size="sm"
-          onClick={() => setIntensity('subtle')}
-        >
-          Subtle
-        </Button>
-        <Button
-          variant={intensity === 'medium' ? 'magenta' : 'default'}
-          size="sm"
-          onClick={() => setIntensity('medium')}
-        >
-          Medium
-        </Button>
-        <Button
-          variant={intensity === 'intense' ? 'magenta' : 'default'}
-          size="sm"
-          onClick={() => setIntensity('intense')}
-        >
-          Intense
-        </Button>
+        {presetOptions.map((p) => (
+          <Button
+            key={p}
+            variant={preset === p ? 'magenta' : 'default'}
+            size="sm"
+            onClick={() => {
+              setPreset(p);
+              setActivePreset(p);
+            }}
+          >
+            {p.charAt(0).toUpperCase() + p.slice(1)}
+          </Button>
+        ))}
+        {intensityOptions.map((i) => (
+          <Button
+            key={i}
+            variant={intensity === i ? 'magenta' : 'default'}
+            size="sm"
+            onClick={() => setIntensity(i)}
+          >
+            {i.charAt(0).toUpperCase() + i.slice(1)}
+          </Button>
+        ))}
 
         <Button size="sm" variant="default" onClick={handleActivateAudio} disabled={userActivated}>
           {userActivated ? 'Audio enabled' : 'Enable audio (gesture)'}

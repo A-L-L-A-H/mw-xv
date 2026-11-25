@@ -20,6 +20,8 @@ use sha2::Sha256;
 use sqlx::Row;
 use std::net::{Ipv4Addr, SocketAddr};
 use std::str::FromStr;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Arc;
 use std::time::Duration;
 use tokio::net::UdpSocket;
 use tokio::signal;
@@ -177,6 +179,10 @@ struct AppState {
 #[derive(Clone)]
 struct Database {
     pool: sqlx::SqlitePool,
+    /// Count of Access-Requests rejected due to quota exceeded
+    quota_exceeded_rejects: Arc<AtomicU64>,
+    /// Count of duplicate quota accumulations skipped (idempotent replay)
+    quota_duplicate_accumulations: Arc<AtomicU64>,
 }
 
 impl Database {
@@ -187,7 +193,11 @@ impl Database {
             .max_connections(5)
             .connect_with(options)
             .await?;
-        Ok(Self { pool })
+        Ok(Self {
+            pool,
+            quota_exceeded_rejects: Arc::new(AtomicU64::new(0)),
+            quota_duplicate_accumulations: Arc::new(AtomicU64::new(0)),
+        })
     }
 
     async fn migrate(&self) -> Result<()> {
@@ -535,21 +545,48 @@ impl Database {
         Ok(())
     }
 
-    /// Accumulate octets from radius_sessions into subscribers.quota_used_bytes for active sessions.
+    /// Delta-accumulate session octets into subscribers.quota_used_bytes.
+    ///
+    /// Each session keeps a high-water mark (`quota_accumulated_octets`); only
+    /// the growth of `acct_input_octets + acct_output_octets` since the last
+    /// accumulation is added. This makes repeated Access-Requests, interim
+    /// updates, and retries idempotent: replaying the same counters must not
+    /// inflate the subscriber's usage (AUD/TAUD-08).
     async fn accumulate_quota_usage(&self, username: &str) -> Result<()> {
-        let total: Option<i64> = sqlx::query_scalar(
-            "SELECT COALESCE(SUM(acct_input_octets + acct_output_octets), 0)
-             FROM radius_sessions WHERE username = ?1 AND status = 'active'",
+        // 1. Add each active session's growth since its high-water mark.
+        let rows = sqlx::query(
+            "SELECT (acct_input_octets + acct_output_octets) - quota_accumulated_octets AS delta
+             FROM radius_sessions
+             WHERE username = ?1 AND status = 'active'
+               AND (acct_input_octets + acct_output_octets) > quota_accumulated_octets",
         )
         .bind(username)
-        .fetch_one(&self.pool)
+        .fetch_all(&self.pool)
         .await?;
+
+        let total_delta: i64 = rows.iter().map(|r| r.get::<i64, _>("delta")).sum();
+        if total_delta > 0 {
+            sqlx::query(
+                "UPDATE subscribers
+                 SET quota_used_bytes = quota_used_bytes + ?1
+                 WHERE username = ?2",
+            )
+            .bind(total_delta)
+            .bind(username)
+            .execute(&self.pool)
+            .await?;
+        } else if rows.is_empty() {
+            // No deltas to apply - this is a replay of an already-accumulated request
+            self.quota_duplicate_accumulations.fetch_add(1, Ordering::Relaxed);
+        }
+
+        // 2. Raise the high-water mark to the counters just accounted for.
         sqlx::query(
-            "UPDATE subscribers
-             SET quota_used_bytes = quota_used_bytes + ?1
-             WHERE username = ?2 AND ?1 > 0",
+            "UPDATE radius_sessions
+             SET quota_accumulated_octets = acct_input_octets + acct_output_octets
+             WHERE username = ?1 AND status = 'active'
+               AND (acct_input_octets + acct_output_octets) > quota_accumulated_octets",
         )
-        .bind(total)
         .bind(username)
         .execute(&self.pool)
         .await?;
@@ -818,6 +855,7 @@ async fn process_access_request(db: &Database, raw: &[u8], src_ip: &str) -> Opti
     .ok()?;
     let quota_limit = subscriber.quota_bytes;
     if quota_limit > 0 && fresh_usage.unwrap_or(0) >= quota_limit {
+        db.quota_exceeded_rejects.fetch_add(1, Ordering::Relaxed);
         let _ = db
             .mark_quota_disconnect(&username)
             .await;
@@ -1004,6 +1042,7 @@ fn build_http_router(db: Database, admin_token: String) -> Router {
         .route("/api/sessions", get(list_sessions))
         .route("/api/sessions/disconnect", post(disconnect_session))
         .route("/api/stats", get(get_stats))
+        .route("/metrics", get(get_metrics))
         .route_layer(middleware::from_fn_with_state(state.clone(), require_bearer_auth));
     Router::new()
         .route("/health", get(health))
@@ -1304,6 +1343,22 @@ async fn get_stats(State(state): State<AppState>) -> Result<Json<AuthStats>, Sta
         total_subscribers,
         active_sessions,
     }))
+}
+
+async fn get_metrics(State(state): State<AppState>) -> String {
+    let db = &state.db;
+    let quota_exceeded = db.quota_exceeded_rejects.load(Ordering::Relaxed);
+    let quota_duplicates = db.quota_duplicate_accumulations.load(Ordering::Relaxed);
+
+    format!(
+        r#"# HELP moonwitness_isp_quota_exceeded_rejects_total Total number of Access-Requests rejected due to quota exceeded
+# TYPE moonwitness_isp_quota_exceeded_rejects_total counter
+moonwitness_isp_quota_exceeded_rejects_total {quota_exceeded}
+# HELP moonwitness_isp_quota_duplicate_accumulations_total Total number of duplicate quota accumulation attempts skipped (idempotent replay)
+# TYPE moonwitness_isp_quota_duplicate_accumulations_total counter
+moonwitness_isp_quota_duplicate_accumulations_total {quota_duplicates}
+"#
+    )
 }
 
 #[cfg(test)]
@@ -1770,6 +1825,127 @@ mod tests {
         assert_eq!(sessions[0].status, "terminated");
         assert_eq!(sessions[0].terminate_cause, Some(6));
         assert!(sessions[0].stopped_at.is_some());
+    }
+
+    #[tokio::test]
+    async fn repeated_access_requests_do_not_double_count_quota() {
+        let (_dir, db) = test_db().await;
+        db.upsert_client("Replay NAS", "127.0.0.1", "replay-secret-123")
+            .await
+            .unwrap();
+        db.upsert_subscriber(&UpsertSubscriberRequest {
+            username: "replay-user".to_string(),
+            password: "replay-pass".to_string(),
+            connection_type: Some("pppoe".to_string()),
+            framed_ip: Some("100.64.5.1".to_string()),
+            download_kbps: Some(102400),
+            upload_kbps: Some(51200),
+            status: Some("active".to_string()),
+        })
+        .await
+        .unwrap();
+
+        // Quota limit of 2GB; the session reports 1GB of traffic.
+        sqlx::query(
+            "UPDATE subscribers SET quota_bytes = 2147483648 WHERE username = 'replay-user'",
+        )
+        .execute(db.pool())
+        .await
+        .unwrap();
+
+        // One active session with cumulative counters of 1GB (as a NAS would
+        // report on every interim update / re-acknowledged session).
+        db.record_accounting(
+            "sess-replay-001",
+            "replay-user",
+            "127.0.0.1",
+            None,
+            Some("100.64.5.1".to_string()),
+            None,
+            acct_status::INTERIM_UPDATE,
+            536870912,
+            536870912,
+            3600,
+            None,
+        )
+        .await
+        .unwrap();
+
+        // Ten repeated Access-Requests (NAS retries / duplicate packets):
+        // with the old code each added the full 1GB again; delta accounting
+        // must count the 1GB exactly once.
+        for _ in 0..10 {
+            let req =
+                build_pap_access_request(12, "replay-user", "replay-pass", b"replay-secret-123");
+            let resp = decode_packet(
+                &process_access_request(&db, &req, "127.0.0.1")
+                    .await
+                    .unwrap(),
+            )
+            .unwrap();
+            assert_eq!(resp.code, codes::ACCESS_ACCEPT);
+        }
+
+        let usage: i64 = sqlx::query_scalar(
+            "SELECT quota_used_bytes FROM subscribers WHERE username = 'replay-user'",
+        )
+        .fetch_one(db.pool())
+        .await
+        .unwrap();
+        assert_eq!(usage, 1073741824);
+    }
+
+    #[tokio::test]
+    async fn interim_octet_growth_accumulates_only_the_delta() {
+        let (_dir, db) = test_db().await;
+        db.upsert_client("Delta NAS", "127.0.0.1", "delta-secret-123")
+            .await
+            .unwrap();
+        db.upsert_subscriber(&UpsertSubscriberRequest {
+            username: "delta-user".to_string(),
+            password: "delta-pass".to_string(),
+            connection_type: Some("pppoe".to_string()),
+            framed_ip: Some("100.64.6.1".to_string()),
+            download_kbps: Some(102400),
+            upload_kbps: Some(51200),
+            status: Some("active".to_string()),
+        })
+        .await
+        .unwrap();
+        sqlx::query("UPDATE subscribers SET quota_bytes = 1000000 WHERE username = 'delta-user'")
+            .execute(db.pool())
+            .await
+            .unwrap();
+
+        let octets = [(50_000u64, 50_000u64), (100_000, 100_000), (200_000, 200_000)];
+        for (i, (input, output)) in octets.iter().enumerate() {
+            let status_type = if i == 0 { acct_status::START } else { acct_status::INTERIM_UPDATE };
+            db.record_accounting(
+                "sess-delta-001",
+                "delta-user",
+                "127.0.0.1",
+                None,
+                Some("100.64.6.1".to_string()),
+                None,
+                status_type,
+                *input as i64,
+                *output as i64,
+                60 * (i as i64 + 1),
+                None,
+            )
+            .await
+            .unwrap();
+            db.accumulate_quota_usage("delta-user").await.unwrap();
+        }
+
+        let usage: i64 = sqlx::query_scalar(
+            "SELECT quota_used_bytes FROM subscribers WHERE username = 'delta-user'",
+        )
+        .fetch_one(db.pool())
+        .await
+        .unwrap();
+        // Total traffic is 200KB + 200KB = 400,000 bytes, counted once.
+        assert_eq!(usage, 400_000);
     }
 
     #[tokio::test]

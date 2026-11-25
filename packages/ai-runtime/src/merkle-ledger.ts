@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { createRedactor } from './redaction.js';
+import { sha256Canonical, toCanonicalJson } from './canonical-json.js';
 
 export const RFC6962_LEAF_DOMAIN_PREFIX = 0x00;
 export const RFC6962_NODE_DOMAIN_PREFIX = 0x01;
@@ -53,41 +54,17 @@ export interface MerkleConsistencyResult {
   readonly reason?: string;
 }
 
+export interface VerifyMerkleInclusionProofOptions {
+  readonly redact?: boolean;
+}
+
 const SHA256_HEX_PATTERN = /^[0-9a-f]{64}$/iu;
 
-function canonicalizeValue(value: unknown): unknown {
-  if (Array.isArray(value)) {
-    return value.map((entry) => canonicalizeValue(entry));
-  }
-  if (value !== null && typeof value === 'object') {
-    const record = value as Record<string, unknown>;
-    const sorted: Record<string, unknown> = {};
-    for (const key of Object.keys(record).sort()) {
-      const entry = record[key];
-      if (entry !== undefined) {
-        sorted[key] = canonicalizeValue(entry);
-      }
-    }
-    return sorted;
-  }
-  return value;
-}
-
-function toCanonicalJson(payload: unknown): string {
-  const normalized = canonicalizeValue(payload);
-  const serialized = JSON.stringify(normalized);
-  return serialized === undefined ? 'null' : serialized;
-}
-
-function sha256Canonical(payload: unknown): string {
-  return createHash('sha256').update(toCanonicalJson(payload), 'utf8').digest('hex');
-}
-
-function emptyTreeHash(): string {
+export function emptyTreeHash(): string {
   return createHash('sha256').update(Buffer.alloc(0)).digest('hex');
 }
 
-function largestPowerOfTwoLessThan(n: number): number {
+export function largestPowerOfTwoLessThan(n: number): number {
   let k = 1;
   while (k * 2 < n) {
     k *= 2;
@@ -95,7 +72,7 @@ function largestPowerOfTwoLessThan(n: number): number {
   return k;
 }
 
-function isPowerOfTwo(n: number): boolean {
+export function isPowerOfTwo(n: number): boolean {
   return n > 0 && (n & (n - 1)) === 0;
 }
 
@@ -128,7 +105,7 @@ export function hashMerkleNode(leftHex: string, rightHex: string): string {
   return createHash('sha256').update(input).digest('hex');
 }
 
-function computeMerkleTreeHash(leafHashes: readonly string[]): string {
+export function computeMerkleTreeHash(leafHashes: readonly string[]): string {
   const count = leafHashes.length;
   if (count === 0) {
     return emptyTreeHash();
@@ -142,7 +119,10 @@ function computeMerkleTreeHash(leafHashes: readonly string[]): string {
   return hashMerkleNode(left, right);
 }
 
-function computeAuditPath(leafHashes: readonly string[], leafIndex: number): MerkleAuditPathStep[] {
+export function computeAuditPath(
+  leafHashes: readonly string[],
+  leafIndex: number
+): MerkleAuditPathStep[] {
   const count = leafHashes.length;
   if (count <= 1) {
     return [];
@@ -158,7 +138,7 @@ function computeAuditPath(leafHashes: readonly string[], leafIndex: number): Mer
   return [...subPath, { hash: siblingHash, position: 'left' }];
 }
 
-function computeConsistencySubproof(
+export function computeConsistencySubproof(
   m: number,
   leafHashes: readonly string[],
   isCompleteSubtree: boolean
@@ -179,7 +159,7 @@ function computeConsistencySubproof(
   return [...sub, computeMerkleTreeHash(leafHashes.slice(0, split))];
 }
 
-function verifyConsistencyProofHashes(
+export function verifyConsistencyProofHashes(
   olderSize: number,
   newerSize: number,
   olderRootHash: string,
@@ -283,11 +263,12 @@ export function generateMerkleInclusionProof(
 export function verifyMerkleInclusionProof(
   leafPayload: unknown,
   proof: MerkleInclusionProof,
-  expectedRootHash: string
+  expectedRootHash: string,
+  options?: VerifyMerkleInclusionProofOptions
 ): MerkleInclusionVerificationResult {
-  const redactor = createRedactor();
-  const redactedPayload = redactor.redactObject(leafPayload);
-  const leafHash = hashMerkleLeaf(redactedPayload);
+  const shouldRedact = options?.redact ?? true;
+  const payloadToHash = shouldRedact ? createRedactor().redactObject(leafPayload) : leafPayload;
+  const leafHash = hashMerkleLeaf(payloadToHash);
 
   if (!SHA256_HEX_PATTERN.test(expectedRootHash)) {
     return {

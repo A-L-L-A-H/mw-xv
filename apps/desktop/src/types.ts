@@ -542,10 +542,26 @@ export interface DesktopStreamSubscription {
   unsubscribe(): void;
 }
 
+export interface DesktopUpdateCheckSummary {
+  readonly status: 'up-to-date' | 'available' | 'error';
+  readonly currentVersion: string;
+  readonly availableVersion?: string;
+  readonly releaseUrl?: string;
+  readonly errorMessage?: string;
+}
+
+export interface DesktopUpdateInstallSummary {
+  readonly status: 'ready' | 'up-to-date' | 'error';
+  readonly availableVersion?: string;
+  readonly errorMessage?: string;
+}
+
 export interface DesktopCapabilityBridge {
   readonly protocolVersion: '1.0';
   readonly hostSurface: 'apps/board';
   getStatus(): Promise<DesktopBridgeSnapshot>;
+  checkForUpdates?(): Promise<DesktopUpdateCheckSummary>;
+  installUpdate?(): Promise<DesktopUpdateInstallSummary>;
   verifySenderOrigin(origin: string, windowLabel?: string): boolean;
   issueNativeApprovalToken(request: NativeHumanApprovalRequest): HumanApprovalToken;
   readonly keychain: {

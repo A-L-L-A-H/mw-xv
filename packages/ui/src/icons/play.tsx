@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type PlayIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function PlayIcon({ size = 24, title, ...props }: PlayIconProps) {
+const PlayIcon = forwardRef<SVGSVGElement, PlayIconProps>(function PlayIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -26,4 +30,8 @@ export function PlayIcon({ size = 24, title, ...props }: PlayIconProps) {
       <path d="m8 5 11 7-11 7V5Z" />
     </svg>
   );
-}
+});
+
+PlayIcon.displayName = 'PlayIcon';
+
+export { PlayIcon };

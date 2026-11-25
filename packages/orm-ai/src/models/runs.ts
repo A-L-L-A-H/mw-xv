@@ -55,6 +55,9 @@ export const AgentRun = defineModel('ai.agent_run', {
       modelRef(() => Job),
       { unique: true }
     ),
+    /** Immutable secret-free execution snapshot hash, set before dispatch. */
+    execution_fingerprint: fields.string({ pattern: SHA256_PATTERN, index: true }),
+    approval_workflow_id: fields.integer({ index: true }),
     idempotency_key: fields.string({ required: true, hidden: true }),
     correlation_id: fields.string({ required: true, index: true }),
     status: fields.enum(RUN_STATUSES, { required: true, default: 'pending', index: true }),
@@ -70,6 +73,27 @@ export const AgentRun = defineModel('ai.agent_run', {
     finished_at: fields.string(),
     error_code: fields.string(),
     error_summary: fields.text(),
+  },
+});
+
+/** Small durable acknowledgement record for idempotent tool side effects. */
+export const AgentRunEffect = defineModel('ai.agent_run_effect', {
+  table: 'ai_agent_run_effects',
+  order: 'id desc',
+  unique: [['company', 'agent_run', 'effect_key']],
+  fields: {
+    company: fields.belongsTo(
+      modelRef(() => Company),
+      { required: true }
+    ),
+    agent_run: fields.belongsTo(
+      modelRef(() => AgentRun),
+      { required: true }
+    ),
+    effect_key: fields.string({ required: true }),
+    args_sha256: fields.string({ required: true, pattern: SHA256_PATTERN }),
+    output_json: fields.text({ required: true, default: 'null' }),
+    fencing_token: fields.integer({ required: true, default: 0 }),
   },
 });
 

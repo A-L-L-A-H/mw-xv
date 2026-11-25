@@ -4,15 +4,32 @@
   "characterId": "crew-01",
   "pack": "moon-city",
   "domain": "visual-universe",
-  "description": "Turn prototype clip for crew-01: slight torso/head rotation between frames with hood pivot aligned; static pose fallback uses frame 1.",
+  "description": "Four-frame quarter turn for crew-01: hood and layered hair rotate across four distinct angles while boots stay planted. Reduced-motion fallback uses frame 1.",
   "clip": {
     "id": "crew-01-turn",
     "loop": true,
     "direction": "ping-pong",
-    "pivot": { "x": 0.5, "y": 0.5 },
+    "pivot": {
+      "x": 0.5,
+      "y": 0.9
+    },
     "frames": [
-      { "asset": "animation/crew-01-turn/crew-01-turn-frame-01.svg", "durationMs": 500 },
-      { "asset": "animation/crew-01-turn/crew-01-turn-frame-02.svg", "durationMs": 500 }
+      {
+        "asset": "animation/crew-01-turn/crew-01-turn-frame-01.svg",
+        "durationMs": 560
+      },
+      {
+        "asset": "animation/crew-01-turn/crew-01-turn-frame-02.svg",
+        "durationMs": 560
+      },
+      {
+        "asset": "animation/crew-01-turn/crew-01-turn-frame-03.svg",
+        "durationMs": 560
+      },
+      {
+        "asset": "animation/crew-01-turn/crew-01-turn-frame-04.svg",
+        "durationMs": 560
+      }
     ]
   },
   "reducedMotionFallback": "animation/crew-01-turn/crew-01-turn-frame-01.svg",

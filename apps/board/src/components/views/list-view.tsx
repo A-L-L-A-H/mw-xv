@@ -884,13 +884,11 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
               })
             )}
           </div>
-          <div
-            className="overflow-x-auto [&>.mw-ui-table-wrap]:overflow-x-visible"
-            role="region"
-            aria-label={`${views.title} records table`}
-            tabIndex={0}
-          >
-            <UiTable className="hidden w-full min-w-[1200px] border-collapse text-left text-sm sm:table">
+          <div className="hidden sm:block">
+            <UiTable
+              className="w-full min-w-[1200px] border-collapse text-left text-sm"
+              scrollLabel={`${views.title} records table horizontal scroll`}
+            >
               <TableHead>
                 <TableRow className="border-b-2 border-ink bg-paper font-display uppercase tracking-wider text-ink">
                   <TableHeader className="w-10 px-4 py-3 text-center">
@@ -909,28 +907,43 @@ export function ListView({ model, views, onOpenRecord, onCreateRecord }: ListVie
                     return (
                       <TableHeader
                         key={col.name}
-                        onClick={() => handleSort(col.name)}
-                        className="cursor-pointer select-none px-4 py-3 text-xs transition-colors hover:bg-primary/25"
-                        title={`Click to sort by ${col.label}`}
+                        scope="col"
+                        aria-sort={
+                          isSorted ? (sortState.dir === 'asc' ? 'ascending' : 'descending') : 'none'
+                        }
+                        className="select-none px-4 py-3 text-xs transition-colors hover:bg-primary/25"
                       >
-                        <div className="flex items-center gap-1.5">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleSort(col.name)}
+                          className="group flex w-full items-center gap-1.5 text-left font-inherit text-inherit focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[var(--mw-focus)]"
+                          aria-label={`Sort by ${col.label}`}
+                          title={`Sort by ${col.label}`}
+                        >
                           <span>{col.label}</span>
                           {isSorted ? (
                             sortState.dir === 'asc' ? (
                               <SortAscendingIcon
+                                aria-hidden="true"
                                 className="size-3.5 text-yellow-readable"
                                 strokeWidth={3}
                               />
                             ) : (
                               <SortDescendingIcon
+                                aria-hidden="true"
                                 className="size-3.5 text-yellow-readable"
                                 strokeWidth={3}
                               />
                             )
                           ) : (
-                            <SortIcon className="size-3 text-ink-faint opacity-30 hover:opacity-100" />
+                            <SortIcon
+                              aria-hidden="true"
+                              className="size-3 text-ink-faint opacity-30 group-hover:opacity-100"
+                            />
                           )}
-                        </div>
+                        </Button>
                       </TableHeader>
                     );
                   })}

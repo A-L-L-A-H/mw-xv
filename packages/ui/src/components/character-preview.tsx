@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button } from './button.js';
 import { StatusBar } from './status-bar.js';
 import { SpritePlayer, type SpriteClipMetadata } from './sprite-player.js';
+import { getActiveSceneHarness } from '../lib/scene-test-harness.js';
+import { useReducedMotion } from '../lib/use-reduced-motion.js';
 
 export type CharacterPreviewProps = {
   /** Canonical manifest asset path for the clip JSON. */
@@ -20,16 +22,15 @@ export function CharacterPreview({
   durationMs = 1200,
 }: CharacterPreviewProps) {
   const [playing, setPlaying] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const [manualReducedMotion, setManualReducedMotion] = useState<boolean | undefined>(undefined);
+  const harness = getActiveSceneHarness();
+  const reducedMotion = useReducedMotion(manualReducedMotion);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return;
-    const query = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setReducedMotion(query.matches);
-    const onChange = (event: MediaQueryListEvent) => setReducedMotion(event.matches);
-    query.addEventListener('change', onChange);
-    return () => query.removeEventListener('change', onChange);
-  }, []);
+    if (harness?.reducedMotion !== undefined) {
+      setManualReducedMotion(undefined);
+    }
+  }, [harness?.reducedMotion]);
 
   const clip = useMemo<SpriteClipMetadata>(
     () => ({
@@ -51,7 +52,7 @@ export function CharacterPreview({
 
   const togglePlayback = useCallback(() => {
     if (!playing || reducedMotion) {
-      setReducedMotion(false);
+      setManualReducedMotion(false);
       setPlaying(true);
       return;
     }
@@ -73,15 +74,16 @@ export function CharacterPreview({
         />
       </div>
       <div className="character-preview-controls">
-        <Button variant="magenta" onClick={togglePlayback}>
+        <Button type="button" variant="magenta" onClick={togglePlayback}>
           {playing && !reducedMotion ? 'Pause' : 'Play'}
         </Button>
-        <Button variant="default" onClick={reset}>
+        <Button type="button" variant="default" onClick={reset}>
           Reset
         </Button>
         <Button
+          type="button"
           variant="default"
-          onClick={() => setReducedMotion((value) => !value)}
+          onClick={() => setManualReducedMotion(!reducedMotion)}
           aria-pressed={reducedMotion}
         >
           {reducedMotion ? 'Reduced motion on' : 'Reduced motion off'}

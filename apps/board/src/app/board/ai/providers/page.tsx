@@ -33,6 +33,7 @@ import {
   useAiRuns,
 } from '@/components/ai/ai-api';
 import { MissionControlShell, ProvenanceBadge } from '@/components/ai/mission-control-chrome';
+import { CloudProviderDefaultPanel } from '../_components/cloud-agent-panels';
 
 export default function AiProvidersPage() {
   const providersQuery = useAiProviders();
@@ -323,6 +324,13 @@ export default function AiProvidersPage() {
           </TableBody>
         </Table>
       </Panel>
+
+      <CloudProviderDefaultPanel
+        providers={providers}
+        onChanged={() => {
+          void providersQuery.refetch();
+        }}
+      />
     </MissionControlShell>
   );
 }

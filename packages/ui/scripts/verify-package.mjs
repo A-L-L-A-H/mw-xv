@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
+import { existsSync } from 'node:fs';
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { env, execPath, platform, stdout } from 'node:process';
+import { execPath, platform, stdout } from 'node:process';
 import { join, resolve } from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
@@ -11,135 +12,353 @@ import {
 } from './verification-diagnostics.mjs';
 
 const execFileAsync = promisify(execFile);
-const packageManager = platform === 'win32' ? (env.ComSpec ?? 'cmd.exe') : 'pnpm';
-const packageManagerPrefix = platform === 'win32' ? ['/d', '/s', '/c', 'pnpm'] : [];
+const isWindows = platform === 'win32';
 const packageRoot = resolve(import.meta.dirname, '..');
+const workspaceRoot = resolve(packageRoot, '../..');
 const tempRoot = await mkdtemp(join(tmpdir(), 'moonwitness-ui-package-'));
 let verificationPhase = 'create package archive';
 
-try {
-  const packed = await execFileAsync(
-    packageManager,
-    [...packageManagerPrefix, 'pack', '--pack-destination', tempRoot],
-    {
-      cwd: packageRoot,
-      windowsHide: true,
-    }
-  );
-  verificationPhase = 'validate package archive';
-  const archiveName = packed.stdout.match(/moonwitness-ui-[\w.-]+\.tgz/u)?.[0];
-  assert.ok(archiveName, 'pnpm pack should report the generated archive');
+/** Run npm in a directory; wrap through cmd.exe on Windows because npm is a .cmd shim. */
+function runNpm(args, options) {
+  const command = isWindows ? 'cmd' : 'npm';
+  const argv = isWindows ? ['/d', '/s', '/c', 'npm', ...args] : args;
+  return execFileAsync(command, argv, { windowsHide: true, ...options });
+}
 
-  const consumerRoot = join(tempRoot, 'consumer');
+async function packPackage(directory) {
+  const packed = await runNpm(['pack', '--pack-destination', tempRoot], { cwd: directory });
+  const archiveName = packed.stdout.match(/[\w.-]+\.tgz/u)?.[0];
+  assert.ok(archiveName, 'npm pack should report the generated archive');
+  return join(tempRoot, archiveName);
+}
+
+/** Read the installed version of a dependency resolvable from `directory`. */
+async function readInstalledVersion(directory, dependencyName) {
+  let cursor = directory;
+  let resolvedPath;
+  while (true) {
+    const candidate = join(cursor, 'node_modules', dependencyName, 'package.json');
+    if (existsSync(candidate)) {
+      resolvedPath = candidate;
+      break;
+    }
+    const parent = resolve(cursor, '..');
+    if (parent === cursor) {
+      throw new Error(`Could not find installed package.json for ${dependencyName}`);
+    }
+    cursor = parent;
+  }
+  const dependencyPackage = JSON.parse(await readFile(resolvedPath, 'utf8'));
+  assert.match(
+    dependencyPackage.version,
+    /^\d+\.\d+\.\d+(?:[-+][\w.-]+)?$/u,
+    `Expected an exact installed version for ${dependencyName}`
+  );
+  return dependencyPackage.version;
+}
+
+async function createConsumer(name, dependencies) {
+  const consumerRoot = join(tempRoot, name);
   await mkdir(consumerRoot);
+  // The packed UI declares @moonwitness/types as a regular dependency at its
+  // published version. Without an override npm resolves that transitive
+  // dependency from the registry, where the private workspace package does not
+  // exist. Point overrides at the same local archives supplied to the consumer.
+  const localOverrides = Object.fromEntries(
+    Object.entries(dependencies).filter(
+      ([dependencyName, version]) =>
+        dependencyName === '@moonwitness/types' && version.startsWith('file:')
+    )
+  );
   await writeFile(
     join(consumerRoot, 'package.json'),
-    JSON.stringify({ private: true, type: 'module' })
+    JSON.stringify({ private: true, type: 'module' }, null, 2)
   );
-  verificationPhase = 'read locked consumer dependency versions';
-  const consumerDependencyNames = ['react', 'react-dom', 'radix-ui', 'cmdk'];
-  const consumerDependencySpecs = await Promise.all(
-    consumerDependencyNames.map(async (dependencyName) => {
-      const dependencyPackagePath = join(
-        packageRoot,
-        'node_modules',
-        dependencyName,
-        'package.json'
-      );
-      const dependencyPackage = JSON.parse(await readFile(dependencyPackagePath, 'utf8'));
-      assert.match(
-        dependencyPackage.version,
-        /^\d+\.\d+\.\d+(?:[-+][\w.-]+)?$/u,
-        `Expected an exact installed version for ${dependencyName}`
-      );
-      return `${dependencyName}@${dependencyPackage.version}`;
-    })
-  );
+  if (Object.keys(localOverrides).length > 0) {
+    await writeFile(
+      join(consumerRoot, 'package.json'),
+      JSON.stringify(
+        {
+          private: true,
+          type: 'module',
+          overrides: localOverrides,
+        },
+        null,
+        2
+      )
+    );
+  }
+  const installTargets = Object.entries(dependencies)
+    .filter(([dependencyName]) => dependencyName !== '@moonwitness/types')
+    .map(([dependencyName, version]) =>
+      version.startsWith('file:') ? version : `${dependencyName}@${version}`
+    );
   verificationPhase = 'install isolated consumer dependencies';
-  await execFileAsync(
-    packageManager,
-    [
-      ...packageManagerPrefix,
-      'add',
-      '--prefer-offline',
-      '--ignore-workspace',
-      '--save-exact',
-      `file:${join(tempRoot, archiveName)}`,
-      ...consumerDependencySpecs,
-    ],
-    { cwd: consumerRoot, windowsHide: true }
+  await runNpm(
+    ['install', '--prefer-offline', '--save-exact', '--no-audit', '--no-fund', ...installTargets],
+    { cwd: consumerRoot }
   );
 
-  const source = `
+  for (const [dependencyName, expectedVersion] of Object.entries(dependencies)) {
+    if (expectedVersion.startsWith('file:')) continue;
+    assert.equal(
+      await readInstalledVersion(consumerRoot, dependencyName),
+      expectedVersion,
+      `${name} resolved an unexpected ${dependencyName} version`
+    );
+  }
+  return consumerRoot;
+}
+
+const runtimeConsumerSource = `
 import assert from 'node:assert/strict';
-import { Button } from '@moonwitness/ui/components/button';
-import { ArtworkFrame } from '@moonwitness/ui/components/artwork-frame';
-import { Command, CommandInput } from '@moonwitness/ui/components/command';
-import { Field } from '@moonwitness/ui/components/field';
-import { Label } from '@moonwitness/ui/components/label';
-import { MetricTile } from '@moonwitness/ui/components/metric-tile';
-import { PaperNote } from '@moonwitness/ui/components/paper-note';
-import { Pagination } from '@moonwitness/ui/components/pagination';
-import { Popover, PopoverContent } from '@moonwitness/ui/components/popover';
-import { Sheet, SheetContent } from '@moonwitness/ui/components/sheet';
-import { SectionRibbon } from '@moonwitness/ui/components/section-ribbon';
-import { Switch } from '@moonwitness/ui/components/switch';
-import { Table } from '@moonwitness/ui/components/table';
-import { Textarea } from '@moonwitness/ui/components/textarea';
-import { LayeredScene } from '@moonwitness/ui/components/layered-scene';
-import { SpritePlayer } from '@moonwitness/ui/components/sprite-player';
-import { createScenePlaybackController } from '@moonwitness/ui/lib/scene-playback';
-import { createSceneCameraController } from '@moonwitness/ui/lib/scene-camera';
-import { createSceneTimeline } from '@moonwitness/ui/lib/scene-timeline';
-import { createCharacterAdapterRegistry } from '@moonwitness/ui/lib/character-adapter';
-import { getActiveSceneHarness } from '@moonwitness/ui/lib/scene-test-harness';
-import { UserIcon } from '@moonwitness/ui/icons/user';
-assert.equal(typeof Button, 'function');
-assert.equal(typeof ArtworkFrame, 'function');
-assert.equal(typeof Command, 'function');
-assert.equal(typeof CommandInput, 'function');
-assert.equal(typeof Field, 'function');
-assert.equal(typeof Label, 'function');
-assert.equal(typeof MetricTile, 'function');
-assert.equal(typeof PaperNote, 'function');
-assert.equal(typeof Pagination, 'function');
-assert.equal(typeof Popover, 'function');
-assert.equal(typeof PopoverContent, 'function');
-assert.equal(typeof Sheet, 'function');
-assert.equal(typeof SheetContent, 'function');
-assert.equal(typeof SectionRibbon, 'function');
-assert.equal(typeof Switch, 'function');
-assert.equal(typeof Table, 'function');
-assert.equal(typeof Textarea, 'function');
-assert.equal(typeof LayeredScene, 'function');
-assert.equal(typeof SpritePlayer, 'function');
-assert.equal(typeof createScenePlaybackController, 'function');
-assert.equal(typeof createSceneCameraController, 'function');
+import { JSDOM } from 'jsdom';
+import { act, createElement, createRef, Fragment } from 'react';
+
+const dom = new JSDOM('<!doctype html><html><body><div id="root"></div></body></html>', {
+  url: 'http://localhost/',
+});
+for (const key of [
+  'window', 'document', 'navigator', 'getComputedStyle', 'requestAnimationFrame', 'cancelAnimationFrame',
+]) {
+  Object.defineProperty(globalThis, key, { configurable: true, writable: true, value: dom.window[key] });
+}
+// Radix probes DOM constructors such as HTMLFormElement at module/render time.
+// Mirror any window global Node does not already provide without clobbering
+// Node's own primitives (setTimeout, process, ...).
+for (const key of Object.getOwnPropertyNames(dom.window)) {
+  if (key in globalThis) continue;
+  try {
+    Object.defineProperty(globalThis, key, {
+      configurable: true,
+      writable: true,
+      value: dom.window[key],
+    });
+  } catch { /* some window properties cannot be redefined */ }
+}
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+globalThis.ResizeObserver = class { observe() {} unobserve() {} disconnect() {} };
+dom.window.ResizeObserver = globalThis.ResizeObserver;
+dom.window.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
+
+const { createRoot } = await import('react-dom/client');
+const { Button } = await import('@moonwitness/ui/components/button');
+const { Input } = await import('@moonwitness/ui/components/input');
+const { Field } = await import('@moonwitness/ui/components/field');
+const { Select, SelectTrigger } = await import('@moonwitness/ui/components/select');
+const { UserIcon } = await import('@moonwitness/ui/icons/user');
+const { Command } = await import('@moonwitness/ui/components/command');
+const { ToastHost } = await import('@moonwitness/ui/components/toast');
+const { themeRegistry } = await import('@moonwitness/ui/themes');
+const { createSceneTimeline } = await import('@moonwitness/ui/lib/scene-timeline');
+
+for (const component of [Button, Input, Field, Select, SelectTrigger, UserIcon, Command, ToastHost]) {
+  assert.ok(component, 'Public component exports must remain available');
+}
 assert.equal(typeof createSceneTimeline, 'function');
-assert.equal(typeof createCharacterAdapterRegistry, 'function');
-assert.equal(typeof getActiveSceneHarness, 'function');
-assert.equal(typeof UserIcon, 'function');
-let internalPathWasRejected = false;
-try { await import('@moonwitness/ui/dist/components/button.js'); }
-catch (error) { internalPathWasRejected = error.code === 'ERR_PACKAGE_PATH_NOT_EXPORTED'; }
-assert.equal(internalPathWasRejected, true);
-  `;
-  const consumerFile = join(consumerRoot, 'consumer.mjs');
-  await writeFile(consumerFile, source);
+assert.ok(themeRegistry.list().length > 0);
+
+const buttonRef = createRef();
+const fieldRef = createRef();
+const iconRef = createRef();
+const selectRef = createRef();
+let callbackInput;
+const root = createRoot(document.getElementById('root'));
+await act(async () => {
+  root.render(createElement(Fragment, null,
+    createElement(Button, { ref: buttonRef }, 'Save'),
+    createElement(Input, { ref: (node) => { callbackInput = node; }, 'aria-label': 'Name' }),
+    createElement(Field, { ref: fieldRef, label: 'Profile', htmlFor: 'consumer-profile' }, createElement(Input)),
+    createElement(UserIcon, { ref: iconRef }),
+    createElement(Select, null, createElement(SelectTrigger, { ref: selectRef }, 'Pick'))
+  ));
+});
+assert.equal(buttonRef.current.tagName, 'BUTTON');
+assert.equal(callbackInput.tagName, 'INPUT');
+assert.equal(fieldRef.current.tagName, 'DIV');
+assert.equal(iconRef.current.tagName, 'svg');
+assert.equal(selectRef.current.tagName, 'BUTTON');
+await act(async () => root.unmount());
+
+for (const privatePath of [
+  '@moonwitness/ui/dist/components/button.js',
+  '@moonwitness/ui/src/components/button.tsx',
+]) {
+  let rejected = false;
+  try { await import(privatePath); }
+  catch (error) { rejected = error.code === 'ERR_PACKAGE_PATH_NOT_EXPORTED'; }
+  assert.equal(rejected, true, privatePath + ' must not be publicly importable');
+}
+`;
+
+const typeConsumerSource = `
+import { createRef } from 'react';
+import { Button } from '@moonwitness/ui/components/button';
+import { Field } from '@moonwitness/ui/components/field';
+import { Input } from '@moonwitness/ui/components/input';
+import { Select, SelectTrigger } from '@moonwitness/ui/components/select';
+import { UserIcon } from '@moonwitness/ui/icons/user';
+import '@moonwitness/ui/components.css';
+
+const buttonRef = createRef<HTMLButtonElement>();
+const fieldRef = createRef<HTMLDivElement>();
+const inputRef = createRef<HTMLInputElement>();
+const iconRef = createRef<SVGSVGElement>();
+const selectRef = createRef<HTMLButtonElement>();
+
+export const Fixture = () => (
+  <>
+    <Button ref={buttonRef}>Save</Button>
+    <Field ref={fieldRef} label="Name" htmlFor="consumer-name"><Input ref={inputRef} /></Field>
+    <UserIcon ref={iconRef} />
+    <Select><SelectTrigger ref={selectRef}>Pick</SelectTrigger></Select>
+  </>
+);
+`;
+
+const minimalConsumerSource = `
+import assert from 'node:assert/strict';
+import { access } from 'node:fs/promises';
+import { Button } from '@moonwitness/ui/components/button';
+import { UserIcon } from '@moonwitness/ui/icons/user';
+import { themeRegistry } from '@moonwitness/ui/themes';
+
+assert.ok(Button);
+assert.ok(UserIcon);
+assert.ok(themeRegistry.list().length > 0);
+for (const optionalPeer of ['cmdk', 'sonner']) {
+  await assert.rejects(access('node_modules/' + optionalPeer), { code: 'ENOENT' });
+}
+for (const [subpath, peerName] of [
+  ['@moonwitness/ui/components/command', 'cmdk'],
+  ['@moonwitness/ui/components/toast', 'sonner'],
+]) {
+  await assert.rejects(import(subpath), (error) =>
+    error.code === 'ERR_MODULE_NOT_FOUND' && error.message.includes(peerName)
+  );
+}
+`;
+
+try {
+  verificationPhase = 'create package archive';
+  const typesArchive = await packPackage(resolve(packageRoot, '../types'));
+  const uiArchive = await packPackage(packageRoot);
+  verificationPhase = 'validate package archive';
+  assert.ok(typesArchive.endsWith('.tgz'));
+  assert.ok(uiArchive.endsWith('.tgz'));
+
+  verificationPhase = 'read locked consumer dependency versions';
+  const react19 = await readInstalledVersion(packageRoot, 'react');
+  const reactDom19 = await readInstalledVersion(packageRoot, 'react-dom');
+  const typesReact19 = await readInstalledVersion(packageRoot, '@types/react');
+  const typesReactDom19 = await readInstalledVersion(packageRoot, '@types/react-dom');
+  assert.match(react19, /^19\./u);
+  assert.match(reactDom19, /^19\./u);
+  const sharedVersions = {
+    'radix-ui': await readInstalledVersion(packageRoot, 'radix-ui'),
+    cmdk: await readInstalledVersion(packageRoot, 'cmdk'),
+    sonner: await readInstalledVersion(packageRoot, 'sonner'),
+    typescript: await readInstalledVersion(workspaceRoot, 'typescript'),
+    jsdom: await readInstalledVersion(workspaceRoot, 'jsdom'),
+  };
+  const matrices = [
+    {
+      name: 'consumer-react-18',
+      react: '18.3.1',
+      'react-dom': '18.3.1',
+      '@types/react': '18.3.24',
+      '@types/react-dom': '18.3.7',
+    },
+    {
+      name: 'consumer-react-19',
+      react: react19,
+      'react-dom': reactDom19,
+      '@types/react': typesReact19,
+      '@types/react-dom': typesReactDom19,
+    },
+  ];
+
+  for (const matrix of matrices) {
+    const consumerRoot = await createConsumer(matrix.name, {
+      '@moonwitness/types': `file:${typesArchive}`,
+      '@moonwitness/ui': `file:${uiArchive}`,
+      react: matrix.react,
+      'react-dom': matrix['react-dom'],
+      '@types/react': matrix['@types/react'],
+      '@types/react-dom': matrix['@types/react-dom'],
+      ...sharedVersions,
+    });
+    await writeFile(join(consumerRoot, 'consumer.mjs'), runtimeConsumerSource);
+    await writeFile(join(consumerRoot, 'fixture.tsx'), typeConsumerSource);
+    await writeFile(
+      join(consumerRoot, 'tsconfig.json'),
+      JSON.stringify(
+        {
+          compilerOptions: {
+            strict: true,
+            noEmit: true,
+            target: 'ES2022',
+            lib: ['ES2022', 'DOM', 'DOM.Iterable'],
+            module: 'ESNext',
+            moduleResolution: 'Bundler',
+            jsx: 'react-jsx',
+            skipLibCheck: false,
+          },
+          include: ['fixture.tsx'],
+        },
+        null,
+        2
+      )
+    );
+
+    verificationPhase = 'run consumer import smoke test';
+    await execFileAsync(execPath, [join(consumerRoot, 'consumer.mjs')], {
+      cwd: consumerRoot,
+      windowsHide: true,
+    });
+    verificationPhase = 'run consumer typecheck';
+    await runNpm(['exec', '--no', '--', 'tsc', '-p', 'tsconfig.json'], { cwd: consumerRoot });
+  }
+
+  verificationPhase = 'validate optional peer isolation';
+  const minimalConsumer = await createConsumer('consumer-minimal-peers', {
+    '@moonwitness/types': `file:${typesArchive}`,
+    '@moonwitness/ui': `file:${uiArchive}`,
+    react: '18.3.1',
+    'react-dom': '18.3.1',
+    'radix-ui': sharedVersions['radix-ui'],
+  });
+  await writeFile(join(minimalConsumer, 'consumer.mjs'), minimalConsumerSource);
   verificationPhase = 'run consumer import smoke test';
-  await execFileAsync(execPath, [consumerFile], {
-    cwd: consumerRoot,
+  await execFileAsync(execPath, [join(minimalConsumer, 'consumer.mjs')], {
+    cwd: minimalConsumer,
     windowsHide: true,
   });
 
-  const packageJson = JSON.parse(
-    await readFile(join(consumerRoot, 'node_modules/@moonwitness/ui/package.json'), 'utf8')
+  const installedUiRoot = join(minimalConsumer, 'node_modules', '@moonwitness', 'ui');
+  const packageJson = JSON.parse(await readFile(join(installedUiRoot, 'package.json'), 'utf8'));
+  verificationPhase = 'validate package peer metadata';
+  for (const requiredPeer of ['react', 'react-dom', 'radix-ui']) {
+    assert.ok(packageJson.peerDependencies[requiredPeer], `${requiredPeer} must remain required`);
+  }
+  for (const optionalPeer of ['cmdk', 'sonner']) {
+    assert.equal(packageJson.peerDependenciesMeta[optionalPeer]?.optional, true);
+  }
+  assert.ok(
+    packageJson.dependencies['@moonwitness/types'],
+    '@moonwitness/types must remain declared'
   );
+
   verificationPhase = 'validate public stylesheet exports';
   for (const stylesheet of ['./components.css', './styles/tokens.css']) {
-    assert.ok(packageJson.exports[stylesheet], `Missing public CSS export ${stylesheet}`);
+    const exportPath = packageJson.exports[stylesheet];
+    assert.equal(typeof exportPath, 'string', `Missing public CSS export ${stylesheet}`);
+    assert.ok((await readFile(join(installedUiRoot, exportPath), 'utf8')).length > 0);
   }
-  stdout.write('Packed consumer imports, private-path rejection, and CSS exports passed.\n');
+
+  stdout.write(
+    `Packed consumers passed on React ${matrices.map((matrix) => matrix.react).join(' and ')}; refs, TypeScript, CSS, private paths, and optional peers verified.\n`
+  );
 } catch (error) {
   const errorCode = extractPackageVerificationErrorCode(error);
   stdout.write(renderPackageVerificationAnnotation(verificationPhase, errorCode));

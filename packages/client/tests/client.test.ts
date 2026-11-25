@@ -549,6 +549,86 @@ describe('MoonWitnessClient', () => {
     expect(client.currentUser?.login).toBe('alice');
   });
 
+  it('notifies listeners when an async storage restores a session after construction', async () => {
+    const backing = new MemoryStorage();
+    backing.setItem('moonwitness_auth', JSON.stringify(tokens('stored').data));
+    const client = new MoonWitnessClient({
+      baseUrl: 'http://api.test',
+      fetch: vi.fn() as unknown as typeof fetch,
+      storage: {
+        getItem: async (k) => backing.getItem(k),
+        setItem: async (k, v) => backing.setItem(k, v),
+        removeItem: async (k) => backing.removeItem(k),
+      },
+    });
+    const events: (string | null)[] = [];
+    client.onSessionChange((user) => events.push(user?.login ?? null));
+    await client.ready();
+    expect(events).toEqual(['alice']);
+  });
+
+  it('does not let delayed hydrate() overwrite tokens saved by login()', async () => {
+    const backing = new MemoryStorage();
+    let resolveGetItem!: (value: string | null) => void;
+    const client = new MoonWitnessClient({
+      baseUrl: 'http://api.test',
+      fetch: vi.fn(async (input: string) => {
+        const url = new URL(input);
+        if (url.pathname === '/auth/login') return json(tokens('fresh-login-token'));
+        return json({});
+      }) as unknown as typeof fetch,
+      storage: {
+        getItem: () =>
+          new Promise<string | null>((resolve) => {
+            resolveGetItem = resolve;
+          }),
+        setItem: async (k, v) => backing.setItem(k, v),
+        removeItem: async (k) => backing.removeItem(k),
+      },
+    });
+
+    await client.login({ login: 'alice', password: 'pw' });
+    expect(client.isAuthenticated).toBe(true);
+    expect(client.currentUser?.login).toBe('alice');
+
+    resolveGetItem(null);
+    await client.ready();
+
+    expect(client.isAuthenticated).toBe(true);
+    expect(client.currentUser?.login).toBe('alice');
+  });
+
+  it('preserves metadataGeneration when getMe() refreshes unchanged user identity and company', async () => {
+    const { client } = makeClient((url) => {
+      if (url.pathname === '/auth/login') {
+        return json({
+          success: true,
+          data: {
+            access_token: 'tok-1',
+            refresh_token: 'ref-1',
+            token_type: 'Bearer',
+            expires_in: 900,
+            user: { id: 1, login: 'alice', role: 'user', company_id: 7 },
+          },
+        });
+      }
+      if (url.pathname === '/auth/me') {
+        return json({
+          success: true,
+          data: { id: 1, login: 'alice', role: 'user', company_id: 7, display_name: 'Alice' },
+        });
+      }
+      return json({});
+    });
+
+    await client.login({ login: 'alice', password: 'pw' });
+    const generationAfterLogin = client.metadataGeneration;
+
+    const me = await client.getMe();
+    expect(me.login).toBe('alice');
+    expect(client.metadataGeneration).toBe(generationAfterLogin);
+  });
+
   it('maps HTTP status codes to typed errors', async () => {
     const { client } = makeClient((url) => json({ error: 'x' }, Number(url.pathname.slice(1))));
     await expect(client.request('/400')).rejects.toBeInstanceOf(ValidationError);

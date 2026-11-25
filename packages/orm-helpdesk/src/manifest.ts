@@ -1,6 +1,13 @@
 import { defineAddon, ref, seed } from '@moonwitness/orm';
 import { ModelAccess } from '@moonwitness/orm-base';
-import { SlaPolicy, SupportTicket, TicketMessage, EscalationRule, KnowledgeDeflection, CsatSurvey } from './models/index.js';
+import {
+  SlaPolicy,
+  SupportTicket,
+  TicketMessage,
+  EscalationRule,
+  KnowledgeDeflection,
+  CsatSurvey,
+} from './models/index.js';
 import { views } from './views.js';
 import { httpPlugin } from './http-plugin.js';
 
@@ -8,7 +15,14 @@ export const manifest = defineAddon({
   name: 'helpdesk',
   version: '1.0.0',
   depends: ['base', 'crm', 'knowledge'],
-  models: [SlaPolicy, SupportTicket, TicketMessage, EscalationRule, KnowledgeDeflection, CsatSurvey],
+  models: [
+    SlaPolicy,
+    SupportTicket,
+    TicketMessage,
+    EscalationRule,
+    KnowledgeDeflection,
+    CsatSurvey,
+  ],
   httpPlugins: [httpPlugin],
   data: [
     seed(SlaPolicy, 'helpdesk.sla_policy_p1_all', {

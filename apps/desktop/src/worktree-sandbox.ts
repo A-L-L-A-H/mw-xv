@@ -61,7 +61,7 @@ const BARE_COMMAND_REGEX = /^[a-zA-Z0-9._-]+$/u;
 
 const DEFAULT_ALLOWED_COMMANDS: readonly string[] = [
   'node',
-  'pnpm',
+  'bun',
   'npm',
   'git',
   'vitest',

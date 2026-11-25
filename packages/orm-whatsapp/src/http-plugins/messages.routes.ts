@@ -9,7 +9,7 @@ import {
 } from '../models.js';
 import { isRecord, MAX_ATTACHMENT_BYTES } from '@moonwitness/types';
 import { mediaType, mimeMatchesSignature, safeMime, sniffMime } from '../runtime/media.js';
-import { gowaRequest } from '../runtime/gowa-client.js';
+import { whatsappGatewayRequest } from '../runtime/gateway.js';
 import { whatsappLogErrorContext } from '../runtime/log-redaction.js';
 import { OutboxEvent } from '@moonwitness/jobs';
 import { WHATSAPP_SEND_EVENT } from '../runtime/events.js';
@@ -85,7 +85,7 @@ export function registerWhatsAppMessageRoutes(
         ? `&start_time=${encodeURIComponent(new Date(latestCachedAt - 10 * 60_000).toISOString())}`
         : '';
     const providerLimit = offset === 0 ? Math.max(100, limit) : limit;
-    const upstream = await gowaRequest<{ data?: Array<Record<string, unknown>> }>(
+    const upstream = await whatsappGatewayRequest<{ data?: Array<Record<string, unknown>> }>(
       `/chat/${encodeURIComponent(conversation.jid)}/messages?limit=${providerLimit}&offset=${offset}${incrementalStart}`,
       { deviceId: account.gateway_device_id }
     );

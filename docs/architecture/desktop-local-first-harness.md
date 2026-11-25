@@ -1,9 +1,9 @@
 # MoonWitness Desktop Local-First Agent Harness Architecture (`apps/desktop`)
 
-- **Status:** Accepted Architecture Specification (Implementation tracked in [`todo-desktop.md`](../../todo-desktop.md))
+- **Status:** Accepted Architecture Specification (Implementation tracked in [`docs/tasks/sources/todo-desktop.md`](../tasks/sources/todo-desktop.md))
 - **Governing ADR:** [ADR 0008: Local-First Desktop Agent Harness](adr/0008-local-first-desktop-agent-harness.md)
 - **Foundational ADRs:** [ADR 0001](../decisions/0001-platform-contracts.md) · [ADR 0006](../decisions/0006-mandatory-addon-thin-api.md) · [ADR 0007](../decisions/0007-ai-corporation-addon-first-architecture.md)
-- **Cross-References:** [AI Corporation Baseline Audit](ai-corporation-baseline-audit.md) · [Knowledge Domain Ownership](knowledge-domain-ownership.md) · [Blueprint Desktop Harness](../../moonwitness-ai-corporation-blueprint/docs/AI-CORPORATION-DESKTOP-HARNESS.md)
+- **Cross-References:** [AI Corporation Baseline Audit](ai-corporation-baseline-audit.md) · [Knowledge Domain Ownership](knowledge-domain-ownership.md) · [Blueprint Desktop Harness](../bundles/ai-corporation-blueprint/docs/AI-CORPORATION-DESKTOP-HARNESS.md)
 
 ---
 

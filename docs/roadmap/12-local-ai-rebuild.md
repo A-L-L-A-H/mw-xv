@@ -2,7 +2,7 @@
 
 **Status:** approved planning track under [ADR 0004](../decisions/0004-knowledge-rebuild-centralization.md). Task execution remains gated by dependencies, rights/privacy approvals, and the existing delivery contract. This track does not authorize application deployment or create GitHub issues by itself.
 
-The source planning bundle is `MOONWITNESS_XI_LOCAL_AI_REBUILD_PLAN_2026-10-15/`. Its machine-readable task DAG is projected into `docs/roadmap/tasks.json`; `ROADMAP.md` owns the checkbox status. Review the source bundle before changing acceptance or scope. Do not import private archives or corpus bytes from the plan alone.
+The source planning bundle is `docs/bundles/local-ai-rebuild-plan/`. Its machine-readable task DAG is projected into `docs/roadmap/tasks.json`; `ROADMAP.md` owns the checkbox status. Review the source bundle before changing acceptance or scope. Do not import private archives or corpus bytes from the plan alone.
 
 ## Execution boundary
 
@@ -72,7 +72,7 @@ The source planning bundle is `MOONWITNESS_XI_LOCAL_AI_REBUILD_PLAN_2026-10-15/`
 
 - Priority: P0; risk: normal.
 - Depends on: `K0-001`, `K0-002`.
-- File scope: `docs/agents/`, `docs/roadmap/`.
+- File scope: `docs/operations/local-agent-protocol.md`, `docs/roadmap/`.
 - Deliverable: Agent protocol, evidence file template, K task index integration.
 - Acceptance: No direct main/force push, secrets, data exfiltration, bypass, premature complete; roadmap M tasks preserved.
 - Verification target: `pnpm test:roadmap; existing issue-plan dry-run`. This is a target, not evidence that the command exists or has passed.
@@ -325,7 +325,7 @@ The source planning bundle is `MOONWITNESS_XI_LOCAL_AI_REBUILD_PLAN_2026-10-15/`
 
 - Priority: P0; risk: normal.
 - Depends on: `K4-003`, `K4-004`, `K4-005`.
-- File scope: `research/evaluations/`, `docs/knowledge/`.
+- File scope: `docs/research/`, `docs/knowledge/`.
 - Deliverable: Precision/error reports, historical count reconciliation record.
 - Acceptance: Measured data/fixtures versioned; empty/unsupported/unknown distinct; no invented benchmark pass.
 - Verification target: `deterministic golden-suite report`. This is a target, not evidence that the command exists or has passed.
@@ -482,11 +482,11 @@ The source planning bundle is `MOONWITNESS_XI_LOCAL_AI_REBUILD_PLAN_2026-10-15/`
 
 - Priority: P0; risk: normal.
 - Depends on: `K7-002`, `K7-005`.
-- File scope: `research/evaluations/`, `docs/operations/`.
+- File scope: `docs/research/`, `docs/operations/`.
 - Deliverable: Measured latency/memory/source coverage; local model-off resilience report.
 - Acceptance: Same-source comparison, named machine; no fictional score; non-AI flow passes offline.
 - Verification target: `offline egress-denied and G1–G3 regression tests`. This is a target, not evidence that the command exists or has passed.
-- Local baseline: AI-disabled runtime and API startup/authentication checks pass. Model identity/endpoint are not configured, so performance, memory, source coverage, same-source comparison, and OS-level egress denial remain unmeasured. The outage half is now certified at the API boundary: three tests drive the real loopback-only runtime through `disabled`, `timeout`, `provider_unreachable` and `invalid_response`, pinning the fixed 503 body, `private, no-store`, zero stored candidate rows, no provider detail in the response, a single loopback transport request per call with `redirect: 'error'` and an `AbortSignal`, refusal of a non-loopback endpoint before any transport exists, and a rate limit that stays armed while the model is down; four targeted route mutations show each of those assertions fails when the contract is broken. See [evaluation protocol](../../research/evaluations/K7-006-protocol.md), [operations report](../operations/local-ai-evaluation.md), and [K7-006 evidence](evidence/K7-006.md).
+- Local baseline: AI-disabled runtime and API startup/authentication checks pass. Model identity/endpoint are not configured, so performance, memory, source coverage, same-source comparison, and OS-level egress denial remain unmeasured. The outage half is now certified at the API boundary: three tests drive the real loopback-only runtime through `disabled`, `timeout`, `provider_unreachable` and `invalid_response`, pinning the fixed 503 body, `private, no-store`, zero stored candidate rows, no provider detail in the response, a single loopback transport request per call with `redirect: 'error'` and an `AbortSignal`, refusal of a non-loopback endpoint before any transport exists, and a rate limit that stays armed while the model is down; four targeted route mutations show each of those assertions fails when the contract is broken. See [evaluation protocol](../research/K7-006-protocol.md), [operations report](../operations/local-ai-evaluation.md), and [K7-006 evidence](evidence/K7-006.md).
 
 ## K8-001 — Knowledge explorer in existing Board
 
@@ -582,7 +582,7 @@ The source planning bundle is `MOONWITNESS_XI_LOCAL_AI_REBUILD_PLAN_2026-10-15/`
 
 - Priority: P0; risk: normal.
 - Depends on: `K9-001`.
-- File scope: `research/evaluations/`, `docs/operations/`.
+- File scope: `docs/research/`, `docs/operations/`.
 - Deliverable: Same-machine corpus size/latency/memory/IO and index build metrics.
 - Acceptance: Baseline, limits, dataset/model versions declared; unsupported hardware not hidden.
 - Verification target: `repeatable bench results`. This is a target, not evidence that the command exists or has passed.

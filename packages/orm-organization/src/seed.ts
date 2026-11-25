@@ -1,19 +1,5 @@
-import { knex, type Knex } from 'knex';
-import {
-  Company,
-  DEFAULT_TIMEZONE,
-  User,
-  Partner,
-  AccessGroup,
-  GroupMembership,
-  ModelAccess,
-} from '@moonwitness/orm-base';
-import {
-  OrganizationDepartment,
-  OrganizationTeam,
-  OrganizationPosition,
-  OrganizationMembership,
-} from './models.js';
+import { type Knex } from 'knex';
+import { DEFAULT_TIMEZONE } from '@moonwitness/orm-base';
 
 export interface OrganizationSeedPermission {
   model: string;

@@ -4,15 +4,32 @@
   "characterId": "crew-01",
   "pack": "moon-city",
   "domain": "visual-universe",
-  "description": "Walk prototype clip for crew-01: two-step cycle with pivots aligned to hood/torso layers; static pose fallback uses frame 1. No foot sliding beyond approved style (feet contact points unchanged between frames).",
+  "description": "Four-frame walk cycle for crew-01: left contact, passing, right contact and passing. Knees, boots, arms and hair change every frame with alternating foot contact points. No reused idle pose.",
   "clip": {
     "id": "crew-01-walk",
     "loop": true,
     "direction": "ping-pong",
-    "pivot": { "x": 0.5, "y": 0.5 },
+    "pivot": {
+      "x": 0.5,
+      "y": 0.9
+    },
     "frames": [
-      { "asset": "animation/crew-01-walk/crew-01-walk-frame-01.svg", "durationMs": 500 },
-      { "asset": "animation/crew-01-walk/crew-01-walk-frame-02.svg", "durationMs": 500 }
+      {
+        "asset": "animation/crew-01-walk/crew-01-walk-frame-01.svg",
+        "durationMs": 480
+      },
+      {
+        "asset": "animation/crew-01-walk/crew-01-walk-frame-02.svg",
+        "durationMs": 480
+      },
+      {
+        "asset": "animation/crew-01-walk/crew-01-walk-frame-03.svg",
+        "durationMs": 480
+      },
+      {
+        "asset": "animation/crew-01-walk/crew-01-walk-frame-04.svg",
+        "durationMs": 480
+      }
     ]
   },
   "reducedMotionFallback": "animation/crew-01-walk/crew-01-walk-frame-01.svg",

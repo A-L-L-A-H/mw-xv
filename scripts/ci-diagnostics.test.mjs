@@ -12,12 +12,12 @@ const e2eRunner = readFileSync('scripts/run-e2e.mjs', 'utf8');
 const rootPackage = JSON.parse(readFileSync('package.json', 'utf8'));
 
 test('CI executes unit, PostgreSQL integration, shared UI, and asset gates on built workspace packages', () => {
-  assert.match(workflow, /pnpm test:unit:built/u);
-  assert.match(workflow, /pnpm test:integration:built/u);
-  assert.match(workflow, /pnpm board:ui:check/u);
-  assert.match(workflow, /pnpm api:addon:check/u);
-  assert.match(workflow, /pnpm test:ui\b/u);
-  assert.match(workflow, /pnpm test:ui-budget/u);
+  assert.match(workflow, /bun run test:unit:built/u);
+  assert.match(workflow, /bun run test:integration:built/u);
+  assert.match(workflow, /bun run board:ui:check/u);
+  assert.match(workflow, /bun run api:addon:check/u);
+  assert.match(workflow, /bun run test:ui\b/u);
+  assert.match(workflow, /bun run test:ui-budget/u);
   assert.match(rootPackage.scripts['test:ui'], /node packages\/ui\/scripts\/verify-package\.mjs/u);
   assert.match(rootPackage.scripts['test:unit:ci'], /node scripts\/run-unit-tests\.mjs/u);
 });
@@ -123,7 +123,7 @@ test('documentation builds are isolated and portal failures annotate sanitized J
     assert.match(
       pagesWorkflow,
       new RegExp(
-        `name: Build documentation package ${label}\\s+run: pnpm --filter ${packageName} build`,
+        `name: Build documentation package ${label}\\s+run: bun --filter ${packageName} build`,
         'u'
       )
     );
@@ -146,12 +146,12 @@ test('documentation builds are isolated and portal failures annotate sanitized J
   assert.ok(storagePackageIndex < knowledgePackageIndex);
   for (const scriptName of ['docs:check', 'docs:generate']) {
     const script = rootPackage.scripts[scriptName];
-    const coreKnowledgePosition = script.indexOf('pnpm --filter @moonwitness/knowledge build');
-    const corpusPosition = script.indexOf('pnpm --filter @moonwitness/corpus build');
-    const researchPosition = script.indexOf('pnpm --filter @moonwitness/research build');
-    const ormKnowledgePosition = script.indexOf('pnpm --filter @moonwitness/orm-knowledge build');
-    const workflowPosition = script.indexOf('pnpm --filter @moonwitness/orm-workflow build');
-    const requestPosition = script.indexOf('pnpm --filter @moonwitness/orm-request build');
+    const coreKnowledgePosition = script.indexOf('bun --filter @moonwitness/knowledge build');
+    const corpusPosition = script.indexOf('bun --filter @moonwitness/corpus build');
+    const researchPosition = script.indexOf('bun --filter @moonwitness/research build');
+    const ormKnowledgePosition = script.indexOf('bun --filter @moonwitness/orm-knowledge build');
+    const workflowPosition = script.indexOf('bun --filter @moonwitness/orm-workflow build');
+    const requestPosition = script.indexOf('bun --filter @moonwitness/orm-request build');
     assert.ok(coreKnowledgePosition >= 0 && corpusPosition > coreKnowledgePosition);
     assert.ok(researchPosition > corpusPosition && ormKnowledgePosition > researchPosition);
     assert.ok(workflowPosition >= 0 && requestPosition > workflowPosition);
@@ -168,14 +168,14 @@ test('documentation builds are isolated and portal failures annotate sanitized J
     pagesWorkflow,
     /name: Verify generated README\s+run: node scripts\/docs\/update-readme\.mjs --check/u
   );
-  assert.match(pagesWorkflow, /name: Check documentation links\s+run: pnpm docs:links/u);
+  assert.match(pagesWorkflow, /name: Check documentation links\s+run: bun run docs:links/u);
   assert.match(
     pagesWorkflow,
-    /name: Check documentation example types\s+run: pnpm exec tsc --noEmit -p packages\/orm\/examples\/tsconfig\.json/u
+    /name: Check documentation example types\s+run: bunx tsc --noEmit -p packages\/orm\/examples\/tsconfig\.json/u
   );
   assert.match(
     pagesWorkflow,
-    /name: Test documented addon examples\s+run: pnpm --filter @moonwitness\/orm exec vitest run tests\/addon\.test\.ts/u
+    /name: Test documented addon examples\s+run: bunx --cwd packages\/orm vitest run tests\/addon\.test\.ts/u
   );
   assert.doesNotMatch(pagesWorkflow, /name: Build documentation portal site/u);
   const docsPackage = JSON.parse(readFileSync('apps/docs/package.json', 'utf8'));
@@ -185,7 +185,7 @@ test('documentation builds are isolated and portal failures annotate sanitized J
   );
   assert.match(
     readFileSync('apps/docs/playwright.config.ts', 'utf8'),
-    /portal:build && pnpm --filter @moonwitness\/docs exec vite preview/u
+    /portal:build && bunx --cwd apps\/docs vite preview/u
   );
   assert.match(pagesWorkflow, /name: Test documentation portal\s+id: docs_portal_tests/u);
   assert.match(

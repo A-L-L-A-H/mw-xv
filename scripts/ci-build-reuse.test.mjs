@@ -34,17 +34,17 @@ test('local and CI unit lanes run the offline knowledge CLI against the existing
     rootManifest.scripts['test:knowledge-cli:built'],
     'node --test scripts/knowledge/validate.test.mjs scripts/knowledge/snapshot.test.mjs scripts/knowledge/legacy-inventory.test.mjs scripts/knowledge/ingest.test.mjs scripts/knowledge/revelation-identity.test.mjs scripts/knowledge/rebuild.test.mjs'
   );
-  assert.match(rootManifest.scripts['test:unit:built'], /pnpm test:knowledge-cli:built/u);
+  assert.match(rootManifest.scripts['test:unit:built'], /bun run test:knowledge-cli:built/u);
   assert.match(runner, /run\(\['run', 'test:knowledge-cli:built'\]/u);
 });
 
 test('CI reuses the validated workspace build only inside its quality job', () => {
   const qualitySteps = [
-    'pnpm build',
-    'pnpm docs:check:built',
-    'pnpm --filter @moonwitness/board typecheck',
-    'pnpm board:budget',
-    'pnpm test:ui-budget',
+    'bun run build',
+    'bun run docs:check:built',
+    'bun --filter @moonwitness/board typecheck',
+    'bun run board:budget',
+    'bun run test:ui-budget',
   ];
   let previousIndex = -1;
   for (const command of qualitySteps) {
@@ -53,7 +53,7 @@ test('CI reuses the validated workspace build only inside its quality job', () =
     previousIndex = currentIndex;
   }
 
-  assert.match(rootManifest.scripts.typecheck, /pnpm build/u);
+  assert.match(rootManifest.scripts.typecheck, /bun run build/u);
   assert.match(rootManifest.scripts['architecture:check'], /--filter @moonwitness\/orm build/u);
   const architectureBuildOrder = [
     '@moonwitness/knowledge',
@@ -66,7 +66,7 @@ test('CI reuses the validated workspace build only inside its quality job', () =
     const script = rootManifest.scripts[scriptName];
     let previousIndex = -1;
     for (const packageName of architectureBuildOrder) {
-      const currentIndex = script.indexOf(`pnpm --filter ${packageName} build`);
+      const currentIndex = script.indexOf(`bun --filter ${packageName} build`);
       assert.ok(
         currentIndex > previousIndex,
         `${packageName} must build in dependency order for ${scriptName}`
@@ -85,11 +85,8 @@ test('CI reuses the validated workspace build only inside its quality job', () =
 });
 
 test('docs portal browser tests build the portal once in Playwright webServer', () => {
-  assert.equal(rootManifest.scripts['test:docs-portal'], 'pnpm --filter @moonwitness/docs test');
-  assert.match(
-    docsPlaywrightConfig,
-    /portal:build && pnpm --filter @moonwitness\/docs exec vite preview/u
-  );
+  assert.equal(rootManifest.scripts['test:docs-portal'], 'bun --filter @moonwitness/docs test');
+  assert.match(docsPlaywrightConfig, /portal:build && bunx --cwd apps\/docs vite preview/u);
   assert.match(
     rootManifest.scripts['docs:build:built'],
     /docs:check:built[\s\S]*portal:build:built/u
@@ -97,19 +94,19 @@ test('docs portal browser tests build the portal once in Playwright webServer', 
 });
 
 test('built variants consume existing package output without invoking package builds', () => {
-  assert.match(rootManifest.scripts['test:unit'], /^pnpm build && pnpm test:unit:built$/u);
-  assert.doesNotMatch(rootManifest.scripts['test:unit:built'], /pnpm build/u);
-  assert.match(rootManifest.scripts.verify, /pnpm typecheck && pnpm test:unit:built/u);
+  assert.match(rootManifest.scripts['test:unit'], /^bun run build && bun run test:unit:built$/u);
+  assert.doesNotMatch(rootManifest.scripts['test:unit:built'], /bun run build/u);
+  assert.match(rootManifest.scripts.verify, /bun run typecheck && bun run test:unit:built/u);
   assert.match(
     rootManifest.scripts.verify,
-    /pnpm architecture:check:built && pnpm docs:build:built/u
+    /bun run architecture:check:built && bun run docs:build:built/u
   );
   assert.equal(
     rootManifest.scripts['architecture:check:built'],
     'node scripts/architecture/generate-diagrams.mjs --check'
   );
   assert.match(rootManifest.scripts['docs:check:built'], /docs:examples:check:built/u);
-  assert.doesNotMatch(rootManifest.scripts['docs:check:built'], /pnpm --filter .* build/u);
+  assert.doesNotMatch(rootManifest.scripts['docs:check:built'], /bun --filter .* build/u);
   assert.match(rootManifest.scripts['docs:build:built'], /docs:check:built/u);
   assert.match(rootManifest.scripts['docs:build:built'], /portal:build:built/u);
   assert.doesNotMatch(
@@ -128,9 +125,15 @@ test('built variants consume existing package output without invoking package bu
   );
   const releaseVerification =
     releaseWorkflow.split('  verify:\n')[1]?.split('\n  publish:\n')[0] ?? '';
-  assert.match(releaseVerification, /run: pnpm typecheck[\s\S]*run: pnpm docs:check:built/u);
-  assert.match(releaseVerification, /run: pnpm docs:check:built[\s\S]*run: pnpm test:unit:built/u);
-  assert.match(releaseVerification, /run: pnpm typecheck[\s\S]*run: pnpm test:integration:built/u);
+  assert.match(releaseVerification, /run: bun run typecheck[\s\S]*run: bun run docs:check:built/u);
+  assert.match(
+    releaseVerification,
+    /run: bun run docs:check:built[\s\S]*run: bun run test:unit:built/u
+  );
+  assert.match(
+    releaseVerification,
+    /run: bun run typecheck[\s\S]*run: bun run test:integration:built/u
+  );
 });
 
 test('built PostgreSQL mode is recognized and still requires an explicit test database', () => {
@@ -178,7 +181,7 @@ test('built PostgreSQL mode reuses package output while running type and integra
         .trim()
         .split(/\r?\n/u)
         .map((line) => JSON.parse(line));
-      assert.equal(commands[0]?.args[0], mode === 'standalone' ? 'build' : '--filter');
+      assert.equal(commands[0]?.args[0], mode === 'standalone' ? 'build' : 'x');
       assert.ok(commands.some(({ args }) => args.includes('tsc')));
       assert.ok(commands.some(({ args }) => args.includes('vitest')));
       assert.ok(

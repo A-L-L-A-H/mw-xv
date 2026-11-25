@@ -1,0 +1,229 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "async": true,
+        "hooks": [
+          {
+            "type": "http",
+            "url": "http://127.0.0.1:3000/v1/qoder",
+            "headers": {
+              "Authorization": "Bearer ${OBSERVABILITY_INGEST_TOKEN}"
+            },
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "async": true,
+        "hooks": [
+          {
+            "type": "http",
+            "url": "http://127.0.0.1:3000/v1/qoder",
+            "headers": {
+              "Authorization": "Bearer ${OBSERVABILITY_INGEST_TOKEN}"
+            },
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "async": true,
+        "hooks": [
+          {
+            "type": "http",
+            "url": "http://127.0.0.1:3000/v1/qoder",
+            "headers": {
+              "Authorization": "Bearer ${OBSERVABILITY_INGEST_TOKEN}"
+            },
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "async": true,
+        "hooks": [
+          {
+            "type": "http",
+            "url": "http://127.0.0.1:3000/v1/qoder",
+            "headers": {
+              "Authorization": "Bearer ${OBSERVABILITY_INGEST_TOKEN}"
+            },
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "async": true,
+        "hooks": [
+          {
+            "type": "http",
+            "url": "http://127.0.0.1:3000/v1/qoder",
+            "headers": {
+              "Authorization": "Bearer ${OBSERVABILITY_INGEST_TOKEN}"
+            },
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "async": true,
+        "hooks": [
+          {
+            "type": "http",
+            "url": "http://127.0.0.1:3000/v1/qoder",
+            "headers": {
+              "Authorization": "Bearer ${OBSERVABILITY_INGEST_TOKEN}"
+            },
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "async": true,
+        "hooks": [
+          {
+            "type": "http",
+            "url": "http://127.0.0.1:3000/v1/qoder",
+            "headers": {
+              "Authorization": "Bearer ${OBSERVABILITY_INGEST_TOKEN}"
+            },
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PermissionDenied": [
+      {
+        "async": true,
+        "hooks": [
+          {
+            "type": "http",
+            "url": "http://127.0.0.1:3000/v1/qoder",
+            "headers": {
+              "Authorization": "Bearer ${OBSERVABILITY_INGEST_TOKEN}"
+            },
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "async": true,
+        "hooks": [
+          {
+            "type": "http",
+            "url": "http://127.0.0.1:3000/v1/qoder",
+            "headers": {
+              "Authorization": "Bearer ${OBSERVABILITY_INGEST_TOKEN}"
+            },
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "StopFailure": [
+      {
+        "async": true,
+        "hooks": [
+          {
+            "type": "http",
+            "url": "http://127.0.0.1:3000/v1/qoder",
+            "headers": {
+              "Authorization": "Bearer ${OBSERVABILITY_INGEST_TOKEN}"
+            },
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "async": true,
+        "hooks": [
+          {
+            "type": "http",
+            "url": "http://127.0.0.1:3000/v1/qoder",
+            "headers": {
+              "Authorization": "Bearer ${OBSERVABILITY_INGEST_TOKEN}"
+            },
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "async": true,
+        "hooks": [
+          {
+            "type": "http",
+            "url": "http://127.0.0.1:3000/v1/qoder",
+            "headers": {
+              "Authorization": "Bearer ${OBSERVABILITY_INGEST_TOKEN}"
+            },
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "async": true,
+        "hooks": [
+          {
+            "type": "http",
+            "url": "http://127.0.0.1:3000/v1/qoder",
+            "headers": {
+              "Authorization": "Bearer ${OBSERVABILITY_INGEST_TOKEN}"
+            },
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "async": true,
+        "hooks": [
+          {
+            "type": "http",
+            "url": "http://127.0.0.1:3000/v1/qoder",
+            "headers": {
+              "Authorization": "Bearer ${OBSERVABILITY_INGEST_TOKEN}"
+            },
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "async": true,
+        "hooks": [
+          {
+            "type": "http",
+            "url": "http://127.0.0.1:3000/v1/qoder",
+            "headers": {
+              "Authorization": "Bearer ${OBSERVABILITY_INGEST_TOKEN}"
+            },
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

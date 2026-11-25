@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
+import { isRecord } from '@moonwitness/types';
 import { Badge } from '@moonwitness/ui/components/badge';
 import { Button } from '@moonwitness/ui/components/button';
 import { EmptyState } from '@moonwitness/ui/components/empty-state';
 import { PageHeader } from '@moonwitness/ui/components/page-header';
 import { Panel } from '@moonwitness/ui/components/panel';
 import { Skeleton } from '@moonwitness/ui/components/skeleton';
-import { BookOpenIcon } from '@moonwitness/ui/icons';
+import { getStateIllustration } from '@moonwitness/ui/lib/asset-registry';
 
 interface PublicCitation {
   readonly source_id: string;
@@ -35,10 +36,6 @@ type LoadState =
   | { readonly status: 'unavailable'; readonly message: string };
 
 const sha256Pattern = /^[a-f0-9]{64}$/u;
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 function isValidCitation(value: unknown): value is PublicCitation {
   return (
@@ -82,9 +79,13 @@ function isValidApprovedPublication(value: unknown): value is ApprovedPublicatio
 
 export default function PublicKnowledgeShellPage() {
   const [state, setState] = useState<LoadState>({ status: 'loading' });
+  const offlineArt = getStateIllustration('offline');
+  const emptyCollectionArt = getStateIllustration('empty-collection');
 
   const fetchPublications = useCallback(async (signal?: AbortSignal): Promise<LoadState> => {
     try {
+      // Documented public unauthenticated exception: SDK RequestOptions exposes neither
+      // skipAuth nor AbortSignal. Keep cancellation and pre-login access without expanding the client API.
       const response = await fetch('/api/public/publications', {
         method: 'GET',
         headers: { accept: 'application/json' },
@@ -156,6 +157,12 @@ export default function PublicKnowledgeShellPage() {
             <Button asChild variant="secondary">
               <Link href="/">Workspace Home</Link>
             </Button>
+            <Button asChild variant="outline">
+              <Link href="/login">Sign in</Link>
+            </Button>
+            <Button asChild>
+              <Link href="/register">Create an account</Link>
+            </Button>
           </div>
         }
       />
@@ -180,7 +187,14 @@ export default function PublicKnowledgeShellPage() {
 
       {state.status === 'unavailable' ? (
         <EmptyState
-          icon={<BookOpenIcon size={20} />}
+          icon={
+            <img
+              src={offlineArt.src}
+              alt=""
+              className="h-28 w-28 object-contain"
+              decoding="async"
+            />
+          }
           title="Public projections unavailable"
           description={state.message}
           action={
@@ -199,9 +213,27 @@ export default function PublicKnowledgeShellPage() {
 
       {state.status === 'ready' && state.items.length === 0 ? (
         <EmptyState
-          icon={<BookOpenIcon size={20} />}
+          icon={
+            <img
+              src={emptyCollectionArt.src}
+              alt=""
+              className="h-28 w-28 object-contain"
+              decoding="async"
+            />
+          }
           title="No approved public projections"
           description="Only explicitly reviewed, rights-cleared PUBLIC_APPROVED snapshots appear here. Draft, internal, restricted, and taken-down records remain withheld."
+          action={
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                void loadPublications();
+              }}
+            >
+              Refresh projections
+            </Button>
+          }
         />
       ) : null}
 

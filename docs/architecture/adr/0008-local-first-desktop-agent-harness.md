@@ -1,14 +1,14 @@
 # ADR 0008: Local-First Desktop Agent Harness (`apps/desktop`)
 
-- **Status:** Accepted Architecture Baseline (2026-11-22; implementation tracked in [`todo-desktop.md`](../../../todo-desktop.md))
+- **Status:** Accepted Architecture Baseline (2026-11-22; implementation tracked in [`docs/tasks/sources/todo-desktop.md`](../../tasks/sources/todo-desktop.md))
 - **Runtime alignment (2026-11-23):** Node.js `24.x` supersedes the original `22.x` draft baseline and matches root engines, Desktop package, Docker and CI.
 - **Date:** 2026-11-22
 - **Decision owners:** MoonWitness maintainers
 - **Scope:** `apps/desktop` (`@moonwitness/desktop`), `apps/board` (`@moonwitness/board`), `@moonwitness/orm`, `@moonwitness/orm-ai`, `@moonwitness/ai-runtime`, `@moonwitness/local-ai`, `@moonwitness/jobs`, `@moonwitness/orm-storage`, `@moonwitness/ui`
 - **Related architecture & plans:**
   - [Desktop Local-First Harness Architecture](../desktop-local-first-harness.md)
-  - [Desktop Implementation Checklist (`DSK-0`–`DSK-10`)](../../../todo-desktop.md)
-  - [Blueprint: AI Corporation Desktop Harness](../../../moonwitness-ai-corporation-blueprint/docs/AI-CORPORATION-DESKTOP-HARNESS.md)
+  - [Desktop Implementation Checklist (`DSK-0`–`DSK-10`)](../../tasks/sources/todo-desktop.md)
+  - [Blueprint: AI Corporation Desktop Harness](../../bundles/ai-corporation-blueprint/docs/AI-CORPORATION-DESKTOP-HARNESS.md)
   - [ADR 0001: Platform Contracts](../../decisions/0001-platform-contracts.md)
   - [ADR 0006: Mandatory Addon-First & Thin `apps/api`](../../decisions/0006-mandatory-addon-thin-api.md)
   - [ADR 0007: AI Corporation Addon-First Architecture](../../decisions/0007-ai-corporation-addon-first-architecture.md)

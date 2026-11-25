@@ -120,6 +120,7 @@ export function SmartButtonBox({
         {resolvedPrimaryActions.map((action) => (
           <Button
             key={action.id}
+            type="button"
             variant={action.variant || (action.primary ? 'default' : 'outline')}
             size={action.size || 'default'}
             disabled={action.disabled}

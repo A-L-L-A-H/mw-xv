@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type JobsIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function JobsIcon({ size = 24, title, ...props }: JobsIconProps) {
+const JobsIcon = forwardRef<SVGSVGElement, JobsIconProps>(function JobsIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -27,4 +31,8 @@ export function JobsIcon({ size = 24, title, ...props }: JobsIconProps) {
       <path d="M9 4V2.5h6V4m-7 5h8m-8 4h8m-8 4h4" />
     </svg>
   );
-}
+});
+
+JobsIcon.displayName = 'JobsIcon';
+
+export { JobsIcon };

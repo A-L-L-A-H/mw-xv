@@ -2,6 +2,7 @@
 
 import { useCallback, useSyncExternalStore } from 'react';
 import type { DesktopExperienceMode } from '@moonwitness/ui/components/mode-picker';
+import { client } from '@/lib/client';
 
 export type { DesktopExperienceMode };
 
@@ -29,15 +30,15 @@ function readStoredMode(): DesktopExperienceMode | null {
 function syncSidecarMode(mode: DesktopExperienceMode): void {
   if (typeof window === 'undefined') return;
   const apiUrl = (window as DesktopWindow).__MW_DESKTOP_API_URL__;
-  if (!apiUrl || typeof apiUrl !== 'string') return;
-  const baseUrl = apiUrl.replace(/\/+$/u, '');
-  void fetch(`${baseUrl}/api/desktop/mode`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ mode }),
-  }).catch(() => {
-    // Non-blocking best-effort sync with local desktop sidecar.
-  });
+  if (!apiUrl || typeof apiUrl !== 'string' || apiUrl.trim().length === 0) return;
+  void client
+    .request('/api/desktop/mode', {
+      method: 'POST',
+      body: { mode },
+    })
+    .catch(() => {
+      // Non-blocking best-effort sync with local desktop sidecar.
+    });
 }
 
 function subscribe(callback: () => void): () => void {

@@ -8,6 +8,8 @@ export type MetricTileProps = Omit<ComponentProps<'article'>, 'children' | 'titl
   accent?: 'magenta' | 'cyan' | 'yellow' | 'green' | 'violet';
   surface?: 'default' | 'paper' | 'ink';
   frame?: 'line' | 'torn' | 'scuffed' | 'grunge';
+  size?: 'compact' | 'default' | 'hero';
+  interactive?: boolean;
 };
 
 /** Presentation only: callers own metric meaning, loading, and error states. */
@@ -19,6 +21,8 @@ export function MetricTile({
   accent = 'cyan',
   surface = 'default',
   frame = 'line',
+  size = 'default',
+  interactive = false,
   className,
   ...props
 }: MetricTileProps) {
@@ -27,6 +31,8 @@ export function MetricTile({
       className={['mw-ui-metric-tile', className].filter(Boolean).join(' ')}
       data-accent={accent}
       data-frame={frame}
+      data-interactive={interactive ? 'true' : undefined}
+      data-size={size}
       data-surface={surface}
       {...props}
     >

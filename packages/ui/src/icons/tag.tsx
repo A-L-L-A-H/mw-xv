@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type TagIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function TagIcon({ size = 24, title, ...props }: TagIconProps) {
+const TagIcon = forwardRef<SVGSVGElement, TagIconProps>(function TagIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -27,4 +31,8 @@ export function TagIcon({ size = 24, title, ...props }: TagIconProps) {
       <circle cx="8" cy="8" r="1.25" />
     </svg>
   );
-}
+});
+
+TagIcon.displayName = 'TagIcon';
+
+export { TagIcon };

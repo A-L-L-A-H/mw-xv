@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type ExternalLinkIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function ExternalLinkIcon({ size = 24, title, ...props }: ExternalLinkIconProps) {
+const ExternalLinkIcon = forwardRef<SVGSVGElement, ExternalLinkIconProps>(function ExternalLinkIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -27,4 +31,8 @@ export function ExternalLinkIcon({ size = 24, title, ...props }: ExternalLinkIco
       <path d="M18 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5" />
     </svg>
   );
-}
+});
+
+ExternalLinkIcon.displayName = 'ExternalLinkIcon';
+
+export { ExternalLinkIcon };

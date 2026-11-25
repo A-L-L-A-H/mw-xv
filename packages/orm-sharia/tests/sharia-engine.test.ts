@@ -88,7 +88,7 @@ describe('Sharia Contract Validator', () => {
       ghararFreeConfirmed: true,
     });
     expect(murabahah.valid).toBe(false);
-    expect(murabahah.violations.some(v => v.includes('profit_margin_minor'))).toBe(true);
+    expect(murabahah.violations.some((v) => v.includes('profit_margin_minor'))).toBe(true);
 
     const mudharabah = validateShariaContract({
       type: 'mudharabah',
@@ -99,7 +99,7 @@ describe('Sharia Contract Validator', () => {
       ghararFreeConfirmed: true,
     });
     expect(mudharabah.valid).toBe(false);
-    expect(mudharabah.violations.some(v => v.includes('profit_sharing_ratio'))).toBe(true);
+    expect(mudharabah.violations.some((v) => v.includes('profit_sharing_ratio'))).toBe(true);
   });
 
   it('rejects contracts without riba-free or gharar-free confirmation and missing DSN-MUI reference', () => {
@@ -123,8 +123,18 @@ describe('Waqf Asset Merkle Trail', () => {
   it('computes deterministic merkle root from event trail and detects tampering on verify', async () => {
     const assetId = 1;
     const trailInput = [
-      { event: 'acquisition', timestamp: '2024-01-01T00:00:00.000Z', valueMinor: 1_500_000_000, description: 'Cloud cluster funded' },
-      { event: 'yield_distribution', timestamp: '2024-12-31T00:00:00.000Z', valueMinor: 180_000_000, description: 'Annual compute yield' },
+      {
+        event: 'acquisition',
+        timestamp: '2024-01-01T00:00:00.000Z',
+        valueMinor: 1_500_000_000,
+        description: 'Cloud cluster funded',
+      },
+      {
+        event: 'yield_distribution',
+        timestamp: '2024-12-31T00:00:00.000Z',
+        valueMinor: 180_000_000,
+        description: 'Annual compute yield',
+      },
     ] as const;
 
     const appended = await appendWaqfMerkleEvent(DB_MOCK, assetId, trailInput[0]);
@@ -142,7 +152,7 @@ describe('Waqf Asset Merkle Trail', () => {
 
     const tampered = await computeWaqfMerkle(DB_MOCK, {
       assetId,
-      trail: appended2.trail.map((node, idx) => idx === 0 ? { ...node, valueMinor: 999 } : node),
+      trail: appended2.trail.map((node, idx) => (idx === 0 ? { ...node, valueMinor: 999 } : node)),
     });
     expect(tampered.verified).toBe(false);
     expect(tampered.merkleRoot).not.toBe(appended2.merkleRoot);

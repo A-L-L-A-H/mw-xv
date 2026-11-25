@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { ColorMode, SkinDensity, SkinId } from '@moonwitness/types';
-import { DEFAULT_SKIN_ID, themeRegistry } from '@moonwitness/ui/themes';
+import { createSkinInitScript, DEFAULT_SKIN_ID, themeRegistry } from '@moonwitness/ui/themes';
 import { SkinContext, type SkinContextValue } from './skin-context';
-import { applySkinToDocument, readPreferences, savePreferences } from '@/lib/preferences';
+import { readPreferences, savePreferences } from '@/lib/preferences';
 
-export const SKIN_INIT_SCRIPT = `(function(){try{var s=localStorage.getItem('mw-board-preferences');var p=s?JSON.parse(s):null;var k=p&&typeof p.skin==='string'?p.skin:'${DEFAULT_SKIN_ID}';var allowed=['moonwitness-ink','moonwitness-compact','moonwitness-high-contrast'];if(allowed.indexOf(k)===-1)k='${DEFAULT_SKIN_ID}';var d=p&&p.density==='compact'?'compact':'comfortable';var m=(p&&(p.theme==='dark'||p.theme==='light'))?p.theme:(localStorage.getItem('mw-theme')==='dark'?'dark':'light');var r=document.documentElement;r.dataset.skin=k;r.dataset.density=d;r.classList.toggle('dark',m==='dark');}catch(e){}})();`;
+// Pre-hydration skin init script imported by the root layout alongside SkinProvider.
+// oxlint-disable-next-line react/only-export-components
+export const SKIN_INIT_SCRIPT = createSkinInitScript();
 
 export function SkinProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<{ skin: SkinId; mode: ColorMode; density: SkinDensity }>(
@@ -17,7 +19,13 @@ export function SkinProvider({ children }: { children: ReactNode }) {
   );
 
   useEffect(() => {
-    applySkinToDocument(state.skin, state.mode, state.density);
+    const existing = readPreferences();
+    savePreferences({
+      ...existing,
+      skin: state.skin,
+      theme: state.mode,
+      density: state.density,
+    });
   }, [state.skin, state.mode, state.density]);
 
   const update = useCallback(
@@ -27,13 +35,6 @@ export function SkinProvider({ children }: { children: ReactNode }) {
           skin: patch.skin ?? current.skin,
           theme_mode: patch.mode ?? current.mode,
           density: patch.density ?? current.density,
-        });
-        const existing = readPreferences();
-        savePreferences({
-          ...existing,
-          skin: normalized.skin,
-          theme: normalized.theme_mode,
-          density: normalized.density,
         });
         return {
           skin: normalized.skin,

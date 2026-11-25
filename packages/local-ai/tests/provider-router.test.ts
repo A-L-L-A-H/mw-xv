@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  isLoopbackEndpointUrl,
   ProviderRouterError,
   createMultiProviderLlmRouter,
   type RouterProviderConfig,
@@ -200,5 +201,34 @@ describe('Mega-Wave I.4: Deterministic Multi-Provider Local/Edge LLM Router', ()
         latencyMs: 120,
       }))
     ).rejects.toMatchObject({ code: 'BUDGET_EXCEEDED' });
+  });
+
+  it('rejects non-HTTP(S) schemes, credentials, and invalid circuitBreaker bounds on loopback checks', () => {
+    expect(isLoopbackEndpointUrl('http://127.0.0.1:11434')).toBe(true);
+    expect(isLoopbackEndpointUrl('https://localhost:8443')).toBe(true);
+    expect(isLoopbackEndpointUrl('ftp://localhost:21')).toBe(false);
+    expect(isLoopbackEndpointUrl('file://localhost/etc/passwd')).toBe(false);
+    expect(isLoopbackEndpointUrl('http://user:pass@127.0.0.1:11434')).toBe(false);
+    expect(isLoopbackEndpointUrl('http://127.0.0.1:11434?token=leak')).toBe(false);
+
+    expect(() =>
+      createMultiProviderLlmRouter({
+        privacyTier: 'offline-strict',
+        providers: [
+          {
+            ...PROVIDERS[0],
+            endpoint: 'http://user:pass@127.0.0.1:11434',
+          },
+        ],
+      }).getEligibleProviders({ prompt: 'test' })
+    ).toThrow(ProviderRouterError);
+
+    expect(() =>
+      createMultiProviderLlmRouter({
+        privacyTier: 'offline-strict',
+        providers: [PROVIDERS[0]],
+        circuitBreaker: { failureThreshold: 0 },
+      })
+    ).toThrow(/circuitBreaker/u);
   });
 });

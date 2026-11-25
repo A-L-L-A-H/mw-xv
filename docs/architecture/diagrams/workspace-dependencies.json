@@ -1,8 +1,20 @@
 {
   "schemaVersion": 1,
   "generatedFrom": "apps/*/package.json and packages/*/package.json",
-  "sourceSha256": "9ff2690f01bd254ffc5d0c79a16411552accbe319b0e44d81148f853d9153a68",
+  "sourceSha256": "99edf4004ce5be8bb48f7ab73a4da00795fb553c42f5951692add7c13ef4fbfb",
   "packages": [
+    {
+      "name": "@moonwitness/agent-observability",
+      "kind": "app",
+      "version": "1.0.0-rc.1",
+      "manifest": "apps/agent-observability"
+    },
+    {
+      "name": "@moonwitness/agent-sandbox",
+      "kind": "app",
+      "version": "1.0.0-rc.1",
+      "manifest": "apps/agent-sandbox"
+    },
     {
       "name": "@moonwitness/ai-evaluation",
       "kind": "package",
@@ -112,10 +124,22 @@
       "manifest": "packages/logger"
     },
     {
+      "name": "@moonwitness/mcp-moonwitness",
+      "kind": "package",
+      "version": "1.0.0-rc.1",
+      "manifest": "packages/mcp-moonwitness"
+    },
+    {
       "name": "@moonwitness/orm",
       "kind": "package",
       "version": "1.0.0-rc.1",
       "manifest": "packages/orm"
+    },
+    {
+      "name": "@moonwitness/orm-a2a",
+      "kind": "package",
+      "version": "1.0.0-rc.1",
+      "manifest": "packages/orm-a2a"
     },
     {
       "name": "@moonwitness/orm-ai",
@@ -124,10 +148,40 @@
       "manifest": "packages/orm-ai"
     },
     {
+      "name": "@moonwitness/orm-automation-core",
+      "kind": "package",
+      "version": "1.0.0",
+      "manifest": "packages/orm-automation-core"
+    },
+    {
       "name": "@moonwitness/orm-base",
       "kind": "package",
       "version": "1.0.0-rc.1",
       "manifest": "packages/orm-base"
+    },
+    {
+      "name": "@moonwitness/orm-bot-orchestrator",
+      "kind": "package",
+      "version": "1.0.0",
+      "manifest": "packages/orm-bot-orchestrator"
+    },
+    {
+      "name": "@moonwitness/orm-catalog",
+      "kind": "package",
+      "version": "1.0.0",
+      "manifest": "packages/orm-catalog"
+    },
+    {
+      "name": "@moonwitness/orm-cli",
+      "kind": "package",
+      "version": "1.0.0",
+      "manifest": "packages/orm-cli"
+    },
+    {
+      "name": "@moonwitness/orm-clinical",
+      "kind": "package",
+      "version": "1.0.0",
+      "manifest": "packages/orm-clinical"
     },
     {
       "name": "@moonwitness/orm-cloud",
@@ -136,10 +190,46 @@
       "manifest": "packages/orm-cloud"
     },
     {
+      "name": "@moonwitness/orm-compliance",
+      "kind": "package",
+      "version": "1.0.0",
+      "manifest": "packages/orm-compliance"
+    },
+    {
+      "name": "@moonwitness/orm-content-factory",
+      "kind": "package",
+      "version": "1.0.0",
+      "manifest": "packages/orm-content-factory"
+    },
+    {
       "name": "@moonwitness/orm-crm",
       "kind": "package",
       "version": "1.0.0",
       "manifest": "packages/orm-crm"
+    },
+    {
+      "name": "@moonwitness/orm-ecommerce-sync",
+      "kind": "package",
+      "version": "1.0.0",
+      "manifest": "packages/orm-ecommerce-sync"
+    },
+    {
+      "name": "@moonwitness/orm-governance",
+      "kind": "package",
+      "version": "1.0.0",
+      "manifest": "packages/orm-governance"
+    },
+    {
+      "name": "@moonwitness/orm-helpdesk",
+      "kind": "package",
+      "version": "1.0.0",
+      "manifest": "packages/orm-helpdesk"
+    },
+    {
+      "name": "@moonwitness/orm-income-ledger",
+      "kind": "package",
+      "version": "1.0.0",
+      "manifest": "packages/orm-income-ledger"
     },
     {
       "name": "@moonwitness/orm-integration",
@@ -166,6 +256,12 @@
       "manifest": "packages/orm-notification"
     },
     {
+      "name": "@moonwitness/orm-observability",
+      "kind": "package",
+      "version": "1.0.0-rc.1",
+      "manifest": "packages/orm-observability"
+    },
+    {
       "name": "@moonwitness/orm-organization",
       "kind": "package",
       "version": "1.0.0-rc.1",
@@ -178,16 +274,52 @@
       "manifest": "packages/orm-project"
     },
     {
+      "name": "@moonwitness/orm-public-services",
+      "kind": "package",
+      "version": "1.0.0",
+      "manifest": "packages/orm-public-services"
+    },
+    {
       "name": "@moonwitness/orm-request",
       "kind": "package",
       "version": "1.0.0-rc.1",
       "manifest": "packages/orm-request"
     },
     {
+      "name": "@moonwitness/orm-rnd",
+      "kind": "package",
+      "version": "1.0.0",
+      "manifest": "packages/orm-rnd"
+    },
+    {
       "name": "@moonwitness/orm-sales",
       "kind": "package",
       "version": "1.0.0",
       "manifest": "packages/orm-sales"
+    },
+    {
+      "name": "@moonwitness/orm-sensor",
+      "kind": "package",
+      "version": "1.0.0",
+      "manifest": "packages/orm-sensor"
+    },
+    {
+      "name": "@moonwitness/orm-sharia",
+      "kind": "package",
+      "version": "1.0.0",
+      "manifest": "packages/orm-sharia"
+    },
+    {
+      "name": "@moonwitness/orm-signal",
+      "kind": "package",
+      "version": "1.0.0",
+      "manifest": "packages/orm-signal"
+    },
+    {
+      "name": "@moonwitness/orm-sim",
+      "kind": "package",
+      "version": "1.0.0",
+      "manifest": "packages/orm-sim"
     },
     {
       "name": "@moonwitness/orm-storage",
@@ -236,18 +368,30 @@
       "kind": "app",
       "version": "1.0.0-rc.1",
       "manifest": "apps/ui-catalog"
+    },
+    {
+      "name": "@moonwitness/whatsapp",
+      "kind": "app",
+      "version": "1.0.0-rc.1",
+      "manifest": "apps/whatsapp"
     }
   ],
   "dependencies": [
     {
-      "from": "@moonwitness/ai-evaluation",
-      "to": "@moonwitness/ai-runtime",
+      "from": "@moonwitness/agent-observability",
+      "to": "@moonwitness/orm-observability",
       "kind": "runtime",
-      "manifest": "packages/ai-evaluation"
+      "manifest": "apps/agent-observability"
+    },
+    {
+      "from": "@moonwitness/agent-sandbox",
+      "to": "@moonwitness/types",
+      "kind": "development",
+      "manifest": "apps/agent-sandbox"
     },
     {
       "from": "@moonwitness/ai-evaluation",
-      "to": "@moonwitness/orm-ai",
+      "to": "@moonwitness/ai-runtime",
       "kind": "runtime",
       "manifest": "packages/ai-evaluation"
     },
@@ -373,6 +517,12 @@
     },
     {
       "from": "@moonwitness/api",
+      "to": "@moonwitness/orm-a2a",
+      "kind": "runtime",
+      "manifest": "apps/api"
+    },
+    {
+      "from": "@moonwitness/api",
       "to": "@moonwitness/orm-ai",
       "kind": "runtime",
       "manifest": "apps/api"
@@ -416,6 +566,12 @@
     {
       "from": "@moonwitness/api",
       "to": "@moonwitness/orm-notification",
+      "kind": "runtime",
+      "manifest": "apps/api"
+    },
+    {
+      "from": "@moonwitness/api",
+      "to": "@moonwitness/orm-observability",
       "kind": "runtime",
       "manifest": "apps/api"
     },
@@ -528,14 +684,14 @@
       "manifest": "packages/corpus"
     },
     {
-      "from": "@moonwitness/desktop",
-      "to": "@moonwitness/assets",
-      "kind": "development",
-      "manifest": "apps/desktop"
+      "from": "@moonwitness/corpus",
+      "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "packages/corpus"
     },
     {
       "from": "@moonwitness/desktop",
-      "to": "@moonwitness/client",
+      "to": "@moonwitness/assets",
       "kind": "development",
       "manifest": "apps/desktop"
     },
@@ -554,6 +710,12 @@
     {
       "from": "@moonwitness/desktop",
       "to": "@moonwitness/ai-runtime",
+      "kind": "runtime",
+      "manifest": "apps/desktop"
+    },
+    {
+      "from": "@moonwitness/desktop",
+      "to": "@moonwitness/client",
       "kind": "runtime",
       "manifest": "apps/desktop"
     },
@@ -584,6 +746,12 @@
     {
       "from": "@moonwitness/desktop",
       "to": "@moonwitness/orm-base",
+      "kind": "runtime",
+      "manifest": "apps/desktop"
+    },
+    {
+      "from": "@moonwitness/desktop",
+      "to": "@moonwitness/orm-cloud",
       "kind": "runtime",
       "manifest": "apps/desktop"
     },
@@ -654,10 +822,76 @@
       "manifest": "packages/jobs"
     },
     {
+      "from": "@moonwitness/knowledge",
+      "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "packages/knowledge"
+    },
+    {
+      "from": "@moonwitness/local-ai",
+      "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "packages/local-ai"
+    },
+    {
+      "from": "@moonwitness/mcp-moonwitness",
+      "to": "@moonwitness/orm",
+      "kind": "runtime",
+      "manifest": "packages/mcp-moonwitness"
+    },
+    {
+      "from": "@moonwitness/mcp-moonwitness",
+      "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "packages/mcp-moonwitness"
+    },
+    {
       "from": "@moonwitness/orm",
       "to": "@moonwitness/types",
       "kind": "runtime",
       "manifest": "packages/orm"
+    },
+    {
+      "from": "@moonwitness/orm-a2a",
+      "to": "@moonwitness/ai-runtime",
+      "kind": "runtime",
+      "manifest": "packages/orm-a2a"
+    },
+    {
+      "from": "@moonwitness/orm-a2a",
+      "to": "@moonwitness/orm",
+      "kind": "runtime",
+      "manifest": "packages/orm-a2a"
+    },
+    {
+      "from": "@moonwitness/orm-a2a",
+      "to": "@moonwitness/orm-ai",
+      "kind": "runtime",
+      "manifest": "packages/orm-a2a"
+    },
+    {
+      "from": "@moonwitness/orm-a2a",
+      "to": "@moonwitness/orm-base",
+      "kind": "runtime",
+      "manifest": "packages/orm-a2a"
+    },
+    {
+      "from": "@moonwitness/orm-a2a",
+      "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "packages/orm-a2a"
+    },
+    {
+      "from": "@moonwitness/orm-ai",
+      "to": "@moonwitness/ai-evaluation",
+      "kind": "runtime",
+      "manifest": "packages/orm-ai"
+    },
+    {
+      "from": "@moonwitness/orm-ai",
+      "to": "@moonwitness/ai-runtime",
+      "kind": "runtime",
+      "manifest": "packages/orm-ai"
     },
     {
       "from": "@moonwitness/orm-ai",
@@ -696,6 +930,48 @@
       "manifest": "packages/orm-ai"
     },
     {
+      "from": "@moonwitness/orm-ai",
+      "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "packages/orm-ai"
+    },
+    {
+      "from": "@moonwitness/orm-automation-core",
+      "to": "@moonwitness/jobs",
+      "kind": "development",
+      "manifest": "packages/orm-automation-core"
+    },
+    {
+      "from": "@moonwitness/orm-automation-core",
+      "to": "@moonwitness/orm-notification",
+      "kind": "development",
+      "manifest": "packages/orm-automation-core"
+    },
+    {
+      "from": "@moonwitness/orm-automation-core",
+      "to": "@moonwitness/orm-project",
+      "kind": "development",
+      "manifest": "packages/orm-automation-core"
+    },
+    {
+      "from": "@moonwitness/orm-automation-core",
+      "to": "@moonwitness/orm",
+      "kind": "runtime",
+      "manifest": "packages/orm-automation-core"
+    },
+    {
+      "from": "@moonwitness/orm-automation-core",
+      "to": "@moonwitness/orm-base",
+      "kind": "runtime",
+      "manifest": "packages/orm-automation-core"
+    },
+    {
+      "from": "@moonwitness/orm-automation-core",
+      "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "packages/orm-automation-core"
+    },
+    {
       "from": "@moonwitness/orm-base",
       "to": "@moonwitness/orm",
       "kind": "runtime",
@@ -706,6 +982,54 @@
       "to": "@moonwitness/types",
       "kind": "runtime",
       "manifest": "packages/orm-base"
+    },
+    {
+      "from": "@moonwitness/orm-bot-orchestrator",
+      "to": "@moonwitness/orm",
+      "kind": "runtime",
+      "manifest": "packages/orm-bot-orchestrator"
+    },
+    {
+      "from": "@moonwitness/orm-bot-orchestrator",
+      "to": "@moonwitness/orm-base",
+      "kind": "runtime",
+      "manifest": "packages/orm-bot-orchestrator"
+    },
+    {
+      "from": "@moonwitness/orm-catalog",
+      "to": "@moonwitness/orm",
+      "kind": "runtime",
+      "manifest": "packages/orm-catalog"
+    },
+    {
+      "from": "@moonwitness/orm-catalog",
+      "to": "@moonwitness/orm-base",
+      "kind": "runtime",
+      "manifest": "packages/orm-catalog"
+    },
+    {
+      "from": "@moonwitness/orm-catalog",
+      "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "packages/orm-catalog"
+    },
+    {
+      "from": "@moonwitness/orm-cli",
+      "to": "@moonwitness/orm-base",
+      "kind": "runtime",
+      "manifest": "packages/orm-cli"
+    },
+    {
+      "from": "@moonwitness/orm-clinical",
+      "to": "@moonwitness/orm",
+      "kind": "runtime",
+      "manifest": "packages/orm-clinical"
+    },
+    {
+      "from": "@moonwitness/orm-clinical",
+      "to": "@moonwitness/orm-base",
+      "kind": "runtime",
+      "manifest": "packages/orm-clinical"
     },
     {
       "from": "@moonwitness/orm-cloud",
@@ -728,6 +1052,12 @@
     {
       "from": "@moonwitness/orm-cloud",
       "to": "@moonwitness/orm-sales",
+      "kind": "development",
+      "manifest": "packages/orm-cloud"
+    },
+    {
+      "from": "@moonwitness/orm-cloud",
+      "to": "@moonwitness/orm-storage",
       "kind": "development",
       "manifest": "packages/orm-cloud"
     },
@@ -774,6 +1104,36 @@
       "manifest": "packages/orm-cloud"
     },
     {
+      "from": "@moonwitness/orm-compliance",
+      "to": "@moonwitness/orm",
+      "kind": "runtime",
+      "manifest": "packages/orm-compliance"
+    },
+    {
+      "from": "@moonwitness/orm-compliance",
+      "to": "@moonwitness/orm-base",
+      "kind": "runtime",
+      "manifest": "packages/orm-compliance"
+    },
+    {
+      "from": "@moonwitness/orm-compliance",
+      "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "packages/orm-compliance"
+    },
+    {
+      "from": "@moonwitness/orm-content-factory",
+      "to": "@moonwitness/orm",
+      "kind": "runtime",
+      "manifest": "packages/orm-content-factory"
+    },
+    {
+      "from": "@moonwitness/orm-content-factory",
+      "to": "@moonwitness/orm-base",
+      "kind": "runtime",
+      "manifest": "packages/orm-content-factory"
+    },
+    {
       "from": "@moonwitness/orm-crm",
       "to": "@moonwitness/orm",
       "kind": "runtime",
@@ -784,6 +1144,84 @@
       "to": "@moonwitness/orm-base",
       "kind": "runtime",
       "manifest": "packages/orm-crm"
+    },
+    {
+      "from": "@moonwitness/orm-crm",
+      "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "packages/orm-crm"
+    },
+    {
+      "from": "@moonwitness/orm-ecommerce-sync",
+      "to": "@moonwitness/orm",
+      "kind": "runtime",
+      "manifest": "packages/orm-ecommerce-sync"
+    },
+    {
+      "from": "@moonwitness/orm-ecommerce-sync",
+      "to": "@moonwitness/orm-base",
+      "kind": "runtime",
+      "manifest": "packages/orm-ecommerce-sync"
+    },
+    {
+      "from": "@moonwitness/orm-ecommerce-sync",
+      "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "packages/orm-ecommerce-sync"
+    },
+    {
+      "from": "@moonwitness/orm-governance",
+      "to": "@moonwitness/orm",
+      "kind": "runtime",
+      "manifest": "packages/orm-governance"
+    },
+    {
+      "from": "@moonwitness/orm-governance",
+      "to": "@moonwitness/orm-base",
+      "kind": "runtime",
+      "manifest": "packages/orm-governance"
+    },
+    {
+      "from": "@moonwitness/orm-helpdesk",
+      "to": "@moonwitness/orm",
+      "kind": "runtime",
+      "manifest": "packages/orm-helpdesk"
+    },
+    {
+      "from": "@moonwitness/orm-helpdesk",
+      "to": "@moonwitness/orm-base",
+      "kind": "runtime",
+      "manifest": "packages/orm-helpdesk"
+    },
+    {
+      "from": "@moonwitness/orm-helpdesk",
+      "to": "@moonwitness/orm-crm",
+      "kind": "runtime",
+      "manifest": "packages/orm-helpdesk"
+    },
+    {
+      "from": "@moonwitness/orm-helpdesk",
+      "to": "@moonwitness/orm-knowledge",
+      "kind": "runtime",
+      "manifest": "packages/orm-helpdesk"
+    },
+    {
+      "from": "@moonwitness/orm-helpdesk",
+      "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "packages/orm-helpdesk"
+    },
+    {
+      "from": "@moonwitness/orm-income-ledger",
+      "to": "@moonwitness/orm",
+      "kind": "runtime",
+      "manifest": "packages/orm-income-ledger"
+    },
+    {
+      "from": "@moonwitness/orm-income-ledger",
+      "to": "@moonwitness/orm-base",
+      "kind": "runtime",
+      "manifest": "packages/orm-income-ledger"
     },
     {
       "from": "@moonwitness/orm-integration",
@@ -901,6 +1339,12 @@
     },
     {
       "from": "@moonwitness/orm-knowledge",
+      "to": "@moonwitness/local-ai",
+      "kind": "runtime",
+      "manifest": "packages/orm-knowledge"
+    },
+    {
+      "from": "@moonwitness/orm-knowledge",
       "to": "@moonwitness/orm",
       "kind": "runtime",
       "manifest": "packages/orm-knowledge"
@@ -920,6 +1364,12 @@
     {
       "from": "@moonwitness/orm-knowledge",
       "to": "@moonwitness/research",
+      "kind": "runtime",
+      "manifest": "packages/orm-knowledge"
+    },
+    {
+      "from": "@moonwitness/orm-knowledge",
+      "to": "@moonwitness/types",
       "kind": "runtime",
       "manifest": "packages/orm-knowledge"
     },
@@ -946,6 +1396,12 @@
       "to": "@moonwitness/types",
       "kind": "runtime",
       "manifest": "packages/orm-notification"
+    },
+    {
+      "from": "@moonwitness/orm-observability",
+      "to": "@moonwitness/orm",
+      "kind": "runtime",
+      "manifest": "packages/orm-observability"
     },
     {
       "from": "@moonwitness/orm-organization",
@@ -996,6 +1452,30 @@
       "manifest": "packages/orm-project"
     },
     {
+      "from": "@moonwitness/orm-project",
+      "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "packages/orm-project"
+    },
+    {
+      "from": "@moonwitness/orm-public-services",
+      "to": "@moonwitness/orm",
+      "kind": "runtime",
+      "manifest": "packages/orm-public-services"
+    },
+    {
+      "from": "@moonwitness/orm-public-services",
+      "to": "@moonwitness/orm-base",
+      "kind": "runtime",
+      "manifest": "packages/orm-public-services"
+    },
+    {
+      "from": "@moonwitness/orm-public-services",
+      "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "packages/orm-public-services"
+    },
+    {
       "from": "@moonwitness/orm-request",
       "to": "@moonwitness/jobs",
       "kind": "runtime",
@@ -1026,6 +1506,18 @@
       "manifest": "packages/orm-request"
     },
     {
+      "from": "@moonwitness/orm-rnd",
+      "to": "@moonwitness/orm",
+      "kind": "runtime",
+      "manifest": "packages/orm-rnd"
+    },
+    {
+      "from": "@moonwitness/orm-rnd",
+      "to": "@moonwitness/orm-base",
+      "kind": "runtime",
+      "manifest": "packages/orm-rnd"
+    },
+    {
       "from": "@moonwitness/orm-sales",
       "to": "@moonwitness/orm",
       "kind": "runtime",
@@ -1050,8 +1542,74 @@
       "manifest": "packages/orm-sales"
     },
     {
+      "from": "@moonwitness/orm-sensor",
+      "to": "@moonwitness/orm",
+      "kind": "runtime",
+      "manifest": "packages/orm-sensor"
+    },
+    {
+      "from": "@moonwitness/orm-sensor",
+      "to": "@moonwitness/orm-base",
+      "kind": "runtime",
+      "manifest": "packages/orm-sensor"
+    },
+    {
+      "from": "@moonwitness/orm-sharia",
+      "to": "@moonwitness/orm",
+      "kind": "runtime",
+      "manifest": "packages/orm-sharia"
+    },
+    {
+      "from": "@moonwitness/orm-sharia",
+      "to": "@moonwitness/orm-base",
+      "kind": "runtime",
+      "manifest": "packages/orm-sharia"
+    },
+    {
+      "from": "@moonwitness/orm-sharia",
+      "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "packages/orm-sharia"
+    },
+    {
+      "from": "@moonwitness/orm-signal",
+      "to": "@moonwitness/orm",
+      "kind": "runtime",
+      "manifest": "packages/orm-signal"
+    },
+    {
+      "from": "@moonwitness/orm-signal",
+      "to": "@moonwitness/orm-base",
+      "kind": "runtime",
+      "manifest": "packages/orm-signal"
+    },
+    {
+      "from": "@moonwitness/orm-signal",
+      "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "packages/orm-signal"
+    },
+    {
+      "from": "@moonwitness/orm-sim",
+      "to": "@moonwitness/orm",
+      "kind": "runtime",
+      "manifest": "packages/orm-sim"
+    },
+    {
+      "from": "@moonwitness/orm-sim",
+      "to": "@moonwitness/orm-base",
+      "kind": "runtime",
+      "manifest": "packages/orm-sim"
+    },
+    {
       "from": "@moonwitness/orm-storage",
       "to": "@moonwitness/orm",
+      "kind": "runtime",
+      "manifest": "packages/orm-storage"
+    },
+    {
+      "from": "@moonwitness/orm-storage",
+      "to": "@moonwitness/orm-base",
       "kind": "runtime",
       "manifest": "packages/orm-storage"
     },
@@ -1093,6 +1651,12 @@
     },
     {
       "from": "@moonwitness/orm-whatsapp",
+      "to": "@moonwitness/jobs",
+      "kind": "runtime",
+      "manifest": "packages/orm-whatsapp"
+    },
+    {
+      "from": "@moonwitness/orm-whatsapp",
       "to": "@moonwitness/orm",
       "kind": "runtime",
       "manifest": "packages/orm-whatsapp"
@@ -1100,6 +1664,24 @@
     {
       "from": "@moonwitness/orm-whatsapp",
       "to": "@moonwitness/orm-base",
+      "kind": "runtime",
+      "manifest": "packages/orm-whatsapp"
+    },
+    {
+      "from": "@moonwitness/orm-whatsapp",
+      "to": "@moonwitness/orm-notification",
+      "kind": "runtime",
+      "manifest": "packages/orm-whatsapp"
+    },
+    {
+      "from": "@moonwitness/orm-whatsapp",
+      "to": "@moonwitness/orm-storage",
+      "kind": "runtime",
+      "manifest": "packages/orm-whatsapp"
+    },
+    {
+      "from": "@moonwitness/orm-whatsapp",
+      "to": "@moonwitness/types",
       "kind": "runtime",
       "manifest": "packages/orm-whatsapp"
     },
@@ -1140,6 +1722,18 @@
       "manifest": "packages/research"
     },
     {
+      "from": "@moonwitness/research",
+      "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "packages/research"
+    },
+    {
+      "from": "@moonwitness/ui",
+      "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "packages/ui"
+    },
+    {
       "from": "@moonwitness/ui-catalog",
       "to": "@moonwitness/assets",
       "kind": "runtime",
@@ -1150,6 +1744,36 @@
       "to": "@moonwitness/ui",
       "kind": "runtime",
       "manifest": "apps/ui-catalog"
+    },
+    {
+      "from": "@moonwitness/whatsapp",
+      "to": "@moonwitness/logger",
+      "kind": "runtime",
+      "manifest": "apps/whatsapp"
+    },
+    {
+      "from": "@moonwitness/whatsapp",
+      "to": "@moonwitness/orm",
+      "kind": "runtime",
+      "manifest": "apps/whatsapp"
+    },
+    {
+      "from": "@moonwitness/whatsapp",
+      "to": "@moonwitness/orm-base",
+      "kind": "runtime",
+      "manifest": "apps/whatsapp"
+    },
+    {
+      "from": "@moonwitness/whatsapp",
+      "to": "@moonwitness/orm-whatsapp",
+      "kind": "runtime",
+      "manifest": "apps/whatsapp"
+    },
+    {
+      "from": "@moonwitness/whatsapp",
+      "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "apps/whatsapp"
     }
   ]
 }

@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type MenuIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function MenuIcon({ size = 24, title, ...props }: MenuIconProps) {
+const MenuIcon = forwardRef<SVGSVGElement, MenuIconProps>(function MenuIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -26,4 +30,8 @@ export function MenuIcon({ size = 24, title, ...props }: MenuIconProps) {
       <path d="M4 6h16M4 12h16M4 18h16" />
     </svg>
   );
-}
+});
+
+MenuIcon.displayName = 'MenuIcon';
+
+export { MenuIcon };

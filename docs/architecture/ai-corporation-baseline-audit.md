@@ -5,7 +5,7 @@
 - **Target branch:** `dev`
 - **Audited baseline range:** `43c3a43` -> `1c49cddd073a1ad88321d9542c10a075f217fe43` -> `82e4f7ccba992ae995b2eb580524c7ac01243cd7`
 - **Canonical architectural decision:** [ADR 0007](../decisions/0007-ai-corporation-addon-first-architecture.md)
-- **Granular work ledger:** [`moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md`](../../moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md)
+- **Granular work ledger:** [`docs/bundles/ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md`](../bundles/ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md)
 
 ---
 
@@ -19,7 +19,7 @@
   - [`docs/roadmap/ISSUE-SYNC-CONTRACT.md`](../roadmap/ISSUE-SYNC-CONTRACT.md): Roadmap <-> GitHub Issues field authority, `<!-- moonwitness-task: ... -->` markers, 5-task `--apply` cap, Conventional Commits + explicit `git add` + push to `dev`.
   - [`docs/decisions/0001-platform-contracts.md`](../decisions/0001-platform-contracts.md): Two-branch policy (`main`/`dev`), programmatic addon schema/seed contract, no staging/production app deployment.
   - [`docs/decisions/0006-mandatory-addon-thin-api.md`](../decisions/0006-mandatory-addon-thin-api.md): Mandatory workspace addon packages (`defineModel`/`defineAddon`), thin `apps/api/src/app.ts` via `apps/api/src/addons/registry.ts`, `INTERNAL_PREFIXES` default-deny, enforced by `pnpm api:addon:check`.
-  - [`docs/agents/knowledge.md`](../agents/knowledge.md): K0–K9 operating contract (untrusted data boundaries, `AI_MODE=disabled` / no cloud fallback, preserve M-series).
+  - [`docs/operations/local-agent-protocol.md`](../operations/local-agent-protocol.md): K0–K9 operating contract (untrusted data boundaries, `AI_MODE=disabled` / no cloud fallback, preserve M-series).
   - `.githooks/pre-push`: Runs `pnpm board:ui:check`, `pnpm api:addon:check`, and `pnpm --filter @moonwitness/board typecheck`.
 
 ### 1.2 Exact-SHA Git Audit, Branch Policy & Concurrent Activity (`AI0.3`–`AI0.5`, `AI0.13`–`AI0.15`)
@@ -28,11 +28,11 @@
 - **`main` baseline:** `21fff13c79e88c4f8495115cad471f2019b1ef58` (`2026-11-21 18:49:42 +0700`, `chore: initial repository setup`). `merge-base main dev` is `21fff13c79e88c4f8495115cad471f2019b1ef58`. Note that upstream `ROADMAP.md`/`ACTIVE-PLAN.md` historical prose references an earlier `moonwitness-xiv` `main` SHA `9c9d5a3`; in `mw-xv`, `main` is `21fff13`.
 - **`dev` exact-SHA progression:**
   - Dispatch reference SHA: `43c3a43` (`fix(api,docs): align installAddons call signature and resolve doc link`).
-  - Commit `1c49cddd073a1ad88321d9542c10a075f217fe43` (`2026-11-22 02:32:40 +0700`, `feat(api,orm): unify worker bootstrap and complete MW-CORE-002`, 98 commits ahead of `main`): committed the 9 previously unstaged files (`apps/api/src/commands/outbox-worker.ts` using `bootstrapApiAddons`, `apps/api/tests/api-orm-hardening.test.ts` `{ timeout: 20_000 }`, `packages/orm/src/addon.ts` formatting, `todo.md` `MW-CORE-002` completion, and Prettier Markdown normalization across 5 `moonwitness-ai-corporation-blueprint` files with zero semantic/checkbox changes).
-  - Commit `82e4f7ccba992ae995b2eb580524c7ac01243cd7` (`2026-11-22 02:41:36 +0700`, `feat(orm,api): add typed service container and shared runtime services`, 99 commits ahead of `main`, 0 behind): added `packages/orm/src/services.ts` (`ServiceContainer`, `createServiceToken`), wired `Environment` service lookup (`packages/orm/src/environment.ts`, `packages/orm/src/index.ts`), registered `api.environment` and `api.knex` in `apps/api/src/plugins/orm.plugin.ts`, added `packages/orm/tests/orm-hardening.test.ts` tests, and updated `todo.md`.
+  - Commit `1c49cddd073a1ad88321d9542c10a075f217fe43` (`2026-11-22 02:32:40 +0700`, `feat(api,orm): unify worker bootstrap and complete MW-CORE-002`, 98 commits ahead of `main`): committed the 9 previously unstaged files (`apps/api/src/commands/outbox-worker.ts` using `bootstrapApiAddons`, `apps/api/tests/api-orm-hardening.test.ts` `{ timeout: 20_000 }`, `packages/orm/src/addon.ts` formatting, `docs/tasks/sources/todo.md` `MW-CORE-002` completion, and Prettier Markdown normalization across 5 `docs/bundles/ai-corporation-blueprint` files with zero semantic/checkbox changes).
+  - Commit `82e4f7ccba992ae995b2eb580524c7ac01243cd7` (`2026-11-22 02:41:36 +0700`, `feat(orm,api): add typed service container and shared runtime services`, 99 commits ahead of `main`, 0 behind): added `packages/orm/src/services.ts` (`ServiceContainer`, `createServiceToken`), wired `Environment` service lookup (`packages/orm/src/environment.ts`, `packages/orm/src/index.ts`), registered `api.environment` and `api.knex` in `apps/api/src/plugins/orm.plugin.ts`, added `packages/orm/tests/orm-hardening.test.ts` tests, and updated `docs/tasks/sources/todo.md`.
 - **Concurrent uncommitted workspace activity:** During M1 auditing on `82e4f7cc`, external core work was actively modifying `apps/api/src/commands/worker-health.ts`, `apps/api/src/routes/health.routes.ts`, and `packages/types/src/routes.ts`. None of these files overlap AI Corporation M1 deliverables; M1 staging uses explicit file paths only (`git add -- <explicit paths>`) and never touches unrelated concurrent edits.
 - **Existing AI / Agent / MCP / A2A code search (`AI0.13`–`AI0.14`):**
-  - `git grep -I -n -i -E "orm-ai|ai-runtime|ai-mcp|agent_run|capability_grant|work_contract|proof-carrying|workforce|\bmcp\b|\ba2a\b"` (excluding `moonwitness-ai-corporation-blueprint/`, `ROADMAP.md`, and `docs/roadmap/evidence/`) returned **0 matches**.
+  - `git grep -I -n -i -E "orm-ai|ai-runtime|ai-mcp|agent_run|capability_grant|work_contract|proof-carrying|workforce|\bmcp\b|\ba2a\b"` (excluding `docs/bundles/ai-corporation-blueprint/`, `ROADMAP.md`, and `docs/roadmap/evidence/`) returned **0 matches**.
   - `git grep -I -n -i -E "ollama|openai-compat|LocalAi|agent"` across `packages/*` and `apps/*` found only:
     1. `@moonwitness/local-ai` (`packages/local-ai/src/{index,models,retrieval,suggestion-generation}.ts`) — loopback-only K7 suggestion runtime (`AI_MODE=disabled` default, strictly tool-free).
     2. `apps/api/src/routes/local-ai-suggestion.routes.ts` & `local-retrieval.routes.ts` mounted under `knowledge` in `apps/api/src/addons/registry.ts:174-175`.

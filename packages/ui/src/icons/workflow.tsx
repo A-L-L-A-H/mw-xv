@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type WorkflowIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function WorkflowIcon({ size = 24, title, ...props }: WorkflowIconProps) {
+const WorkflowIcon = forwardRef<SVGSVGElement, WorkflowIconProps>(function WorkflowIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -29,4 +33,8 @@ export function WorkflowIcon({ size = 24, title, ...props }: WorkflowIconProps) 
       <path d="M9.5 6h3.5a4.5 4.5 0 0 1 4.5 4.5v5m-14-7v4.5a3.5 3.5 0 0 0 3.5 3.5h7.5" />
     </svg>
   );
-}
+});
+
+WorkflowIcon.displayName = 'WorkflowIcon';
+
+export { WorkflowIcon };

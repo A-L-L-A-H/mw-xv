@@ -33,3 +33,4 @@ export {
   type SalesSeedExecutionResult,
   type SeedSalesInitialDataOptions,
 } from './seed.js';
+export { salesSeedManifest, type AddonSeedManifest } from './seed-manifest.js';

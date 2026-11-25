@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import { lstat, realpath } from 'node:fs/promises';
 import path from 'node:path';
+import { isRecord } from '@moonwitness/types';
 
 export interface LocalModelArtifact {
   id: string;
@@ -44,13 +45,25 @@ export type ModelArtifactVerification =
         | 'integrity_mismatch';
     };
 
+export interface HardwareCompatibilityProfile {
+  readonly totalRamGiB: number;
+  readonly availableVramGiB: number | null;
+}
+
+export type HardwareCompatibilityReason =
+  | 'invalid_host_profile'
+  | 'invalid_artifact_requirements'
+  | 'insufficient_ram'
+  | 'vram_required_unmeasured'
+  | 'insufficient_vram';
+
+export type HardwareCompatibilityResult =
+  | { readonly compatible: true }
+  | { readonly compatible: false; readonly reason: HardwareCompatibilityReason };
+
 const identifierPattern = /^[a-z0-9][a-z0-9._-]{0,99}$/u;
 const semverPattern = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?$/u;
 const sha256Pattern = /^[a-f0-9]{64}$/u;
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 function isHttpsUrl(value: string): boolean {
   try {
@@ -248,4 +261,55 @@ export async function verifyLocalModelArtifact(
     return { valid: false, reason: 'integrity_mismatch' };
   }
   return { valid: true, artifactId: artifact.id, ...digest };
+}
+
+/**
+ * Evaluate host RAM/VRAM against a model artifact's declared hardware requirements without hiding
+ * unsupported or unmeasured GPU hardware.
+ */
+export function evaluateLocalModelHardwareCompatibility(
+  host: HardwareCompatibilityProfile,
+  artifact: Pick<LocalModelArtifact, 'requirements'>
+): HardwareCompatibilityResult {
+  if (
+    !host ||
+    typeof host.totalRamGiB !== 'number' ||
+    !Number.isFinite(host.totalRamGiB) ||
+    host.totalRamGiB <= 0 ||
+    !(
+      host.availableVramGiB === null ||
+      (typeof host.availableVramGiB === 'number' &&
+        Number.isFinite(host.availableVramGiB) &&
+        host.availableVramGiB >= 0)
+    )
+  ) {
+    return { compatible: false, reason: 'invalid_host_profile' };
+  }
+  const req = artifact?.requirements;
+  if (
+    !req ||
+    typeof req.minimumRamGiB !== 'number' ||
+    !Number.isFinite(req.minimumRamGiB) ||
+    req.minimumRamGiB <= 0 ||
+    !(
+      req.minimumVramGiB === null ||
+      (typeof req.minimumVramGiB === 'number' &&
+        Number.isFinite(req.minimumVramGiB) &&
+        req.minimumVramGiB >= 0)
+    )
+  ) {
+    return { compatible: false, reason: 'invalid_artifact_requirements' };
+  }
+  if (host.totalRamGiB < req.minimumRamGiB) {
+    return { compatible: false, reason: 'insufficient_ram' };
+  }
+  if (req.minimumVramGiB !== null && req.minimumVramGiB > 0) {
+    if (host.availableVramGiB === null) {
+      return { compatible: false, reason: 'vram_required_unmeasured' };
+    }
+    if (host.availableVramGiB < req.minimumVramGiB) {
+      return { compatible: false, reason: 'insufficient_vram' };
+    }
+  }
+  return { compatible: true };
 }

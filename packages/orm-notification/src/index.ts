@@ -14,6 +14,7 @@ export {
   type NotificationTemplateSeed,
   type NotificationTemplateSeedChannel,
 } from './seed.js';
+export { notificationSeedManifest, type AddonSeedManifest } from './seed-manifest.js';
 export {
   NotificationRouter,
   isWithinQuietHours,

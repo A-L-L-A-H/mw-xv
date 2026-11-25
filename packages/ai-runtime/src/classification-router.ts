@@ -43,6 +43,9 @@ export function isProviderCloudEgress(
   provider: Pick<AiProvider, 'kind'>,
   deploymentZone?: 'local' | 'cloud'
 ): boolean {
+  // FreeLLMAPI is always cloud egress, even when privately hosted inside the
+  // Compose network. Never allow a deployment-zone override to downgrade it.
+  if (provider.kind === 'freellmapi') return true;
   if (deploymentZone !== undefined) {
     return deploymentZone === 'cloud';
   }

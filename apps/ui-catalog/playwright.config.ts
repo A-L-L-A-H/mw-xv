@@ -30,7 +30,7 @@ export default defineConfig({
     ...devices['Desktop Chrome'],
   },
   webServer: {
-    command: 'pnpm exec vite preview --host 127.0.0.1 --port 4174 --strictPort',
+    command: 'bunx vite preview --host 127.0.0.1 --port 4174 --strictPort',
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 30_000,

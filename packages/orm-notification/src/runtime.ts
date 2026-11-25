@@ -1,5 +1,5 @@
 import type { Knex } from 'knex';
-import { isRecord } from '@moonwitness/types';
+import { isPositiveId, isRecord } from '@moonwitness/types';
 import { CompanyMembership, User } from '@moonwitness/orm-base';
 import { OutboxEvent, PermanentJobError, registerOutboxConsumer } from '@moonwitness/jobs';
 import { Notification, NotificationPreference, NotificationTemplate } from './models.js';
@@ -18,10 +18,6 @@ interface NotificationPayload {
   recipientId: number;
   templateCode: string;
   resource?: { model: string; id: number };
-}
-
-function isPositiveId(value: unknown): value is number {
-  return typeof value === 'number' && Number.isSafeInteger(value) && value > 0;
 }
 
 function parsePayload(value: unknown): NotificationPayload {

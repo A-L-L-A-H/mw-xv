@@ -1,24 +1,31 @@
 import { defineModel, fields, type BaseModel } from '@moonwitness/orm';
+import {
+  ALLOCATION_STATUSES,
+  MANDATE_STATUSES,
+  OFFICIAL_STATUSES,
+  POLICY_STATUSES,
+  PROGRAM_STATUSES,
+  REGULATION_STATUSES,
+} from './statuses.js';
 
-export type InstitutionType =
-  | 'ministry'
-  | 'agency'
-  | 'legislature'
-  | 'judiciary'
-  | 'state_enterprise'
-  | 'advisory_body';
+export type {
+  AllocationStatus,
+  MandateStatus,
+  OfficialStatus,
+  PolicyStatus,
+  ProgramStatus,
+  RegulationStatus,
+} from './statuses.js';
 
-export type OfficialStatus = 'active' | 'suspended' | 'dismissed' | 'retired';
-
-export type MandateStatus = 'active' | 'expired' | 'revoked' | 'pending';
-
-export type PolicyStatus = 'draft' | 'in_review' | 'enacted' | 'in_force' | 'superseded' | 'repealed';
-
-export type RegulationStatus = 'proposed' | 'ratified' | 'in_force' | 'annulled' | 'archived';
-
-export type ProgramStatus = 'planned' | 'running' | 'completed' | 'halted' | 'cancelled';
-
-export type AllocationStatus = 'proposed' | 'approved' | 'released' | 'spent' | 'returned';
+const INSTITUTION_TYPES = [
+  'ministry',
+  'agency',
+  'legislature',
+  'judiciary',
+  'state_enterprise',
+  'advisory_body',
+] as const;
+export type InstitutionType = (typeof INSTITUTION_TYPES)[number];
 
 function parentInstitutionModel(): typeof BaseModel {
   return Institution;
@@ -30,11 +37,7 @@ export const Institution = defineModel('governance.institution', {
   fields: {
     name: fields.string({ required: true, unique: true, label: 'Institution Name' }),
     code: fields.string({ required: true, unique: true, label: 'Institution Code' }),
-    type: fields.string({
-      required: true,
-      values: ['ministry', 'agency', 'legislature', 'judiciary', 'state_enterprise', 'advisory_body'],
-      label: 'Institution Type',
-    }),
+    type: fields.enum(INSTITUTION_TYPES, { required: true, label: 'Institution Type' }),
     parent: fields.belongsTo(parentInstitutionModel, { label: 'Parent Institution' }),
     jurisdiction: fields.string({ label: 'Jurisdiction' }),
     seat_city: fields.string({ label: 'Seat City' }),
@@ -54,12 +57,7 @@ export const Official = defineModel('governance.official', {
     name: fields.string({ required: true, label: 'Official Name' }),
     title: fields.string({ required: true, label: 'Title' }),
     institution: fields.belongsTo(Institution, { required: true, label: 'Institution' }),
-    status: fields.string({
-      required: true,
-      default: 'active',
-      values: ['active', 'suspended', 'dismissed', 'retired'],
-      label: 'Status',
-    }),
+    status: fields.enum(OFFICIAL_STATUSES, { required: true, default: 'active', label: 'Status' }),
     appointed_on: fields.string({ pattern: '^\\d{4}-\\d{2}-\\d{2}$', label: 'Appointed On' }),
     term_end: fields.string({ pattern: '^\\d{4}-\\d{2}-\\d{2}$', label: 'Term End' }),
     contact_email: fields.string({ label: 'Contact Email' }),
@@ -75,12 +73,7 @@ export const Mandate = defineModel('governance.mandate', {
     name: fields.string({ required: true, label: 'Mandate Name' }),
     official: fields.belongsTo(Official, { required: true, label: 'Office Holder' }),
     institution: fields.belongsTo(Institution, { required: true, label: 'Institution' }),
-    status: fields.string({
-      required: true,
-      default: 'pending',
-      values: ['active', 'expired', 'revoked', 'pending'],
-      label: 'Status',
-    }),
+    status: fields.enum(MANDATE_STATUSES, { required: true, default: 'pending', label: 'Status' }),
     starts_on: fields.string({ pattern: '^\\d{4}-\\d{2}-\\d{2}$', label: 'Starts On' }),
     ends_on: fields.string({ pattern: '^\\d{4}-\\d{2}-\\d{2}$', label: 'Ends On' }),
     scope: fields.string({ label: 'Mandate Scope' }),
@@ -97,12 +90,7 @@ export const Policy = defineModel('governance.policy', {
     name: fields.string({ required: true, label: 'Policy Name' }),
     code: fields.string({ required: true, unique: true, label: 'Policy Code' }),
     institution: fields.belongsTo(Institution, { required: true, label: 'Sponsoring Institution' }),
-    status: fields.string({
-      required: true,
-      default: 'draft',
-      values: ['draft', 'in_review', 'enacted', 'in_force', 'superseded', 'repealed'],
-      label: 'Status',
-    }),
+    status: fields.enum(POLICY_STATUSES, { required: true, default: 'draft', label: 'Status' }),
     current_version: fields.string({ label: 'Current Version' }),
     summary: fields.text({ label: 'Summary' }),
     stakeholder_ids: fields.json({ label: 'Stakeholder IDs' }),
@@ -117,12 +105,7 @@ export const PolicyVersion = defineModel('governance.policy_version', {
   fields: {
     policy: fields.belongsTo(Policy, { required: true, label: 'Policy' }),
     version: fields.string({ required: true, label: 'Version Label' }),
-    status: fields.string({
-      required: true,
-      default: 'draft',
-      values: ['draft', 'in_review', 'enacted', 'in_force', 'superseded', 'repealed'],
-      label: 'Status',
-    }),
+    status: fields.enum(POLICY_STATUSES, { required: true, default: 'draft', label: 'Status' }),
     change_summary: fields.text({ label: 'Change Summary' }),
     authored_by: fields.belongsTo(Official, { label: 'Authored By' }),
     effective_from: fields.string({ pattern: '^\\d{4}-\\d{2}-\\d{2}$', label: 'Effective From' }),
@@ -140,10 +123,9 @@ export const Regulation = defineModel('governance.regulation', {
     name: fields.string({ required: true, label: 'Regulation Name' }),
     number: fields.string({ required: true, unique: true, label: 'Regulation Number' }),
     institution: fields.belongsTo(Institution, { required: true, label: 'Issuing Institution' }),
-    status: fields.string({
+    status: fields.enum(REGULATION_STATUSES, {
       required: true,
       default: 'proposed',
-      values: ['proposed', 'ratified', 'in_force', 'annulled', 'archived'],
       label: 'Status',
     }),
     policy: fields.belongsTo(Policy, { label: 'Underlying Policy' }),
@@ -161,13 +143,11 @@ export const PublicProgram = defineModel('governance.public_program', {
   fields: {
     name: fields.string({ required: true, label: 'Program Name' }),
     code: fields.string({ required: true, unique: true, label: 'Program Code' }),
-    institution: fields.belongsTo(Institution, { required: true, label: 'Implementing Institution' }),
-    status: fields.string({
+    institution: fields.belongsTo(Institution, {
       required: true,
-      default: 'planned',
-      values: ['planned', 'running', 'completed', 'halted', 'cancelled'],
-      label: 'Status',
+      label: 'Implementing Institution',
     }),
+    status: fields.enum(PROGRAM_STATUSES, { required: true, default: 'planned', label: 'Status' }),
     policy: fields.belongsTo(Policy, { label: 'Mandating Policy' }),
     program_lead: fields.belongsTo(Official, { label: 'Program Lead' }),
     starts_on: fields.string({ pattern: '^\\d{4}-\\d{2}-\\d{2}$', label: 'Starts On' }),
@@ -186,10 +166,9 @@ export const BudgetAllocation = defineModel('governance.budget_allocation', {
     name: fields.string({ required: true, label: 'Allocation Name' }),
     program: fields.belongsTo(PublicProgram, { required: true, label: 'Program' }),
     institution: fields.belongsTo(Institution, { required: true, label: 'Budget Holder' }),
-    status: fields.string({
+    status: fields.enum(ALLOCATION_STATUSES, {
       required: true,
       default: 'proposed',
-      values: ['proposed', 'approved', 'released', 'spent', 'returned'],
       label: 'Status',
     }),
     fiscal_year: fields.integer({ required: true, label: 'Fiscal Year' }),

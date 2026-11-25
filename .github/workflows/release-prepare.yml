@@ -49,12 +49,12 @@ jobs:
           ref: ${{ inputs.expected_dev_sha }}
           fetch-depth: 0
           persist-credentials: true
-      - uses: ./.github/actions/setup-pnpm
+      - uses: ./.github/actions/setup-bun
         with:
           node-version: '24'
-          pnpm-version: '11.17.0'
+          bun-version: '1.4.5'
       - name: Install frozen workspace dependencies
-        run: pnpm install --frozen-lockfile --no-runtime
+        run: bun install --frozen-lockfile
       - name: Verify checkout and prepare release files
         env:
           EXPECTED_SOURCE_SHA: ${{ inputs.expected_dev_sha }}
@@ -62,7 +62,7 @@ jobs:
         run: |
           test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
           test "$(git ls-remote origin refs/heads/dev | cut -f1)" = "$EXPECTED_SOURCE_SHA"
-          pnpm release:prepare -- --expected-head "$EXPECTED_SOURCE_SHA" --channel "$RELEASE_CHANNEL" --apply
+          bun run release:prepare -- --expected-head "$EXPECTED_SOURCE_SHA" --channel "$RELEASE_CHANNEL" --apply
       - name: Commit and push prepared release atomically
         id: publish
         env:
@@ -74,7 +74,7 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -- package.json pnpm-lock.yaml CHANGELOG.md
+          git add -- package.json bun.lock CHANGELOG.md
           while IFS= read -r -d '' file; do
             case "$file" in
               README.md|apps/*/package.json|packages/*/package.json|docs/*) git add -- "$file" ;;
@@ -87,4 +87,31 @@ jobs:
           fi
           git commit -m "chore(release): prepare workspace release"
           node scripts/push-expected-ref.mjs origin HEAD refs/heads/dev "$EXPECTED_SOURCE_SHA"
+          prepared_sha="$(git rev-parse HEAD)"
+          [[ "$prepared_sha" =~ ^[a-f0-9]{40}$ ]]
+          echo "prepared_sha=$prepared_sha" >> "$GITHUB_OUTPUT"
           echo "pushed=true" >> "$GITHUB_OUTPUT"
+      - name: Dispatch exact-SHA CI and await the governance checks
+        id: ci
+        if: steps.publish.outputs.pushed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PREPARED_SHA: ${{ steps.publish.outputs.prepared_sha }}
+        run: |
+          set -euo pipefail
+          [[ "$PREPARED_SHA" =~ ^[a-f0-9]{40}$ ]]
+          gh workflow run ci.yml --repo "$GH_REPO" --ref dev
+          node scripts/release-await-ci.mjs --sha "$PREPARED_SHA" --repo "$GH_REPO" \
+            --checks '["ci-gate"]' --timeout-seconds 1800 --interval-seconds 30
+      - name: Dispatch promotion after exact-SHA CI succeeds
+        if: steps.publish.outputs.pushed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PREPARED_SHA: ${{ steps.publish.outputs.prepared_sha }}
+        run: |
+          set -euo pipefail
+          [[ "$PREPARED_SHA" =~ ^[a-f0-9]{40}$ ]]
+          gh workflow run promote.yml --repo "$GH_REPO" --ref dev -f expected_sha="$PREPARED_SHA"
+          echo "Dispatched promotion for verified dev SHA $PREPARED_SHA." >> "$GITHUB_STEP_SUMMARY"

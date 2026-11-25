@@ -1,0 +1,9 @@
+{
+  "upstream": "https://github.com/tashfeenahmed/freellmapi",
+  "revision": "cd65d6485788dfc7828f06c1147cdea207b28322",
+  "importedAt": "2026-11-24",
+  "importMethod": "git-archive-tracked-files",
+  "license": "MIT",
+  "localPatches": [],
+  "treeSha256": "5363e28aa9ee38786a06f3379b5d6f17012be892b3c35391cd8ca79bff23bac0"
+}

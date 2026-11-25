@@ -8,6 +8,7 @@ export * from './model-definition.js';
 export * from './schema-sync.js';
 export * from './schema-state.js';
 export * from './addon.js';
+export * from './validation.js';
 export {
   humanize,
   describeFields,

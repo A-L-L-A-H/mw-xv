@@ -1,4 +1,3 @@
-import { createHash } from 'node:crypto';
 import {
   projectTextualAlignmentCandidate,
   type TextualAlignmentCandidate,
@@ -7,6 +6,7 @@ import {
 import type { Knex } from 'knex';
 import { canonicalResearchJson } from './research-release.js';
 import type { AuthenticatedResearchReviewer } from './research-review.js';
+import { assertActiveCompanyActor, digest, fail, validActor } from './store-helpers.js';
 
 const candidateIdPattern = /^mw:textual-alignment-candidate:[a-z0-9][a-z0-9._-]{0,159}$/u;
 const identifierPattern = /^[a-z][a-z0-9+.-]*(?::[a-z0-9][a-z0-9._-]{0,179})+$/u;
@@ -33,23 +33,8 @@ export interface StoredTextualAlignmentCandidateVersion {
   readonly idempotent: boolean;
 }
 
-function fail(message: string): never {
-  throw new TypeError(message);
-}
-
-function validActor(actor: AuthenticatedResearchReviewer): boolean {
-  return (
-    Number.isSafeInteger(actor.userId) &&
-    actor.userId > 0 &&
-    Number.isSafeInteger(actor.companyId) &&
-    actor.companyId > 0 &&
-    (actor.role === 'user' || actor.role === 'superadmin')
-  );
-}
-
-function digest(value: string): string {
-  return createHash('sha256').update(value, 'utf8').digest('hex');
-}
+const TEXTUAL_ALIGNMENT_UNAVAILABLE =
+  'Textual alignment candidate is unavailable in this company context';
 
 function record(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -178,26 +163,6 @@ function isProjectedCandidate(value: unknown): value is TextualAlignmentCandidat
   );
 }
 
-async function assertActiveCompanyActor(
-  trx: Knex.Transaction,
-  actor: AuthenticatedResearchReviewer
-): Promise<void> {
-  const user = await trx('users')
-    .where({ id: actor.userId, role: actor.role, active: true })
-    .forUpdate()
-    .first('id');
-  const company = await trx('companies')
-    .where({ id: actor.companyId, active: true })
-    .forUpdate()
-    .first('id');
-  const membership = await trx('company_memberships')
-    .where({ user_id: actor.userId, company_id: actor.companyId, active: true })
-    .forUpdate()
-    .first('id');
-  if (!user || !company || !membership)
-    fail('Textual alignment candidate is unavailable in this company context');
-}
-
 /** Re-project untrusted candidate requests through canonical tenant-bound source resolution and append INTERNAL versions. */
 export async function storeTextualAlignmentCandidates(
   db: Knex,
@@ -222,7 +187,7 @@ export async function storeTextualAlignmentCandidates(
   const results: StoredTextualAlignmentCandidateVersion[] = [];
   await db.transaction(async (trx) => {
     const actor = input.authenticatedActor;
-    await assertActiveCompanyActor(trx, actor);
+    await assertActiveCompanyActor(trx, actor, TEXTUAL_ALIGNMENT_UNAVAILABLE);
     // Serialize version allocation per company; authorization locks remain held through commit.
     await trx('companies').where({ id: actor.companyId }).forUpdate().first('id');
     const projected: TextualAlignmentCandidate[] = [];
@@ -298,7 +263,7 @@ export async function readTextualAlignmentCandidateVersion(
     fail('Textual alignment candidate read context is invalid');
   }
   return db.transaction(async (trx) => {
-    await assertActiveCompanyActor(trx, actor);
+    await assertActiveCompanyActor(trx, actor, TEXTUAL_ALIGNMENT_UNAVAILABLE);
     const query = trx('knowledge_textual_alignment_candidate_versions').where({
       company_id: actor.companyId,
       candidate_id: input.candidateId,

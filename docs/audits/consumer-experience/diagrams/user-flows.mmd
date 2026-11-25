@@ -1,0 +1,61 @@
+flowchart TD
+    %% Public Entry & Auth
+    ENTRY(["Visitor / User Entry"]) --> HOME["J1: Public Landing (/)"]
+    ENTRY --> PUBK["J2: Public Knowledge (/knowledge)"]
+    ENTRY --> DESK["J4: Desktop Auto-Boot (local session)"]
+
+    HOME -->|"Explore MoonWitness / Cards 01-02"| REG["J3: Register (/register)"]
+    HOME -->|"Sign in / Card 03"| LOGIN["J3: Login (/login)"]
+    HOME -.->|"GAP: Missing nav link"| PUBK
+
+    PUBK -->|"Workspace Home"| HOME
+    PUBK -->|"Error / Empty"| PUBK_RETRY["Retry / Fail-Closed EmptyState"]
+
+    LOGIN -->|"Auth Success + SFX + safeReturnPath"| SHELL["J5: ProtectedRoute + AppShell (/board*)"]
+    REG -->|"Account Created + SFX"| SHELL
+    DESK -->|"Boot Success -> ModePicker"| SHELL
+    DESK -->|"Boot Error (503/offline)"| DESK_ERR["Local Workspace Unavailable -> Retry / Manual Login"]
+    DESK_ERR --> LOGIN
+
+    %% AppShell Global Tools
+    SHELL -->|"Ctrl+K / Search"| OMNI["Omnisearch CommandDialog"]
+    SHELL -->|"Ctrl+/"| KEYS["ShortcutsDialog"]
+    SHELL -->|"Mobile Menu"| SHEET["Mobile Navigation Sheet"]
+    SHELL -->|"Desktop Only"| DTOOLS["QuickCaptureModal / LogDrawer / Assistant"]
+
+    %% Core Routes inside AppShell
+    SHELL --> DASH["J6: Command Center (/board)"]
+    SHELL --> MOD["J7: Model List (/board/m/[model])"]
+    SHELL --> PROJ["J10: Project Command (/board/projects)"]
+    SHELL --> KNOW["J11: Knowledge Explorer (/board/knowledge)"]
+    SHELL --> STORY["J12: Story Workbench (/board/stories/workbench)"]
+    SHELL --> STUDIO["J13: Creative Studio (/board/studio)"]
+    SHELL --> COMM["J14: Commercial Pipeline (/board/commercial)"]
+    SHELL --> CLOUD["J15: Cloud & ISP Ops (/board/cloud)"]
+    SHELL --> WA["J16: WhatsApp Inbox (/board/whatsapp)"]
+    SHELL --> AI["J17: AI Mission Control (/board/ai/*)"]
+    SHELL --> PROF["J18: Profile (/board/profile)"]
+    SHELL --> SETT["J18: Settings (/board/settings)"]
+
+    %% Dashboard Subflows
+    DASH -->|"Admin Subview"| CRON["Cron Scheduler & Queue"]
+    DASH -->|"Dead Jobs > 0"| TRIAGE["Failure Triage Modal (Retry / Cancel)"]
+    DASH -->|"Quick Actions / Module Card"| MOD
+
+    %% Model Views & CRUD Subflows
+    MOD -->|"Table / Grid / Pipeline"| LIST["ListView (Search, Filters, CSV Export/Import, Bulk Archive)"]
+    MOD -->|"?view=kanban/calendar/graph/pivot"| VIEWS["J9: Kanban / Calendar / Graph / Pivot"]
+    MOD -->|"New Record (?create=1 or /new)"| FORM["J8: FormView Create/Edit (/board/m/[model]/[id])"]
+    LIST -->|"Open Row"| FORM
+    VIEWS -->|"Open Record"| FORM
+    FORM -->|"409 ConflictError"| CONFLICT["Conflict Diff Recovery"]
+    FORM -->|"Dirty Back / Esc"| DIRTY["ConfirmDialog Unsaved Guard"]
+    FORM -->|"Saved / Archived"| MOD
+
+    %% Sub-route Connections
+    PROJ -->|"Dispatch AI / Bind Worktree"| AI
+    PROJ -->|"Desktop Lease Primed"| DTOOLS
+    WA -->|"Publish Status"| WASTAT["/board/whatsapp/status"]
+    WASTAT -->|"Back to Inbox"| WA
+    SETT -->|"Change Password -> Logout"| LOGIN
+    SHELL -->|"Sign Out"| LOGIN

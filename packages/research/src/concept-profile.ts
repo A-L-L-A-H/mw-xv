@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { isRecord } from '@moonwitness/types';
 import {
   createJsonSchemaValidator,
   type JsonSchemaContract,
@@ -453,10 +454,6 @@ export async function validateConceptProfileTextualObservations(
     };
   }
   return issues.length ? { valid: false, issues } : { valid: true, issues: [] };
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function stableJson(value: unknown): string {

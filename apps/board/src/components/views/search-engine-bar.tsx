@@ -3,8 +3,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import type { Domain, ResolvedViews } from '@moonwitness/client';
-import { CloseIcon } from '@moonwitness/ui/icons';
 import { Button } from '@moonwitness/ui/components/button';
+import { FilterFacetBar, type FilterFacet } from '@moonwitness/ui/components/filter-facet-bar';
 import { Input } from '@moonwitness/ui/components/input';
 import { SelectField } from '@moonwitness/ui/components/select-field';
 import { client } from '@/lib/client';
@@ -54,6 +54,16 @@ export function SearchEngineBar({
   );
   const activeFilter =
     state.filterIndex !== null ? views.search.filters[state.filterIndex] : undefined;
+  const activeGroupField = state.groupBy
+    ? groupableFields.find((field) => field.name === state.groupBy)
+    : undefined;
+  const facets: FilterFacet[] = [
+    ...(state.query.trim() ? [{ id: 'query', label: 'Search', value: state.query.trim() }] : []),
+    ...(activeFilter ? [{ id: 'filter', label: 'Filter', value: activeFilter.label }] : []),
+    ...(state.groupBy
+      ? [{ id: 'group', label: 'Group', value: activeGroupField?.label ?? state.groupBy }]
+      : []),
+  ];
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-3">
@@ -95,19 +105,15 @@ export function SearchEngineBar({
             {filter.label}
           </Button>
         ))}
-        {activeFilter && (
-          <span className="sticker border-2 border-ink bg-primary text-primary-foreground">
-            {activeFilter.label}
-            <Button
-              aria-label={`Remove ${activeFilter.label}`}
-              onClick={() => update({ filterIndex: null })}
-              className="ml-1"
-            >
-              <CloseIcon className="size-3" />
-            </Button>
-          </span>
-        )}
       </div>
+      <FilterFacetBar
+        facets={facets}
+        onFacetRemove={(facetId) => {
+          if (facetId === 'query') update({ query: '' });
+          else if (facetId === 'filter') update({ filterIndex: null });
+          else if (facetId === 'group') update({ groupBy: null });
+        }}
+      />
       {state.groupBy && (
         <GroupHeader
           model={views.model}

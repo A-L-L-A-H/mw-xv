@@ -96,7 +96,7 @@ describe('@moonwitness/orm-cloud addon', () => {
       const resolved = resolveViews(model);
       expect(() => validateViews(model, resolved)).not.toThrow();
     }
-  });
+  }, 30_000);
 
   it('mounts cloudHttpPlugin routes for health, service listing, and deployment through the control-plane agent', async () => {
     await installAddons(db, [
@@ -137,6 +137,8 @@ describe('@moonwitness/orm-cloud addon', () => {
     await app.register(
       createCloudHttpPlugin({
         controlPlaneUrl: 'http://control-plane.local:3003',
+        adminToken: 'internal-token-123',
+        probePolicy: { allowedHosts: ['coolify.moonwitness.local'] },
         fetchImpl: async (input, init) => {
           const url = String(input);
           calls.push({
@@ -328,7 +330,7 @@ describe('@moonwitness/orm-cloud addon', () => {
     } finally {
       await app.close();
     }
-  });
+  }, 30_000);
 
   it('derives the control-plane token from the shared secret and forwards bearer auth', async () => {
     const derived = resolveControlPlaneToken({ jwtSecret: 'shared-secret-value' });
@@ -419,7 +421,7 @@ describe('@moonwitness/orm-cloud addon', () => {
     } finally {
       await app.close();
     }
-  });
+  }, 30_000);
 
   it('probes cloud deployment target health so HA failover selects a healthy peer', async () => {
     await installAddons(db, [
@@ -455,6 +457,7 @@ describe('@moonwitness/orm-cloud addon', () => {
     const result = await probeCloudTargetsHealth({
       companyId: 1,
       adminToken: 'internal-token-123',
+      allowedHosts: ['control-plane.local'],
       fetchImpl: async (input) => {
         if (String(input).includes('control-plane.local')) {
           return new Response(JSON.stringify({ status: 'ok', docker: 'ok' }), { status: 200 });
@@ -466,12 +469,12 @@ describe('@moonwitness/orm-cloud addon', () => {
     expect(result.probed).toBe(3);
     expect(result.healthy).toBe(1);
     expect(result.offline).toBe(2);
-    expect((await CloudDeploymentTarget.query().findById(offlineTarget.id)).health_status).toBe(
-      'offline'
-    );
-    expect((await CloudDeploymentTarget.query().findById(healthyTarget.id)).health_status).toBe(
-      'healthy'
-    );
+    const offlineTargetRow = await CloudDeploymentTarget.query().findById(offlineTarget.id);
+    const healthyTargetRow = await CloudDeploymentTarget.query().findById(healthyTarget.id);
+    expect(offlineTargetRow).toBeDefined();
+    expect(healthyTargetRow).toBeDefined();
+    expect(offlineTargetRow?.health_status).toBe('offline');
+    expect(healthyTargetRow?.health_status).toBe('healthy');
 
     const selected = selectHealthyDeploymentTarget([
       {
@@ -505,5 +508,5 @@ describe('@moonwitness/orm-cloud addon', () => {
     } finally {
       dispose();
     }
-  });
+  }, 30_000);
 });

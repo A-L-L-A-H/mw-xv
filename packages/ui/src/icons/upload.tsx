@@ -1,14 +1,18 @@
-import { useId, type SVGProps } from 'react';
+import { forwardRef, useId, type SVGProps } from 'react';
 
 export type UploadIconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'title'> & {
   title?: string;
   size?: number | string;
 };
 
-export function UploadIcon({ size = 24, title, ...props }: UploadIconProps) {
+const UploadIcon = forwardRef<SVGSVGElement, UploadIconProps>(function UploadIcon(
+  { size = 24, title, ...props },
+  ref
+) {
   const titleId = useId();
   return (
     <svg
+      ref={ref}
       aria-hidden={title ? undefined : true}
       aria-labelledby={title ? titleId : undefined}
       height={size}
@@ -26,4 +30,8 @@ export function UploadIcon({ size = 24, title, ...props }: UploadIconProps) {
       <path d="M12 16V4m-5 5 5-5 5 5M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4" />
     </svg>
   );
-}
+});
+
+UploadIcon.displayName = 'UploadIcon';
+
+export { UploadIcon };

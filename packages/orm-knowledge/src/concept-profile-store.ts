@@ -1,4 +1,3 @@
-import { createHash } from 'node:crypto';
 import {
   validateConceptProfile,
   validateConceptProfileTextualObservations,
@@ -11,6 +10,7 @@ import {
   resolveConceptProfileEvidence,
   type AuthenticatedResearchReviewer,
 } from './research-review.js';
+import { assertActiveCompanyActor, digest, fail, validActor } from './store-helpers.js';
 
 const profileIdPattern = /^mw:concept-profile:[a-z0-9][a-z0-9._-]{0,179}$/u;
 const conceptIdPattern = /^mw:concept:[a-z0-9][a-z0-9._-]{0,179}$/u;
@@ -43,44 +43,7 @@ export interface StoredConceptProfileVersion {
   readonly idempotent: boolean;
 }
 
-function fail(message: string): never {
-  throw new TypeError(message);
-}
-
-function digest(value: string): string {
-  return createHash('sha256').update(value, 'utf8').digest('hex');
-}
-
-function validActor(actor: AuthenticatedResearchReviewer): boolean {
-  return (
-    Number.isSafeInteger(actor.userId) &&
-    actor.userId > 0 &&
-    Number.isSafeInteger(actor.companyId) &&
-    actor.companyId > 0 &&
-    (actor.role === 'user' || actor.role === 'superadmin')
-  );
-}
-
-async function assertActiveCompanyActor(
-  trx: Knex.Transaction,
-  actor: AuthenticatedResearchReviewer
-): Promise<void> {
-  // Keep authorization stable through the enclosing transaction's commit.
-  const user = await trx('users')
-    .where({ id: actor.userId, role: actor.role, active: true })
-    .forUpdate()
-    .first('id');
-  const company = await trx('companies')
-    .where({ id: actor.companyId, active: true })
-    .forUpdate()
-    .first('id');
-  const membership = await trx('company_memberships')
-    .where({ user_id: actor.userId, company_id: actor.companyId, active: true })
-    .forUpdate()
-    .first('id');
-  if (!user || !company || !membership)
-    fail('Concept profile is unavailable in this company context');
-}
+const CONCEPT_PROFILE_UNAVAILABLE = 'Concept profile is unavailable in this company context';
 
 function oneProfileDocument(profile: unknown) {
   return { format: 'moonwitness-concept-profiles/v1', profiles: [profile] };
@@ -211,7 +174,7 @@ export async function storeConceptProfiles(
   const results: StoredConceptProfileVersion[] = [];
 
   await db.transaction(async (trx) => {
-    await assertActiveCompanyActor(trx, actor);
+    await assertActiveCompanyActor(trx, actor, CONCEPT_PROFILE_UNAVAILABLE);
     // Serialize version allocation for this company on PostgreSQL.
     await trx('companies').where({ id: actor.companyId }).forUpdate().first('id');
     await validateForCompany(trx, validationDocument, actor, input.corpusRootDirectory);
@@ -293,7 +256,7 @@ export async function readConceptProfileVersion(
     fail('Concept profile read context is invalid');
   }
   return db.transaction(async (trx) => {
-    await assertActiveCompanyActor(trx, actor);
+    await assertActiveCompanyActor(trx, actor, CONCEPT_PROFILE_UNAVAILABLE);
     const query = trx('knowledge_concept_profile_versions').where({
       company_id: actor.companyId,
       profile_id: input.profileId,

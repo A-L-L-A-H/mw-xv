@@ -150,7 +150,7 @@ git commit -m "feat(tasks): define canonical moonwitness-tasks/v2 JSON Schema"
 
 **Interfaces:**
 
-- Consumes: `docs/roadmap/tasks.json`, `ROADMAP.md`, `todo-wa.md`, `todo.md`, `todo-desktop.md`, `moonwitness-ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md`, `evolution/backlog.json`, Audit tasks (`AUD-001`..`AUD-014`).
+- Consumes: `docs/roadmap/tasks.json`, `ROADMAP.md`, `docs/tasks/sources/todo-wa.md`, `docs/tasks/sources/todo.md`, `docs/tasks/sources/todo-desktop.md`, `docs/bundles/ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md`, `evolution/backlog.json`, Audit tasks (`AUD-001`..`AUD-014`).
 - Produces: Consolidated, deduplicated, schema-valid `docs/tasks/tasks.json`.
 
 - [ ] **Step 1: Write test for sweep and consolidation logic**
@@ -160,8 +160,8 @@ Verifies that:
 
 1. All 227 roadmap tasks (`M0.01`–`M12.14`, `K0-001`–`K9-007`) are imported with preserved status, dependencies, and evidence.
 2. WhatsApp checklist items (`P0-*`–`P3-*`) are ingested with `series: "WA"`, preserving checked/unchecked state.
-3. Root `todo.md` open item `MW-CFG-003.3` is ingested as `series: "MW"`.
-4. `todo-desktop.md` item `DSK-0.12` is ingested as `series: "DSK"`.
+3. Root `docs/tasks/sources/todo.md` open item `MW-CFG-003.3` is ingested as `series: "MW"`.
+4. `docs/tasks/sources/todo-desktop.md` item `DSK-0.12` is ingested as `series: "DSK"`.
 5. `todo-ai-corporation.md` item `PR.14` is ingested as `series: "AI"`.
 6. Evolution backlog items (`EVO-001`–`EVO-004`) are ingested as `series: "EVO"`.
 7. Audit backlog items (`AUD-001`–`AUD-014`) are ingested as `series: "AUD"`.
@@ -241,19 +241,19 @@ git commit -m "feat(tasks): add zero-drift validation and roadmap synchronizatio
 
 **Files:**
 
-- Create: `docs/raw/README.md`
-- Create: `docs/brain/README.md`
-- Create: `docs/wiki/README.md`
-- Create: `docs/blueprints/README.md`
-- Create: `docs/specs/README.md`
+- Create: `docs/second-brain/raw/README.md`
+- Create: `docs/second-brain/brain/README.md`
+- Create: `docs/second-brain/wiki/README.md`
+- Create: `docs/meta/blueprints-registry.md`
+- Create: `docs/meta/specs-registry.md`
 - Create: `docs/tasks/README.md`
 - Move & Archive:
-  - `todo-foundation.md` -> `docs/archive/todos/todo-foundation.md`
-  - `todo-ui.md` -> `docs/archive/todos/todo-ui.md`
-  - `todo-wa.md` -> `docs/archive/todos/todo-wa.md`
-  - `todo-desktop.md` -> `docs/archive/todos/todo-desktop.md`
-  - `todo.md` -> `docs/archive/todos/todo.md`
-- Replace root `todo.md` with authoritative pointer to `docs/tasks/tasks.json` and `apps/todo`.
+  - `docs/tasks/sources/todo-foundation.md` -> `docs/archive/todos/todo-foundation.md`
+  - `docs/tasks/sources/todo-ui.md` -> `docs/archive/todos/todo-ui.md`
+  - `docs/tasks/sources/todo-wa.md` -> `docs/archive/todos/todo-wa.md`
+  - `docs/tasks/sources/todo-desktop.md` -> `docs/archive/todos/todo-desktop.md`
+  - `docs/tasks/sources/todo.md` -> `docs/archive/todos/todo.md`
+- Replace root `docs/tasks/sources/todo.md` with authoritative pointer to `docs/tasks/tasks.json` and `apps/todo`.
 
 - [ ] **Step 1: Create README guides in `docs/` subdirectories**
 
@@ -261,8 +261,8 @@ Define exact purpose, lifecycles, and frontmatter templates for `raw/`, `brain/`
 
 - [ ] **Step 2: Archive finished and legacy todo files**
 
-Move `todo-foundation.md`, `todo-ui.md`, `todo-wa.md`, `todo-desktop.md`, and old `todo.md` to `docs/archive/todos/`.
-Create a clean, canonical root `todo.md` that directs developers and agents to `docs/tasks/tasks.json` and `apps/todo`, preserving any scripts referencing root `todo.md`.
+Move `docs/tasks/sources/todo-foundation.md`, `docs/tasks/sources/todo-ui.md`, `docs/tasks/sources/todo-wa.md`, `docs/tasks/sources/todo-desktop.md`, and old `docs/tasks/sources/todo.md` to `docs/archive/todos/`.
+Create a clean, canonical root `docs/tasks/sources/todo.md` that directs developers and agents to `docs/tasks/tasks.json` and `apps/todo`, preserving any scripts referencing root `docs/tasks/sources/todo.md`.
 
 - [ ] **Step 3: Verify workspace scripts & documentation links**
 
@@ -272,7 +272,7 @@ Expected: PASS without broken internal links.
 - [ ] **Step 4: Commit**
 
 ```bash
-git add docs/raw docs/brain docs/wiki docs/blueprints docs/specs docs/tasks docs/archive todo.md
+git add docs/raw docs/brain docs/wiki docs/blueprints docs/specs docs/tasks docs/archive docs/tasks/sources/todo.md
 git commit -m "docs(governance): establish Second Brain hierarchy and archive legacy todo files"
 ```
 

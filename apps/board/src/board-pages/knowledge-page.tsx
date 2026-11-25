@@ -10,8 +10,11 @@ import { scopedQueryKey } from '@/lib/query-scope';
 import { canReadResearch } from '@/lib/research-access';
 import { cn } from '@/lib/utils';
 import { Button } from '@moonwitness/ui/components/button';
+import { EmptyState } from '@moonwitness/ui/components/empty-state';
+import { ErrorState } from '@moonwitness/ui/components/error-state';
 import { Input } from '@moonwitness/ui/components/input';
 import { Skeleton } from '@moonwitness/ui/components/skeleton';
+import { getStateIllustration } from '@moonwitness/ui/lib/asset-registry';
 
 const sources = [
   {
@@ -32,6 +35,15 @@ function isPinnedSourceId(value: string): value is SourceId {
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : 'The request could not be completed.';
+}
+
+function StateArtwork({
+  slug,
+}: {
+  slug: 'access-denied' | 'empty-collection' | 'loading' | 'no-search-results' | 'offline';
+}) {
+  const asset = getStateIllustration(slug);
+  return <img src={asset.src} alt="" className="h-28 w-28 object-contain" decoding="async" />;
 }
 
 function SourceCard({ citation, passage }: { citation: SourceCitation; passage: CorpusPassage }) {
@@ -117,17 +129,23 @@ export function KnowledgePage() {
   const selectSourcePassage = (id: SourceId, selectedLocator: string) => {
     setSourceId(id);
     setRequestedLocator(selectedLocator);
+    if (typeof document !== 'undefined') {
+      document
+        .getElementById('source-heading')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
   if (!hasResearchAccess) {
     return (
-      <section className="ink-panel mx-auto max-w-2xl bg-card p-6 sm:p-10" role="alert">
-        <h1 className="font-display text-2xl uppercase">Knowledge explorer unavailable</h1>
-        <p className="mt-3 text-ink-soft">
-          Your current role cannot access research records without an active company context. The
-          API also verifies active company membership.
-        </p>
-      </section>
+      <div className="mx-auto max-w-2xl" role="alert">
+        <EmptyState
+          headingLevel={2}
+          icon={<StateArtwork slug="access-denied" />}
+          title="Knowledge explorer unavailable"
+          description="Your current role cannot access research records without an active company context. The API also verifies active company membership."
+        />
+      </div>
     );
   }
 
@@ -169,23 +187,68 @@ export function KnowledgePage() {
           ))}
         </div>
         {citationQuery.isError && (
-          <p className="text-sm text-destructive" role="alert">
-            Source metadata is unavailable: {errorMessage(citationQuery.error)}
-          </p>
+          <ErrorState
+            role="alert"
+            stateSlug="offline"
+            headingLevel={3}
+            title="Source metadata unavailable"
+            description={`Source metadata is unavailable: ${errorMessage(citationQuery.error)}`}
+            retryLabel="Retry source"
+            retrying={citationQuery.isFetching}
+            onRetry={() => {
+              void citationQuery.refetch();
+            }}
+          />
         )}
         {passageQuery.isError && !requestedPassageUnavailable && (
-          <p className="text-sm text-destructive" role="alert">
-            The exact passage could not be verified: {errorMessage(passageQuery.error)}
-          </p>
+          <ErrorState
+            role="alert"
+            stateSlug="offline"
+            headingLevel={3}
+            title="Passage verification unavailable"
+            description={`The exact passage could not be verified: ${errorMessage(passageQuery.error)}`}
+            retryLabel="Retry passage"
+            retrying={passageQuery.isFetching}
+            onRetry={() => {
+              void passageQuery.refetch();
+            }}
+          />
         )}
         {requestedPassageUnavailable && (
-          <p className="text-sm text-destructive" role="alert">
-            The selected evidence passage is not available in this pinned source edition.
-          </p>
+          <div role="alert">
+            <EmptyState
+              headingLevel={3}
+              icon={<StateArtwork slug="empty-collection" />}
+              title="Pinned passage unavailable"
+              description="The selected evidence passage is not available in this pinned source edition."
+              action={
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setRequestedLocator(null)}
+                >
+                  Open default passage
+                </Button>
+              }
+            />
+          </div>
         )}
         {(citationQuery.isLoading || passageQuery.isLoading) && (
-          <Skeleton className="h-64 w-full bg-ink/10" />
+          <div className="space-y-3" aria-busy="true">
+            <Skeleton label="Loading pinned passage" className="h-64 w-full bg-ink/10" />
+          </div>
         )}
+        {citation &&
+          (citation.availablePassages as readonly string[]).length === 0 &&
+          !citationQuery.isLoading && (
+            <EmptyState
+              headingLevel={3}
+              icon={<StateArtwork slug="empty-collection" />}
+              title="No pinned passages"
+              description="The selected source edition has no pinned passage locators available."
+            />
+          )}
         {citation && passageQuery.data && (
           <SourceCard citation={citation} passage={passageQuery.data} />
         )}
@@ -221,12 +284,34 @@ export function KnowledgePage() {
             Search graph
           </Button>
         </form>
-        {graphSearchQuery.isLoading && <Skeleton className="h-36 w-full bg-ink/10" />}
-        {graphSearchQuery.isError && (
-          <p className="text-sm text-destructive" role="alert">
-            Graph search is unavailable: {errorMessage(graphSearchQuery.error)}
-          </p>
+        {graphSearchQuery.isLoading && (
+          <Skeleton label="Searching research graph" className="h-36 w-full bg-ink/10" />
         )}
+        {graphSearchQuery.isError && (
+          <ErrorState
+            role="alert"
+            stateSlug="offline"
+            headingLevel={3}
+            title="Graph search unavailable"
+            description={`Graph search is unavailable: ${errorMessage(graphSearchQuery.error)}`}
+            retryLabel="Retry search"
+            retrying={graphSearchQuery.isFetching}
+            onRetry={() => {
+              void graphSearchQuery.refetch();
+            }}
+          />
+        )}
+        {!graphSearchQuery.isLoading &&
+          !graphSearchQuery.isError &&
+          !graphSearchQuery.data &&
+          graphSearchTerm.length === 0 && (
+            <EmptyState
+              headingLevel={3}
+              icon={<StateArtwork slug="empty-collection" />}
+              title="Ready to search the research graph"
+              description="Enter at least 2 characters above to search verified assertions, evidence, and relations."
+            />
+          )}
         {graphSearchQuery.data && (
           <GraphSearchResults
             query={graphSearchTerm}
@@ -241,6 +326,10 @@ export function KnowledgePage() {
             onExplainRelation={(id) => {
               setRelationInput(id);
               setRelationId(id);
+            }}
+            onClearSearch={() => {
+              setGraphSearchInput('');
+              setGraphSearchTerm('');
             }}
           />
         )}
@@ -275,11 +364,30 @@ export function KnowledgePage() {
             Explain
           </Button>
         </form>
-        {explanationQuery.isLoading && <Skeleton className="h-48 w-full bg-ink/10" />}
+        {explanationQuery.isLoading && (
+          <Skeleton label="Loading relation explanation" className="h-48 w-full bg-ink/10" />
+        )}
         {explanationQuery.isError && (
-          <p className="text-sm text-destructive" role="alert">
-            Research relation is unavailable: {errorMessage(explanationQuery.error)}
-          </p>
+          <ErrorState
+            role="alert"
+            stateSlug="offline"
+            headingLevel={3}
+            title="Relation explanation unavailable"
+            description={`Research relation is unavailable: ${errorMessage(explanationQuery.error)}`}
+            retryLabel="Retry relation"
+            retrying={explanationQuery.isFetching}
+            onRetry={() => {
+              void explanationQuery.refetch();
+            }}
+          />
+        )}
+        {!explanationQuery.isLoading && !explanationQuery.isError && !explanationQuery.data && (
+          <EmptyState
+            headingLevel={3}
+            icon={<StateArtwork slug="empty-collection" />}
+            title="No relation selected"
+            description="Select a relation from graph search or enter a research relation ID to inspect supporting and counterevidence records."
+          />
         )}
         {explanationQuery.data && (
           <RelationCard
@@ -305,6 +413,7 @@ function GraphSearchResults({
   onOpenPassage,
   onFindAssertion,
   onExplainRelation,
+  onClearSearch,
 }: {
   query: string;
   results: ResearchGraphSearchResult[];
@@ -313,6 +422,7 @@ function GraphSearchResults({
   onOpenPassage: (id: SourceId, locator: string) => void;
   onFindAssertion: (id: string) => void;
   onExplainRelation: (id: string) => void;
+  onClearSearch: () => void;
 }) {
   return (
     <div className="space-y-3">
@@ -325,9 +435,17 @@ function GraphSearchResults({
           : `Search for “${query}” found ${results.length} readable graph result${results.length === 1 ? '' : 's'}.${truncated ? ' Showing the first matches; refine your query to find a specific record.' : ''}`}
       </p>
       {results.length === 0 ? (
-        <p className="text-sm text-ink-faint">
-          Try another claim, relation ID, source, or passage.
-        </p>
+        <EmptyState
+          headingLevel={3}
+          icon={<StateArtwork slug="no-search-results" />}
+          title="No matching graph records"
+          description="Try another claim, relation ID, source, or passage."
+          action={
+            <Button type="button" variant="outline" size="sm" onClick={onClearSearch}>
+              Clear search
+            </Button>
+          }
+        />
       ) : (
         <ul aria-label="Research graph search results" className="grid gap-3">
           {results.map((result) => (
@@ -473,7 +591,12 @@ function EvidenceList({
     <section className="min-w-0 space-y-2" aria-label={title}>
       <h3 className="font-display text-lg uppercase">{title}</h3>
       {rows.length === 0 ? (
-        <p className="text-sm text-ink-faint">No linked evidence.</p>
+        <EmptyState
+          headingLevel={4}
+          icon={<StateArtwork slug="empty-collection" />}
+          title="No linked evidence"
+          description="No linked evidence."
+        />
       ) : (
         <ul className="space-y-2">
           {rows.map((row) => {

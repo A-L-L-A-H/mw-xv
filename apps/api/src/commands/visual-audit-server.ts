@@ -1,4 +1,5 @@
 import knex from 'knex';
+import { E2E_JWT_SECRET, E2E_SUPERADMIN_PASSWORD } from '@moonwitness/types/node';
 import { buildApp } from '../app.js';
 
 const database = knex({
@@ -9,8 +10,8 @@ const database = knex({
 
 const app = await buildApp({
   db: database,
-  superadminPassword: process.env.SUPERADMIN_PASSWORD ?? 'e2e-only-password',
-  jwtSecret: process.env.JWT_SECRET ?? 'e2e-only-jwt-secret-that-is-never-used-outside-tests',
+  superadminPassword: E2E_SUPERADMIN_PASSWORD,
+  jwtSecret: E2E_JWT_SECRET,
   loginRateMax: 100,
 });
 

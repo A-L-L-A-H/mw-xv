@@ -3,15 +3,18 @@ import { expect, test } from '@playwright/test';
 test('environment depth inspector toggles and reorders planes and reflows on mobile (W4-008, W1-006)', async ({
   page,
 }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
   await page.goto('./#scene-environment-inspector');
   const lab = page.getByTestId('scene-lab');
   await expect(lab).toBeVisible();
   await expect(lab.locator('[data-scene-id="moon-city-hero"]')).toBeVisible();
-  await expect(lab.locator('[data-layer-id]')).toHaveCount(9);
+  // 9 environment planes plus the in-scene crew-01 layer (z=82)
+  await expect(lab.locator('[data-layer-id]')).toHaveCount(10);
+  await expect(lab.locator('[data-layer-id="crew-01"]')).toHaveAttribute('data-z-order', '82');
 
   // Toggle off one plane
   await lab.locator('li[data-plane-id="prop-wires"] input[type="checkbox"]').uncheck();
-  await expect(lab.locator('[data-layer-id]')).toHaveCount(8);
+  await expect(lab.locator('[data-layer-id]')).toHaveCount(9);
 
   // Reorder planes (move moon backward behind sky)
   await lab.locator('li[data-plane-id="moon"] button', { hasText: 'Back' }).click();
@@ -63,13 +66,15 @@ test('scene runtime supports static fallback, timeline controls, keyboard camera
 test('environment inspector resets layer visibility, z-order and composition to the canonical baseline (W7-004)', async ({
   page,
 }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
   await page.goto('./#scene-environment-inspector');
   const lab = page.getByTestId('scene-lab');
   await lab.locator('li[data-plane-id="prop-wires"] input[type="checkbox"]').uncheck();
   await lab.getByRole('button', { name: 'Mobile 9:16' }).click();
   await lab.getByRole('button', { name: 'Reset inspector' }).click();
-  await expect(lab.locator('[data-layer-id]')).toHaveCount(9);
+  await expect(lab.locator('[data-layer-id]')).toHaveCount(10);
   await expect(lab.locator('[data-layer-id="sky"]')).toBeVisible();
+  await expect(lab.locator('[data-layer-id="crew-01"]')).toBeVisible();
   await expect(lab.locator('.scene-lab-stage')).toHaveAttribute('data-composition', 'desktop');
 });
 
@@ -148,7 +153,27 @@ test('scene inspector captures desktop/mobile compositions and reduced-motion fa
   });
   expect(desktopPivotRatio[0]).toBeCloseTo(0.72, 2);
   expect(desktopPivotRatio[1]).toBeCloseTo(0.24, 2);
+  // Crew-01 is composited into the scene (z=82): visible, near the rooftop, right of center,
+  // and scaled to roughly a fifth of the stage height.
+  const crew = stage.locator('[data-layer-id="crew-01"]');
+  await expect(crew).toBeVisible();
+  await expect(crew).toHaveAttribute('data-z-order', '82');
   await stage.scrollIntoViewIfNeeded();
+  const desktopStageBox = await stage.boundingBox();
+  const desktopCrewBox = await crew.boundingBox();
+  expect(desktopStageBox).not.toBeNull();
+  expect(desktopCrewBox).not.toBeNull();
+  const desktopHeightRatio = desktopCrewBox!.height / desktopStageBox!.height;
+  expect(desktopHeightRatio).toBeGreaterThan(0.18);
+  expect(desktopHeightRatio).toBeLessThan(0.26);
+  const desktopCenterX =
+    (desktopCrewBox!.x + desktopCrewBox!.width / 2 - desktopStageBox!.x) / desktopStageBox!.width;
+  expect(desktopCenterX).toBeGreaterThan(0.55);
+  expect(desktopCenterX).toBeLessThan(0.75);
+  const desktopCenterY =
+    (desktopCrewBox!.y + desktopCrewBox!.height / 2 - desktopStageBox!.y) / desktopStageBox!.height;
+  expect(desktopCenterY).toBeGreaterThan(0.6);
+  expect(desktopCenterY).toBeLessThan(0.95);
   await stage.screenshot({ path: testInfo.outputPath('scene-preview-desktop.png') });
 
   await lab.getByRole('button', { name: 'Mobile 9:16' }).click();
@@ -163,9 +188,59 @@ test('scene inspector captures desktop/mobile compositions and reduced-motion fa
   });
   expect(mobilePivotRatio[0]).toBeCloseTo(0.52, 2);
   expect(mobilePivotRatio[1]).toBeCloseTo(0.2, 2);
+
+  // Mobile keeps the crew in frame and below the text safe zone (top 8%–44%).
+  const mobileStageBox = await stage.boundingBox();
+  const mobileCrewBox = await crew.boundingBox();
+  expect(mobileStageBox).not.toBeNull();
+  expect(mobileCrewBox).not.toBeNull();
+  const mobileHeightRatio = mobileCrewBox!.height / mobileStageBox!.height;
+  expect(mobileHeightRatio).toBeGreaterThan(0.18);
+  expect(mobileHeightRatio).toBeLessThan(0.26);
+  expect((mobileCrewBox!.y - mobileStageBox!.y) / mobileStageBox!.height).toBeGreaterThan(0.5);
+  const mobileCenterX =
+    (mobileCrewBox!.x + mobileCrewBox!.width / 2 - mobileStageBox!.x) / mobileStageBox!.width;
+  expect(mobileCenterX).toBeGreaterThan(0.45);
+  expect(mobileCenterX).toBeLessThan(0.8);
   await stage.screenshot({ path: testInfo.outputPath('scene-preview-mobile.png') });
 
   await lab.getByRole('button', { name: 'Static fallback' }).click();
   await expect(desktopScene).toHaveAttribute('data-scene-state', 'static');
   await expect(desktopScene.locator('[data-scene-fallback="true"]')).toBeVisible();
+
+  // The crew is a separate in-scene plane, so it survives the environment fallback and
+  // resolves to a static frame 01 instead of continuing to animate.
+  await expect(crew).toBeVisible();
+  await expect(crew.locator('[data-sprite-clip]')).toHaveAttribute('data-sprite-state', 'static');
+  await expect(crew.locator('img')).toHaveAttribute(
+    'src',
+    /crew-01-idle-frame-01(?:-[A-Za-z0-9_-]+)?\.svg/
+  );
+});
+
+test('in-scene crew-01 stays static under the reduced-motion harness and media query', async ({
+  page,
+}) => {
+  await page.goto('./?sceneReducedMotion=1#scene-environment-inspector');
+  const crew = page.getByTestId('scene-lab').locator('[data-layer-id="crew-01"]');
+  await expect(crew).toBeVisible();
+  await expect(crew.locator('[data-sprite-clip]')).toHaveAttribute('data-sprite-state', 'static');
+  await expect(crew.locator('img')).toHaveAttribute(
+    'src',
+    /crew-01-idle-frame-01(?:-[A-Za-z0-9_-]+)?\.svg/
+  );
+
+  // prefers-reduced-motion alone is enough, even without the URL harness.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('./#scene-environment-inspector');
+  const mediaCrew = page.getByTestId('scene-lab').locator('[data-layer-id="crew-01"]');
+  await expect(mediaCrew).toBeVisible();
+  await expect(mediaCrew.locator('[data-sprite-clip]')).toHaveAttribute(
+    'data-sprite-state',
+    'static'
+  );
+  await expect(mediaCrew.locator('img')).toHaveAttribute(
+    'src',
+    /crew-01-idle-frame-01(?:-[A-Za-z0-9_-]+)?\.svg/
+  );
 });

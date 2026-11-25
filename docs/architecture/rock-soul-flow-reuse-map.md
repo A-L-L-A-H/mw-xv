@@ -42,7 +42,7 @@ See [Stabilization Plan](../roadmap/STABILIZATION-PLAN.md) for sequenced recover
   - [ADR 0008: Local-First Desktop Agent Harness](adr/0008-local-first-desktop-agent-harness.md)
   - [Desktop Local-First Harness Architecture](desktop-local-first-harness.md)
   - [Domain Ownership and Reuse Map](DOMAIN-OWNERSHIP-RECONCILIATION.md)
-  - [Desktop Engineering Ledger](../../todo-desktop.md)
+  - [Desktop Engineering Ledger](../tasks/sources/todo-desktop.md)
 
 ---
 

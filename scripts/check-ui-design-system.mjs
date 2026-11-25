@@ -3,11 +3,16 @@ import { readFile, readdir, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
+import {
+  auditWorkspacePolicy,
+  loadUiGovernancePolicy,
+  uiFindingFingerprint,
+} from './check-board-shared-ui.mjs';
 
 const debtRules = new Set([
   'hardcoded-color',
   'shared-token-literal',
-  'shared-style-override',
+  'shared-child-style-debt',
   'duplicate-chalk-mask',
 ]);
 const normalizeFile = (file) => path.posix.normalize(file.replaceAll('\\', '/'));
@@ -37,6 +42,15 @@ function closingParen(text, start) {
     }
   }
   return text.length - 1;
+}
+
+function matchingBrace(code, open) {
+  let depth = 1;
+  for (let i = open + 1; i < code.length; i++) {
+    if (code[i] === '{') depth++;
+    else if (code[i] === '}' && --depth === 0) return i;
+  }
+  return code.length;
 }
 
 // Mask non-code without changing offsets; URLs may contain CSS-looking SVG data.
@@ -111,6 +125,7 @@ function cssDeclarations(source, onDeclaration, onBlock) {
       }
     }
   }
+  declaration(code.length);
 }
 
 function hasLiteralColor(value) {
@@ -201,7 +216,7 @@ function exported(subpath, exports) {
 }
 
 /** Static, global token definitions and module imports; not runtime scope/usage coverage. */
-export function auditUiSources(files, uiManifest) {
+export function auditUiSources(files, uiManifest, options = {}) {
   const exports = exportsOf(uiManifest);
   const availableComponents = exports
     .filter((key) => key.startsWith('./components/') && !key.includes('*'))
@@ -215,6 +230,14 @@ export function auditUiSources(files, uiManifest) {
   const masks = [];
   const apps = new Map();
   const sourceNames = new Set(sources.map(({ file }) => file));
+  const sharedClassNames = new Set();
+  for (const { file, source } of sources)
+    if (isUiFile(file))
+      for (const match of source.matchAll(/\bmw-ui-[a-z][\w-]*/giu)) sharedClassNames.add(match[0]);
+  const isInternalChildClass = (name) =>
+    [...sharedClassNames].some((parent) => name.startsWith(`${parent}-`));
+  const childOverrideOccurrences = new Map();
+  const reviewedChildDebt = options.policy?.rules?.sharedChildClassOverrides?.reviewedDebt ?? [];
   const add = (file, offset, rule, message, evidence) => {
     rawFindings.push({ file, offset, rule, message, evidence: normalizeEvidence(evidence) });
   };
@@ -307,31 +330,80 @@ export function auditUiSources(files, uiManifest) {
       }
     };
 
-    if (file.endsWith('.css')) {
+    const inspectCss = (fragment, baseOffset = 0) => {
+      const code = maskCss(fragment);
       cssDeclarations(
-        source,
+        fragment,
         ({ property, value, offset }) => {
-          const colon = source.indexOf(':', offset);
-          const valueStart = colon + 1 + source.slice(colon + 1).search(/\S/);
-          declaration(property, value, offset, valueStart);
+          const colon = fragment.indexOf(':', offset);
+          const valueStart = colon + 1 + fragment.slice(colon + 1).search(/\S/);
+          declaration(property, value, baseOffset + offset, baseOffset + valueStart);
         },
-        (selector, offset) => {
-          const classes = [...selector.matchAll(/\.([a-z_][\w-]*)/gi)].map((match) => match[1]);
-          const overridesSharedClass = classes.some((name) => name.startsWith('mw-ui-'));
+        (maskedSelector, offset) => {
+          const absoluteOffset = baseOffset + offset;
+          const open = code.indexOf('{', offset + maskedSelector.length);
+          const selector = fragment.slice(offset, open === -1 ? undefined : open).trim();
+          const classMatches = [...selector.matchAll(/\.([a-z_][\w-]*)/gi)];
+          const classes = classMatches.map((match) => match[1]);
+          const sharedClasses = classMatches.filter((match) => match[1].startsWith('mw-ui-'));
+          const overridesSharedClass = sharedClasses.length > 0;
           const hasScopedAnchor = classes.some((name) => !name.startsWith('mw-ui-'));
-          // App-scoped theming (e.g. `.home-page .mw-ui-button`) is supported;
-          // only global redefinitions of shared classes erode the system.
           if (!isUiFile(file) && overridesSharedClass && !hasScopedAnchor) {
             add(
               file,
-              offset,
+              absoluteOffset,
               'shared-style-override',
               'Global selector overrides a shared component class; scope it under an app class or move it into shared components.',
               selector
             );
+            return;
+          }
+          const overridesInternalChild =
+            hasScopedAnchor &&
+            (classes.some((name) => name.startsWith('mw-ui-') && isInternalChildClass(name)) ||
+              sharedClasses.length > 1);
+          if (!isUiFile(file) && overridesInternalChild) {
+            const close = matchingBrace(code, open);
+            const body = open === -1 ? '' : normalizeEvidence(fragment.slice(open + 1, close));
+            const evidence = normalizeEvidence(`${selector} { ${body} }`);
+            const identity = JSON.stringify([file, evidence]);
+            const occurrence = childOverrideOccurrences.get(identity) ?? 0;
+            childOverrideOccurrences.set(identity, occurrence + 1);
+            const fingerprint = uiFindingFingerprint(
+              'shared-child-style-debt',
+              file,
+              evidence,
+              occurrence
+            );
+            const reviewed = reviewedChildDebt.some(
+              (entry) =>
+                entry.file === file &&
+                entry.fingerprint === fingerprint &&
+                normalizeEvidence(entry.selector) === normalizeEvidence(selector)
+            );
+            add(
+              file,
+              absoluteOffset,
+              reviewed ? 'shared-child-style-debt' : 'shared-child-style-override',
+              reviewed
+                ? 'Reviewed existing internal child-class override; do not extend or modify it without migration.'
+                : 'App overrides an internal shared component child class; use supported props/slots or move the style into @moonwitness/ui.',
+              evidence
+            );
           }
         }
       );
+    };
+
+    if (file.endsWith('.css')) {
+      inspectCss(source);
+      continue;
+    }
+    if (file.endsWith('.html')) {
+      for (const match of source.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/giu))
+        inspectCss(match[1], match.index + match[0].indexOf('>') + 1);
+      for (const match of source.matchAll(/\bstyle\s*=\s*(["'])([\s\S]*?)\1/giu))
+        inspectCss(match[2], match.index + match[0].indexOf(match[2]));
       continue;
     }
 
@@ -422,6 +494,33 @@ export function auditUiSources(files, uiManifest) {
           (ts.isIdentifier(node.expression) && node.expression.text === 'require'))
       )
         inspectImport(node.arguments[0]);
+      if (
+        ts.isBinaryExpression(node) &&
+        node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+        ts.isPropertyAccessExpression(node.left) &&
+        ts.isPropertyAccessExpression(node.left.expression) &&
+        node.left.expression.name.text === 'style'
+      ) {
+        const name = node.left.name.text;
+        if (name === 'cssText') strings(node.right, (value, offset) => inspectCss(value, offset));
+        else if (visualProperty(name) || name.startsWith('--'))
+          strings(node.right, (value, offset) =>
+            declaration(name, value, node.getStart(ast), offset)
+          );
+      } else if (
+        ts.isCallExpression(node) &&
+        ts.isPropertyAccessExpression(node.expression) &&
+        node.expression.name.text === 'setProperty' &&
+        ts.isPropertyAccessExpression(node.expression.expression) &&
+        node.expression.expression.name.text === 'style' &&
+        ts.isStringLiteralLike(node.arguments[0])
+      ) {
+        const name = node.arguments[0].text;
+        if (visualProperty(name) || name.startsWith('--'))
+          strings(node.arguments[1], (value, offset) =>
+            declaration(name, value, node.getStart(ast), offset)
+          );
+      }
       if (ts.isJsxAttribute(node)) {
         const name = node.name.getText(ast);
         const expression =
@@ -525,7 +624,7 @@ function baselineKey(entry) {
   return JSON.stringify([normalizeFile(entry.file), entry.rule, entry.fingerprint]);
 }
 
-function baselineEntries(baseline) {
+function baselineEntries(baseline, policy) {
   if (baseline === undefined) return [];
   if (baseline?.version !== 1 || !Array.isArray(baseline.entries))
     throw new Error('Invalid UI baseline: expected version 1 and entries.');
@@ -544,6 +643,16 @@ function baselineEntries(baseline) {
         'Invalid UI baseline entry: only reviewed styling-debt rules with a reason and SHA-256 fingerprint are allowed.'
       );
     }
+    if (
+      entry.rule === 'shared-child-style-debt' &&
+      !policy?.rules?.sharedChildClassOverrides?.reviewedDebt?.some(
+        (reviewed) =>
+          reviewed.file === normalizeFile(entry.file) && reviewed.fingerprint === entry.fingerprint
+      )
+    )
+      throw new Error(
+        'Invalid UI baseline entry: shared child-class debt must exactly match reviewed policy debt.'
+      );
     const key = baselineKey(entry);
     if (seen.has(key)) throw new Error('Invalid UI baseline: duplicate entry.');
     seen.add(key);
@@ -551,8 +660,8 @@ function baselineEntries(baseline) {
   return baseline.entries;
 }
 
-export function compareUiBaseline(findings, baseline) {
-  const entries = baselineEntries(baseline);
+export function compareUiBaseline(findings, baseline, options = {}) {
+  const entries = baselineEntries(baseline, options.policy);
   const known = new Set(entries.map(baselineKey));
   const current = new Set(
     findings.filter((finding) => debtRules.has(finding.rule)).map(baselineKey)
@@ -572,7 +681,9 @@ export function createUiBaseline(findings) {
   return {
     version: 1,
     entries: findings
-      .filter((finding) => debtRules.has(finding.rule))
+      .filter(
+        (finding) => debtRules.has(finding.rule) && finding.rule !== 'shared-child-style-debt'
+      )
       .map(({ file, rule, fingerprint }) => ({
         file: normalizeFile(file),
         rule,
@@ -612,54 +723,109 @@ async function readManifest(file) {
   return manifest;
 }
 
-export async function auditWorkspaceUi(root) {
-  const uiManifest = await readManifest(path.join(root, 'packages/ui/package.json'));
+export async function auditWorkspaceUi(root, options = {}) {
+  const policy = options.policy ?? (await loadUiGovernancePolicy(root));
+  const uiManifest =
+    options.uiManifest ?? (await readManifest(path.join(root, 'packages/ui/package.json')));
+  const governance = await auditWorkspacePolicy(root, { policy, uiManifest });
   const files = [];
+  const sourceByFile = new Map();
+  const addFile = async (file) => {
+    if (sourceByFile.has(file)) return;
+    const source = await readFile(path.join(root, file), 'utf8');
+    sourceByFile.set(file, source);
+    files.push({ file, source });
+  };
   const scan = async (directory) => {
     for (const entry of (await readdir(directory, { withFileTypes: true })).sort((a, b) =>
       lexicalCompare(a.name, b.name)
     )) {
       const full = path.join(directory, entry.name);
-      if (entry.isDirectory()) await scan(full);
-      else if (entry.isFile() && /(?:\.css|\.[cm]?[jt]sx?)$/.test(entry.name))
-        files.push({
-          file: normalizeFile(path.relative(root, full)),
-          source: await readFile(full, 'utf8'),
-        });
+      if (entry.isDirectory()) {
+        if (!['node_modules', 'dist', 'generated', '.next', '.next-e2e'].includes(entry.name))
+          await scan(full);
+      } else if (entry.isFile() && /(?:\.css|\.[cm]?[jt]sx?)$/.test(entry.name))
+        await addFile(normalizeFile(path.relative(root, full)));
     }
   };
   await scan(path.join(root, 'packages/ui/src'));
-  const consumers = [];
-  const appsDirectory = path.join(root, 'apps');
-  if (await optionalStat(appsDirectory)) {
-    for (const entry of (await readdir(appsDirectory, { withFileTypes: true })).sort((a, b) =>
-      lexicalCompare(a.name, b.name)
-    )) {
-      if (!entry.isDirectory()) continue;
-      const appDirectory = path.join(appsDirectory, entry.name);
-      const manifestFile = path.join(appDirectory, 'package.json');
-      if (!(await optionalStat(manifestFile))) continue;
-      const manifest = await readManifest(manifestFile);
-      if (!Object.hasOwn(manifest.dependencies ?? {}, '@moonwitness/ui')) continue;
-      const app = `apps/${entry.name}`;
-      consumers.push(app);
-      for (const folder of ['src', 'web/src', 'desktop-web']) {
-        const directory = path.join(appDirectory, folder);
-        if (await optionalStat(directory)) await scan(directory);
-      }
-    }
-  }
-  const report = auditUiSources(files, uiManifest);
-  for (const app of consumers) {
-    if (!report.coverage.apps.some((entry) => entry.app === app))
-      report.coverage.apps.push({
-        app,
-        importedComponents: [],
-        unusedComponents: [...report.coverage.availableComponents],
-      });
-  }
-  report.coverage.apps.sort((a, b) => lexicalCompare(a.app, b.app));
-  return report;
+  for (const app of governance.adoption) for (const file of app.scannedFiles) await addFile(file);
+
+  const report = auditUiSources(files, uiManifest, { policy });
+  const policyOccurrences = new Map();
+  const policyFindings = governance.violations.map((violation) => {
+    const file = normalizeFile(violation.file);
+    const evidence = normalizeEvidence(violation.evidence ?? violation.message);
+    const identity = JSON.stringify([violation.rule, file, evidence]);
+    const occurrence = policyOccurrences.get(identity) ?? 0;
+    policyOccurrences.set(identity, occurrence + 1);
+    return {
+      file,
+      line: violation.line ?? 1,
+      rule: violation.rule,
+      message: violation.message,
+      evidence,
+      fingerprint: uiFindingFingerprint(violation.rule, file, evidence, occurrence),
+    };
+  });
+  const aliasOccurrences = new Map();
+  const aliasFindings = options.strictAliasDebt
+    ? governance.aliasDebt.map((finding) => {
+        const evidence = `${finding.token} -> ${finding.canonicalToken}`;
+        const identity = JSON.stringify([finding.file, evidence]);
+        const occurrence = aliasOccurrences.get(identity) ?? 0;
+        aliasOccurrences.set(identity, occurrence + 1);
+        return {
+          file: finding.file,
+          line: finding.line,
+          rule: finding.rule,
+          message: finding.message,
+          evidence,
+          fingerprint: uiFindingFingerprint(finding.rule, finding.file, evidence, occurrence),
+        };
+      })
+    : [];
+  report.findings.push(...policyFindings, ...aliasFindings);
+  report.findings.sort(
+    (a, b) =>
+      lexicalCompare(a.file, b.file) ||
+      a.line - b.line ||
+      lexicalCompare(a.rule, b.rule) ||
+      lexicalCompare(a.evidence, b.evidence)
+  );
+
+  const imported = new Set(governance.adoption.flatMap((app) => app.importedComponents));
+  report.coverage = {
+    availableComponents: report.coverage.availableComponents,
+    apps: governance.adoption.map((app) => ({
+      app: app.app,
+      classification: app.classification,
+      importedComponents: app.importedComponents,
+      namedComponents: app.namedComponents,
+      jsxComponents: app.jsxComponents,
+      reachableImportedComponents: app.reachableImportedComponents,
+      reachableNamedComponents: app.reachableNamedComponents,
+      reachableJsxComponents: app.reachableJsxComponents,
+      unusedComponents: app.unusedComponents,
+    })),
+    unusedComponents: report.coverage.availableComponents.filter(
+      (subpath) => !imported.has(subpath)
+    ),
+    note: 'Static imports, named/value usage, JSX usage, route reachability, Catalog references, and runtime evidence are separate signals; none is an adoption score.',
+  };
+  return {
+    ...report,
+    apps: governance.apps,
+    adoption: governance.adoption,
+    catalogReferenceCoverage: governance.catalogReferenceCoverage,
+    publicUi: governance.publicUi,
+    independentChecks: governance.independentChecks,
+    knip: governance.knip,
+    aliasDebt: governance.aliasDebt,
+    consumerAliasDebt: governance.consumerAliasDebt,
+    aliasEnforcement: policy.aliasCanonicalization?.enforcement ?? 'report-only',
+    policyFile: 'scripts/ui-governance-policy.json',
+  };
 }
 
 const ruleCounts = (findings) =>
@@ -674,27 +840,43 @@ const countsText = (findings) =>
     .join(', ') || 'none';
 
 async function main(args) {
-  const allowed = new Set(['--json', '--strict', '--write-baseline']);
+  const allowed = new Set(['--json', '--strict', '--write-baseline', '--strict-alias-debt']);
   for (const arg of args)
     if (!allowed.has(arg))
-      throw new Error(`Unknown argument: ${arg}. Allowed: --json, --strict, --write-baseline.`);
+      throw new Error(
+        `Unknown argument: ${arg}. Allowed: --json, --strict, --write-baseline, --strict-alias-debt.`
+      );
   const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const baselineFile = path.join(root, 'scripts/ui-design-system.baseline.json');
-  const report = await auditWorkspaceUi(root);
+  const strictAliasDebt = args.includes('--strict-alias-debt');
+  const report = await auditWorkspaceUi(root, { strictAliasDebt });
+  const policy = await loadUiGovernancePolicy(root);
   let baseline;
   if (await optionalStat(baselineFile)) baseline = JSON.parse(await readFile(baselineFile, 'utf8'));
   const structural = report.findings.filter((finding) => !debtRules.has(finding.rule));
+  const frozenChildDebt = report.findings.some(
+    (finding) => finding.rule === 'shared-child-style-debt'
+  );
   let baselineWritten = false;
-  if (args.includes('--write-baseline') && !structural.length) {
+  let baselineWriteBlocked = '';
+  if (args.includes('--write-baseline')) {
+    if (structural.length) baselineWriteBlocked = 'fix structural errors first';
+    else if (frozenChildDebt)
+      baselineWriteBlocked =
+        'reviewed child-class debt is frozen in policy and baseline; migrate it or review a new exact fingerprint manually';
+  }
+  if (args.includes('--write-baseline') && !baselineWriteBlocked) {
     baseline = createUiBaseline(report.findings);
     await writeFile(baselineFile, `${JSON.stringify(baseline, null, 2)}\n`, 'utf8');
     baselineWritten = true;
   }
-  const comparison = compareUiBaseline(report.findings, baseline);
+  const comparison = compareUiBaseline(report.findings, baseline, { policy });
   const strict = args.includes('--strict');
-  const failures = strict ? report.findings : comparison.newFindings;
+  const failures = strict
+    ? [...report.findings, ...comparison.staleEntries]
+    : [...comparison.newFindings, ...comparison.staleEntries];
   const remediation =
-    'Replace literal styling with shared tokens/components, define missing tokens or use fallbacks, and use public exports. After reviewing existing debt only: node scripts/check-ui-design-system.mjs --write-baseline';
+    'Replace literal styling with shared tokens/components, define missing tokens or use fallbacks, and use public exports. New or changed internal .mw-ui-* child-class overrides are structural and cannot be baselined. After reviewing ordinary existing debt only: node scripts/check-ui-design-system.mjs --write-baseline';
   if (args.includes('--json')) {
     console.log(
       JSON.stringify(
@@ -703,7 +885,10 @@ async function main(args) {
           ...comparison,
           counts: ruleCounts(report.findings),
           strict,
+          strictAliasDebt,
+          failures,
           baselineWritten,
+          baselineWriteBlocked,
           baselineFile: 'scripts/ui-design-system.baseline.json',
           remediation,
         },
@@ -718,22 +903,52 @@ async function main(args) {
     console.log(
       `New/structural: ${comparison.newFindings.length}; known debt: ${comparison.knownFindings.length} (${countsText(comparison.knownFindings)}); stale baseline entries: ${comparison.staleEntries.length}.`
     );
-    for (const finding of failures)
+    for (const finding of comparison.newFindings)
       console.log(
         `${finding.file}:${finding.line} [${finding.rule}] ${finding.message} ${finding.evidence}`
       );
+    for (const entry of comparison.staleEntries)
+      console.log(
+        `${entry.file} [stale-baseline] Reviewed debt is no longer present: ${entry.rule}.`
+      );
     if (baselineWritten)
-      console.log('Wrote scripts/ui-design-system.baseline.json (styling debt only).');
-    if (args.includes('--write-baseline') && structural.length)
-      console.log('Baseline not written: fix structural errors first.');
+      console.log('Wrote scripts/ui-design-system.baseline.json (ordinary styling debt only).');
+    if (baselineWriteBlocked) console.log(`Baseline not written: ${baselineWriteBlocked}.`);
     console.log(
-      `Import coverage: ${report.coverage.availableComponents.length} available component subpaths; ${report.coverage.unusedComponents.length} not imported by audited apps.`
+      `Component signals: ${report.coverage.availableComponents.length} available; ${report.coverage.unusedComponents.length} not imported by audited apps.`
     );
     for (const app of report.coverage.apps)
       console.log(
-        `${app.app}: ${app.importedComponents.length} imported, ${app.unusedComponents.length} unused component subpaths.`
+        `${app.app}: ${app.importedComponents.length} imported, ${app.namedComponents.length} named usage, ${app.jsxComponents.length} JSX usage, ${app.reachableNamedComponents.length} route-reachable named usage, ${app.unusedComponents.length} unused.`
       );
     console.log(report.coverage.note);
+    for (const api of report.knip.protectedPublicApis)
+      console.log(
+        `Knip-protected public API ${api.export}: ${
+          report.catalogReferenceCoverage.referencedComponents.includes(api.subpath)
+            ? 'referenced by Catalog JSX'
+            : 'retained; Catalog reference not yet present'
+        }.`
+      );
+    for (const app of report.adoption)
+      for (const evidence of app.runtimeEvidence)
+        console.log(
+          `Runtime evidence ${app.app}/${evidence.name}: ${
+            evidence.present ? 'test files present' : 'missing test files'
+          }; run separately with \`${evidence.command}\`.`
+        );
+    for (const [app, checks] of Object.entries(report.independentChecks))
+      for (const check of checks)
+        console.log(`Independent ${app} check ${check.name}: \`${check.command}\`.`);
+    if (report.aliasDebt.length) {
+      console.log(
+        `Package-internal --ink alias debt: ${report.aliasDebt.length} occurrence(s), enforcement=${report.aliasEnforcement}.`
+      );
+      for (const finding of report.aliasDebt)
+        console.log(
+          `  ${finding.file}:${finding.line}:${finding.column} ${finding.token} -> ${finding.canonicalToken}`
+        );
+    }
     if (failures.length) console.log(remediation);
   }
   process.exitCode = failures.length ? 1 : 0;

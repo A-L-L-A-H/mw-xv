@@ -1663,7 +1663,7 @@ describe('MoonWitness Desktop Harness', () => {
 
     const packet = await bridge.worktree.compileExecutionPacket('forge-1', r0Auth, {
       allowedCapabilities: ['repo.read@v1'],
-      verificationCommands: ['pnpm --filter @moonwitness/desktop test'],
+      verificationCommands: ['bun --filter @moonwitness/desktop test'],
       contract: {
         id: 77,
         code: 'wc_forge_1',

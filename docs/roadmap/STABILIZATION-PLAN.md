@@ -37,7 +37,7 @@
 
 ### S1 — TaskOS migration (P0, owner-approved canonical write applied)
 
-- [x] Audited the pre-migration registry blob: 1,358 unique records; 861 records referenced root `todo.md`, now a pointer.
+- [x] Audited the pre-migration registry blob: 1,358 unique records; 861 records referenced root `docs/tasks/sources/todo.md`, now a pointer.
 - [x] Inventoried all eight authoritative sources and built the deterministic 627-record candidate.
 - [x] Reconciled all task IDs: 504 shared, 854 completed historical IDs archived, and 123 reviewed IDs added; all seven still-open legacy IDs are retained as blocked.
 - [x] Preserved the exact legacy registry blob `d56499936761dcc062704d06588ee2679fd1aae2` at `docs/tasks/archives/tasks-legacy-1358-2026-11-23.json`.
@@ -126,7 +126,7 @@
 
 ## Audit correction and isolated candidate export — 2026-11-23
 
-Earlier zero-byte registry statements were incorrect for the exact dev tree. A direct Git blob read confirms that `docs/tasks/tasks.json` parses as 1,358 records. Its legacy source distribution includes 861 entries attributed to root `todo.md`; root `todo.md` is now a pointer, so those records require reconciliation against the archived checklist.
+Earlier zero-byte registry statements were incorrect for the exact dev tree. A direct Git blob read confirms that `docs/tasks/tasks.json` parses as 1,358 records. Its legacy source distribution includes 861 entries attributed to root `docs/tasks/sources/todo.md`; root `docs/tasks/sources/todo.md` is now a pointer, so those records require reconciliation against the archived checklist.
 
 The initial isolated candidate implementation was added in `9a4d994` and CI was adjusted in `7efba2c`. Its first exact-head TaskOS test run exposed one defect in the new CLI output: the trailing newline was double-escaped and produced invalid JSON. The regression test caught this before build/unit tests or registry mutation. The newline correction is applied in the current stabilization patch; a fresh exact-SHA CI run must verify it.
 

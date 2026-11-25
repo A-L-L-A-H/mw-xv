@@ -3,11 +3,19 @@ package main
 import (
 	"bytes"
 	"context"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
 	"crypto/sha256"
+	"crypto/tls"
+	"crypto/x509"
+	"crypto/x509/pkix"
 	"database/sql"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"math/big"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -458,5 +466,201 @@ func TestPreviewDeployRollbackOnUnhealthyCandidate(t *testing.T) {
 	}
 	if strings.Contains(joinedCalls, "mw-paas-webapp-feat-ui-live") {
 		t.Fatalf("previous live container must NOT be stopped/removed on rollback:\n%s", joinedCalls)
+	}
+}
+
+func newProbeTestCert(t *testing.T, dnsName string) (tls.Certificate, *x509.CertPool) {
+	t.Helper()
+	key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if err != nil {
+		t.Fatalf("generate key: %v", err)
+	}
+	now := time.Now()
+	tmpl := &x509.Certificate{
+		SerialNumber: big.NewInt(1),
+		Subject:      pkix.Name{CommonName: dnsName},
+		DNSNames:     []string{dnsName},
+		NotBefore:    now.Add(-time.Hour),
+		NotAfter:     now.Add(time.Hour),
+		KeyUsage:     x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
+		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+	}
+	der, err := x509.CreateCertificate(rand.Reader, tmpl, tmpl, &key.PublicKey, key)
+	if err != nil {
+		t.Fatalf("create cert: %v", err)
+	}
+	cert, err := x509.ParseCertificate(der)
+	if err != nil {
+		t.Fatalf("parse cert: %v", err)
+	}
+	pool := x509.NewCertPool()
+	pool.AddCert(cert)
+	return tls.Certificate{Certificate: [][]byte{der}, PrivateKey: key}, pool
+}
+
+func TestDefaultHTTPHealthProbeRejectsUnsafeURLs(t *testing.T) {
+	cases := []struct {
+		name string
+		url  string
+	}{
+		{name: "http scheme", url: "http://example.com/healthz"},
+		{name: "ftp scheme", url: "ftp://example.com/healthz"},
+		{name: "empty host", url: "https:///healthz"},
+		{name: "userinfo", url: "https://user:pass@example.com/healthz"},
+		{name: "localhost", url: "https://localhost/healthz"},
+		{name: "dot local", url: "https://service.local/healthz"},
+		{name: "dot internal", url: "https://metadata.internal/healthz"},
+		{name: "loopback v4", url: "https://127.0.0.1/healthz"},
+		{name: "loopback v6", url: "https://[::1]/healthz"},
+		{name: "private 10", url: "https://10.0.0.1/healthz"},
+		{name: "private 172", url: "https://172.16.0.1/healthz"},
+		{name: "private 192", url: "https://192.168.1.1/healthz"},
+		{name: "link-local metadata", url: "https://169.254.169.254/latest/meta-data/"},
+		{name: "easytier cgnat mesh", url: "https://100.64.0.1/healthz"},
+		{name: "unspecified", url: "https://0.0.0.0/healthz"},
+		{name: "multicast", url: "https://224.0.0.1/healthz"},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if err := defaultHTTPHealthProbe(context.Background(), tc.url); err == nil {
+				t.Fatalf("expected error for unsafe URL %q", tc.url)
+			}
+		})
+	}
+}
+
+func TestProbeHTTPSURLRejectsDNSRebindingAndMixedIPs(t *testing.T) {
+	dialCalled := false
+	neverDial := func(context.Context, string, string) (net.Conn, error) {
+		dialCalled = true
+		return nil, errors.New("unexpected dial")
+	}
+
+	cases := []struct {
+		name  string
+		addrs []net.IPAddr
+		err   error
+	}{
+		{
+			name:  "lookup error",
+			err:   errors.New("dns failure"),
+		},
+		{
+			name:  "empty addrs",
+			addrs: nil,
+		},
+		{
+			name: "public plus loopback dual record",
+			addrs: []net.IPAddr{
+				{IP: net.ParseIP("93.184.216.34")},
+				{IP: net.ParseIP("127.0.0.1")},
+			},
+		},
+		{
+			name: "public plus private mesh dual record",
+			addrs: []net.IPAddr{
+				{IP: net.ParseIP("93.184.216.34")},
+				{IP: net.ParseIP("100.64.0.10")},
+			},
+		},
+		{
+			name: "ipv4-mapped ipv6 loopback",
+			addrs: []net.IPAddr{
+				{IP: net.ParseIP("::ffff:127.0.0.1")},
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			dialCalled = false
+			lookup := func(context.Context, string) ([]net.IPAddr, error) {
+				return tc.addrs, tc.err
+			}
+			err := probeHTTPSURL(context.Background(), "https://rebind.example.com/healthz", lookup, neverDial, nil)
+			if err == nil {
+				t.Fatalf("expected rejection for %s", tc.name)
+			}
+			if dialCalled {
+				t.Fatalf("dial must not be invoked when DNS validation fails")
+			}
+		})
+	}
+}
+
+func TestProbeHTTPSURLPinsIPPreservesHostAndBlocksRedirects(t *testing.T) {
+	cert, pool := newProbeTestCert(t, "health.example.test")
+
+	var statusToReturn int = http.StatusOK
+	var gotHost, gotPath, gotQuery, gotSNI string
+	var gotTLSVersion uint16
+	redirectHits := 0
+
+	srv := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/redirect-target" {
+			redirectHits++
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+		gotHost = r.Host
+		gotPath = r.URL.Path
+		gotQuery = r.URL.RawQuery
+		if r.TLS != nil {
+			gotSNI = r.TLS.ServerName
+			gotTLSVersion = r.TLS.Version
+		}
+		if statusToReturn >= 300 && statusToReturn < 400 {
+			w.Header().Set("Location", "/redirect-target")
+		}
+		w.WriteHeader(statusToReturn)
+	}))
+	srv.TLS = &tls.Config{Certificates: []tls.Certificate{cert}}
+	srv.StartTLS()
+	defer srv.Close()
+
+	_, srvPort, err := net.SplitHostPort(srv.Listener.Addr().String())
+	if err != nil {
+		t.Fatalf("split server addr: %v", err)
+	}
+
+	var dialedAddr string
+	lookupPublic := func(_ context.Context, host string) ([]net.IPAddr, error) {
+		if host != "health.example.test" {
+			return nil, errors.New("unexpected hostname lookup")
+		}
+		return []net.IPAddr{{IP: net.ParseIP("93.184.216.34")}}, nil
+	}
+	dialPinned := func(ctx context.Context, network, addr string) (net.Conn, error) {
+		dialedAddr = addr
+		return (&net.Dialer{Timeout: 2 * time.Second}).DialContext(ctx, network, srv.Listener.Addr().String())
+	}
+
+	target := "https://health.example.test:" + srvPort + "/healthz?check=1"
+	if err := probeHTTPSURL(context.Background(), target, lookupPublic, dialPinned, pool); err != nil {
+		t.Fatalf("expected 200 probe to succeed, got: %v", err)
+	}
+	wantPinned := "93.184.216.34:" + srvPort
+	if dialedAddr != wantPinned {
+		t.Fatalf("expected DialContext to receive pinned addr %q, got %q", wantPinned, dialedAddr)
+	}
+	if gotHost != "health.example.test:"+srvPort {
+		t.Fatalf("expected Host header %q, got %q", "health.example.test:"+srvPort, gotHost)
+	}
+	if gotPath != "/healthz" || gotQuery != "check=1" {
+		t.Fatalf("expected /healthz?check=1, got %s?%s", gotPath, gotQuery)
+	}
+	if gotSNI != "health.example.test" || gotTLSVersion < tls.VersionTLS12 {
+		t.Fatalf("unexpected TLS state: sni=%q version=%#x", gotSNI, gotTLSVersion)
+	}
+
+	// Redirects must never be followed and must fail the probe.
+	statusToReturn = http.StatusFound
+	err = probeHTTPSURL(context.Background(), target, lookupPublic, dialPinned, pool)
+	if err == nil || !strings.Contains(err.Error(), "302") {
+		t.Fatalf("expected 302 rejection error, got: %v", err)
+	}
+	if redirectHits != 0 {
+		t.Fatalf("redirect target was contacted %d times; redirects must be disabled", redirectHits)
 	}
 }

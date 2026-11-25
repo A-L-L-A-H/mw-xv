@@ -185,7 +185,7 @@ Catat command/test case, actual result, SHA sumber dan lokasi bukti dalam `docs/
 ## M1.11 — Hapus alur staging/production deployment yang tidak digunakan; pertahankan smoke test lokal runner.
 
 - **Prasyarat:** M0.04
-- **Baca/periksa:** .github/workflows/deploy.yml; README; docker-compose.production.yml.
+- **Baca/periksa:** .github/workflows/deploy.yml; README; deploy/compose/docker-compose.production.yml.
 - **Deliverable:** Removal diff dan dokumentasi scope.
 
 ### Langkah pelaksanaan
