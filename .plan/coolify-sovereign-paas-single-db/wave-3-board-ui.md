@@ -137,7 +137,7 @@
 
 ---
 
-## - [ ] M44 — Add TLS-Gated Port `8000` Lockdown Card + `/board/settings` Admin Shortcut
+## - [x] M44 — Add TLS-Gated Port `8000` Lockdown Card + `/board/settings` Admin Shortcut
 
 - **Owner Files (MODIFY):**
   - `apps/board/src/components/cloud/instance-domains-panel.tsx`

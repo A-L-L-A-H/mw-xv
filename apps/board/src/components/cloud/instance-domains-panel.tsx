@@ -17,7 +17,8 @@ import {
   TableHeader,
   TableRow,
 } from '@moonwitness/ui/components/table';
-import { GlobeIcon, CheckCircleIcon, ArrowRightIcon } from '@moonwitness/ui/icons';
+import { ConfirmDialog } from '@moonwitness/ui/components/confirm-dialog';
+import { GlobeIcon, CheckCircleIcon, ArrowRightIcon, LockIcon } from '@moonwitness/ui/icons';
 
 export interface InstanceDomainsPanelProps {
   apiBase: string;
@@ -80,6 +81,8 @@ export function InstanceDomainsPanel({
   const [wildcardDomain, setWildcardDomain] = useState('');
   const [whatsappDomain, setWhatsappDomain] = useState('');
   const [verify, setVerify] = useState<VerifyResult | null>(null);
+  const [lockdownOpen, setLockdownOpen] = useState(false);
+  const [httpsReady, setHttpsReady] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -127,6 +130,59 @@ export function InstanceDomainsPanel({
       setVerify(result.data ?? result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'DNS verification failed');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onTestHttps() {
+    setBusy(true);
+    setError(null);
+    try {
+      const result = (await post('/settings/verify-dns', {
+        instanceDomain: instanceDomain || undefined,
+        checkHttps: true,
+      })) as { data?: VerifyResult } & VerifyResult;
+      const data = result.data ?? result;
+      setVerify(data);
+      setHttpsReady(Boolean(data.httpsReady?.reachable && data.httpsReady?.tlsVerified));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'HTTPS reachability check failed');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onLockdown() {
+    setBusy(true);
+    setError(null);
+    try {
+      await post('/settings/apply', {
+        instanceDomain: instanceDomain || undefined,
+        publicPortEnabled: false,
+      });
+      setLockdownOpen(false);
+      await load();
+      await onSettingsApplied?.();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to lock down port 8000');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onReenable() {
+    setBusy(true);
+    setError(null);
+    try {
+      await post('/settings/apply', {
+        instanceDomain: instanceDomain || undefined,
+        publicPortEnabled: true,
+      });
+      await load();
+      await onSettingsApplied?.();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to re-enable port 8000');
     } finally {
       setBusy(false);
     }
@@ -349,6 +405,50 @@ export function InstanceDomainsPanel({
           </div>
         ) : null}
       </Panel>
+
+      <Panel
+        title="Port 8000 HTTPS-Only Hardening"
+        description="Once HTTPS is verified on your instance domain, you can close the public :8000 bootstrap port. HTTPS remains available on :443."
+      >
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" disabled={busy} onClick={() => void onTestHttps()}>
+            Test HTTPS Reachability
+          </Button>
+          <Badge variant={httpsReady ? 'cyan' : 'default'}>
+            HTTPS: {httpsReady ? 'Reachable & TLS verified' : 'Not verified'}
+          </Badge>
+          {settings?.publicPortEnabled === false ? (
+            <Button variant="outline" disabled={busy} onClick={() => void onReenable()}>
+              Re-enable Port 8000
+            </Button>
+          ) : (
+            <Button
+              variant="destructive"
+              disabled={busy || !settings?.instanceDomain || !httpsReady}
+              onClick={() => setLockdownOpen(true)}
+            >
+              <LockIcon aria-hidden />
+              Lock Down Port 8000
+            </Button>
+          )}
+        </div>
+        {!settings?.instanceDomain ? (
+          <p className="mt-2 text-xs opacity-70">Save an instance domain before locking down the port.</p>
+        ) : null}
+      </Panel>
+
+      <ConfirmDialog
+        open={lockdownOpen}
+        onOpenChange={setLockdownOpen}
+        title="Lock down public port 8000?"
+        description="This closes the HTTP bootstrap port :8000. Your instance must remain reachable over verified HTTPS on :443."
+        warningBanner="Make sure HTTPS is working before continuing — you may lose browser access on :8000."
+        consequence="If HTTPS breaks, recover from SSH with: bash /opt/moonwitness-xv/deploy/vps/install.sh --unlock-port"
+        confirmLabel="Lock Down Port 8000"
+        destructive
+        busy={busy}
+        onConfirm={() => void onLockdown()}
+      />
     </div>
   );
 }
