@@ -78,7 +78,7 @@
 
 ---
 
-## - [ ] T09 — Implement DAG Scheduler, Boss Critical Path & Swarm Wave Partitioner (`src/core/dag.ts`)
+## - [x] T09 — Implement DAG Scheduler, Boss Critical Path & Swarm Wave Partitioner (`src/core/dag.ts`)
 
 - **Owner File(s):** `packages/plan-taskos/src/core/dag.ts`
   - `packages/plan-taskos/src/core/dag.ts` (CREATE)
