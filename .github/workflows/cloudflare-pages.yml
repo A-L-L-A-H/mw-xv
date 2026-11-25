@@ -74,18 +74,6 @@ jobs:
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           wranglerVersion: '3'
 
-      - name: Comment deployment URL on PR
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@60a3d2630b8d9480e35e7e7e5e5f5a5b5c5d5e5f5 # v7.0.1
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: '📚 Documentation preview deployed to: ${{ steps.deploy.outputs.url }}'
-            })
-
       - name: Notify on failure
         if: failure()
         run: |
