@@ -237,11 +237,12 @@ function PortalLayout({ skin, onToggleSkin }: { skin: DocsSkin; onToggleSkin: ()
   const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
   const selectedPage = pages.find((page) => page.route === location.pathname);
   const roadmapPage = location.pathname === '/roadmap';
+  const monitoringPage = location.pathname === '/monitoring';
   const navigate = useNavigate();
 
   useEffect(() => setMobileNavigationOpen(false), [location.pathname]);
 
-  if (!selectedPage && !roadmapPage) return <NotFound />;
+  if (!selectedPage && !roadmapPage && !monitoringPage) return <NotFound />;
 
   const isRiotSkin = skin === 'moonwitness-riot';
 
@@ -328,6 +329,14 @@ function PortalLayout({ skin, onToggleSkin }: { skin: DocsSkin; onToggleSkin: ()
             <h2>Project</h2>
             <nav aria-label="Project">
               <Link
+                className={location.pathname === '/monitoring' ? 'nav-link nav-link-active' : 'nav-link'}
+                aria-current={location.pathname === '/monitoring' ? 'page' : undefined}
+                to="/monitoring"
+              >
+                <span>Monitoring dashboard</span>
+                <span className="nav-kind">Ops</span>
+              </Link>
+              <Link
                 className={roadmapPage ? 'nav-link nav-link-active' : 'nav-link'}
                 aria-current={roadmapPage ? 'page' : undefined}
                 to="/roadmap"
@@ -351,7 +360,17 @@ function PortalLayout({ skin, onToggleSkin }: { skin: DocsSkin; onToggleSkin: ()
           </div>
         </aside>
         <main id="main-content" className="main-content" tabIndex={-1}>
-          {roadmapPage ? (
+          {monitoringPage ? (
+            <Suspense
+              fallback={
+                <p className="document-loading" role="status">
+                  Memuat dashboard monitoring...
+                </p>
+              }
+            >
+              <MonitoringDashboard />
+            </Suspense>
+          ) : roadmapPage ? (
             <RoadmapDashboard />
           ) : selectedPage ? (
             <>
@@ -379,7 +398,7 @@ function PortalLayout({ skin, onToggleSkin }: { skin: DocsSkin; onToggleSkin: ()
             <span>MoonWitness · dokumentasi untuk developer</span>
             <button
               type="button"
-              onClick={() => navigate(roadmapPage ? '/roadmap' : (selectedPage?.route ?? '/'))}
+              onClick={() => navigate(monitoringPage ? '/monitoring' : roadmapPage ? '/roadmap' : (selectedPage?.route ?? '/'))}
             >
               Kembali ke atas ↑
             </button>
