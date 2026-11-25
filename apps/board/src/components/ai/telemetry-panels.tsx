@@ -3,6 +3,7 @@
 import { useDeferredValue, useId, useState, type ReactNode } from 'react';
 import { Badge } from '@moonwitness/ui/components/badge';
 import { Button } from '@moonwitness/ui/components/button';
+import { LineChart } from '@moonwitness/ui/components/chart';
 import { Input } from '@moonwitness/ui/components/input';
 import { MetricTile } from '@moonwitness/ui/components/metric-tile';
 import { Panel } from '@moonwitness/ui/components/panel';
@@ -837,8 +838,6 @@ function SpanRow({
 }
 
 function MetricTimeSeriesChart({ series }: { readonly series: TelemetryMetricSeriesDto }) {
-  const titleId = useId();
-  const descriptionId = useId();
   const points = series.points.slice(-METRIC_POINT_RENDER_LIMIT);
   const values = points
     .map((point) => metricPlotValue(series, point))
@@ -857,27 +856,6 @@ function MetricTimeSeriesChart({ series }: { readonly series: TelemetryMetricSer
     );
   }
 
-  const minimum = Math.min(...values);
-  const maximum = Math.max(...values);
-  const range = maximum - minimum || Math.abs(maximum) || 1;
-  const width = 720;
-  const height = 180;
-  const left = 8;
-  const right = width - 8;
-  const top = 16;
-  const bottom = height - 16;
-  const coordinates = values.map((value, index) => {
-    const x =
-      values.length === 1
-        ? (left + right) / 2
-        : left + (index / (values.length - 1)) * (right - left);
-    const y =
-      maximum === minimum
-        ? (top + bottom) / 2
-        : bottom - ((value - minimum) / range) * (bottom - top);
-    return { x, y, value };
-  });
-
   return (
     <figure className="border border-ink/20 bg-paper p-3">
       <figcaption className="font-mono text-xs font-bold uppercase text-ink">
@@ -886,55 +864,25 @@ function MetricTimeSeriesChart({ series }: { readonly series: TelemetryMetricSer
       {series.description ? (
         <p className="mt-1 text-xs text-ink-soft">{series.description}</p>
       ) : null}
-      <svg
-        viewBox={`0 0 ${width} ${height}`}
-        role="img"
-        aria-labelledby={`${titleId} ${descriptionId}`}
+      <LineChart
+        title={`${series.name} ${valueLabel} time series`}
+        labels={points.map((point) => formatTimestamp(point.timestampMs))}
+        series={[
+          {
+            label: `${series.name} ${valueLabel}`,
+            values,
+          },
+        ]}
+        locale="en-US"
+        valueLabel={valueLabel}
         className="mt-2 h-40 w-full text-magenta"
-      >
-        <title id={titleId}>
-          {series.name} {valueLabel} time series
-        </title>
-        <desc id={descriptionId}>
-          Latest {points.length} returned points, from {formatTimestamp(points[0]?.timestampMs)} to{' '}
-          {formatTimestamp(points.at(-1)?.timestampMs)}. Range {formatNumber(minimum)} to{' '}
-          {formatNumber(maximum)} {series.unit ?? ''}. Exact values are in the following table.
-        </desc>
-        <line x1={left} x2={right} y1={top} y2={top} stroke="currentColor" strokeOpacity="0.15" />
-        <line
-          x1={left}
-          x2={right}
-          y1={bottom}
-          y2={bottom}
-          stroke="currentColor"
-          strokeOpacity="0.15"
-        />
-        <polyline
-          points={coordinates.map((point) => `${point.x},${point.y}`).join(' ')}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          vectorEffect="non-scaling-stroke"
-        />
-        {coordinates.map((point, index) => (
-          <circle
-            key={points[index]?.timestampMs ?? index}
-            cx={point.x}
-            cy={point.y}
-            r="3"
-            fill="currentColor"
-          >
-            <title>
-              {formatTimestamp(points[index]?.timestampMs)}: {formatNumber(point.value)}{' '}
-              {series.unit ?? ''}
-            </title>
-          </circle>
-        ))}
-      </svg>
+        renderValue={(value) => `${formatNumber(value)} ${series.unit ?? ''}`}
+      />
       <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-[10px] text-ink-faint">
         <span>{formatTimestamp(points[0]?.timestampMs)}</span>
         <span>
-          Range {formatNumber(minimum)}–{formatNumber(maximum)} {series.unit ?? ''}
+          Range {formatNumber(Math.min(...values))}–{formatNumber(Math.max(...values))}{' '}
+          {series.unit ?? ''}
         </span>
         <span>{formatTimestamp(points.at(-1)?.timestampMs)}</span>
       </div>
