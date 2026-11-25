@@ -127,9 +127,9 @@ export async function executeVerifyCommands(
 
   for (const { cmd, timeoutSec = 120, expectedExitCode = 0 } of commands) {
     const start = Date.now();
-    let stdout = "";
-    let stderr = "";
-    let exitCode = 0;
+    let stdout: string;
+    let stderr: string;
+    let exitCode: number;
 
     try {
       const output = execSync(cmd, {
@@ -141,7 +141,8 @@ export async function executeVerifyCommands(
         windowsHide: true,
       });
       stdout = output;
-      // exitCode already 0
+      stderr = "";
+      exitCode = 0;
     } catch (e: unknown) {
       const err = e as { stdout?: string; stderr?: string; status?: number; signal?: string };
       stdout = err.stdout ?? "";
