@@ -21,7 +21,7 @@ jobs:
   promote:
     if: github.ref == 'refs/heads/dev'
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 30
     permissions:
       contents: write
       checks: read
@@ -148,23 +148,15 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           EXPECTED_SHA: ${{ github.sha }}
-          RUNNER_TEMP: ${{ runner.temp }}
         run: |
           set -euo pipefail
-          gh api "repos/$GH_REPO/commits/$EXPECTED_SHA/check-runs?per_page=100" --paginate --slurp \
-            | node -e '
-              const chunks = [];
-              process.stdin.on("data", (chunk) => chunks.push(chunk));
-              process.stdin.on("end", () => {
-                const pages = JSON.parse(chunks.join(""));
-                const runs = (Array.isArray(pages) ? pages : [pages]).flatMap((page) => page?.check_runs ?? page ?? []);
-                process.stdout.write(JSON.stringify(runs));
-              });
-            ' > "$RUNNER_TEMP/promotion-check-runs.json"
           # policy-gate is enforced by the ruleset on the merge_group SHA; this
           # push-time gate requires the exact-SHA technical aggregate only.
+          # Poll CI until it completes on the exact dev SHA instead of taking a
+          # one-shot snapshot before the lanes finish (~20 min), which previously
+          # locked in pass=false and permanently blocked autonomous promotion.
           if node scripts/release-await-ci.mjs --sha "$EXPECTED_SHA" --repo "$GH_REPO" \
-              --checks '["ci-gate", "postgres-integration"]' --checks-file "$RUNNER_TEMP/promotion-check-runs.json"; then
+              --checks '["ci-gate", "postgres-integration"]'; then
             echo "pass=true" >> "$GITHUB_OUTPUT"
           else
             echo "pass=false" >> "$GITHUB_OUTPUT"
