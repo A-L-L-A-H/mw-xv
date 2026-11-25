@@ -238,6 +238,8 @@ jobs:
           bun-version: '1.4.5'
       - name: Install frozen workspace dependencies
         run: bun install --frozen-lockfile
+      - name: Build @moonwitness/types first (required by board and others)
+        run: bun --filter @moonwitness/types build
       - name: Run TaskOS registry safety tests
         run: bun run test:taskos
       - name: Build and run unit tests
