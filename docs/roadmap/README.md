@@ -40,6 +40,10 @@ Roadmap ini terdiri dari 210 kartu M-series dan 65 kartu K-series (275 task). Ch
 | [Sovereign Dreaming AGI](17-sovereign-dreaming-agi.md)             | M16.01–M16.04 | Non-REM memory consolidation, Active Inference EFE, and Merkle ledger             |
 | [Verifiable Mesh Consensus](18-verifiable-mesh-agi-consensus.md)   | M17.01–M17.04 | Verifiable A2A consensus, policy fuzzer, sandbox runner, and self-healing         |
 | [Autonomous Eval Benchmark](19-autonomous-eval-benchmark-suite.md) | M18.01–M18.03 | Deterministic world-model simulator, adversarial suite, and 8-axis AGI benchmark  |
+| [ISP Rust server plane & Go control plane](20-isp-rust-go-architecture-aaa.md) | M19.01–M19.13 | Architecture, AAA hardening, Go control API, RouterOS adapter and HA |
+| [ISP OSS, IPAM & FTTH](21-isp-oss-fttx-ipam.md) | M20.01–M20.08 | Network inventory, VLAN/VRF, dual-stack IPAM, OLT, ONT and field service |
+| [Rust ISP services & Go NOC](22-isp-rust-services-noc.md) | M21.01–M21.08 | DHCP, DNS, ACS and telemetry servers in Rust; NOC policy in Go |
+| [ISP BSS & managed server products](23-isp-bss-server-products.md) | M22.01–M22.07 | Product catalog, order activation, billing, collections, self-service and PaaS reuse |
 
 Lihat juga [Issues dan delivery — M11.01–M11.15](11-issues-delivery.md): issue sync, lifecycle, commit/push, auto-PR/merge dan recovery.
 
@@ -63,7 +67,3 @@ Nomor milestone bukan urutan serial mutlak. Gunakan dependsOn di index. Contoh: 
 - **Maintenance:** jadwal berulang merupakan operasi ongoing. Item setup selesai setelah workflow tersedia dan satu run terbukti; pekerjaan rutin tetap berlanjut.
 - Roadmap hanya lengkap jika gap, tugas tertunda, unsupported capability, dan pemilik tindak lanjut tetap tercatat.
 
-| [ISP Rust server plane & Go control plane](20-isp-rust-go-architecture-aaa.md) | M19.01–M19.13 | Architecture, AAA hardening, Go control API, RouterOS adapter and HA |
-| [ISP OSS, IPAM & FTTH](21-isp-oss-fttx-ipam.md) | M20.01–M20.08 | Network inventory, VLAN/VRF, dual-stack IPAM, OLT, ONT and field service |
-| [Rust ISP services & Go NOC](22-isp-rust-services-noc.md) | M21.01–M21.08 | DHCP, DNS, ACS and telemetry servers in Rust; NOC policy in Go |
-| [ISP BSS & managed server products](23-isp-bss-server-products.md) | M22.01–M22.07 | Product catalog, order activation, billing, collections, self-service and PaaS reuse |
