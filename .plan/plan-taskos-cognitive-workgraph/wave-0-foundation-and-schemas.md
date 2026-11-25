@@ -5,7 +5,7 @@
 
 ---
 
-## - [ ] T01 — Scaffold `packages/plan-taskos` Package Manifest & Update `.gitignore`
+## - [x] T01 — Scaffold `packages/plan-taskos` Package Manifest & Update `.gitignore`
 
 - **Owner File(s):** `packages/plan-taskos/package.json`, `packages/plan-taskos/tsconfig.json`, `packages/plan-taskos/tsconfig.check.json`, `packages/plan-taskos/vitest.config.ts`, `.gitignore`
   - `packages/plan-taskos/package.json` (CREATE)

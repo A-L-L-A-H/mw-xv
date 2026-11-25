@@ -49,7 +49,7 @@ Execute strictly **1 micro-task (`Txx`) per cycle** without asking the user any 
 ## 3. Global Micro-Task Checklist (`T01`–`T44`)
 
 ### Wave 0 — Foundation, Packaging & Schemas (`wave-0-foundation-and-schemas.md`)
-- [ ] **T01** — Scaffold `packages/plan-taskos` manifest (`package.json`, `tsconfig.json`, `tsconfig.check.json`, `vitest.config.ts`) & update `.gitignore` for `.plan/.brain/` and `.leases.local.json`
+- [x] **T01** — Scaffold `packages/plan-taskos` manifest (`package.json`, `tsconfig.json`, `tsconfig.check.json`, `vitest.config.ts`) & update `.gitignore` for `.plan/.brain/` and `.leases.local.json`
 - [ ] **T02** — Add `COPY packages/plan-taskos/package.json` to `Dockerfile` & `apps/whatsapp/Dockerfile` + sync `bun.lock` (`docker-workspace-manifests.test.mjs`)
 - [ ] **T03** — Author JSON Schemas 2020-12 (`schemas/{manifest,wave,proof,document}.schema.json`) for 6-plane WorkGraph IR v1
 - [ ] **T04** — Implement `src/core/urn.ts`, `src/core/paths.ts` (POSIX normalization + traversal guard), and `src/core/redaction.ts` (secret-scrubbing membrane)
@@ -112,7 +112,7 @@ Execute strictly **1 micro-task (`Txx`) per cycle** without asking the user any 
 
 | Wave | Task Range | Completed Tasks | Last Commit SHA | Latest Verification Evidence |
 |---|---|---|---|---|
-| Wave 0 | `T01`–`T05` | `0 / 5` | — | — |
+| Wave 0 | `T01`–`T05` | `1 / 5` | pending (T01) | `node -e` manifest+gitignore check -> `T01 OK`, exit 0 |
 | Wave 1 | `T06`–`T11` | `0 / 6` | — | — |
 | Wave 2 | `T12`–`T18` | `0 / 7` | — | — |
 | Wave 3 | `T19`–`T23` | `0 / 5` | — | — |

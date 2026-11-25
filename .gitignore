@@ -28,3 +28,5 @@ eslint-output.txt
 eslint-output.json
 depcruise-report.txt
 *.tsbuildinfo
+.plan/.brain/
+.plan/*/.leases.local.json
