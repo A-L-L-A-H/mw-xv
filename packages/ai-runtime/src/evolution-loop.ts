@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { sha256Hex } from './canonical-json.js';
 import { createRedactor, type RedactionContext } from './redaction.js';
 
 export interface ProofGateCheckSummary {
@@ -62,10 +62,6 @@ export interface EvolutionSynthesisResult {
   readonly reason?: EvolutionRejectionReason;
   readonly candidates: readonly EvolutionCandidateProposal[];
   readonly synthesisSha256: string;
-}
-
-function sha256Hex(value: string): string {
-  return createHash('sha256').update(value, 'utf8').digest('hex');
 }
 
 function normalizeSlug(raw: string): string {

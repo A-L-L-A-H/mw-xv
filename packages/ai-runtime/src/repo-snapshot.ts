@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { sha256Hex } from './canonical-json.js';
 import { compareAscii } from './sort-utils.js';
 import { createRedactor, type RedactionContext } from './redaction.js';
 import type { ReadOnlyRepoInspector, RepoFileEntry } from './repo-inspector.js';
@@ -106,10 +106,6 @@ const MARKDOWN_HEADING_PATTERN = /^(#{1,6})\s+(.+?)\s*#*$/u;
 function getPosixBasename(posixPath: string): string {
   const slashIndex = posixPath.lastIndexOf('/');
   return slashIndex === -1 ? posixPath : posixPath.slice(slashIndex + 1);
-}
-
-function sha256Hex(value: string): string {
-  return createHash('sha256').update(value, 'utf8').digest('hex');
 }
 
 function isPlainRecord(value: unknown): value is Record<string, unknown> {

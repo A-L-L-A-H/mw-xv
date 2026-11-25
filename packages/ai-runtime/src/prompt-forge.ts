@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { sha256Hex } from './canonical-json.js';
 import { compareAscii } from './sort-utils.js';
 import { createRedactor, type RedactionContext } from './redaction.js';
 import { DEFAULT_DENIED_PATH_PATTERNS } from './repo-inspector.js';
@@ -99,10 +99,6 @@ function policyError(reasonCode: string, message: string): ProviderError {
     correlationId: 'execution-packet-compile',
     retryable: false,
   });
-}
-
-function sha256Hex(value: string): string {
-  return createHash('sha256').update(value, 'utf8').digest('hex');
 }
 
 function normalizeCleanPath(raw: string): string {

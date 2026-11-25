@@ -1,4 +1,5 @@
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
+import { canonicalizeValue } from './canonical-json.js';
 import { createRedactor } from './redaction.js';
 import type { DataClassification } from './types.js';
 
@@ -385,24 +386,6 @@ export function validateA2ADelegationPolicy(
   }
 
   return { allowed: true };
-}
-
-function canonicalizeValue(value: unknown): unknown {
-  if (Array.isArray(value)) {
-    return value.map((entry) => canonicalizeValue(entry));
-  }
-  if (value !== null && typeof value === 'object') {
-    const record = value as Record<string, unknown>;
-    const sorted: Record<string, unknown> = {};
-    for (const key of Object.keys(record).sort()) {
-      const entry = record[key];
-      if (entry !== undefined) {
-        sorted[key] = canonicalizeValue(entry);
-      }
-    }
-    return sorted;
-  }
-  return value;
 }
 
 function computeEnvelopeSignature<TPayload extends Record<string, unknown>>(

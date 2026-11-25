@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 
-function canonicalizeValue(value: unknown): unknown {
+export function canonicalizeValue(value: unknown): unknown {
   if (Array.isArray(value)) {
     return value.map((entry) => canonicalizeValue(entry));
   }

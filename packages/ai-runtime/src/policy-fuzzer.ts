@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { sha256Canonical } from './canonical-json.js';
 import { createRedactor } from './redaction.js';
 
 export type PolicyActionEffect = 'allow' | 'deny';
@@ -129,10 +129,6 @@ function evaluateRules(
     matchedDenyIds.length > 0 ? 'deny' : matchedAllowIds.length > 0 ? 'allow' : 'deny';
 
   return { effect, matchedAllowIds, matchedDenyIds };
-}
-
-function sha256Canonical(payload: unknown): string {
-  return createHash('sha256').update(JSON.stringify(payload), 'utf8').digest('hex');
 }
 
 export function fuzzPolicyInvariants(

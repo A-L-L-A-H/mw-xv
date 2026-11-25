@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { sha256Canonical } from './canonical-json.js';
 import { createRedactor } from './redaction.js';
 
 export const PROTECTED_CONSTITUTIONAL_GATES = [
@@ -64,29 +64,6 @@ const WEAKENING_ACTION_PATTERN =
 
 const AUTO_PROMOTION_PATTERN =
   /\b(?:automatedPromotionAllowed\s*:\s*true|auto[-_\s]?promote|self[-_\s]?merge|bypass[-_\s]?human[-_\s]?review)\b/iu;
-
-function canonicalizeValue(value: unknown): unknown {
-  if (Array.isArray(value)) {
-    return value.map((entry) => canonicalizeValue(entry));
-  }
-  if (value !== null && typeof value === 'object') {
-    const record = value as Record<string, unknown>;
-    const sorted: Record<string, unknown> = {};
-    for (const key of Object.keys(record).sort()) {
-      const entry = record[key];
-      if (entry !== undefined) {
-        sorted[key] = canonicalizeValue(entry);
-      }
-    }
-    return sorted;
-  }
-  return value;
-}
-
-function sha256Canonical(payload: unknown): string {
-  const serialized = JSON.stringify(canonicalizeValue(payload));
-  return createHash('sha256').update(serialized, 'utf8').digest('hex');
-}
 
 function slugifyIdentifier(raw: string): string {
   const normalized = raw

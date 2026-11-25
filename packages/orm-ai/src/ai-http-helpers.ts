@@ -8,6 +8,15 @@ import { runDurableAgentRun } from './agent-run-executor.js';
 import { getCloudAgentEffect } from './cloud-agent-effect-factory.js';
 import { ExecutionPolicy } from './models.js';
 
+export type { AddonHttpReply, AddonHttpRequestBase } from '@moonwitness/orm';
+export type { WorkflowRole } from '@moonwitness/orm-workflow';
+
+export interface AiCompanyContext {
+  readonly userId: number;
+  readonly companyId: number;
+  readonly role: WorkflowRole;
+}
+
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -90,7 +99,7 @@ export async function hasCompanyAccess(
 export async function requireAiCompanyContext(
   req: AddonHttpRequestBase,
   reply: AddonHttpReply
-): Promise<{ userId: number; companyId: number; role: WorkflowRole } | null> {
+): Promise<AiCompanyContext | null> {
   reply.header?.('Cache-Control', 'private, no-store');
   const auth = req.auth;
   if (!auth) {

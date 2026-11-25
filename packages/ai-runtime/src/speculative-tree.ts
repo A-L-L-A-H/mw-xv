@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { sha256Canonical } from './canonical-json.js';
 import { clampBps } from './sort-utils.js';
 import { createRedactor, type RedactionContext } from './redaction.js';
 
@@ -96,30 +96,6 @@ export interface SpeculativeTournamentReport {
 const DEFAULT_MAX_HIGHLIGHTS = 8;
 const DEFAULT_MAX_SUMMARY_CHARS = 1_200;
 
-function canonicalizeValue(value: unknown): unknown {
-  if (value === null || typeof value !== 'object') {
-    return value;
-  }
-  if (Array.isArray(value)) {
-    return value.map((entry) => canonicalizeValue(entry));
-  }
-  const record = value as Record<string, unknown>;
-  const sortedKeys = Object.keys(record).sort();
-  const normalized: Record<string, unknown> = {};
-  for (const key of sortedKeys) {
-    const entry = record[key];
-    if (entry !== undefined) {
-      normalized[key] = canonicalizeValue(entry);
-    }
-  }
-  return normalized;
-}
-
-function computeCanonicalSha256(payload: unknown): string {
-  const canonicalJson = JSON.stringify(canonicalizeValue(payload));
-  return createHash('sha256').update(canonicalJson, 'utf8').digest('hex');
-}
-
 function buildRedactor(secrets?: readonly string[]): RedactionContext {
   const redactor = createRedactor();
   if (secrets) {
@@ -191,7 +167,7 @@ export function compressTrajectorySummary(
 
   return {
     ...corePayload,
-    compressedSha256: computeCanonicalSha256(corePayload),
+    compressedSha256: sha256Canonical(corePayload),
   };
 }
 
@@ -230,7 +206,7 @@ export function runRecursiveTournamentVoting(
     };
     return {
       ...emptyPayload,
-      tournamentSha256: computeCanonicalSha256(emptyPayload),
+      tournamentSha256: sha256Canonical(emptyPayload),
     };
   }
 
@@ -306,7 +282,7 @@ export function runRecursiveTournamentVoting(
 
   return {
     ...corePayload,
-    tournamentSha256: computeCanonicalSha256(corePayload),
+    tournamentSha256: sha256Canonical(corePayload),
   };
 }
 
@@ -398,6 +374,6 @@ export function selectWinningSpeculativeBranch(
 
   return {
     ...coreReport,
-    reportSha256: computeCanonicalSha256(coreReport),
+    reportSha256: sha256Canonical(coreReport),
   };
 }

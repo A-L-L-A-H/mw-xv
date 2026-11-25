@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { sha256Hex } from './canonical-json.js';
 import { compareAscii } from './sort-utils.js';
 import { createRedactor, type RedactionContext } from './redaction.js';
 
@@ -191,10 +191,6 @@ const DEFAULT_MOONWITNESS_SURFACES: DesignSurfaceTokens = Object.freeze({
   shadowSm: '2px 2px 0 #0d0d0d',
   shadowMd: '4px 4px 0 #0d0d0d',
 });
-
-function sha256Hex(value: string): string {
-  return createHash('sha256').update(value, 'utf8').digest('hex');
-}
 
 function normalizeHex(hex: string): string | null {
   const trimmed = hex.trim().toLowerCase();

@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { sha256Canonical } from './canonical-json.js';
 import { createRedactor } from './redaction.js';
 
 export type DynamicAutonomyMode = 'standard' | 'require_extra_rtv_branches' | 'require_human_gate';
@@ -65,30 +65,6 @@ export interface DynamicAutonomyPolicy {
 
 function roundMetric(value: number): number {
   return Math.round(value * 1_000_000) / 1_000_000;
-}
-
-function canonicalizeValue(value: unknown): unknown {
-  if (Array.isArray(value)) {
-    return value.map((entry) => canonicalizeValue(entry));
-  }
-  if (value !== null && typeof value === 'object') {
-    const record = value as Record<string, unknown>;
-    const sorted: Record<string, unknown> = {};
-    for (const key of Object.keys(record).sort()) {
-      const entry = record[key];
-      if (entry !== undefined) {
-        sorted[key] = canonicalizeValue(entry);
-      }
-    }
-    return sorted;
-  }
-  return value;
-}
-
-function sha256Canonical(payload: unknown): string {
-  return createHash('sha256')
-    .update(JSON.stringify(canonicalizeValue(payload)), 'utf8')
-    .digest('hex');
 }
 
 function normalizeOutcome(outcome: 0 | 1 | boolean): number | null {

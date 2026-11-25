@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { sha256Canonical } from './canonical-json.js';
 import { createRedactor } from './redaction.js';
 
 export type SandboxRuntimeEngine = 'docker' | 'microvm';
@@ -63,10 +63,6 @@ const MAX_MEMORY_MB = 4096;
 const MAX_TIMEOUT_MS = 120_000;
 const SENSITIVE_ENV_KEY_REGEX = /(?:secret|token|password|api[_-]?key|credential|auth)/iu;
 const SECRET_LEAK_MARKER_REGEX = /\[REDACTED/u;
-
-function sha256Canonical(payload: unknown): string {
-  return createHash('sha256').update(JSON.stringify(payload), 'utf8').digest('hex');
-}
 
 export function buildEphemeralSandboxManifest(
   request: SandboxManifestRequest

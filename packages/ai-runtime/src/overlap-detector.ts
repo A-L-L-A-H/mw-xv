@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { sha256Hex } from './canonical-json.js';
 import { compareAscii } from './sort-utils.js';
 import { createRedactor, type RedactionContext } from './redaction.js';
 import type { ReadOnlyRepoInspector } from './repo-inspector.js';
@@ -103,10 +103,6 @@ const STOP_WORDS = new Set([
   'have',
   'using',
 ]);
-
-function sha256Hex(value: string): string {
-  return createHash('sha256').update(value, 'utf8').digest('hex');
-}
 
 function normalizePosixPath(raw: string): string {
   return raw

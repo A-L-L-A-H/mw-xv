@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { sha256Hex } from './canonical-json.js';
 import { compareAscii } from './sort-utils.js';
 import { createRedactor, type RedactionContext } from './redaction.js';
 
@@ -118,10 +118,6 @@ const FORBIDDEN_LOCAL_AI_CAPABILITIES = new Set([
   'worktree.exec',
   'mcp.call',
 ]);
-
-function sha256Hex(value: string): string {
-  return createHash('sha256').update(value, 'utf8').digest('hex');
-}
 
 function summarizePlanes(nodes: readonly WorkspaceOrbitNode[]): WorkspaceOrbitPlaneSummary {
   let controlPlane = 0;

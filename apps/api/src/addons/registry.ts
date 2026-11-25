@@ -18,7 +18,9 @@ import { manifest as knowledgeAddon } from '@moonwitness/orm-knowledge';
 import {
   manifest as aiAddon,
   ensureAiJobHandlersRegistered,
+  hasCompanyAccess,
   isValidAiMutation,
+  recordAiAudit,
 } from '@moonwitness/orm-ai';
 import { manifest as a2aAddon } from '@moonwitness/orm-a2a';
 import { manifest as storageAddon, type AttachmentStorage } from '@moonwitness/orm-storage';
@@ -38,7 +40,6 @@ import { menuRegistry } from './action-menu-registry.js';
 import { jobsRoutes } from '../routes/jobs.routes.js';
 import { canAccess } from '../auth/policy.js';
 import { getRecordRuleDomain } from '../auth/rules.js';
-import { hasCompanyAccess, recordAiAudit } from '../ai-corporation/route-helpers.js';
 import { installCloudAgentEffect } from '../ai-corporation/cloud-agent-effect-setup.js';
 
 export interface ApiAddonRuntimeContext {

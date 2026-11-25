@@ -18,8 +18,12 @@ export {
   parseAiRunJobPayload,
   recordAiAudit,
   requireAiCompanyContext,
+  type AddonHttpReply,
+  type AddonHttpRequestBase,
+  type AiCompanyContext,
   type AiRunJobPayload,
   type ProofGateEvaluationError,
+  type WorkflowRole,
 } from './ai-http-helpers.js';
 export {
   AGI_CRON_SCHEDULES,

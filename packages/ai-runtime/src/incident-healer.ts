@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { sha256Canonical } from './canonical-json.js';
 import { createRedactor } from './redaction.js';
 import {
   evaluateExpectedFreeEnergy,
@@ -42,10 +42,6 @@ export interface IncidentHealingProposal {
   readonly automatedSelfMerge: false;
   readonly automatedPromotionAllowed: false;
   readonly proposalSha256: string;
-}
-
-function sha256Canonical(payload: unknown): string {
-  return createHash('sha256').update(JSON.stringify(payload), 'utf8').digest('hex');
 }
 
 function normalizeFaultSignature(service: string, errorCode: string, message: string): string {

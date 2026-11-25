@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { sha256Hex } from './canonical-json.js';
 import { createRedactor, type RedactionContext } from './redaction.js';
 
 export const PLAN_MARKDOWN_SCHEMA_VERSION = 'mw-plan/v1' as const;
@@ -82,10 +82,6 @@ export interface PlanReconcileResult {
   readonly protectedCompletedCodes: readonly string[];
   readonly violations: readonly PlanReconcileViolation[];
   readonly patchSha256: string;
-}
-
-function sha256Hex(value: string): string {
-  return createHash('sha256').update(value, 'utf8').digest('hex');
 }
 
 function sanitizeInlineText(value: string, redactor: RedactionContext): string {
