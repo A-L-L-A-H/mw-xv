@@ -5,7 +5,6 @@
  * allowlist. Runs verification commands with redacted stdout/stderr capture.
  */
 
-import type { BrainStorageDriver } from "../brain/storage.js";
 import { redactSensitiveText } from "../core/redaction.js";
 import { sha256Hex } from "../core/redaction.js";
 import { execSync } from "node:child_process";
@@ -123,7 +122,6 @@ export async function executeVerifyCommands(
   const cwd = options.cwd ?? process.cwd();
   const isWindows = process.platform === "win32";
   const shell = options.shell ?? (isWindows ? "powershell.exe" : "/bin/sh");
-  const shellArgs = isWindows ? ["-NoProfile", "-Command"] : ["-c"];
 
   const results: VerifyCommandResult[] = [];
 
@@ -143,7 +141,7 @@ export async function executeVerifyCommands(
         windowsHide: true,
       });
       stdout = output;
-      exitCode = 0;
+      // exitCode already 0
     } catch (e: unknown) {
       const err = e as { stdout?: string; stderr?: string; status?: number; signal?: string };
       stdout = err.stdout ?? "";
