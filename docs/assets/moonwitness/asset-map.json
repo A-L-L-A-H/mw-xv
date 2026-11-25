@@ -4,7 +4,7 @@
   "generatedFrom": "packages/assets/manifest.json and packages/ui/src/styles/tokens.css",
   "sources": {
     "assetManifest": "manifest.json",
-    "assetManifestSha256": "adef7a58348b5f2b0c1300841fa082a26aee352edc8b9dd57bd974881fbcde94",
+    "assetManifestSha256": "bb98b576a96f6892e54ebd6f9aedfa97932526565b86e498ec030d05886e8fb4",
     "tokens": "packages/ui/src/styles/tokens.css",
     "tokensSha256": "42872eed742d9542837547c7d01d287e7859d6cc0cba13eca12d003a78f0465d"
   },
@@ -648,7 +648,7 @@
       "format": "png",
       "width": 1200,
       "height": 630,
-      "sha256": "81e60fb047deb11ca7f4671b77512546dc5885d15181ea11a1a35d21a5c52f03"
+      "sha256": "d417fe2cb54c13dbc6f2e1b9f12f8d0f0864998d22b431f011451a187e13855a"
     },
     {
       "source": "packages/assets/brand/social-card.dark.svg",
@@ -666,7 +666,7 @@
       "format": "png",
       "width": 1200,
       "height": 630,
-      "sha256": "256196b51cd6339173a3411ed0ca283d879b827893d1dd1656f31ccc33b79346"
+      "sha256": "e4c7b49eabcee78f267583d9af30cb319da2de35d18dba8928ef29ceaa874df2"
     },
     {
       "source": "packages/assets/brand/social-card.svg",

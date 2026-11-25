@@ -607,44 +607,50 @@ describe('MoonWitness Mesh PaaS provider', () => {
 
     const privateEndpoint = 'http://100.64.0.10:3003';
     const errorCases = [
-      updateMeshPaasAppEnv({
-        endpoint: privateEndpoint,
-        token: 'secret-bearer-999',
-        appIdOrSlug: 'api',
-        env: { DB_PASS: 'dbpass-secret' },
-        fetchImpl: fetchSpy,
-      }),
-      updateMeshPaasAppDomain({
-        endpoint: privateEndpoint,
-        token: 'secret-bearer-999',
-        appIdOrSlug: 'api',
-        domain: 'app.local',
-        fetchImpl: fetchSpy,
-      }),
-      listMeshPaasTemplates({
-        endpoint: privateEndpoint,
-        token: 'secret-bearer-999',
-        fetchImpl: fetchSpy,
-      }),
-      deployComposeViaMoonWitnessMesh({
-        endpoint: privateEndpoint,
-        token: 'secret-bearer-999',
-        slug: 'stack',
-        composeSpec: 'services: {}',
-        primaryService: 'app',
-        port: 3000,
-        env: { DB_PASS: 'dbpass-secret' },
-        fetchImpl: fetchSpy,
-      }),
-      listMeshPaasAppDeployments({
-        endpoint: privateEndpoint,
-        token: 'secret-bearer-999',
-        appIdOrSlug: 'api',
-        fetchImpl: fetchSpy,
-      }),
+      () =>
+        updateMeshPaasAppEnv({
+          endpoint: privateEndpoint,
+          token: 'secret-bearer-999',
+          appIdOrSlug: 'api',
+          env: { DB_PASS: 'dbpass-secret' },
+          fetchImpl: fetchSpy,
+        }),
+      () =>
+        updateMeshPaasAppDomain({
+          endpoint: privateEndpoint,
+          token: 'secret-bearer-999',
+          appIdOrSlug: 'api',
+          domain: 'app.local',
+          fetchImpl: fetchSpy,
+        }),
+      () =>
+        listMeshPaasTemplates({
+          endpoint: privateEndpoint,
+          token: 'secret-bearer-999',
+          fetchImpl: fetchSpy,
+        }),
+      () =>
+        deployComposeViaMoonWitnessMesh({
+          endpoint: privateEndpoint,
+          token: 'secret-bearer-999',
+          slug: 'stack',
+          composeSpec: 'services: {}',
+          primaryService: 'app',
+          port: 3000,
+          env: { DB_PASS: 'dbpass-secret' },
+          fetchImpl: fetchSpy,
+        }),
+      () =>
+        listMeshPaasAppDeployments({
+          endpoint: privateEndpoint,
+          token: 'secret-bearer-999',
+          appIdOrSlug: 'api',
+          fetchImpl: fetchSpy,
+        }),
     ];
 
-    for (const pending of errorCases) {
+    for (const run of errorCases) {
+      const pending = run();
       await expect(pending).rejects.toThrow(/\[REDACTED\]/u);
       await expect(pending).rejects.not.toThrow(/secret-bearer-999|dbpass-secret/u);
     }

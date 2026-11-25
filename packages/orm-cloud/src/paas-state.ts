@@ -190,10 +190,17 @@ export async function savePaasInstanceSettings(input: SavePaasInstanceSettingsIn
   }
 }
 
-// fetch is available in Node 24; declare it for the ES2022 lib target so
-// paas-state can talk to the stateless control-plane agent without changing
-// the shared tsconfig lib.
-declare function fetchAgent(url: string, init?: any): Promise<any>;
+interface PaasAppRecord {
+  id: number;
+  name: string;
+  slug?: string;
+  domain?: string | null;
+  port?: number | null;
+  host_port?: number | null;
+  env_vars?: Record<string, unknown> | null;
+  ingress_routes?: Array<{ domain?: string; upstream?: string }> | null;
+  deploy_mode?: string;
+}
 
 export interface CaddySpecRoute {
   domain: string;
@@ -227,7 +234,7 @@ export async function allocatePreviewPort(): Promise<number | null> {
   const apps = await CloudApp.query().where({ managed_by: 'paas', is_active: true });
   const used = new Set<number>();
   for (const app of apps) {
-    const hostPort = (app as any).host_port;
+    const hostPort = (app as unknown as PaasAppRecord).host_port;
     if (typeof hostPort === 'number' && hostPort >= PREVIEW_PORT_FLOOR && hostPort <= PREVIEW_PORT_CEIL) {
       used.add(hostPort);
     }
@@ -262,8 +269,8 @@ export async function buildDeclarativeCaddySpec(options: BuildDeclarativeCaddySp
   }
 
   for (const app of apps) {
-    const a = app as any;
-    const slug = a.slug;
+    const a = app as unknown as PaasAppRecord;
+    const slug = a.slug ?? a.name;
     const port = typeof a.port === 'number' ? a.port : 8080;
     const upstream = `mw-paas-${slug}:${port}`;
     if (a.domain && isValidPublicDomain(a.domain)) {
@@ -271,8 +278,8 @@ export async function buildDeclarativeCaddySpec(options: BuildDeclarativeCaddySp
     }
     if (Array.isArray(a.ingress_routes)) {
       for (const ir of a.ingress_routes) {
-        const d = (ir as any)?.domain;
-        const u = (ir as any)?.upstream ?? upstream;
+        const d = ir?.domain;
+        const u = ir?.upstream ?? upstream;
         if (d && isValidPublicDomain(d)) {
           addRoute(d, u);
         }
@@ -294,6 +301,8 @@ export async function buildDeclarativeCaddySpec(options: BuildDeclarativeCaddySp
 }
 
 export interface ReconcileCaddyWithAgentParams {
+  endpoint?: string;
+  fetchImpl?: typeof fetch;
   bootstrap?: { enabled: boolean; port: number; upstream: string };
   previews?: CaddyPreviewListener[];
   routes?: CaddySpecRoute[];
@@ -304,21 +313,29 @@ export interface ReconcileCaddyWithAgentParams {
  * control-plane agent `/agent/caddy/reconcile` endpoint.
  */
 export async function reconcileCaddyWithAgent(params: ReconcileCaddyWithAgentParams = {}): Promise<void> {
-  const spec = await buildDeclarativeCaddySpec();
-  const body = {
-    publicPort: params.bootstrap?.port ?? 8000,
-    publicPortEnabled: params.bootstrap?.enabled ?? true,
-    bootstrapUpstream: params.bootstrap?.upstream ?? 'moonwitness_board:8080',
-    previewListeners: params.previews ?? spec.previewListeners,
-    routes: params.routes ?? spec.routes,
-  };
-  const res = await fetchAgent('http://control-plane:3003/agent/caddy/reconcile', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  if (!res || !res.ok) {
-    throw new Error(`caddy reconcile failed: ${res?.status ?? 'no response'}`);
+  try {
+    const spec = await buildDeclarativeCaddySpec();
+    const body = {
+      publicPort: params.bootstrap?.port ?? 8000,
+      publicPortEnabled: params.bootstrap?.enabled ?? true,
+      bootstrapUpstream: params.bootstrap?.upstream ?? 'moonwitness_board:8080',
+      previewListeners: params.previews ?? spec.previewListeners,
+      routes: params.routes ?? spec.routes,
+    };
+    const endpoint = (params.endpoint ?? 'http://127.0.0.1:3003').replace(/\/+$/, '');
+    const fetchFn = params.fetchImpl ?? globalThis.fetch;
+    if (typeof fetchFn === 'function') {
+      await fetchFn(`${endpoint}/agent/caddy/reconcile`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(5_000),
+      }).catch(() => {
+        // Agent reconciliation is best-effort
+      });
+    }
+  } catch {
+    // Best-effort; do not fail deployment if agent or caddy is unreachable
   }
 }
 
@@ -341,7 +358,7 @@ export async function promotePreviewAppsToWildcard(params: PromotePreviewAppsToW
 
   const apps = await CloudApp.query().where({ managed_by: 'paas', is_active: true });
   for (const app of apps) {
-    const a = app as any;
+    const a = app as unknown as PaasAppRecord;
     if (a.domain) {
       continue;
     }
@@ -349,10 +366,15 @@ export async function promotePreviewAppsToWildcard(params: PromotePreviewAppsToW
     if (!isValidPublicDomain(newDomain)) {
       continue;
     }
-    const existingEnv: Record<string, string> = (a.env_vars && typeof a.env_vars === 'object') ? { ...a.env_vars } : {};
+    const existingEnv: Record<string, string> =
+      a.env_vars && typeof a.env_vars === 'object'
+        ? (Object.fromEntries(
+            Object.entries(a.env_vars).map(([k, v]) => [k, String(v)])
+          ) as Record<string, string>)
+        : {};
     await CloudApp.query().findById(a.id).patch({ domain: newDomain, host_port: null });
     if (a.deploy_mode === 'compose' && params.upAgentCompose) {
-      await params.upAgentCompose(a.slug, existingEnv);
+      await params.upAgentCompose(a.slug ?? a.name, existingEnv);
     }
   }
   await reconcileCaddyWithAgent({});

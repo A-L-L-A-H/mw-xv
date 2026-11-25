@@ -16,7 +16,7 @@ async function writeTempV2Bundle(
   dir: string,
   planId: string,
   manifest: unknown,
-  waves?: Array<{ wave_id: string; tasks: unknown[] }>
+  waves?: Array<{ wave_id: string; title?: string; wave_file?: string; tasks: unknown[] }>
 ): Promise<void> {
   const planDir = join(dir, ".plan", planId);
   const wavesDir = join(planDir, "waves");

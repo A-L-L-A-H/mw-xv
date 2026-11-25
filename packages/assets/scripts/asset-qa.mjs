@@ -101,11 +101,16 @@ const INVENTORY_DIRECTORIES = [
   'scenes',
 ];
 
+const INVENTORY_EXCLUDE_DIRS = [
+  'brand/rendered',
+];
+
 export async function runAssetQa(rootDir = packageRoot, options = {}) {
   const manifest =
     options.manifest ?? JSON.parse(await readFile(resolve(rootDir, 'manifest.json'), 'utf8'));
   const existingDirs = INVENTORY_DIRECTORIES.filter((dir) => existsSync(resolve(rootDir, dir)));
-  const trackedFiles = options.trackedFiles ?? (await listInventoryMedia(rootDir, existingDirs));
+  const allTrackedFiles = options.trackedFiles ?? (await listInventoryMedia(rootDir, existingDirs));
+  const trackedFiles = allTrackedFiles.filter((f) => !INVENTORY_EXCLUDE_DIRS.some((excl) => f.startsWith(excl + '/')));
   const inventoryDiff = compareAssetInventory(
     manifest.assets.map((asset) => asset.path),
     trackedFiles

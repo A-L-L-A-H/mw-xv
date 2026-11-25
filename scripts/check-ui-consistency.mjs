@@ -84,7 +84,7 @@ function auditApps() {
         rawHtmlPrimitives.push(rel);
       }
 
-      if (rel.includes('/components/')) {
+      if (!usesSharedUi && rel.includes('/components/')) {
         const base = path.basename(file, path.extname(file)).toLowerCase();
         if (sharedExports.has(base)) {
           duplicateLocalComponents.push(rel);

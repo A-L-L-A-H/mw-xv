@@ -6,11 +6,11 @@
       "stylesheet": { "maxRawBytes": 164000, "maxGzipBytes": 29000 }
     },
     "lazy": {
-      "javascript": { "maxRawBytes": 112000, "maxGzipBytes": 34000 },
+      "javascript": { "maxRawBytes": 118000, "maxGzipBytes": 36000 },
       "stylesheet": { "maxRawBytes": 1, "maxGzipBytes": 1 }
     },
     "total": {
-      "javascript": { "maxRawBytes": 635000, "maxGzipBytes": 188000 },
+      "javascript": { "maxRawBytes": 640000, "maxGzipBytes": 192000 },
       "stylesheet": { "maxRawBytes": 164000, "maxGzipBytes": 29000 }
     }
   },
@@ -38,6 +38,10 @@
     "extended": {
       "entry": "src/ExtendedControlsLab.tsx",
       "javascript": { "maxRawBytes": 73000, "maxGzipBytes": 20000 }
+    },
+    "comic": {
+      "entry": "src/ComicLab.tsx",
+      "javascript": { "maxRawBytes": 10000, "maxGzipBytes": 4000 }
     }
   }
 }

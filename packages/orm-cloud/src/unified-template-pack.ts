@@ -150,7 +150,7 @@ export function loadDokployTemplateCatalog(): Map<string, UnifiedTemplateEntry> 
   const blueprintsDir = path.join(packDir, 'blueprints');
   const catalog = new Map<string, UnifiedTemplateEntry>();
 
-  let blueprintIds: string[] = [];
+  let blueprintIds: string[];
   try {
     blueprintIds = readdirSync(blueprintsDir, { withFileTypes: true })
       .filter((d) => d.isDirectory())
@@ -228,7 +228,7 @@ export function loadBigbearTemplateCatalog(): Map<string, UnifiedTemplateEntry> 
   const appsDir = path.join(packDir, 'apps');
   const catalog = new Map<string, UnifiedTemplateEntry>();
 
-  let appIds: string[] = [];
+  let appIds: string[];
   try {
     appIds = readdirSync(appsDir, { withFileTypes: true })
       .filter((d) => d.isDirectory())

@@ -611,7 +611,7 @@ export async function reconcileAgentCaddy(
   };
 }
 
-export interface ListAgentContainersParams extends MeshProviderBaseParams {}
+export type ListAgentContainersParams = MeshProviderBaseParams;
 export interface AgentContainerInfo {
   readonly name: string;
   readonly containerId: string;
@@ -863,7 +863,7 @@ export async function verifyAgentDns(params: VerifyAgentDnsParams): Promise<Veri
   };
 }
 
-export interface FetchAgentMeshStatusParams extends MeshProviderBaseParams {}
+export type FetchAgentMeshStatusParams = MeshProviderBaseParams;
 
 export async function fetchAgentMeshStatus(
   params: FetchAgentMeshStatusParams

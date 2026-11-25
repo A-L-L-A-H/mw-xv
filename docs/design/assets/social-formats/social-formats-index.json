@@ -1,0 +1,496 @@
+{
+  "schemaVersion": 1,
+  "totalFormats": 16,
+  "themes": [
+    "light",
+    "dark"
+  ],
+  "contactSheetPng": "docs/design/assets/social-formats/social-formats-contact-sheet.png",
+  "sheets": {
+    "overview": {
+      "mode": "overview",
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "file": "docs/design/assets/social-formats/social-formats-contact-sheet.png",
+      "fileName": "social-formats-contact-sheet.png",
+      "width": 1440,
+      "height": 3132,
+      "bytes": 301948,
+      "formatCount": 16
+    },
+    "light": {
+      "mode": "light",
+      "themes": [
+        "light"
+      ],
+      "file": "docs/design/assets/social-formats/social-formats-light-contact-sheet.png",
+      "fileName": "social-formats-light-contact-sheet.png",
+      "width": 1440,
+      "height": 2570,
+      "bytes": 206490,
+      "formatCount": 16
+    },
+    "dark": {
+      "mode": "dark",
+      "themes": [
+        "dark"
+      ],
+      "file": "docs/design/assets/social-formats/social-formats-dark-contact-sheet.png",
+      "fileName": "social-formats-dark-contact-sheet.png",
+      "width": 1440,
+      "height": 2570,
+      "bytes": 218971,
+      "formatCount": 16
+    }
+  },
+  "renderedSheets": [
+    {
+      "mode": "overview",
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "file": "docs/design/assets/social-formats/social-formats-contact-sheet.png",
+      "fileName": "social-formats-contact-sheet.png",
+      "width": 1440,
+      "height": 3132,
+      "bytes": 301948,
+      "formatCount": 16
+    },
+    {
+      "mode": "light",
+      "themes": [
+        "light"
+      ],
+      "file": "docs/design/assets/social-formats/social-formats-light-contact-sheet.png",
+      "fileName": "social-formats-light-contact-sheet.png",
+      "width": 1440,
+      "height": 2570,
+      "bytes": 206490,
+      "formatCount": 16
+    },
+    {
+      "mode": "dark",
+      "themes": [
+        "dark"
+      ],
+      "file": "docs/design/assets/social-formats/social-formats-dark-contact-sheet.png",
+      "fileName": "social-formats-dark-contact-sheet.png",
+      "width": 1440,
+      "height": 2570,
+      "bytes": 218971,
+      "formatCount": 16
+    }
+  ],
+  "formats": [
+    {
+      "id": "og",
+      "label": "Open Graph Social Card",
+      "platform": "Open Graph",
+      "layout": "landscape",
+      "width": 1200,
+      "height": 630,
+      "aspectRatio": "1.91:1",
+      "maxBytes": 1048576,
+      "safeArea": {
+        "x": 60,
+        "y": 48,
+        "width": 1080,
+        "height": 534
+      },
+      "sources": {
+        "light": "brand/social-card.svg",
+        "dark": "brand/rendered/og.dark.png"
+      },
+      "sourceTypes": {
+        "light": "svg",
+        "dark": "png"
+      },
+      "contactSheetPng": "docs/design/assets/social-formats/social-formats-contact-sheet.png"
+    },
+    {
+      "id": "youtube-banner",
+      "label": "YouTube Channel Banner",
+      "platform": "YouTube",
+      "layout": "banner",
+      "width": 2560,
+      "height": 1440,
+      "aspectRatio": "16:9",
+      "maxBytes": 6291456,
+      "safeArea": {
+        "x": 507,
+        "y": 508,
+        "width": 1546,
+        "height": 423,
+        "label": "Desktop & mobile safe area (1546x423)"
+      },
+      "sources": {
+        "light": "brand/moonwitness-youtube-banner.svg",
+        "dark": "brand/rendered/youtube-banner.dark.png"
+      },
+      "sourceTypes": {
+        "light": "svg",
+        "dark": "png"
+      },
+      "contactSheetPng": "docs/design/assets/social-formats/social-formats-contact-sheet.png"
+    },
+    {
+      "id": "youtube-thumbnail",
+      "label": "YouTube Video Thumbnail",
+      "platform": "YouTube",
+      "layout": "landscape",
+      "width": 1280,
+      "height": 720,
+      "aspectRatio": "16:9",
+      "maxBytes": 2097152,
+      "safeArea": {
+        "x": 84,
+        "y": 84,
+        "width": 1092,
+        "height": 532,
+        "label": "Main card safe zone"
+      },
+      "sources": {
+        "light": "brand/moonwitness-youtube-thumbnail-template.svg",
+        "dark": "brand/rendered/youtube-thumbnail.dark.png"
+      },
+      "sourceTypes": {
+        "light": "svg",
+        "dark": "png"
+      },
+      "contactSheetPng": "docs/design/assets/social-formats/social-formats-contact-sheet.png"
+    },
+    {
+      "id": "youtube-profile",
+      "label": "YouTube Channel Avatar",
+      "platform": "YouTube",
+      "layout": "square",
+      "width": 800,
+      "height": 800,
+      "aspectRatio": "1:1",
+      "maxBytes": 2097152,
+      "safeArea": {
+        "type": "circle",
+        "cx": 400,
+        "cy": 400,
+        "r": 382,
+        "label": "Circular avatar crop"
+      },
+      "sources": {
+        "light": "brand/moonwitness-youtube-logo.svg",
+        "dark": "brand/rendered/youtube-profile.dark.png"
+      },
+      "sourceTypes": {
+        "light": "svg",
+        "dark": "png"
+      },
+      "contactSheetPng": "docs/design/assets/social-formats/social-formats-contact-sheet.png"
+    },
+    {
+      "id": "youtube-watermark",
+      "label": "YouTube Video Watermark",
+      "platform": "YouTube",
+      "layout": "square",
+      "width": 150,
+      "height": 150,
+      "aspectRatio": "1:1",
+      "maxBytes": 1048576,
+      "safeArea": {
+        "x": 10,
+        "y": 10,
+        "width": 130,
+        "height": 130
+      },
+      "sources": {
+        "light": "brand/moonwitness-youtube-watermark.svg",
+        "dark": "brand/rendered/youtube-watermark.dark.png"
+      },
+      "sourceTypes": {
+        "light": "svg",
+        "dark": "png"
+      },
+      "contactSheetPng": "docs/design/assets/social-formats/social-formats-contact-sheet.png"
+    },
+    {
+      "id": "x-header",
+      "label": "X / Twitter Profile Header",
+      "platform": "X / Twitter",
+      "layout": "banner",
+      "width": 1500,
+      "height": 500,
+      "aspectRatio": "3:1",
+      "maxBytes": 2097152,
+      "safeArea": {
+        "x": 220,
+        "y": 60,
+        "width": 1200,
+        "height": 340,
+        "label": "Avoids bottom-left avatar overlap"
+      },
+      "sources": {
+        "light": "brand/rendered/x-header.light.svg",
+        "dark": "brand/rendered/x-header.dark.png"
+      },
+      "sourceTypes": {
+        "light": "svg",
+        "dark": "png"
+      },
+      "contactSheetPng": "docs/design/assets/social-formats/social-formats-contact-sheet.png"
+    },
+    {
+      "id": "x-post",
+      "label": "X / Twitter Feed Image",
+      "platform": "X / Twitter",
+      "layout": "landscape",
+      "width": 1600,
+      "height": 900,
+      "aspectRatio": "16:9",
+      "maxBytes": 2097152,
+      "safeArea": {
+        "x": 80,
+        "y": 64,
+        "width": 1440,
+        "height": 772
+      },
+      "sources": {
+        "light": "brand/rendered/x-post.light.svg",
+        "dark": "brand/rendered/x-post.dark.png"
+      },
+      "sourceTypes": {
+        "light": "svg",
+        "dark": "png"
+      },
+      "contactSheetPng": "docs/design/assets/social-formats/social-formats-contact-sheet.png"
+    },
+    {
+      "id": "linkedin",
+      "label": "LinkedIn Feed Post",
+      "platform": "LinkedIn",
+      "layout": "landscape",
+      "width": 1200,
+      "height": 627,
+      "aspectRatio": "1.91:1",
+      "maxBytes": 2097152,
+      "safeArea": {
+        "x": 72,
+        "y": 56,
+        "width": 1056,
+        "height": 515
+      },
+      "sources": {
+        "light": "brand/rendered/linkedin.light.svg",
+        "dark": "brand/rendered/linkedin.dark.png"
+      },
+      "sourceTypes": {
+        "light": "svg",
+        "dark": "png"
+      },
+      "contactSheetPng": "docs/design/assets/social-formats/social-formats-contact-sheet.png"
+    },
+    {
+      "id": "linkedin-banner",
+      "label": "LinkedIn Company Cover",
+      "platform": "LinkedIn",
+      "layout": "banner",
+      "width": 1128,
+      "height": 191,
+      "aspectRatio": "5.91:1",
+      "maxBytes": 1048576,
+      "safeArea": {
+        "x": 200,
+        "y": 20,
+        "width": 880,
+        "height": 151,
+        "label": "Company cover safe zone"
+      },
+      "sources": {
+        "light": "brand/rendered/linkedin-banner.light.svg",
+        "dark": "brand/rendered/linkedin-banner.dark.png"
+      },
+      "sourceTypes": {
+        "light": "svg",
+        "dark": "png"
+      },
+      "contactSheetPng": "docs/design/assets/social-formats/social-formats-contact-sheet.png"
+    },
+    {
+      "id": "linkedin-carousel",
+      "label": "LinkedIn Carousel Slide",
+      "platform": "LinkedIn",
+      "layout": "square",
+      "width": 1080,
+      "height": 1080,
+      "aspectRatio": "1:1",
+      "maxBytes": 2097152,
+      "safeArea": {
+        "x": 72,
+        "y": 72,
+        "width": 936,
+        "height": 936
+      },
+      "sources": {
+        "light": "brand/rendered/linkedin-carousel.light.svg",
+        "dark": "brand/rendered/linkedin-carousel.dark.png"
+      },
+      "sourceTypes": {
+        "light": "svg",
+        "dark": "png"
+      },
+      "contactSheetPng": "docs/design/assets/social-formats/social-formats-contact-sheet.png"
+    },
+    {
+      "id": "instagram-square",
+      "label": "Instagram Feed Square",
+      "platform": "Instagram",
+      "layout": "square",
+      "width": 1080,
+      "height": 1080,
+      "aspectRatio": "1:1",
+      "maxBytes": 2097152,
+      "safeArea": {
+        "x": 72,
+        "y": 72,
+        "width": 936,
+        "height": 936
+      },
+      "sources": {
+        "light": "brand/rendered/instagram-square.light.svg",
+        "dark": "brand/rendered/instagram-square.dark.png"
+      },
+      "sourceTypes": {
+        "light": "svg",
+        "dark": "png"
+      },
+      "contactSheetPng": "docs/design/assets/social-formats/social-formats-contact-sheet.png"
+    },
+    {
+      "id": "instagram-story",
+      "label": "Instagram Story / Reel",
+      "platform": "Instagram",
+      "layout": "vertical",
+      "width": 1080,
+      "height": 1920,
+      "aspectRatio": "9:16",
+      "maxBytes": 4194304,
+      "safeArea": {
+        "x": 80,
+        "y": 250,
+        "width": 920,
+        "height": 1420,
+        "label": "Stories/Reels HUD-free safe area"
+      },
+      "sources": {
+        "light": "brand/rendered/instagram-story.light.svg",
+        "dark": "brand/rendered/instagram-story.dark.png"
+      },
+      "sourceTypes": {
+        "light": "svg",
+        "dark": "png"
+      },
+      "contactSheetPng": "docs/design/assets/social-formats/social-formats-contact-sheet.png"
+    },
+    {
+      "id": "tiktok",
+      "label": "TikTok Vertical Cover",
+      "platform": "TikTok",
+      "layout": "vertical",
+      "width": 1080,
+      "height": 1920,
+      "aspectRatio": "9:16",
+      "maxBytes": 4194304,
+      "safeArea": {
+        "x": 80,
+        "y": 220,
+        "width": 840,
+        "height": 1360,
+        "label": "Clears right controls & bottom caption"
+      },
+      "sources": {
+        "light": "brand/rendered/tiktok.light.svg",
+        "dark": "brand/rendered/tiktok.dark.png"
+      },
+      "sourceTypes": {
+        "light": "svg",
+        "dark": "png"
+      },
+      "contactSheetPng": "docs/design/assets/social-formats/social-formats-contact-sheet.png"
+    },
+    {
+      "id": "bluesky",
+      "label": "Bluesky Feed Image",
+      "platform": "Bluesky",
+      "layout": "landscape",
+      "width": 1600,
+      "height": 900,
+      "aspectRatio": "16:9",
+      "maxBytes": 1048576,
+      "safeArea": {
+        "x": 80,
+        "y": 64,
+        "width": 1440,
+        "height": 772
+      },
+      "sources": {
+        "light": "brand/rendered/bluesky.light.svg",
+        "dark": "brand/rendered/bluesky.dark.png"
+      },
+      "sourceTypes": {
+        "light": "svg",
+        "dark": "png"
+      },
+      "contactSheetPng": "docs/design/assets/social-formats/social-formats-contact-sheet.png"
+    },
+    {
+      "id": "devto-cover",
+      "label": "Dev.to Article Cover",
+      "platform": "Dev.to",
+      "layout": "banner",
+      "width": 1000,
+      "height": 420,
+      "aspectRatio": "2.38:1",
+      "maxBytes": 1048576,
+      "safeArea": {
+        "x": 56,
+        "y": 40,
+        "width": 888,
+        "height": 340
+      },
+      "sources": {
+        "light": "brand/rendered/devto-cover.light.svg",
+        "dark": "brand/rendered/devto-cover.dark.png"
+      },
+      "sourceTypes": {
+        "light": "svg",
+        "dark": "png"
+      },
+      "contactSheetPng": "docs/design/assets/social-formats/social-formats-contact-sheet.png"
+    },
+    {
+      "id": "github",
+      "label": "GitHub Repository Preview",
+      "platform": "GitHub",
+      "layout": "landscape",
+      "width": 1280,
+      "height": 640,
+      "aspectRatio": "2:1",
+      "maxBytes": 1048576,
+      "safeArea": {
+        "x": 80,
+        "y": 64,
+        "width": 1120,
+        "height": 512
+      },
+      "sources": {
+        "light": "brand/rendered/github.light.svg",
+        "dark": "brand/rendered/github.dark.png"
+      },
+      "sourceTypes": {
+        "light": "svg",
+        "dark": "png"
+      },
+      "contactSheetPng": "docs/design/assets/social-formats/social-formats-contact-sheet.png"
+    }
+  ]
+}

@@ -1,0 +1,912 @@
+{
+  "schemaVersion": 1,
+  "packageLicense": "ISC",
+  "originalAssets": {
+    "creator": "MoonWitness contributors",
+    "source": "packages/assets/scripts/generate.mjs",
+    "additionalSource": "packages/assets/scripts/generate-illustrations.mjs",
+    "license": "ISC",
+    "modifications": "Original MoonWitness crown + brush wordmark, UI icons, interface illustrations, and orbit pattern authored for this project; no third-party icon or logo artwork is embedded."
+  },
+  "brandAssets": [
+    {
+      "path": "brand/source/moonwitness-master.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original vector artwork authored for this project",
+      "license": "ISC",
+      "notes": "Canonical crown paths and a brush wordmark outlined from the licensed Road Rage font; generated color variants are derived from this source."
+    }
+  ],
+  "fonts": [
+    {
+      "family": "Anton",
+      "designer": "Vernon Adams",
+      "source": "https://github.com/google/fonts/tree/main/ofl/anton",
+      "license": "SIL Open Font License 1.1",
+      "files": [
+        {
+          "path": "fonts/Anton-latin.woff2",
+          "source": "https://fonts.gstatic.com/s/anton/v27/1Ptgg87LROyAm3Kz-C8.woff2",
+          "sha256": "D0FA07FF63DD60CBC0E2F58E29C802DCA2A5AE0276C999F59C6111AB7BBAEC3B"
+        },
+        {
+          "path": "fonts/Anton-latin-ext.woff2",
+          "source": "https://fonts.gstatic.com/s/anton/v27/1Ptgg87LROyAm3K9-C8QSw.woff2",
+          "sha256": "0D17B7880F389DEEB6663A52FA4EADC6D9116BDDA725F0AA1F3D404FBB7D3D59"
+        }
+      ],
+      "usage": "Bundled as WOFF2 subsets for deterministic local Board rendering."
+    },
+    {
+      "family": "JetBrains Mono",
+      "designer": "Philipp Nurullin",
+      "source": "https://github.com/JetBrains/JetBrainsMono",
+      "license": "SIL Open Font License 1.1",
+      "files": [
+        {
+          "path": "fonts/JetBrainsMono-latin.woff2",
+          "source": "https://fonts.gstatic.com/s/jetbrainsmono/v24/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPxDcwg.woff2",
+          "sha256": "83C005D49D8A6A50474C73A5A36AC0468076E9C4A29DA7BDB14995D80560A5BE"
+        },
+        {
+          "path": "fonts/JetBrainsMono-latin-ext.woff2",
+          "source": "https://fonts.gstatic.com/s/jetbrainsmono/v24/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPx7cwhsk.woff2",
+          "sha256": "DB5FF4DB83E580426280E9337A58DC57D3A83784A1B03AD80914651594441D52"
+        }
+      ],
+      "usage": "Bundled as WOFF2 subsets for deterministic local Board rendering."
+    },
+    {
+      "family": "Road Rage",
+      "designer": "Robert Leuschke",
+      "source": "https://github.com/google/fonts/tree/main/ofl/roadrage",
+      "license": "SIL Open Font License 1.1",
+      "files": [
+        {
+          "path": "fonts/RoadRage-latin.woff2",
+          "source": "https://fonts.gstatic.com/s/roadrage/v9/6NUU8F2fKAOBKjjr4ekvtA.ttf",
+          "sourceFile": "source/fonts/RoadRage-Regular.ttf",
+          "sourceSha256": "F476D2AAC31340C6F5ECB4F2750331F17548B18E29E4CD351ADBB006F609E29A",
+          "sha256": "0F8B4556881B76CBA826B74B46A7DEF0B73512D2EE19E8B56C33E1FF3966DB70"
+        }
+      ],
+      "usage": "Bundled subset WOFF2 for short editorial display headings only."
+    },
+    {
+      "family": "Space Grotesk",
+      "designer": "Florian Karsten",
+      "source": "https://github.com/google/fonts/tree/main/ofl/spacegrotesk",
+      "license": "SIL Open Font License 1.1",
+      "files": [
+        {
+          "path": "fonts/SpaceGrotesk-latin.woff2",
+          "source": "https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPbF4Cw.woff2",
+          "sha256": "0640890476FC1198AB4DE571FB658DE443C4D85B66466EC09534A8737AB1CE9D"
+        },
+        {
+          "path": "fonts/SpaceGrotesk-latin-ext.woff2",
+          "source": "https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPb94C-s0.woff2",
+          "sha256": "952DDDB45D2F96F71CBF3B7F510B24379AFC3C89EA02FCF89D377B45D62C0166"
+        }
+      ],
+      "usage": "Bundled as WOFF2 subsets for deterministic local Board rendering."
+    }
+  ],
+  "verifiedOn": "2026-10-16",
+  "notes": "Upstream SIL Open Font License 1.1 texts are included in fonts/OFL-Anton.txt, fonts/OFL-SpaceGrotesk.txt, fonts/OFL-JetBrainsMono.txt, and fonts/OFL-RoadRage.txt. Road Rage's upstream TTF is retained under source/fonts and subsetted to WOFF2 for display use; hashes are recorded above. Unverified archival font binaries under raw_arts/fonts/ (cinzel-*, saksi-hand-*, saksi-marker-*, saksi-mono-*) are source-only and excluded from packages/assets/ distribution per ../../raw_arts/fonts/README.md and packages/assets/scripts/asset-schema.mjs.\nProject owner approval recorded on 2026-11-25 for the existing Moon City homepage artwork and anonymous fictional crew-01 pilot/idle clip for production use. This records product-owner authorization; the upstream OpenAI Terms of Use and applicable law remain the governing terms.",
+  "soundEffects": [
+    {
+      "path": "sounds/ambience-archive-quiet.wav",
+      "creator": "MoonWitness contributors",
+      "source": "packages/assets/scripts/generate-scene-ambience.mjs",
+      "license": "ISC",
+      "modifications": "Original synthesized near-silent room tone; no clocks, voices, field recordings, or music."
+    },
+    {
+      "path": "sounds/ambience-moon-city-night.wav",
+      "creator": "MoonWitness contributors",
+      "source": "packages/assets/scripts/generate-scene-ambience.mjs",
+      "license": "ISC",
+      "modifications": "Original synthesized night-air and distant electrical hum; no field recordings or music."
+    },
+    {
+      "path": "sounds/ambience-street-rain.wav",
+      "creator": "MoonWitness contributors",
+      "source": "packages/assets/scripts/generate-scene-ambience.mjs",
+      "license": "ISC",
+      "modifications": "Original synthesized soft rain texture with no thunder, voices, field recordings, or music."
+    },
+    {
+      "path": "sounds/ambience-underground-hum.wav",
+      "creator": "MoonWitness contributors",
+      "source": "packages/assets/scripts/generate-scene-ambience.mjs",
+      "license": "ISC",
+      "modifications": "Original synthesized low ventilation resonance and soft room noise; no field recordings or music."
+    },
+    {
+      "path": "sounds/ui-alert.wav",
+      "creator": "MoonWitness contributors",
+      "source": "packages/assets/scripts/generate-sounds.mjs",
+      "license": "ISC",
+      "modifications": "Original short synthesized interface cue; generated from PCM oscillators for this project."
+    },
+    {
+      "path": "sounds/ui-signal.wav",
+      "creator": "MoonWitness contributors",
+      "source": "packages/assets/scripts/generate-sounds.mjs",
+      "license": "ISC",
+      "modifications": "Original short synthesized interface cue; generated from PCM oscillators for this project."
+    },
+    {
+      "path": "sounds/ui-success.wav",
+      "creator": "MoonWitness contributors",
+      "source": "packages/assets/scripts/generate-sounds.mjs",
+      "license": "ISC",
+      "modifications": "Original short synthesized interface cue; generated from PCM oscillators for this project."
+    }
+  ],
+  "artwork": [
+    {
+      "path": "illustrations/auth-login-desktop.webp",
+      "sourceFile": "source/artwork/auth-login-shadow-master.png",
+      "creator": "OpenAI image generation, commissioned by MoonWitness contributors",
+      "source": "Codex image_gen using the user-provided MoonWitness visual references",
+      "terms": "https://openai.com/policies/terms-of-use/",
+      "generatedOn": "2026-10-24",
+      "focalPoint": "center-right (hooded figure & moon clear of left auth form)",
+      "alt": "A hooded person looking over a neon city beneath a full moon.",
+      "decorative": false,
+      "notes": "Original illustration generated without embedded typography or UI. The user-provided reference was used for art direction; no screenshot was used as artwork."
+    },
+    {
+      "path": "illustrations/auth-login-mobile.webp",
+      "sourceFile": "source/artwork/auth-login-shadow-master.png",
+      "creator": "OpenAI image generation, commissioned by MoonWitness contributors",
+      "source": "Codex image_gen using the user-provided MoonWitness visual references",
+      "terms": "https://openai.com/policies/terms-of-use/",
+      "generatedOn": "2026-10-24",
+      "focalPoint": "center (hooded figure & moon above mobile login panel)",
+      "alt": "A hooded person looking over a neon city beneath a full moon.",
+      "decorative": false,
+      "notes": "Original illustration generated without embedded typography or UI. The user-provided reference was used for art direction; no screenshot was used as artwork."
+    },
+    {
+      "path": "illustrations/board-masthead.webp",
+      "sourceFile": "source/artwork/board-masthead-master.png",
+      "creator": "OpenAI image generation, commissioned by MoonWitness contributors",
+      "source": "Codex image_gen using the user-provided MoonWitness visual references",
+      "terms": "https://openai.com/policies/terms-of-use/",
+      "generatedOn": "2026-10-23",
+      "focalPoint": "right (city skyline & night mood behind left masthead heading)",
+      "alt": "",
+      "decorative": true,
+      "notes": "Original illustration generated without embedded typography or UI. The user-provided reference was used for art direction; no screenshot was used as artwork."
+    },
+    {
+      "path": "illustrations/editorial-archive.webp",
+      "sourceFile": "source/artwork/editorial-archive-source.png",
+      "creator": "MoonWitness contributors",
+      "source": "Derivative of existing raw_arts/art illustration in this repository",
+      "terms": "Repository-local derivative; rights inherit from the original raw_arts master (distribution review required).",
+      "generatedOn": "2026-11-24",
+      "focalPoint": "right (hooded archivist and moon kept clear of the left copy rail)",
+      "alt": "",
+      "decorative": true,
+      "notes": "Cropped, resized and re-encoded from an existing MoonWitness raw artwork master to add a distinct editorial variant. No new external image generation was used."
+    },
+    {
+      "path": "illustrations/editorial-knowledge.webp",
+      "sourceFile": "source/artwork/home-editorial-triptych-master.png",
+      "creator": "OpenAI image generation, commissioned by MoonWitness contributors",
+      "source": "Codex image_gen using the user-provided MoonWitness visual references",
+      "terms": "https://openai.com/policies/terms-of-use/",
+      "generatedOn": "2026-10-23",
+      "focalPoint": "center (cyan rooftop scene for Knowledge editorial panel)",
+      "alt": "",
+      "decorative": true,
+      "notes": "Original illustration generated without embedded typography or UI. The user-provided reference was used for art direction; no screenshot was used as artwork."
+    },
+    {
+      "path": "illustrations/editorial-people.webp",
+      "sourceFile": "source/artwork/home-editorial-triptych-master.png",
+      "creator": "OpenAI image generation, commissioned by MoonWitness contributors",
+      "source": "Codex image_gen using the user-provided MoonWitness visual references",
+      "terms": "https://openai.com/policies/terms-of-use/",
+      "generatedOn": "2026-10-23",
+      "focalPoint": "center (red corridor scene for People & Records editorial panel)",
+      "alt": "",
+      "decorative": true,
+      "notes": "Original illustration generated without embedded typography or UI. The user-provided reference was used for art direction; no screenshot was used as artwork."
+    },
+    {
+      "path": "illustrations/editorial-rain.webp",
+      "sourceFile": "source/artwork/editorial-rain-source.png",
+      "creator": "MoonWitness contributors",
+      "source": "Derivative of existing raw_arts/art illustration in this repository",
+      "terms": "Repository-local derivative; rights inherit from the original raw_arts master (distribution review required).",
+      "generatedOn": "2026-11-24",
+      "focalPoint": "center (rooftop antenna array beneath the moon for the Shape step)",
+      "alt": "",
+      "decorative": true,
+      "notes": "Cropped, resized and re-encoded from an existing MoonWitness raw artwork master to add a distinct editorial variant. No new external image generation was used."
+    },
+    {
+      "path": "illustrations/editorial-signal.webp",
+      "sourceFile": "source/artwork/editorial-signal-source.png",
+      "creator": "MoonWitness contributors",
+      "source": "Derivative of existing raw_arts/art illustration in this repository",
+      "terms": "Repository-local derivative; rights inherit from the original raw_arts master (distribution review required).",
+      "generatedOn": "2026-11-24",
+      "focalPoint": "center (two crew workers beneath the blue moon for the Connect step)",
+      "alt": "",
+      "decorative": true,
+      "notes": "Cropped, resized and re-encoded from an existing MoonWitness raw artwork master to add a distinct editorial variant. No new external image generation was used."
+    },
+    {
+      "path": "illustrations/editorial-stories.webp",
+      "sourceFile": "source/artwork/home-editorial-triptych-master.png",
+      "creator": "OpenAI image generation, commissioned by MoonWitness contributors",
+      "source": "Codex image_gen using the user-provided MoonWitness visual references",
+      "terms": "https://openai.com/policies/terms-of-use/",
+      "generatedOn": "2026-10-23",
+      "focalPoint": "center (monochrome shadow figure for Story Workbench editorial panel)",
+      "alt": "",
+      "decorative": true,
+      "notes": "Original illustration generated without embedded typography or UI. The user-provided reference was used for art direction; no screenshot was used as artwork."
+    },
+    {
+      "path": "illustrations/home-hero-desktop.webp",
+      "sourceFile": "source/artwork/home-hero-master.png",
+      "creator": "OpenAI image generation, commissioned by MoonWitness contributors",
+      "source": "Codex image_gen using the user-provided MoonWitness visual references",
+      "terms": "https://openai.com/policies/terms-of-use/",
+      "generatedOn": "2026-10-23",
+      "focalPoint": "center-right (character foreground & moon on right; negative space on left for copy)",
+      "alt": "",
+      "decorative": true,
+      "notes": "Original illustration generated without embedded typography or UI. The user-provided reference was used for art direction; no screenshot was used as artwork.",
+      "approval": "Project owner approved production use on 2026-11-25."
+    },
+    {
+      "path": "illustrations/home-hero-mobile.webp",
+      "sourceFile": "source/artwork/home-hero-master.png",
+      "creator": "OpenAI image generation, commissioned by MoonWitness contributors",
+      "source": "Codex image_gen using the user-provided MoonWitness visual references",
+      "terms": "https://openai.com/policies/terms-of-use/",
+      "generatedOn": "2026-10-23",
+      "focalPoint": "center-top (character face & moon centered above mobile copy)",
+      "alt": "",
+      "decorative": true,
+      "notes": "Original illustration generated without embedded typography or UI. The user-provided reference was used for art direction; no screenshot was used as artwork.",
+      "approval": "Project owner approved production use on 2026-11-25."
+    },
+    {
+      "path": "illustrations/moon-city-orbit.webp",
+      "sourceFile": "source/artwork/moon-city-orbit-source.png",
+      "creator": "MoonWitness contributors",
+      "source": "Derivative of existing raw_arts/art illustration in this repository",
+      "terms": "Repository-local derivative; rights inherit from the original raw_arts master (distribution review required).",
+      "generatedOn": "2026-11-24",
+      "focalPoint": "center (three crew seen from behind under the moon for the orbit band)",
+      "alt": "",
+      "decorative": true,
+      "notes": "Cropped, resized and re-encoded from an existing MoonWitness raw artwork master to add a distinct editorial variant. No new external image generation was used."
+    },
+    {
+      "path": "illustrations/story-workbench-masthead.webp",
+      "sourceFile": "source/artwork/story-workbench-masthead-master.png",
+      "creator": "OpenAI image generation, commissioned by MoonWitness contributors",
+      "source": "Codex image_gen using the user-provided MoonWitness visual references",
+      "terms": "https://openai.com/policies/terms-of-use/",
+      "generatedOn": "2026-10-23",
+      "focalPoint": "right (character & moon kept clear of left copy rail)",
+      "alt": "",
+      "decorative": true,
+      "notes": "Original illustration generated without embedded typography or UI. The user-provided reference was used for art direction; no screenshot was used as artwork."
+    }
+  ],
+  "sourceAssets": [
+    {
+      "path": "animation/crew-01-hair/crew-01-hair-move-clip.json",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored JSON",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-hair/crew-01-hair-move-frame-01.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-hair/crew-01-hair-move-frame-02.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-hair/crew-01-hair-move-frame-03.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-hair/crew-01-hair-move-frame-04.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-idle/crew-01-idle-clip.json",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored JSON",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "approved",
+      "distribution": "production"
+    },
+    {
+      "path": "animation/crew-01-idle/crew-01-idle-frame-01.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "approved",
+      "distribution": "production"
+    },
+    {
+      "path": "animation/crew-01-idle/crew-01-idle-frame-02.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "approved",
+      "distribution": "production"
+    },
+    {
+      "path": "animation/crew-01-idle/crew-01-idle-frame-03.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "approved",
+      "distribution": "production"
+    },
+    {
+      "path": "animation/crew-01-idle/crew-01-idle-frame-04.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "approved",
+      "distribution": "production"
+    },
+    {
+      "path": "animation/crew-01-turn/crew-01-turn-clip.json",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored JSON",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-turn/crew-01-turn-frame-01.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-turn/crew-01-turn-frame-02.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-turn/crew-01-turn-frame-03.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-turn/crew-01-turn-frame-04.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-walk/crew-01-walk-clip.json",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored JSON",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-walk/crew-01-walk-frame-01.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-walk/crew-01-walk-frame-02.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-walk/crew-01-walk-frame-03.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "animation/crew-01-walk/crew-01-walk-frame-04.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "source/artwork/moon-city-cloud-layer.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original Moon City layer artwork authored for this project.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "source/artwork/moon-city-clouds-loop-a.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original hand-authored primary looping Moon City cloud layer for responsive scene composition.",
+      "status": "approved",
+      "distribution": "distributable under ISC package license"
+    },
+    {
+      "path": "source/artwork/moon-city-clouds-loop-b.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original hand-authored secondary looping Moon City cloud layer for responsive scene composition.",
+      "status": "approved",
+      "distribution": "distributable under ISC package license"
+    },
+    {
+      "path": "source/artwork/moon-city-environment-master.png",
+      "creator": "AI-assisted generation; model identity reported by local image tool",
+      "source": "Magpie image generation",
+      "model": "workbuddy-ai/hy-image-3.5",
+      "generatedOn": "2026-11-22",
+      "license": "unverified",
+      "termsUrl": null,
+      "modifications": "Unaltered generated master. Original Moon City composition, no text or existing franchise references.",
+      "status": "blocked",
+      "distribution": "blocked pending provider/model terms review"
+    },
+    {
+      "path": "source/artwork/moon-city-foreground-layer.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original Moon City layer artwork authored for this project.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "source/artwork/moon-city-midground-layer-2.png",
+      "creator": "AI-assisted generation; model identity reported by local image tool",
+      "source": "Magpie image generation",
+      "model": "workbuddy-ai/hy-image-3.5",
+      "generatedOn": "2026-11-22",
+      "license": "unverified",
+      "termsUrl": null,
+      "modifications": "Unaltered generated skyline source; opaque white background retained for source review.",
+      "status": "blocked",
+      "distribution": "blocked pending provider/model terms review"
+    },
+    {
+      "path": "source/artwork/moon-city-moon-disc-layer.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original hand-authored Moon City moon disc layer for responsive scene composition.",
+      "status": "approved",
+      "distribution": "distributable under ISC package license"
+    },
+    {
+      "path": "source/artwork/moon-city-moon-layer.png",
+      "creator": "MoonWitness contributors",
+      "source": "Derived from generated Moon City source using Sharp alpha masking",
+      "model": "workbuddy-ai/hy-image-3.5",
+      "generatedOn": "2026-11-22",
+      "license": "unverified",
+      "termsUrl": null,
+      "modifications": "Radial alpha mask isolates the moon from the generated environment master.",
+      "status": "blocked",
+      "distribution": "blocked pending provider/model terms review"
+    },
+    {
+      "path": "source/artwork/moon-city-sky-layer.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original Moon City layer artwork authored for this project.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "source/artwork/moon-city-skyline-layer.png",
+      "creator": "MoonWitness contributors",
+      "source": "Derived from generated Moon City source using Sharp alpha masking",
+      "model": "workbuddy-ai/hy-image-3.5",
+      "generatedOn": "2026-11-22",
+      "license": "unverified",
+      "termsUrl": null,
+      "modifications": "Near-white removal isolates the city silhouette from the generated skyline source.",
+      "status": "blocked",
+      "distribution": "blocked pending provider/model terms review"
+    },
+    {
+      "path": "source/artwork/riot-universe/bg-halftone-ink-dark-master.png",
+      "creator": "MoonWitness contributors",
+      "source": "Procedural comic-halftone SVG/sharp rasterizer",
+      "license": "ISC",
+      "termsVerified": true,
+      "modifications": "Procedural charcoal zine backdrop (#0e0e10) with subtle halftone grid and cyan/magenta rim vignette.",
+      "status": "approved",
+      "distribution": "approved source master for MoonWitness Signal Riot asset pipeline"
+    },
+    {
+      "path": "source/artwork/riot-universe/bg-halftone-paper-light-master.png",
+      "creator": "MoonWitness contributors",
+      "source": "Procedural comic-halftone SVG/sharp rasterizer",
+      "license": "ISC",
+      "termsVerified": true,
+      "modifications": "Procedural warm newsprint zine texture (#f3efe4) with Ben-Day halftone dots and corner registration marks.",
+      "status": "approved",
+      "distribution": "approved source master for MoonWitness Signal Riot asset pipeline"
+    },
+    {
+      "path": "source/artwork/riot-universe/bg-riot-arcade-workbench-master.png",
+      "creator": "Google Gemini image generation, commissioned by MoonWitness contributors",
+      "source": "Direct AI master generation for Signal Riot arcade studio workbench environment",
+      "license": "MoonWitness Commissioned Asset (ISC pipeline)",
+      "termsVerified": true,
+      "modifications": "Direct AI 1376x768 landscape master for Signal Riot arcade workbench backdrop.",
+      "status": "approved",
+      "distribution": "approved source master for MoonWitness Signal Riot asset pipeline"
+    },
+    {
+      "path": "source/artwork/riot-universe/bg-riot-street-alley-master.png",
+      "creator": "Google Gemini image generation, commissioned by MoonWitness contributors",
+      "source": "Direct AI master generation for Signal Riot nocturnal street alley environment",
+      "license": "MoonWitness Commissioned Asset (ISC pipeline)",
+      "termsVerified": true,
+      "modifications": "Direct AI 1376x768 landscape master for Signal Riot street alley backdrop.",
+      "status": "approved",
+      "distribution": "approved source master for MoonWitness Signal Riot asset pipeline"
+    },
+    {
+      "path": "source/artwork/riot-universe/kuro-signal-fullbody-standing-master.png",
+      "creator": "Google Gemini image generation, commissioned by MoonWitness contributors",
+      "source": "Direct AI master generation on solid white backdrop for Signal Riot character pipeline",
+      "license": "MoonWitness Commissioned Asset (ISC pipeline)",
+      "termsVerified": true,
+      "modifications": "Direct AI full-body standing master for kuro-signal (normalized 1024x1536 RGB contain on #ffffff).",
+      "status": "approved",
+      "distribution": "approved source master for MoonWitness Signal Riot asset pipeline"
+    },
+    {
+      "path": "source/artwork/riot-universe/kuro-signal-model-sheet-master.png",
+      "creator": "Google Gemini image generation, commissioned by MoonWitness contributors",
+      "source": "Direct AI master generation on solid white sheet for Signal Riot character pipeline",
+      "license": "MoonWitness Commissioned Asset (ISC pipeline)",
+      "termsVerified": true,
+      "modifications": "Unaltered 3-view character turnaround master (front, side, 3/4) for kuro-signal.",
+      "status": "approved",
+      "distribution": "approved source master for MoonWitness Signal Riot asset pipeline"
+    },
+    {
+      "path": "source/artwork/riot-universe/kuro-signal-portrait-celebrating-master.png",
+      "creator": "Google Gemini image generation, commissioned by MoonWitness contributors",
+      "source": "Direct AI master generation on solid white backdrop for Signal Riot character pipeline",
+      "license": "MoonWitness Commissioned Asset (ISC pipeline)",
+      "termsVerified": true,
+      "modifications": "Direct AI celebrating bust portrait master for kuro-signal (normalized 1024x1024 RGB on #ffffff).",
+      "status": "approved",
+      "distribution": "approved source master for MoonWitness Signal Riot asset pipeline"
+    },
+    {
+      "path": "source/artwork/riot-universe/kuro-signal-portrait-excited-master.png",
+      "creator": "Google Gemini image generation, commissioned by MoonWitness contributors",
+      "source": "Direct AI master generation on solid white backdrop for Signal Riot character pipeline",
+      "license": "MoonWitness Commissioned Asset (ISC pipeline)",
+      "termsVerified": true,
+      "modifications": "Direct AI excited bust portrait master for kuro-signal (normalized 1024x1024 RGB on #ffffff).",
+      "status": "approved",
+      "distribution": "approved source master for MoonWitness Signal Riot asset pipeline"
+    },
+    {
+      "path": "source/artwork/riot-universe/kuro-signal-portrait-happy-master.png",
+      "creator": "Google Gemini image generation, commissioned by MoonWitness contributors",
+      "source": "Direct AI master generation on solid white backdrop for Signal Riot character pipeline",
+      "license": "MoonWitness Commissioned Asset (ISC pipeline)",
+      "termsVerified": true,
+      "modifications": "Direct AI happy bust portrait master for kuro-signal (normalized 1024x1024 RGB on #ffffff).",
+      "status": "approved",
+      "distribution": "approved source master for MoonWitness Signal Riot asset pipeline"
+    },
+    {
+      "path": "source/artwork/riot-universe/kuro-signal-portrait-thinking-master.png",
+      "creator": "Google Gemini image generation, commissioned by MoonWitness contributors",
+      "source": "Direct AI master generation on solid white backdrop for Signal Riot character pipeline",
+      "license": "MoonWitness Commissioned Asset (ISC pipeline)",
+      "termsVerified": true,
+      "modifications": "Direct AI thinking bust portrait master for kuro-signal (normalized 1024x1024 RGB on #ffffff).",
+      "status": "approved",
+      "distribution": "approved source master for MoonWitness Signal Riot asset pipeline"
+    },
+    {
+      "path": "source/artwork/riot-universe/scene-empty-signal-static-master.png",
+      "creator": "Google Gemini image generation, commissioned by MoonWitness contributors",
+      "source": "Direct AI master generation for Signal Riot empty/offline/static scene states",
+      "license": "MoonWitness Commissioned Asset (ISC pipeline)",
+      "termsVerified": true,
+      "modifications": "Direct AI 1376x768 narrative scene master for empty-signal-static.",
+      "status": "approved",
+      "distribution": "approved source master for MoonWitness Signal Riot asset pipeline"
+    },
+    {
+      "path": "source/artwork/riot-universe/scene-onboarding-welcome-master.png",
+      "creator": "Google Gemini image generation, commissioned by MoonWitness contributors",
+      "source": "Direct AI master generation for Signal Riot onboarding/welcome scene states",
+      "license": "MoonWitness Commissioned Asset (ISC pipeline)",
+      "termsVerified": true,
+      "modifications": "Direct AI 1376x768 narrative scene master for onboarding-welcome.",
+      "status": "approved",
+      "distribution": "approved source master for MoonWitness Signal Riot asset pipeline"
+    },
+    {
+      "path": "source/artwork/riot-universe/scene-quest-victory-master.png",
+      "creator": "Google Gemini image generation, commissioned by MoonWitness contributors",
+      "source": "Direct AI master generation for Signal Riot quest victory/celebration scene states",
+      "license": "MoonWitness Commissioned Asset (ISC pipeline)",
+      "termsVerified": true,
+      "modifications": "Direct AI 1376x768 narrative scene master for quest-victory.",
+      "status": "approved",
+      "distribution": "approved source master for MoonWitness Signal Riot asset pipeline"
+    },
+    {
+      "path": "source/artwork/riot-universe/vesper-ink-portrait-master.png",
+      "creator": "Google Gemini image generation, commissioned by MoonWitness contributors",
+      "source": "Direct AI master generation on solid white backdrop for Signal Riot character pipeline",
+      "license": "MoonWitness Commissioned Asset (ISC pipeline)",
+      "termsVerified": true,
+      "modifications": "Direct AI bust portrait master for vesper-ink.",
+      "status": "approved",
+      "distribution": "approved source master for MoonWitness Signal Riot asset pipeline"
+    },
+    {
+      "path": "source/world/characters/character-registry.json",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored JSON",
+      "license": "ISC",
+      "modifications": "Original canonical character registry for Moon City visual universe.",
+      "status": "approved",
+      "distribution": "production"
+    },
+    {
+      "path": "source/world/characters/crew-01-layer-hood.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original canonical crew-01 layer/pivot master; no face depicted.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "source/world/characters/crew-01-layer-outline.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original canonical crew-01 layer/pivot master; no face depicted.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "source/world/characters/crew-01-layer-torso.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original canonical crew-01 layer/pivot master; no face depicted.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "source/world/characters/crew-01-pivots.json",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored JSON",
+      "license": "ISC",
+      "modifications": "Original canonical crew-01 layer/pivot master; no face depicted.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "source/world/characters/crew-01-pose-idle-standing.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original canonical character pose for crew-01: anonymous back-facing hooded crew figure. No face depicted.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "source/world/characters/crew-01-pose-waving.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original canonical character pose for crew-01: anonymous back-facing hooded crew figure. No face depicted.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "source/world/characters/crew-01-sheet.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original canonical character sheet for crew-01: anonymous back-facing hooded crew figure, industrial workwear, tool satchel, crew badge. No face depicted.",
+      "status": "review",
+      "distribution": "source-only pending visual acceptance"
+    },
+    {
+      "path": "source/world/environments/env-archive.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original canonical Moon City environment asset authored under ISC license.",
+      "status": "approved",
+      "distribution": "distributable under ISC package license"
+    },
+    {
+      "path": "source/world/environments/env-rooftop.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original canonical Moon City environment asset authored under ISC license.",
+      "status": "approved",
+      "distribution": "distributable under ISC package license"
+    },
+    {
+      "path": "source/world/environments/env-street.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original canonical Moon City environment asset authored under ISC license.",
+      "status": "approved",
+      "distribution": "distributable under ISC package license"
+    },
+    {
+      "path": "source/world/environments/env-underground.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original canonical Moon City environment asset authored under ISC license.",
+      "status": "approved",
+      "distribution": "distributable under ISC package license"
+    },
+    {
+      "path": "source/world/environments/environment-kit.json",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored JSON",
+      "license": "ISC",
+      "modifications": "Original canonical Moon City environment asset authored under ISC license.",
+      "status": "approved",
+      "distribution": "distributable under ISC package license"
+    },
+    {
+      "path": "source/world/environments/moon-city-prop-railing.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original canonical Moon City environment asset authored under ISC license.",
+      "status": "approved",
+      "distribution": "distributable under ISC package license"
+    },
+    {
+      "path": "source/world/environments/moon-city-prop-sign.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original canonical Moon City environment asset authored under ISC license.",
+      "status": "approved",
+      "distribution": "distributable under ISC package license"
+    },
+    {
+      "path": "source/world/environments/moon-city-prop-wires.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original canonical Moon City environment asset authored under ISC license.",
+      "status": "approved",
+      "distribution": "distributable under ISC package license"
+    },
+    {
+      "path": "source/world/environments/moon-city-skyline-far.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original canonical Moon City environment asset authored under ISC license.",
+      "status": "approved",
+      "distribution": "distributable under ISC package license"
+    },
+    {
+      "path": "source/world/environments/moon-city-skyline-mid.svg",
+      "creator": "MoonWitness contributors",
+      "source": "Original manually authored SVG",
+      "license": "ISC",
+      "modifications": "Original canonical Moon City environment asset authored under ISC license.",
+      "status": "approved",
+      "distribution": "distributable under ISC package license"
+    }
+  ],
+  "originalFonts": [
+    {
+      "family": "MoonWitness Grunge",
+      "designer": "MoonWitness Studio",
+      "source": "packages/assets/scripts/generate-brand-font.mjs",
+      "license": "ISC",
+      "files": [
+        {
+          "path": "fonts/MoonWitnessGrunge-latin.woff2",
+          "source": "packages/assets/scripts/generate-brand-font.mjs",
+          "sourceFile": "source/fonts/MoonWitnessGrunge-Regular.otf",
+          "sourceSha256": "02E986E97FD30BA11B51630C49C8906BB97DD40B732C3BC1120F6BE9D136067F",
+          "sha256": "6B5B6A40EFF4EEE47423F07AE1BE51C705D8BBE3E2A55C4BA9F6213ECA1F3A04"
+        }
+      ],
+      "usage": "Bundled proprietary Grunge x Funky x Gen-Z display WOFF2 for MoonWitness headlines, ribbons, and stamps."
+    }
+  ]
+}
