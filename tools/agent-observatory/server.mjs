@@ -1518,7 +1518,14 @@ function parseOpenCodeParts(partRows) {
       if (failed) {
         hasRecentError = true;
         errorCount += 1;
-        lastError = clip(redactSecrets(String(parsedPart.state?.error || summary)), 150);
+        const rawErr = parsedPart.state?.error;
+        const errText =
+          typeof rawErr === 'string'
+            ? rawErr
+            : rawErr && typeof rawErr === 'object'
+              ? rawErr.message || rawErr.error || rawErr.name || JSON.stringify(rawErr)
+              : summary;
+        lastError = clip(redactSecrets(String(errText || summary)), 150);
         events.push({ at: atIso, kind: 'error', tool: toolName, summary: lastError });
       } else {
         events.push({ at: atIso, kind: 'tool', tool: toolName, summary });
@@ -2066,6 +2073,20 @@ export function detectOperationalAlerts(sessions, gitState, magpieSummary, probe
     if (session.runtime === 'magpie') continue;
     if (session.status !== 'running' && session.status !== 'recent') continue;
 
+    if (session.health?.silentLoop) {
+      alerts.push({
+        id: `silent-loop:${session.runtime}:${session.id}`,
+        kind: 'silent-loop',
+        severity: 'high',
+        title: 'SILENT LOOP (TrajAD)',
+        target: clip(session.title, 48),
+        detail: `${session.runtimeLabel} repeated "${session.health.loopSignature}" ${session.health.maxRepeatStreak}× consecutively`,
+        runtime: session.runtime,
+        sessionId: session.id,
+        nodeIds: [`agent:${session.runtime}:${session.id}`],
+      });
+    }
+
     if ((session.errorCount || 0) >= 3) {
       alerts.push({
         id: `loop:${session.runtime}:${session.id}`,
@@ -2517,6 +2538,7 @@ export function buildFlowGraph(
       focus: session.focus || '',
       model: session.model,
       lastError: session.lastError || '',
+      health: session.health || null,
       metrics: {
         tokens: session.tokens?.total || 0,
         steps: session.steps || 0,
@@ -2909,12 +2931,333 @@ export function computeAnalytics(sessions, activityFeed, nowMs = Date.now()) {
 
   errorLedger.sort((left, right) => (right.at || '').localeCompare(left.at || ''));
 
+  // 7-day x 6-slot (4-hour blocks) real activity heatmap from sessions + activity feed
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const slotLabels = ['00h', '04h', '08h', '12h', '16h', '20h'];
+  const nowDate = new Date(nowMs);
+  const heatmapDays = [];
+  const dayIndexByKey = new Map();
+  for (let offset = 6; offset >= 0; offset -= 1) {
+    const dt = new Date(nowDate.getFullYear(), nowDate.getMonth(), nowDate.getDate() - offset);
+    const key = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+    dayIndexByKey.set(key, heatmapDays.length);
+    heatmapDays.push({ key, label: dayNames[dt.getDay()] });
+  }
+  const heatmapCells = Array.from({ length: 7 * 6 }, (_, cellIdx) => ({
+    dayIdx: Math.floor(cellIdx / 6),
+    slotIdx: cellIdx % 6,
+    dayLabel: heatmapDays[Math.floor(cellIdx / 6)].label,
+    slotLabel: slotLabels[cellIdx % 6],
+    hits: 0,
+    tokens: 0,
+  }));
+
+  const recordHeatHit = (timestampMs, weight, tokCount) => {
+    if (!Number.isFinite(timestampMs)) return;
+    const dt = new Date(timestampMs);
+    const key = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+    const dIdx = dayIndexByKey.get(key);
+    if (dIdx === undefined) return;
+    const sIdx = Math.min(5, Math.floor(dt.getHours() / 4));
+    const cell = heatmapCells[dIdx * 6 + sIdx];
+    cell.hits += weight;
+    cell.tokens += tokCount;
+  };
+
+  for (const session of sessions) {
+    recordHeatHit(
+      session.mtimeMs,
+      Math.max(1, Math.min(8, Math.ceil((session.steps || 1) / 15))),
+      session.tokens?.total || 0
+    );
+  }
+  for (const feedEvent of activityFeed) {
+    recordHeatHit(Date.parse(feedEvent.at || ''), 1, 0);
+  }
+  const heatmapMax = Math.max(1, ...heatmapCells.map((cell) => cell.hits));
+
+  // Fleet 6-signal MAST / TrajAD / AgentDiet health summary
+  const codedSessions = sessions.filter((entry) => entry.runtime !== 'magpie' && entry.health);
+  const rankCounts = { S: 0, A: 0, B: 0, C: 0, D: 0 };
+  const sigSums = {
+    toolReliability: 0,
+    loopFreedom: 0,
+    recovery: 0,
+    cacheEfficiency: 0,
+    dietScore: 0,
+    budgetHealth: 0,
+  };
+  let silentLoopCount = 0;
+  let sumWastePct = 0;
+  let sumScore = 0;
+
+  for (const entry of codedSessions) {
+    const h = entry.health;
+    rankCounts[h.rank] = (rankCounts[h.rank] || 0) + 1;
+    if (h.silentLoop) silentLoopCount += 1;
+    sumWastePct += h.dietWastePct || 0;
+    sumScore += h.score || 0;
+    for (const sigKey of Object.keys(sigSums)) {
+      sigSums[sigKey] += h.signals?.[sigKey] ?? 80;
+    }
+  }
+  const fleetDenom = Math.max(1, codedSessions.length);
+  const avgFleetScore = codedSessions.length > 0 ? Math.round(sumScore / fleetDenom) : 95;
+  const fleetRank =
+    avgFleetScore >= 90
+      ? 'S'
+      : avgFleetScore >= 76
+        ? 'A'
+        : avgFleetScore >= 62
+          ? 'B'
+          : avgFleetScore >= 46
+            ? 'C'
+            : 'D';
+
+  const fleetHealth = {
+    score: avgFleetScore,
+    rank: fleetRank,
+    evaluated: codedSessions.length,
+    silentLoopCount,
+    avgDietWastePct: codedSessions.length > 0 ? Math.round(sumWastePct / fleetDenom) : 0,
+    rankCounts,
+    signals: {
+      toolReliability:
+        codedSessions.length > 0 ? Math.round(sigSums.toolReliability / fleetDenom) : 100,
+      loopFreedom: codedSessions.length > 0 ? Math.round(sigSums.loopFreedom / fleetDenom) : 100,
+      recovery: codedSessions.length > 0 ? Math.round(sigSums.recovery / fleetDenom) : 100,
+      cacheEfficiency:
+        codedSessions.length > 0 ? Math.round(sigSums.cacheEfficiency / fleetDenom) : 85,
+      dietScore: codedSessions.length > 0 ? Math.round(sigSums.dietScore / fleetDenom) : 85,
+      budgetHealth: codedSessions.length > 0 ? Math.round(sigSums.budgetHealth / fleetDenom) : 90,
+    },
+  };
+
   return {
     toolFrequency,
     runtimeBreakdown,
     modelBreakdown,
     activityBuckets: buckets,
     errorLedger: errorLedger.slice(0, 25),
+    heatmap: { days: heatmapDays, slots: slotLabels, cells: heatmapCells, maxHits: heatmapMax },
+    fleetHealth,
+  };
+}
+
+// 6-Signal Trajectory Health (arXiv:2606.01365 + TrajAD arXiv:2602.06443 + MAST + AgentDiet)
+export function analyzeTrajectoryHealth(session) {
+  const events = session.recentEvents || [];
+  const totalSteps = Math.max(1, Number(session.steps || events.length || 1));
+  const errorCount = Number(session.errorCount || (session.lastError ? 1 : 0));
+
+  // Signal 1: Tool reliability (100 - error rate)
+  const toolReliability = Math.max(
+    0,
+    Math.min(100, Math.round(100 - (errorCount / Math.max(3, totalSteps)) * 120))
+  );
+
+  // Signal 2: TrajAD Silent-Loop Freedom (detect 3+ consecutive identical tool+summary steps even on HTTP 200)
+  let maxStreak = 1;
+  let currentStreak = 1;
+  let prevSig = '';
+  let loopSignature = '';
+  for (const ev of events) {
+    const sig = `${ev.tool || ev.kind}:${String(ev.summary || '')
+      .slice(0, 42)
+      .toLowerCase()}`;
+    if (sig && sig === prevSig) {
+      currentStreak += 1;
+      if (currentStreak > maxStreak) {
+        maxStreak = currentStreak;
+        loopSignature = clip(ev.summary || ev.tool || 'repeat', 64);
+      }
+    } else {
+      currentStreak = 1;
+      prevSig = sig;
+    }
+  }
+  const silentLoop = maxStreak >= 3;
+  const loopFreedom = silentLoop ? Math.max(10, 100 - maxStreak * 24) : maxStreak === 2 ? 82 : 100;
+
+  // Signal 3: Execution recovery (did the agent recover cleanly after an error?)
+  const lastEvent = events[events.length - 1];
+  const recovered =
+    errorCount === 0 || (lastEvent && lastEvent.kind !== 'error' && session.status !== 'error');
+  const recovery = errorCount === 0 ? 100 : recovered ? 78 : Math.max(15, 60 - errorCount * 12);
+
+  // Signal 4: Cache Efficiency
+  const inTok = Number(session.tokens?.input || 0);
+  const cachedTok = Number(session.tokens?.cached || 0);
+  const outTok = Number(session.tokens?.output || 0);
+  const cacheDenom = inTok + cachedTok;
+  const cacheEfficiency = cacheDenom > 0 ? Math.round((cachedTok / cacheDenom) * 100) : 72;
+
+  // Signal 5: AgentDiet Context Efficiency (bloat vs productive output)
+  const ioRatio = outTok > 0 ? inTok / outTok : inTok > 20_000 ? 60 : 8;
+  const bloatPenalty =
+    (ioRatio > 80 ? 34 : ioRatio > 40 ? 22 : ioRatio > 20 ? 10 : 0) +
+    (silentLoop ? 26 : 0) +
+    (cacheDenom > 20_000 && cacheEfficiency < 35 ? 18 : 0);
+  const dietWastePct = Math.max(0, Math.min(75, Math.round(bloatPenalty)));
+  const dietScore = Math.max(20, 100 - dietWastePct);
+
+  // Signal 6: Budget Pressure (token volume & cost discipline)
+  const totalTok = inTok + outTok;
+  const budgetHealth =
+    totalTok > 40_000_000 ? 45 : totalTok > 10_000_000 ? 65 : totalTok > 2_000_000 ? 82 : 96;
+
+  const score = Math.round(
+    toolReliability * 0.24 +
+      loopFreedom * 0.24 +
+      recovery * 0.16 +
+      cacheEfficiency * 0.12 +
+      dietScore * 0.14 +
+      budgetHealth * 0.1
+  );
+  const rank = score >= 90 ? 'S' : score >= 76 ? 'A' : score >= 62 ? 'B' : score >= 46 ? 'C' : 'D';
+
+  const mastClass = silentLoop
+    ? 'SILENT-LOOP'
+    : errorCount >= 3 || session.status === 'error'
+      ? 'TOOL-FAILURE'
+      : dietWastePct >= 40
+        ? 'CONTEXT-BLOAT'
+        : 'HEALTHY';
+
+  return {
+    score,
+    rank,
+    silentLoop,
+    maxRepeatStreak: maxStreak,
+    loopSignature: silentLoop ? loopSignature : '',
+    dietWastePct,
+    mastClass,
+    signals: {
+      toolReliability,
+      loopFreedom,
+      recovery,
+      cacheEfficiency,
+      dietScore,
+      budgetHealth,
+    },
+  };
+}
+
+// OpenTelemetry GenAI Semantic Conventions OTLP/JSON Export (llmmas-otel arXiv:2608.24271)
+export function formatSnapshotOtel(snapshot) {
+  const spans = [];
+  const toUnixNano = (isoStr, fallbackMs) => {
+    const ms = Number.isFinite(Date.parse(isoStr || '')) ? Date.parse(isoStr) : fallbackMs;
+    return `${Math.max(0, Math.round(ms))}000000`;
+  };
+  const makeHex = (seed, len) => {
+    let hash = 2166136261;
+    const str = String(seed || 'mw');
+    for (let idx = 0; idx < str.length; idx += 1) {
+      hash ^= str.charCodeAt(idx);
+      hash = Math.imul(hash, 16777619);
+    }
+    let out = '';
+    while (out.length < len) {
+      hash = Math.imul(hash ^ (hash >>> 13), 1597334677);
+      out += (hash >>> 0).toString(16).padStart(8, '0');
+    }
+    return out.slice(0, len);
+  };
+  const attr = (key, value) => {
+    if (typeof value === 'number') {
+      return Number.isInteger(value)
+        ? { key, value: { intValue: String(value) } }
+        : { key, value: { doubleValue: value } };
+    }
+    if (typeof value === 'boolean') return { key, value: { boolValue: value } };
+    return { key, value: { stringValue: String(value ?? '') } };
+  };
+
+  const nowMs = Date.parse(snapshot.generatedAt || '') || Date.now();
+  for (const session of (snapshot.sessions || []).slice(0, 24)) {
+    const traceId = makeHex(`${session.runtime}:${session.id}`, 32);
+    const rootSpanId = makeHex(`root:${session.id}`, 16);
+    const events = session.recentEvents || [];
+    const firstEvMs = events[0]?.at ? Date.parse(events[0].at) : session.mtimeMs - 5000;
+    const startMs = Number.isFinite(firstEvMs) ? firstEvMs : nowMs - 5000;
+    const endMs = Math.max(startMs + 100, session.mtimeMs || nowMs);
+
+    spans.push({
+      traceId,
+      spanId: rootSpanId,
+      name: `invoke_agent ${session.runtimeLabel}`,
+      kind: 1,
+      startTimeUnixNano: toUnixNano(null, startMs),
+      endTimeUnixNano: toUnixNano(null, endMs),
+      status: { code: session.status === 'error' ? 2 : 1 },
+      attributes: [
+        attr('gen_ai.operation.name', 'invoke_agent'),
+        attr('gen_ai.system', session.runtime),
+        attr('gen_ai.request.model', session.model || session.runtime),
+        attr('gen_ai.agent.name', session.title),
+        attr('gen_ai.usage.input_tokens', session.tokens?.input || 0),
+        attr('gen_ai.usage.output_tokens', session.tokens?.output || 0),
+        attr('gen_ai.usage.cache_read_input_tokens', session.tokens?.cached || 0),
+        attr('moonwitness.trajectory.rank', session.health?.rank || 'A'),
+        attr('moonwitness.trajectory.score', session.health?.score ?? 85),
+        attr('moonwitness.trajectory.mast_class', session.health?.mastClass || 'HEALTHY'),
+        attr('moonwitness.trajectory.diet_waste_pct', session.health?.dietWastePct ?? 0),
+      ],
+    });
+
+    for (let idx = 0; idx < events.length; idx += 1) {
+      const ev = events[idx];
+      const evStart = Number.isFinite(Date.parse(ev.at || ''))
+        ? Date.parse(ev.at)
+        : startMs + idx * 400;
+      const nextEv = events[idx + 1];
+      const evEnd =
+        nextEv && Number.isFinite(Date.parse(nextEv.at || ''))
+          ? Math.max(evStart + 50, Date.parse(nextEv.at))
+          : evStart + 450;
+      const opName =
+        ev.kind === 'focus' ? 'plan' : ev.kind === 'subagent' ? 'invoke_agent' : 'execute_tool';
+      spans.push({
+        traceId,
+        spanId: makeHex(`ev:${session.id}:${idx}:${ev.at || idx}`, 16),
+        parentSpanId: rootSpanId,
+        name: `${opName} ${ev.tool || ev.kind}`,
+        kind: 1,
+        startTimeUnixNano: toUnixNano(null, evStart),
+        endTimeUnixNano: toUnixNano(null, evEnd),
+        status: { code: ev.kind === 'error' ? 2 : 1 },
+        attributes: [
+          attr('gen_ai.operation.name', opName),
+          attr('gen_ai.system', session.runtime),
+          attr('gen_ai.tool.name', ev.tool || ev.kind),
+          attr('moonwitness.event.summary', clip(ev.summary || '', 120)),
+        ],
+      });
+    }
+  }
+
+  return {
+    resourceSpans: [
+      {
+        resource: {
+          attributes: [
+            attr('service.name', 'moonwitness-agent-observatory'),
+            attr('service.version', `v${snapshot.version || 5}`),
+            attr('host.name', snapshot.host?.hostname || 'localhost'),
+          ],
+        },
+        scopeSpans: [
+          {
+            scope: {
+              name: 'moonwitness.observatory.genai',
+              version: '1.0.0',
+            },
+            spans,
+          },
+        ],
+      },
+    ],
   };
 }
 
@@ -3507,6 +3850,11 @@ export function createObservatoryController(config = {}) {
       ...geminiSessions,
     ].sort((left, right) => right.mtimeMs - left.mtimeMs);
 
+    // Attach 6-signal MAST / TrajAD / AgentDiet trajectory health to every session
+    for (const session of allSessions) {
+      session.health = analyzeTrajectoryHealth(session);
+    }
+
     // Attach git commit SHAs and build live DAGs for every plan
     for (const planEntry of planBundle.plans) {
       for (const taskEntry of planEntry.tasks) {
@@ -3644,7 +3992,7 @@ export function createObservatoryController(config = {}) {
     return {
       rawSessions: allSessions,
       snapshot: {
-        version: 4,
+        version: 5,
         generatedAt: nowIso,
         repoRoot: normalizePathSlashes(repoRoot),
         antigravityApiConnected: agBundle.connectedApi,
@@ -3914,7 +4262,7 @@ export async function createObservatoryServer(options = {}) {
       httpResponse.end(
         JSON.stringify({
           ok: true,
-          version: 4,
+          version: 5,
           host,
           port: httpServer.address()?.port ?? port,
           clients: sseClients.size,
@@ -3995,6 +4343,16 @@ export async function createObservatoryServer(options = {}) {
     if (reqUrl.pathname === '/api/export') {
       if (!lastSnapshot) await refreshAndBroadcast(true);
       const format = (reqUrl.searchParams.get('format') || 'json').toLowerCase();
+      if (format === 'otel' || format === 'otlp') {
+        const otelPayload = formatSnapshotOtel(lastSnapshot);
+        httpResponse.writeHead(200, {
+          ...SECURITY_HEADERS,
+          'Content-Type': 'application/json; charset=utf-8',
+          'Content-Disposition': 'attachment; filename="moonwitness-genai-traces.otel.json"',
+        });
+        httpResponse.end(JSON.stringify(otelPayload, null, 2));
+        return;
+      }
       if (format === 'markdown' || format === 'md') {
         const mdReport = formatSnapshotMarkdown(lastSnapshot);
         httpResponse.writeHead(200, {
@@ -4090,7 +4448,7 @@ if (isDirectEntry) {
     .then((handle) => {
       const boundPort = handle.address?.port ?? cliOptions.port;
       process.stdout.write(
-        `MoonWitness Agent Observatory v4 listening at http://${cliOptions.host}:${boundPort}\n`
+        `MoonWitness Agent Observatory v5 listening at http://${cliOptions.host}:${boundPort}\n`
       );
       const handleShutdown = () => {
         void handle.stop().finally(() => process.exit(0));

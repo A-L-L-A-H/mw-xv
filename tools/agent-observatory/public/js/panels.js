@@ -644,8 +644,10 @@
                 <div class="cast-body">
                   <div class="agent-top">
                     <div class="agent-badges">
+                      ${session.health ? `<span class="rank-badge rank-${esc(session.health.rank)}" title="MAST Trajectory Health ${session.health.score}/100 (${session.health.mastClass})">${esc(session.health.rank)}</span>` : ''}
                       <span class="chip rt-${esc(session.runtime)}">${esc(session.runtimeLabel)}</span>
                       <span class="chip st-${esc(session.status)}">${esc(session.status.toUpperCase())}</span>
+                      ${session.health?.silentLoop ? '<span class="chip st-error">🌀 SILENT LOOP</span>' : ''}
                       ${session.isCurrentSession ? '<span class="chip st-active">STAR HERO</span>' : ''}
                       ${session.swarmWorkers ? `<span class="chip rt-visual-swarm">SWARM:${session.swarmWorkers}</span>` : ''}
                     </div>
@@ -663,6 +665,7 @@
                     <span>gear:${esc(session.model)}</span>
                     ${session.branch ? `<span>branch:${esc(session.branch)}</span>` : ''}
                     ${typeof session.cost === 'number' && session.cost > 0 ? `<span>cost:$${session.cost.toFixed(3)}</span>` : ''}
+                    ${session.health?.dietWastePct > 0 ? `<span style="color:var(--orange)">diet:~${session.health.dietWastePct}% bloat</span>` : ''}
                     <span>moves:${session.steps || 0}</span>
                     <span>tok:${fmtNum(session.tokens?.total || 0)}</span>
                   </div>

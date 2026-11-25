@@ -181,7 +181,9 @@
   const telemetryViz = obs.createTelemetryViz(
     byId('oscCanvasHost'),
     byId('specCanvasHost'),
-    byId('radarCanvasHost')
+    byId('radarCanvasHost'),
+    byId('healthRadarHost'),
+    byId('heatmapCanvasHost')
   );
 
   function syncReplayBar() {
@@ -294,7 +296,54 @@
         .sort((left, right) => right[1] - left[1])
         .slice(0, 10);
 
+      // Build OpenTelemetry GenAI Trace Span Waterfall (root invoke_agent -> nested tool/plan spans)
+      const waterfallEvents = eventsChrono.slice(-14);
+      const timestamps = waterfallEvents
+        .map((ev) => Date.parse(ev.at || ''))
+        .filter((ts) => Number.isFinite(ts));
+      const minTs = timestamps.length > 0 ? Math.min(...timestamps) : Date.now() - 4000;
+      const maxTs = timestamps.length > 0 ? Math.max(...timestamps) + 400 : minTs + 4000;
+      const totalSpanMs = Math.max(500, maxTs - minTs);
+      const waterfallRowsHtml = waterfallEvents
+        .map((ev, idx) => {
+          const evTs = Number.isFinite(Date.parse(ev.at || ''))
+            ? Date.parse(ev.at)
+            : minTs + (idx / Math.max(1, waterfallEvents.length)) * totalSpanMs;
+          const nextEv = waterfallEvents[idx + 1];
+          const nextTs =
+            nextEv && Number.isFinite(Date.parse(nextEv.at || ''))
+              ? Math.max(evTs + 120, Date.parse(nextEv.at))
+              : Math.min(maxTs, evTs + Math.max(200, totalSpanMs * 0.08));
+          const durMs = Math.max(50, nextTs - evTs);
+          const leftPct = Math.min(94, Math.max(0, ((evTs - minTs) / totalSpanMs) * 100));
+          const widthPct = Math.min(100 - leftPct, Math.max(3, (durMs / totalSpanMs) * 100));
+          const opName =
+            ev.kind === 'focus' ? 'plan' : ev.kind === 'subagent' ? 'invoke_agent' : 'execute_tool';
+          const durLabel = durMs >= 1000 ? `${(durMs / 1000).toFixed(1)}s` : `${durMs}ms`;
+          return `
+            <div class="otel-span-row" title="${esc(ev.summary)}">
+              <span class="otel-span-name">↳ ${esc(opName)}:${esc(ev.tool || ev.kind)}</span>
+              <div class="otel-track"><span class="otel-bar kind-${esc(ev.kind)}" style="left:${leftPct.toFixed(1)}%;width:${widthPct.toFixed(1)}%"></span></div>
+              <span class="otel-dur">${esc(durLabel)}</span>
+            </div>`;
+        })
+        .join('');
+
+      const heroHealth = detailPayload.health;
+
       byId('drawerBody').innerHTML = `
+        ${
+          heroHealth
+            ? `<div class="probe-row">
+                 <div>
+                   <span class="rank-badge rank-${esc(heroHealth.rank)}">${esc(heroHealth.rank)}</span>
+                   <strong style="margin-left:6px">MAST: ${esc(heroHealth.mastClass)}</strong>
+                   <span class="brand-sub"> · Score ${heroHealth.score}/100 · AgentDiet bloat ~${heroHealth.dietWastePct}%</span>
+                 </div>
+                 <span class="brand-sub">${heroHealth.silentLoop ? `🌀 LOOP ×${heroHealth.maxRepeatStreak}` : 'CLEAN TRAJECTORY'}</span>
+               </div>`
+            : ''
+        }
         <div class="probe-row">
           <div><strong>Stage Dir:</strong> <span class="brand-sub">${esc(detailPayload.cwd || '—')}</span></div>
           <div><strong>Branch:</strong> <span class="brand-sub">${esc(detailPayload.branch || '—')}</span></div>
@@ -307,6 +356,21 @@
           <div class="kpi-label" style="margin-bottom:5px">LIVE EVENT CADENCE RIBBON (P5.JS)</div>
           <div id="drawerSessionStrip" class="p5-session-strip"></div>
         </div>
+        ${
+          waterfallEvents.length
+            ? `<div>
+                 <div class="kpi-label" style="margin-bottom:5px">OTEL GENAI TRACE SPAN WATERFALL (gen_ai.*)</div>
+                 <div class="otel-waterfall">
+                   <div class="otel-span-row">
+                     <span class="otel-span-name"><strong>invoke_agent:${esc(detailPayload.runtime)}</strong></span>
+                     <div class="otel-track"><span class="otel-bar kind-root" style="left:0%;width:100%"></span></div>
+                     <span class="otel-dur">${totalSpanMs >= 1000 ? `${(totalSpanMs / 1000).toFixed(1)}s` : `${totalSpanMs}ms`}</span>
+                   </div>
+                   ${waterfallRowsHtml}
+                 </div>
+               </div>`
+            : ''
+        }
         ${
           toolCounts.length
             ? `<div><div class="kpi-label" style="margin-bottom:5px">SPECIAL MOVES</div><div class="subagent-strip no-border">${toolCounts
@@ -810,9 +874,32 @@
     if (next) void ensureAudioUnlocked().then(() => sfxEngine.play('boing'));
   });
 
+  function toggleSfxPad(forceState) {
+    const padEl = byId('sfxPadDrawer');
+    if (!padEl) return;
+    const isHidden = padEl.classList.contains('hidden');
+    const nextOpen = typeof forceState === 'boolean' ? forceState : isHidden;
+    padEl.classList.toggle('hidden', !nextOpen);
+    byId('sfxPadToggleBtn')?.classList.toggle('active-yellow', nextOpen);
+    sfxEngine.play(nextOpen ? 'pop' : 'click');
+  }
+
   byId('chaosToggleBtn')?.addEventListener('click', cycleChaosLevel);
   byId('beatToggleBtn')?.addEventListener('click', toggleFunkyBeat);
   byId('ambienceToggleBtn')?.addEventListener('click', cycleAmbienceMode);
+  byId('sfxPadToggleBtn')?.addEventListener('click', () => toggleSfxPad());
+  document.querySelectorAll('[data-sfx-pad]').forEach((padBtn) => {
+    padBtn.addEventListener('click', () => {
+      const soundKey = padBtn.dataset.sfxPad;
+      void ensureAudioUnlocked().then(() => {
+        sfxEngine.play(soundKey);
+        bumpCombo(soundKey === 'ultimate' ? 8 : 2);
+        if (soundKey === 'ultimate' || soundKey === 'clash') {
+          flowCanvas.triggerAllOutClash(`${soundKey.toUpperCase()}!!`);
+        }
+      });
+    });
+  });
   byId('zenModeBtn')?.addEventListener('click', () => toggleZenMode());
   byId('exitZenBtn')?.addEventListener('click', () => toggleZenMode(false));
   byId('alertSirenBadge')?.addEventListener('click', () => {
@@ -1069,6 +1156,8 @@
       togglePauseStream();
     } else if (evt.key.toLowerCase() === 'z') {
       toggleZenMode();
+    } else if (evt.key.toLowerCase() === 's') {
+      toggleSfxPad();
     } else if (evt.key.toLowerCase() === 'f') {
       if (appState.activeTab === 'flow') flowCanvas.fitView();
       if (appState.activeTab === 'dag') dagCanvas.fitView();

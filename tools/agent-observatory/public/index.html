@@ -134,6 +134,14 @@
               ⚔️ CLASH!!
             </button>
             <button
+              id="sfxPadToggleBtn"
+              class="comic-btn"
+              type="button"
+              title="Toggle Interactive Cartoon SFX DJ Soundboard (S)"
+            >
+              🎹 PAD
+            </button>
+            <button
               id="zenModeBtn"
               class="comic-btn"
               type="button"
@@ -261,6 +269,21 @@
         </div>
       </aside>
 
+      <!-- INTERACTIVE ARCADE CARTOON SFX DJ SOUNDBOARD (Toggle via PAD / S key) -->
+      <section id="sfxPadDrawer" class="sfx-pad-bar hidden" aria-label="Cartoon SFX DJ Soundboard">
+        <span class="sfx-pad-title">🎹 SFX PAD</span>
+        <button class="sfx-pad-key" data-sfx-pad="slash" type="button">⚔️ SLASH</button>
+        <button class="sfx-pad-key" data-sfx-pad="laser" type="button">⚡ LASER</button>
+        <button class="sfx-pad-key" data-sfx-pad="clash" type="button">💥 CLASH</button>
+        <button class="sfx-pad-key" data-sfx-pad="punch" type="button">👊 PUNCH</button>
+        <button class="sfx-pad-key" data-sfx-pad="dash" type="button">💨 DASH</button>
+        <button class="sfx-pad-key" data-sfx-pad="spawn" type="button">✨ SPAWN</button>
+        <button class="sfx-pad-key" data-sfx-pad="boing" type="button">🌀 BOING</button>
+        <button class="sfx-pad-key" data-sfx-pad="bonk" type="button">🤡 BONK</button>
+        <button class="sfx-pad-key" data-sfx-pad="levelup" type="button">🏆 LVL UP</button>
+        <button class="sfx-pad-key" data-sfx-pad="ultimate" type="button">🔥 ULTIMATE</button>
+      </section>
+
       <!-- TIME-TRAVEL VHS REPLAY SCRUBBER (Floats above bottom dock when paused) -->
       <section id="replayBar" class="vhs-replay-bar hidden" aria-label="VHS Telemetry Replay">
         <span class="mini-tag magenta">📼 VHS REPLAY</span>
@@ -327,6 +350,14 @@
           ⌘K
         </button>
         <button id="refreshBtn" class="comic-btn" type="button" title="Force scan (R)">↻</button>
+        <a
+          class="comic-btn"
+          href="/api/export?format=otel"
+          download="moonwitness-genai-traces.otel.json"
+          title="Export OpenTelemetry GenAI OTLP/JSON traces"
+        >
+          OTEL
+        </a>
         <a
           class="comic-btn"
           href="/api/export?format=markdown"
@@ -449,6 +480,21 @@
             <div class="sub-panel no-pad">
               <div class="sub-panel-head"><h3 class="sub-title">📡 STREET VPS RADAR</h3></div>
               <div id="radarCanvasHost" class="p5-viz-host"></div>
+            </div>
+          </div>
+
+          <div class="grid-two">
+            <div class="sub-panel no-pad">
+              <div class="sub-panel-head">
+                <h3 class="sub-title">🕸️ 6-SIGNAL MAST / AGENTDIET FLEET RADAR</h3>
+              </div>
+              <div id="healthRadarHost" class="p5-viz-host"></div>
+            </div>
+            <div class="sub-panel no-pad">
+              <div class="sub-panel-head">
+                <h3 class="sub-title">🔥 7-DAY × 24H RIOT ACTIVITY HEATMAP</h3>
+              </div>
+              <div id="heatmapCanvasHost" class="p5-viz-host"></div>
             </div>
           </div>
 

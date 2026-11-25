@@ -1764,6 +1764,48 @@
                 -rad * 1.08
               );
             }
+
+            // Arcade Fighting-Game Trajectory Rank Stamp (S/A/B/C/D) + TrajAD Silent-Loop Dizzy Halo
+            const heroHealth = nodeEntry.health;
+            if (heroHealth && heroHealth.rank && nodeEntry.status !== 'idle') {
+              const rankRgb =
+                heroHealth.rank === 'S'
+                  ? YELLOW
+                  : heroHealth.rank === 'A'
+                    ? CYAN
+                    : heroHealth.rank === 'B'
+                      ? LIME
+                      : heroHealth.rank === 'C'
+                        ? ORANGE
+                        : RED;
+              sketch.stroke(INK[0], INK[1], INK[2], 255);
+              sketch.strokeWeight(2);
+              sketch.fill(rankRgb[0], rankRgb[1], rankRgb[2], 255);
+              sketch.rect(rad * 0.36, rad * 0.34, 18, 18, 3);
+              sketch.noStroke();
+              sketch.fill(
+                heroHealth.rank === 'D' ? PAPER[0] : INK[0],
+                heroHealth.rank === 'D' ? PAPER[1] : INK[1],
+                heroHealth.rank === 'D' ? PAPER[2] : INK[2]
+              );
+              sketch.textFont('Anton, Impact, sans-serif');
+              sketch.textSize(12);
+              sketch.textAlign(sketch.CENTER, sketch.CENTER);
+              sketch.text(heroHealth.rank, rad * 0.36 + 9, rad * 0.34 + 9);
+            }
+            if (heroHealth?.silentLoop) {
+              // Spinning anime dizzy spiral overhead for TrajAD Silent-Loop detection!
+              sketch.push();
+              sketch.translate(0, -rad - 18);
+              sketch.rotate(timeSec * 6.5);
+              sketch.noFill();
+              sketch.stroke(ORANGE[0], ORANGE[1], ORANGE[2], 250);
+              sketch.strokeWeight(2.5);
+              sketch.arc(0, 0, 26, 12, 0, Math.PI * 1.5);
+              sketch.stroke(RED[0], RED[1], RED[2], 250);
+              sketch.arc(0, 0, 14, 7, Math.PI * 0.5, Math.PI * 2);
+              sketch.pop();
+            }
           } else if (nodeEntry.kind === 'runtime') {
             // Street-punk tilted relay / Magpie hyper-turret diamond
             sketch.noStroke();

@@ -1893,6 +1893,143 @@ a {
   font-size: 12px;
 }
 
+/* Interactive Arcade SFX DJ Soundboard */
+.sfx-pad-bar {
+  position: absolute;
+  left: 14px;
+  bottom: 66px;
+  z-index: 25;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  padding: 6px 10px;
+  background: rgba(14, 14, 18, 0.96);
+  border: 3px solid var(--ink);
+  box-shadow:
+    5px 5px 0 var(--magenta),
+    8px 8px 0 var(--ink);
+}
+
+.sfx-pad-title {
+  font-family: var(--font-poster);
+  font-size: 12px;
+  color: var(--yellow);
+  letter-spacing: 0.06em;
+  margin-right: 4px;
+}
+
+.sfx-pad-key {
+  border: 2px solid var(--ink);
+  box-shadow: 2px 2px 0 var(--ink);
+  background: var(--charcoal);
+  color: var(--paper);
+  font-family: var(--font-poster);
+  font-size: 11px;
+  padding: 3px 8px;
+  cursor: pointer;
+}
+
+.sfx-pad-key:hover {
+  background: var(--yellow);
+  color: var(--ink);
+  transform: translateY(-2px);
+}
+
+/* Fighting-Game Trajectory Health Rank Badges */
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  padding: 1px 6px;
+  font-family: var(--font-poster);
+  font-size: 12px;
+  border: 2px solid var(--ink);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+.rank-S {
+  background: var(--yellow);
+  color: var(--ink);
+}
+.rank-A {
+  background: var(--cyan);
+  color: var(--ink);
+}
+.rank-B {
+  background: var(--lime);
+  color: var(--ink);
+}
+.rank-C {
+  background: var(--orange);
+  color: var(--ink);
+}
+.rank-D {
+  background: var(--red);
+  color: var(--paper);
+}
+
+/* OpenTelemetry GenAI Trace Span Waterfall */
+.otel-waterfall {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  background: var(--night);
+  border: 2px solid var(--ink);
+}
+
+.otel-span-row {
+  display: grid;
+  grid-template-columns: 165px 1fr 56px;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+}
+
+.otel-span-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--paper);
+}
+
+.otel-track {
+  position: relative;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--ink);
+}
+
+.otel-bar {
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  min-width: 5px;
+  background: var(--cyan);
+}
+
+.otel-bar.kind-focus {
+  background: var(--yellow);
+}
+.otel-bar.kind-error {
+  background: var(--red);
+}
+.otel-bar.kind-subagent {
+  background: var(--violet);
+}
+.otel-bar.kind-root {
+  background: var(--magenta);
+}
+
+.otel-dur {
+  text-align: right;
+  color: var(--muted);
+  font-size: 10px;
+}
+
 .brand-sub {
   font-family: var(--font-mono);
   font-size: 11px;

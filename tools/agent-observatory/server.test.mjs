@@ -5,6 +5,7 @@ import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import test from 'node:test';
 import {
+  analyzeTrajectoryHealth,
   buildFlowGraph,
   buildPlanDag,
   collectMagpieTelemetry,
@@ -15,6 +16,7 @@ import {
   detectOperationalAlerts,
   extractTaskDependencies,
   formatSnapshotMarkdown,
+  formatSnapshotOtel,
   redactSecrets,
   validateProbeUrl,
 } from './server.mjs';
@@ -188,7 +190,7 @@ test('Observatory HTTP server serves static p5 bundle, state, export, SSRF-guard
     assert.equal(healthResp.status, 200);
     const healthJson = await healthResp.json();
     assert.equal(healthJson.ok, true);
-    assert.equal(healthJson.version, 4);
+    assert.equal(healthJson.version, 5);
     assert.equal(healthJson.p5Vendored, true);
 
     const p5Resp = await fetch(`${baseUrl}/vendor/p5.min.js`);
@@ -224,14 +226,20 @@ test('Observatory HTTP server serves static p5 bundle, state, export, SSRF-guard
     const stateResp = await fetch(`${baseUrl}/api/state`);
     assert.equal(stateResp.status, 200);
     const snapshot = await stateResp.json();
-    assert.equal(snapshot.version, 4);
+    assert.equal(snapshot.version, 5);
     assert.ok(Array.isArray(snapshot.plans));
     assert.ok(snapshot.flowGraph && Array.isArray(snapshot.flowGraph.nodes));
     assert.ok(snapshot.analytics && Array.isArray(snapshot.analytics.activityBuckets));
+    assert.ok(snapshot.analytics.fleetHealth && snapshot.analytics.heatmap);
     assert.ok(snapshot.magpie && typeof snapshot.magpie.totalRecentCalls === 'number');
     assert.ok(snapshot.battle && typeof snapshot.battle.bossHpPct === 'number');
     assert.ok(Array.isArray(snapshot.alerts));
     assert.ok(Array.isArray(snapshot.telemetryHistory) && snapshot.telemetryHistory.length >= 1);
+
+    const otelResp = await fetch(`${baseUrl}/api/export?format=otel`);
+    assert.equal(otelResp.status, 200);
+    const otelJson = await otelResp.json();
+    assert.ok(Array.isArray(otelJson.resourceSpans) && otelJson.resourceSpans.length === 1);
 
     // Ensure both real repository plans parsed tasks (including D01-D16 heading format!)
     const mergePlan = snapshot.plans.find(
@@ -357,6 +365,20 @@ test('collectOpenCodeSessions reads SQLite v2 sessions, links children, and reda
     sqliteDb.prepare(`INSERT INTO session_part VALUES (?, ?, ?, ?)`).run(
       'ses_parent_001',
       'tool',
+      nowMs - 1400,
+      JSON.stringify({
+        type: 'tool',
+        name: 'edit',
+        state: {
+          status: 'error',
+          error: { name: 'PatchError', message: 'target block not found' },
+        },
+      })
+    );
+
+    sqliteDb.prepare(`INSERT INTO session_part VALUES (?, ?, ?, ?)`).run(
+      'ses_parent_001',
+      'tool',
       nowMs - 1200,
       JSON.stringify({
         type: 'tool',
@@ -383,6 +405,8 @@ test('collectOpenCodeSessions reads SQLite v2 sessions, links children, and reda
     assert.equal(parent.steps, 2);
     assert.equal(parent.subagents.length, 1);
     assert.equal(parent.subagents[0].id, 'ses_child_002');
+    assert.equal(parent.lastError, 'target block not found');
+    assert.equal(parent.lastError.includes('[object Object]'), false);
     assert.equal(parent.focus.includes('super-secret-tok-999'), false);
     assert.match(parent.focus, /Bearer \[REDACTED\]/);
   } finally {
@@ -634,4 +658,94 @@ test('collectOpenCodeSessions cache refreshes stale running status to idle as ti
   } finally {
     await rm(tmpHome, { recursive: true, force: true });
   }
+});
+
+test('analyzeTrajectoryHealth computes 6-signal rank, TrajAD silent loops, and AgentDiet waste', () => {
+  const nowIso = new Date().toISOString();
+  const cleanSession = {
+    id: 'clean-1',
+    runtime: 'opencode',
+    status: 'running',
+    steps: 24,
+    errorCount: 0,
+    lastError: '',
+    tokens: { input: 10000, cached: 40000, output: 3000, total: 13000 },
+    recentEvents: [
+      { at: nowIso, kind: 'tool', tool: 'read', summary: 'read: server.mjs' },
+      { at: nowIso, kind: 'tool', tool: 'edit', summary: 'edit: server.mjs' },
+      { at: nowIso, kind: 'tool', tool: 'bash', summary: 'bash: node --test' },
+    ],
+  };
+  const cleanHealth = analyzeTrajectoryHealth(cleanSession);
+  assert.equal(cleanHealth.rank, 'S');
+  assert.equal(cleanHealth.silentLoop, false);
+  assert.equal(cleanHealth.mastClass, 'HEALTHY');
+  assert.ok(cleanHealth.score >= 90);
+
+  const loopSession = {
+    id: 'loop-1',
+    runtime: 'claude',
+    status: 'running',
+    steps: 12,
+    errorCount: 0,
+    lastError: '',
+    tokens: { input: 600000, cached: 50000, output: 2000, total: 602000 },
+    recentEvents: [
+      { at: nowIso, kind: 'tool', tool: 'bash', summary: 'bash: bun test' },
+      { at: nowIso, kind: 'tool', tool: 'bash', summary: 'bash: bun test' },
+      { at: nowIso, kind: 'tool', tool: 'bash', summary: 'bash: bun test' },
+      { at: nowIso, kind: 'tool', tool: 'bash', summary: 'bash: bun test' },
+    ],
+  };
+  const loopHealth = analyzeTrajectoryHealth(loopSession);
+  assert.equal(loopHealth.silentLoop, true);
+  assert.equal(loopHealth.maxRepeatStreak, 4);
+  assert.equal(loopHealth.mastClass, 'SILENT-LOOP');
+  assert.ok(loopHealth.dietWastePct >= 40);
+  assert.ok(loopHealth.score < 70);
+});
+
+test('formatSnapshotOtel emits OpenTelemetry GenAI OTLP/JSON spans with gen_ai.* attributes', () => {
+  const nowIso = new Date().toISOString();
+  const sampleSnapshot = {
+    version: 5,
+    generatedAt: nowIso,
+    host: { hostname: 'test-rig' },
+    sessions: [
+      {
+        id: 'oc-otel-1',
+        runtime: 'opencode',
+        runtimeLabel: 'OpenCode',
+        title: 'OTel export check',
+        status: 'running',
+        model: 'magpie/claude-opus',
+        tokens: { input: 5000, cached: 12000, output: 1200, total: 6200 },
+        health: { rank: 'S', score: 94, mastClass: 'HEALTHY', dietWastePct: 0 },
+        mtimeMs: Date.now(),
+        recentEvents: [
+          { at: nowIso, kind: 'focus', tool: 'reasoning', summary: 'Plan OTel schema' },
+          { at: nowIso, kind: 'tool', tool: 'edit', summary: 'edit: server.mjs' },
+        ],
+      },
+    ],
+  };
+
+  const otelDoc = formatSnapshotOtel(sampleSnapshot);
+  assert.equal(otelDoc.resourceSpans.length, 1);
+  const spans = otelDoc.resourceSpans[0].scopeSpans[0].spans;
+  assert.equal(spans.length, 3);
+  const rootSpan = spans[0];
+  assert.equal(rootSpan.name, 'invoke_agent OpenCode');
+  assert.ok(
+    rootSpan.attributes.some(
+      (entry) => entry.key === 'gen_ai.operation.name' && entry.value.stringValue === 'invoke_agent'
+    )
+  );
+  assert.ok(
+    rootSpan.attributes.some(
+      (entry) => entry.key === 'gen_ai.usage.input_tokens' && entry.value.intValue === '5000'
+    )
+  );
+  assert.equal(spans[1].parentSpanId, rootSpan.spanId);
+  assert.equal(spans[2].parentSpanId, rootSpan.spanId);
 });

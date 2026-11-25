@@ -17,7 +17,7 @@
   const RED = [255, 59, 92];
   const MUTED = [168, 162, 152];
 
-  function createTelemetryViz(oscHost, specHost, radarHost) {
+  function createTelemetryViz(oscHost, specHost, radarHost, healthHost, heatmapHost) {
     if (typeof p5 === 'undefined') {
       return {
         setSnapshot() {},
@@ -435,6 +435,281 @@
       }, radarHost);
       sketches.push(radarSketch);
       bindResize(radarHost, radarSketch);
+    }
+
+    // 4. 6-SIGNAL FLEET HEALTH HEXAGON SPIDER RADAR (arXiv:2606.01365 + MAST + AgentDiet)
+    if (healthHost) {
+      const healthSketch = new p5((sketch) => {
+        sketch.setup = () => {
+          const canvas = sketch.createCanvas(Math.max(260, healthHost.clientWidth || 420), 270);
+          canvas.parent(healthHost);
+          sketch.pixelDensity(Math.min(2, window.devicePixelRatio || 1));
+          sketch.textFont('JetBrains Mono, Consolas, monospace');
+          sketch.noLoop();
+        };
+
+        sketch.draw = () => {
+          if (!isVisible) return;
+          const w = sketch.width;
+          const h = sketch.height;
+          drawComicGridBg(sketch, w, h);
+
+          const fh = latestSnapshot?.analytics?.fleetHealth;
+          if (!fh) {
+            sketch.noStroke();
+            sketch.fill(MUTED[0], MUTED[1], MUTED[2]);
+            sketch.textAlign(sketch.CENTER, sketch.CENTER);
+            sketch.text('Computing 6-signal fleet health…', w / 2, h / 2);
+            return;
+          }
+
+          const axes = [
+            { key: 'toolReliability', label: 'TOOL' },
+            { key: 'loopFreedom', label: 'NO-LOOP' },
+            { key: 'recovery', label: 'RECOVER' },
+            { key: 'cacheEfficiency', label: 'CACHE' },
+            { key: 'dietScore', label: 'DIET' },
+            { key: 'budgetHealth', label: 'BUDGET' },
+          ];
+          const cx = w * 0.42;
+          const cy = h * 0.54;
+          const maxR = Math.min(w * 0.3, h * 0.35);
+
+          // Hexagonal concentric grid
+          for (let ring = 1; ring <= 4; ring += 1) {
+            const r = (maxR * ring) / 4;
+            sketch.noFill();
+            sketch.stroke(PAPER[0], PAPER[1], PAPER[2], ring === 4 ? 115 : 34);
+            sketch.strokeWeight(ring === 4 ? 1.8 : 1);
+            sketch.beginShape();
+            for (let idx = 0; idx < 6; idx += 1) {
+              const ang = (idx * Math.PI) / 3 - Math.PI / 2;
+              sketch.vertex(cx + Math.cos(ang) * r, cy + Math.sin(ang) * r);
+            }
+            sketch.endShape(sketch.CLOSE);
+          }
+
+          // Axis spokes + labels
+          for (let idx = 0; idx < 6; idx += 1) {
+            const ang = (idx * Math.PI) / 3 - Math.PI / 2;
+            const ex = cx + Math.cos(ang) * maxR;
+            const ey = cy + Math.sin(ang) * maxR;
+            sketch.stroke(PAPER[0], PAPER[1], PAPER[2], 45);
+            sketch.strokeWeight(1);
+            sketch.line(cx, cy, ex, ey);
+
+            const lx = cx + Math.cos(ang) * (maxR + 18);
+            const ly = cy + Math.sin(ang) * (maxR + 16);
+            sketch.noStroke();
+            sketch.fill(YELLOW[0], YELLOW[1], YELLOW[2]);
+            sketch.textSize(9);
+            sketch.textAlign(sketch.CENTER, sketch.CENTER);
+            sketch.text(`${axes[idx].label} ${fh.signals?.[axes[idx].key] ?? 0}`, lx, ly);
+          }
+
+          // Spider Polygon Fill + Comic Ink Border
+          sketch.stroke(INK[0], INK[1], INK[2], 240);
+          sketch.strokeWeight(4.5);
+          sketch.fill(CYAN[0], CYAN[1], CYAN[2], 78);
+          sketch.beginShape();
+          for (let idx = 0; idx < 6; idx += 1) {
+            const ang = (idx * Math.PI) / 3 - Math.PI / 2;
+            const val = Math.max(8, Math.min(100, fh.signals?.[axes[idx].key] ?? 80)) / 100;
+            sketch.vertex(cx + Math.cos(ang) * maxR * val, cy + Math.sin(ang) * maxR * val);
+          }
+          sketch.endShape(sketch.CLOSE);
+
+          sketch.noFill();
+          sketch.stroke(CYAN[0], CYAN[1], CYAN[2], 250);
+          sketch.strokeWeight(2.4);
+          sketch.beginShape();
+          for (let idx = 0; idx < 6; idx += 1) {
+            const ang = (idx * Math.PI) / 3 - Math.PI / 2;
+            const val = Math.max(8, Math.min(100, fh.signals?.[axes[idx].key] ?? 80)) / 100;
+            sketch.vertex(cx + Math.cos(ang) * maxR * val, cy + Math.sin(ang) * maxR * val);
+          }
+          sketch.endShape(sketch.CLOSE);
+
+          // Right-hand Arcade Rank Stamp Card
+          const cardX = w * 0.72;
+          const rankColor =
+            fh.rank === 'S'
+              ? YELLOW
+              : fh.rank === 'A'
+                ? CYAN
+                : fh.rank === 'B'
+                  ? LIME
+                  : fh.rank === 'C'
+                    ? ORANGE
+                    : RED;
+          sketch.noStroke();
+          sketch.fill(INK[0], INK[1], INK[2]);
+          sketch.rect(cardX + 4, 34 + 4, w - cardX - 20, 198, 4);
+          sketch.fill(CHARCOAL[0], CHARCOAL[1], CHARCOAL[2]);
+          sketch.stroke(rankColor[0], rankColor[1], rankColor[2]);
+          sketch.strokeWeight(2.6);
+          sketch.rect(cardX, 34, w - cardX - 20, 198, 4);
+
+          const midCardX = cardX + (w - cardX - 20) / 2;
+          sketch.noStroke();
+          sketch.textAlign(sketch.CENTER, sketch.CENTER);
+          sketch.fill(MUTED[0], MUTED[1], MUTED[2]);
+          sketch.textSize(9.5);
+          sketch.text('FLEET RANK', midCardX, 52);
+
+          sketch.textFont('Anton, Impact, sans-serif');
+          sketch.textSize(52);
+          sketch.fill(INK[0], INK[1], INK[2]);
+          sketch.text(fh.rank, midCardX + 3, 99);
+          sketch.fill(rankColor[0], rankColor[1], rankColor[2]);
+          sketch.text(fh.rank, midCardX, 96);
+
+          sketch.textFont('JetBrains Mono, Consolas, monospace');
+          sketch.textSize(10);
+          sketch.fill(PAPER[0], PAPER[1], PAPER[2]);
+          sketch.text(`SCORE ${fh.score}/100`, midCardX, 138);
+          sketch.fill(
+            fh.silentLoopCount > 0 ? RED[0] : GREEN[0],
+            fh.silentLoopCount > 0 ? RED[1] : GREEN[1],
+            fh.silentLoopCount > 0 ? RED[2] : GREEN[2]
+          );
+          sketch.text(`LOOPS: ${fh.silentLoopCount}`, midCardX, 158);
+          sketch.fill(ORANGE[0], ORANGE[1], ORANGE[2]);
+          sketch.text(`DIET WASTE: ~${fh.avgDietWastePct}%`, midCardX, 178);
+          sketch.fill(MUTED[0], MUTED[1], MUTED[2]);
+          sketch.textSize(8.5);
+          const rc = fh.rankCounts || {};
+          sketch.text(
+            `S:${rc.S || 0} A:${rc.A || 0} B:${rc.B || 0} C:${rc.C || 0} D:${rc.D || 0}`,
+            midCardX,
+            206
+          );
+        };
+      }, healthHost);
+      sketches.push(healthSketch);
+      bindResize(healthHost, healthSketch);
+    }
+
+    // 5. 7-DAY x 24H GITHUB-STYLE COMIC ACTIVITY HEATMAP (Pixel Agent Desk style)
+    if (heatmapHost) {
+      const heatSketch = new p5((sketch) => {
+        sketch.setup = () => {
+          const canvas = sketch.createCanvas(Math.max(260, heatmapHost.clientWidth || 420), 270);
+          canvas.parent(heatmapHost);
+          sketch.pixelDensity(Math.min(2, window.devicePixelRatio || 1));
+          sketch.textFont('JetBrains Mono, Consolas, monospace');
+          sketch.noLoop();
+        };
+
+        sketch.draw = () => {
+          if (!isVisible) return;
+          const w = sketch.width;
+          const h = sketch.height;
+          drawComicGridBg(sketch, w, h);
+
+          const hm = latestSnapshot?.analytics?.heatmap;
+          if (!hm || !hm.cells?.length) {
+            sketch.noStroke();
+            sketch.fill(MUTED[0], MUTED[1], MUTED[2]);
+            sketch.textAlign(sketch.CENTER, sketch.CENTER);
+            sketch.text('Collecting 7-day heatmap…', w / 2, h / 2);
+            return;
+          }
+
+          const padL = 42;
+          const padR = 16;
+          const padT = 36;
+          const padB = 34;
+          const cols = 7;
+          const rows = 6;
+          const gap = 5;
+          const cellW = Math.max(18, (w - padL - padR - gap * (cols - 1)) / cols);
+          const cellH = Math.max(16, (h - padT - padB - gap * (rows - 1)) / rows);
+
+          // Slot labels (Y axis)
+          sketch.noStroke();
+          sketch.fill(MUTED[0], MUTED[1], MUTED[2]);
+          sketch.textSize(9);
+          sketch.textAlign(sketch.RIGHT, sketch.CENTER);
+          for (let rIdx = 0; rIdx < rows; rIdx += 1) {
+            sketch.text(hm.slots[rIdx] || '', padL - 7, padT + rIdx * (cellH + gap) + cellH / 2);
+          }
+
+          // Day labels (X axis)
+          sketch.textAlign(sketch.CENTER, sketch.TOP);
+          for (let cIdx = 0; cIdx < cols; cIdx += 1) {
+            sketch.text(
+              hm.days[cIdx]?.label || '',
+              padL + cIdx * (cellW + gap) + cellW / 2,
+              padT + rows * (cellH + gap) + 5
+            );
+          }
+
+          let hoveredCell = null;
+          for (const cell of hm.cells) {
+            const cx = padL + cell.dayIdx * (cellW + gap);
+            const cy = padT + cell.slotIdx * (cellH + gap);
+            const isHot =
+              sketch.mouseX >= cx &&
+              sketch.mouseX <= cx + cellW &&
+              sketch.mouseY >= cy &&
+              sketch.mouseY <= cy + cellH;
+            if (isHot) hoveredCell = cell;
+
+            const ratio = cell.hits / Math.max(1, hm.maxHits || 1);
+            const tileRgb =
+              cell.hits === 0
+                ? CHARCOAL
+                : ratio < 0.25
+                  ? [16, 78, 108]
+                  : ratio < 0.5
+                    ? CYAN
+                    : ratio < 0.78
+                      ? YELLOW
+                      : MAGENTA;
+
+            sketch.stroke(
+              isHot ? PAPER[0] : INK[0],
+              isHot ? PAPER[1] : INK[1],
+              isHot ? PAPER[2] : INK[2]
+            );
+            sketch.strokeWeight(isHot ? 2.4 : 1.8);
+            sketch.fill(tileRgb[0], tileRgb[1], tileRgb[2], cell.hits === 0 ? 185 : 245);
+            sketch.rect(cx, cy, cellW, cellH, 3);
+
+            if (cell.hits > 0 && cellW > 26) {
+              sketch.noStroke();
+              sketch.fill(
+                ratio >= 0.5 && ratio < 0.78 ? INK[0] : PAPER[0],
+                ratio >= 0.5 && ratio < 0.78 ? INK[1] : PAPER[1],
+                ratio >= 0.5 && ratio < 0.78 ? INK[2] : PAPER[2]
+              );
+              sketch.textAlign(sketch.CENTER, sketch.CENTER);
+              sketch.textSize(9.5);
+              sketch.text(String(cell.hits), cx + cellW / 2, cy + cellH / 2);
+            }
+          }
+
+          // Top status bar
+          sketch.noStroke();
+          sketch.textAlign(sketch.LEFT, sketch.CENTER);
+          sketch.textSize(9.5);
+          if (hoveredCell) {
+            sketch.fill(YELLOW[0], YELLOW[1], YELLOW[2]);
+            const fmtNum = window.MWObservatory.utils?.fmtNum || ((val) => String(val));
+            sketch.text(
+              `${hoveredCell.dayLabel} ${hoveredCell.slotLabel}: ${hoveredCell.hits} activity · ${fmtNum(hoveredCell.tokens)} tok`,
+              padL,
+              16
+            );
+          } else {
+            sketch.fill(PAPER[0], PAPER[1], PAPER[2]);
+            sketch.text('7-DAY x 4H RIOT HEATMAP · Hover tiles to inspect', padL, 16);
+          }
+        };
+      }, heatmapHost);
+      sketches.push(heatSketch);
+      bindResize(heatmapHost, heatSketch);
     }
 
     return {
