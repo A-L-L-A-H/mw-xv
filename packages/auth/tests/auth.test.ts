@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import knex, { type Knex } from 'knex';
 import { installAddons } from '@moonwitness/orm';
-import { manifest as base, initializeSuperadminPassword } from '@moonwitness/orm-base';
+import { manifest as base, ConfigParameter, initializeSuperadminPassword } from '@moonwitness/orm-base';
 import { AuthError, RefreshToken, createAuthService, manifest } from '../src/index.js';
 
 const PASSWORD = 'correct-horse-battery';
@@ -112,6 +112,48 @@ describe('auth service', () => {
   it('rejects archived users', async () => {
     await db('users').where({ login: 'superadmin' }).update({ active: false });
     await expect(auth.login('superadmin', PASSWORD)).rejects.toBeInstanceOf(AuthError);
+  }, 20000);
+
+  it('claims the seeded superadmin once and completes setup atomically', async () => {
+    await db('users').where({ login: 'superadmin' }).update({ password: null });
+    await ConfigParameter.query().insert({
+      key: 'instance.setup_completed',
+      value: 'false',
+      value_type: 'boolean',
+      company_id: null,
+    });
+
+    const session = await auth.claimSuperadminSetup({
+      login: 'owner',
+      password: 'owner-password-123',
+      name: 'Instance Owner',
+      email: 'owner@example.com',
+    });
+
+    expect(session).toMatchObject({ login: 'owner', role: 'superadmin' });
+    await expect(auth.login('superadmin', PASSWORD)).rejects.toBeInstanceOf(AuthError);
+    await expect(auth.login('owner', 'owner-password-123')).resolves.toMatchObject({
+      userId: session.userId,
+    });
+    await expect(
+      ConfigParameter.query().findOne({ key: 'instance.setup_completed', company_id: null })
+    ).resolves.toMatchObject({ value: 'true', value_type: 'boolean' });
+    await expect(
+      auth.claimSuperadminSetup({ login: 'other-owner', password: 'other-password-123' })
+    ).rejects.toThrow('already complete');
+  }, 20000);
+
+  it('allows only one concurrent setup claim', async () => {
+    await db('users').where({ login: 'superadmin' }).update({ password: null });
+    const results = await Promise.allSettled([
+      auth.claimSuperadminSetup({ login: 'first-owner', password: 'first-password-123' }),
+      auth.claimSuperadminSetup({ login: 'second-owner', password: 'second-password-123' }),
+    ]);
+
+    expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1);
+    expect(results.filter((result) => result.status === 'rejected')).toHaveLength(1);
+    const users = await db('users').whereIn('login', ['first-owner', 'second-owner']);
+    expect(users).toHaveLength(1);
   }, 20000);
 
   it('rotates refresh tokens and revokes the family when an old token is reused', async () => {

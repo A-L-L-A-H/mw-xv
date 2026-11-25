@@ -10,6 +10,7 @@ export {
   type RegisterInput,
   type RequestMeta,
   type Role,
+  type SetupClaimInput,
 } from './service.js';
 export {
   ServiceTokenAuthority,
