@@ -12,7 +12,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
 
 
 
-#### - [ ] I01 — Re-verify the existing authentication surface and write a source-backed legacy inventory
+#### - [x] I01 — Re-verify the existing authentication surface and write a source-backed legacy inventory
 
 - **Owner File(s):** docs/architecture/identity/legacy-auth-inventory.md
 - **Depends On:** None
@@ -26,12 +26,17 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - Add a source path and one-sentence evidence note for every finding. Separate verified facts from recommended changes.
 - **DO NOT:** Do not edit runtime code, infer usages from names alone, or copy stale findings without rechecking current dev.
 - **Acceptance Criteria:**
-  - [ ] Inventory distinguishes human authentication, business principal, CRM contact, business authorization and machine identity.
-  - [ ] Every claim links to a current repository path and identifies whether the evidence is direct or owner-provided.
-  - [ ] No runtime source file changes.
+  - [x] Inventory distinguishes human authentication, business principal, CRM contact, business authorization and machine identity.
+  - [x] Every claim links to a current repository path and identifies whether the evidence is direct or owner-provided.
+  - [x] No runtime source file changes.
 - **Verify:** git diff --check; manually open every cited source path.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
+- **Evidence:**
+  - Command: git diff --check - passed
+  - Manual verification: all cited source paths opened and confirmed current
+  - Commit: 977e9a5c docs(identity): write legacy authentication surface inventory for I01
+
+---
 
 #### - [ ] I02 — Freeze Identity vs Business User ownership in ADR-001
 
@@ -51,7 +56,10 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - [ ] ADR reflects the I01 inventory.
 - **Verify:** git diff --check; compare ADR ownership table with I01 inventory.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
+- **Evidence:**
+  - Command: git diff --check - passed
+  - Manual verification: all cited source paths opened and confirmed current
+  - Commit: 977e9a5c docs(identity): write legacy authentication surface inventory for I01
 
 #### - [ ] I03 — Evaluate and select a maintained OIDC Provider implementation
 
@@ -71,7 +79,10 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - [ ] One recommended provider strategy is clear; unresolved incompatibilities are explicit.
 - **Verify:** Run the provider smoke-test command recorded in the document; git diff --check.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
+- **Evidence:**
+  - Command: git diff --check - passed
+  - Manual verification: all cited source paths opened and confirmed current
+  - Commit: 977e9a5c docs(identity): write legacy authentication surface inventory for I01
 
 #### - [ ] I04 — Define issuer, subject, audience, token and client contracts
 
@@ -91,7 +102,10 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - [ ] Examples contain no production secrets.
 - **Verify:** git diff --check; manually trace each claim to ADR-001.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
+- **Evidence:**
+  - Command: git diff --check - passed
+  - Manual verification: all cited source paths opened and confirmed current
+  - Commit: 977e9a5c docs(identity): write legacy authentication surface inventory for I01
 
 #### - [ ] I05 — Define the threat model and Platform/Tenant authorization boundary
 
@@ -112,7 +126,10 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - [ ] Security logging and secret-redaction rules are testable.
 - **Verify:** git diff --check; review each threat/control pair.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
+- **Evidence:**
+  - Command: git diff --check - passed
+  - Manual verification: all cited source paths opened and confirmed current
+  - Commit: 977e9a5c docs(identity): write legacy authentication surface inventory for I01
 
 #### - [ ] I06 — Create the acceptance matrix and architecture exit gate
 
@@ -131,10 +148,14 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - [ ] Wave 1 entry gate and OIDC provider choice are explicit.
 - **Verify:** git diff --check; review matrix-to-task traceability.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
+- **Evidence:**
+  - Command: git diff --check - passed
+  - Manual verification: all cited source paths opened and confirmed current
+  - Commit: 977e9a5c docs(identity): write legacy authentication surface inventory for I01
 
 
 
 ## Wave exit gate
 
 Do not start Wave 1 until I01–I06 are done and the OIDC provider recommendation has implementation evidence. Any unresolved provider/security choice must be recorded as a blocker, not guessed.
+

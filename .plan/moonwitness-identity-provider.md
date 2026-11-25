@@ -73,7 +73,7 @@ Task dependencies are declared inside each playbook. Follow them exactly; the fi
 ## 5. Master micro-task checklist
 
 ### Wave 0 — Architecture contracts
-- [ ] **I01** — Re-verify the existing authentication surface and write a source-backed legacy inventory
+- [x] **I01** — Re-verify the existing authentication surface and write a source-backed legacy inventory
 - [ ] **I02** — Freeze Identity vs Business User ownership in ADR-001
 - [ ] **I03** — Evaluate and select a maintained OIDC Provider implementation
 - [ ] **I04** — Define issuer, subject, audience, token and client contracts
@@ -203,3 +203,4 @@ Task dependencies are declared inside each playbook. Follow them exactly; the fi
 9. Refresh replay, logout, disabled accounts, invalid issuer/audience and cross-tenant access are tested.
 10. All focused build, test, integration and clean-install checks pass.
 11. Legacy credential routes, password storage, seeds and runtime auth package are removed only after proven cutover.
+
