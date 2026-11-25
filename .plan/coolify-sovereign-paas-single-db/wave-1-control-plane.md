@@ -227,7 +227,7 @@
 
 ---
 
-## - [ ] M12 — Add `POST /agent/git/deploy` (Stateless SSRF-Safe Clone + Build + Swap)
+## - [x] M12 — Add `POST /agent/git/deploy` (Stateless SSRF-Safe Clone + Build + Swap)
 
 - **Owner Files (MODIFY):**
   - `apps/control-plane/agent_stateless.go`

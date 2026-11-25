@@ -890,3 +890,103 @@ func (m *PaasManager) handleAgentComposeUp() http.HandlerFunc {
 		})
 	}
 }
+
+func (m *PaasManager) handleAgentGitDeploy() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			writePaasJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
+			return
+		}
+
+		var req GitDeployRequest
+		dec := json.NewDecoder(io.LimitReader(r.Body, 512*1024))
+		if err := dec.Decode(&req); err != nil {
+			writePaasJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid request JSON: " + err.Error()})
+			return
+		}
+
+		if req.TenantID == "" {
+			req.TenantID = strings.TrimSpace(req.Tenant)
+		}
+		if req.TenantID == "" {
+			req.TenantID = "default"
+		}
+
+		if err := ValidateGitDeployRequest(req); err != nil {
+			writePaasJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+			return
+		}
+
+		branch := req.Branch
+		if branch == "" {
+			branch = defaultGitBranch
+		}
+		dockerfileRel := req.DockerfilePath
+		if dockerfileRel == "" {
+			dockerfileRel = defaultDockerfilePath
+		}
+
+		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Minute)
+		defer cancel()
+
+		tmpDir, err := os.MkdirTemp("", "mw-git-*")
+		if err != nil {
+			writePaasJSON(w, http.StatusInternalServerError, map[string]string{"error": fmt.Sprintf("create build workspace: %v", err)})
+			return
+		}
+		defer os.RemoveAll(tmpDir)
+
+		gitBin := env("GIT_BIN", "git")
+		if out, err := m.runner(ctx, gitBin, "clone", "--depth", "1", "--branch", branch, "--", req.GitRepo, tmpDir); err != nil {
+			writePaasJSON(w, http.StatusInternalServerError, map[string]string{
+				"error": RedactPaasText(fmt.Sprintf("git clone failed: %v (%s)", err, strings.TrimSpace(out)), collectEnvSecrets(req.Env)...),
+			})
+			return
+		}
+
+		shortSha := "latest"
+		if shaOut, err := m.runner(ctx, gitBin, "-C", tmpDir, "rev-parse", "--short", "HEAD"); err == nil {
+			candidate := strings.TrimSpace(shaOut)
+			if gitShortShaPattern.MatchString(candidate) {
+				shortSha = strings.ToLower(candidate)
+			}
+		}
+
+		imageTag := fmt.Sprintf("mw-git-%s:%s", req.Slug, shortSha)
+		dockerfileFull := filepath.Join(tmpDir, filepath.FromSlash(dockerfileRel))
+		if out, err := m.runner(ctx, m.dockerBin, "build", "-t", imageTag, "-f", dockerfileFull, tmpDir); err != nil {
+			writePaasJSON(w, http.StatusInternalServerError, map[string]string{
+				"error": RedactPaasText(fmt.Sprintf("docker build failed: %v (%s)", err, strings.TrimSpace(out)), collectEnvSecrets(req.Env)...),
+			})
+			return
+		}
+
+		deployReq := PaasDeployRequest{
+			Slug:     req.Slug,
+			TenantID: req.TenantID,
+			Image:    imageTag,
+			Port:     req.Port,
+			Domain:   req.Domain,
+			Env:      req.Env,
+			GitRepo:  req.GitRepo,
+		}
+		containerName := PaasContainerName(req.Slug)
+		containerID, err := m.deployContainerZeroDowntime(ctx, deployReq, containerName)
+		if err != nil {
+			writePaasJSON(w, http.StatusInternalServerError, map[string]string{
+				"error": RedactPaasText(fmt.Sprintf("container deploy failed: %v", err), collectEnvSecrets(req.Env)...),
+			})
+			return
+		}
+
+		writePaasJSON(w, http.StatusCreated, map[string]any{
+			"ok":            true,
+			"slug":          req.Slug,
+			"image":         imageTag,
+			"branch":        branch,
+			"commitSha":     shortSha,
+			"containerName": containerName,
+			"containerId":   containerID,
+		})
+	}
+}

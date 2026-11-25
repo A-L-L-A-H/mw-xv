@@ -62,7 +62,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 - [x] **M09** — `agent_stateless.go` + `main.go`: `GET /agent/containers` & `POST /agent/containers/run`
 - [x] **M10** — `agent_stateless.go` + `main.go`: `/agent/containers/{slug}/{action}` (single + compose aware)
 - [x] **M11** — `agent_stateless.go` + `main.go`: `POST /agent/compose/up` (path-confined inline config files + strict security validator)
-- [ ] **M12** — `agent_stateless.go` + `main.go`: `POST /agent/git/deploy` (stateless SSRF-safe clone + build + swap)
+- [x] **M12** — `agent_stateless.go` + `main.go`: `POST /agent/git/deploy` (stateless SSRF-safe clone + build + swap)
 - [ ] **M13** — `agent_stateless.go` + `main.go`: `POST /agent/dns/verify` (apex, synthetic `mw-dns-check.<wildcard>`, Cloudflare-proxy detection, strict TLS `/readyz`)
 - [ ] **M14** — `agent_stateless_test.go` + `main_test.go`: full `db == nil` unit test suite & auth matrix tests
 - [ ] **M15** — Verify `go test` + `go vet` + cross-compile Linux `amd64` control-plane binary
@@ -133,7 +133,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 | Wave | Task Range | Completed Tasks | Last Commit SHA | Latest Verification Evidence |
 |---|---|---|---|---|
 | Wave 0 | `M01`–`M03` | `3 / 3` | — | `M03 OK` — frozen-lockfile dry-run exit 0 (zero drift, `bun.lock` unchanged); orm-cloud build exit 0; manifest test pass 10 / fail 0 |
-| Wave 1 | `M04`–`M15` | `8 / 12` | — | `M11 OK` — `go test -C apps/control-plane ./...` PASS (`50.810s`) + `go vet` OK; zero `m.db`; `/agent/compose/up` + `ValidateComposeSpecWithAllowedFiles` + path-confined inline files |
+| Wave 1 | `M04`–`M15` | `9 / 12` | — | `M12 OK` — `go test -C apps/control-plane ./...` PASS (`53.811s`) + `go vet` OK; zero `m.db`; `/agent/git/deploy` SSRF-safe shallow clone + docker build `mw-git-<slug>:<sha>` + zero-downtime swap |
 | Wave 2 | `M16`–`M38` | `0 / 23` | — | — |
 | Wave 3 | `M39`–`M51` | `0 / 13` | — | — |
 | Wave 4 | `M52`–`M55` | `0 / 4` | — | — |
