@@ -28,7 +28,7 @@
 
 ---
 
-## - [ ] T07 — Implement AJV Schema, Spec-Parity & Invariant Path-Matcher Validator (`src/core/validator.ts`)
+## - [x] T07 — Implement AJV Schema, Spec-Parity & Invariant Path-Matcher Validator (`src/core/validator.ts`)
 
 - **Owner File(s):** `packages/plan-taskos/src/core/validator.ts`
   - `packages/plan-taskos/src/core/validator.ts` (CREATE)
