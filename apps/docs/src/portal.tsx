@@ -21,6 +21,12 @@ const MarkdownContent = lazy(() =>
   import('./document-content.js').then((module) => ({ default: module.MarkdownContent }))
 );
 
+const MonitoringDashboard = lazy(() =>
+  import('./pages/monitoring/MonitoringDashboard.js').then((module) => ({
+    default: module.MonitoringDashboard,
+  }))
+);
+
 type GuideItem = {
   title: string;
   kind: string;
@@ -329,7 +335,9 @@ function PortalLayout({ skin, onToggleSkin }: { skin: DocsSkin; onToggleSkin: ()
             <h2>Project</h2>
             <nav aria-label="Project">
               <Link
-                className={location.pathname === '/monitoring' ? 'nav-link nav-link-active' : 'nav-link'}
+                className={
+                  location.pathname === '/monitoring' ? 'nav-link nav-link-active' : 'nav-link'
+                }
                 aria-current={location.pathname === '/monitoring' ? 'page' : undefined}
                 to="/monitoring"
               >
@@ -398,7 +406,15 @@ function PortalLayout({ skin, onToggleSkin }: { skin: DocsSkin; onToggleSkin: ()
             <span>MoonWitness · dokumentasi untuk developer</span>
             <button
               type="button"
-              onClick={() => navigate(monitoringPage ? '/monitoring' : roadmapPage ? '/roadmap' : (selectedPage?.route ?? '/'))}
+              onClick={() =>
+                navigate(
+                  monitoringPage
+                    ? '/monitoring'
+                    : roadmapPage
+                      ? '/roadmap'
+                      : (selectedPage?.route ?? '/')
+                )
+              }
             >
               Kembali ke atas ↑
             </button>
