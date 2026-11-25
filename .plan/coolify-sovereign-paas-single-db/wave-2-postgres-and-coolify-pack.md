@@ -43,7 +43,7 @@
 
 ---
 
-## - [ ] M17 — Create Coolify Template Pack Loader & Classifier (`coolify-template-pack.ts`)
+## - [x] M17 — Create Coolify Template Pack Loader & Classifier (`coolify-template-pack.ts`)
 
 - **Owner File (CREATE):** `packages/orm-cloud/src/coolify-template-pack.ts`
 - **Depends On:** `M16`
