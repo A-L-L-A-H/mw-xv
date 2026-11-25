@@ -74,7 +74,7 @@
       "format": "json",
       "pack": "moon-city",
       "domain": "visual-universe",
-      "status": "review",
+      "status": "approved",
       "license": "ISC",
       "source": "MoonWitness contributors"
     },
@@ -87,7 +87,7 @@
       "height": 1024,
       "pack": "moon-city",
       "domain": "visual-universe",
-      "status": "review",
+      "status": "approved",
       "license": "ISC",
       "source": "MoonWitness contributors"
     },
@@ -100,7 +100,7 @@
       "height": 1024,
       "pack": "moon-city",
       "domain": "visual-universe",
-      "status": "review",
+      "status": "approved",
       "license": "ISC",
       "source": "MoonWitness contributors"
     },
@@ -113,7 +113,7 @@
       "height": 1024,
       "pack": "moon-city",
       "domain": "visual-universe",
-      "status": "review",
+      "status": "approved",
       "license": "ISC",
       "source": "MoonWitness contributors"
     },
@@ -126,7 +126,7 @@
       "height": 1024,
       "pack": "moon-city",
       "domain": "visual-universe",
-      "status": "review",
+      "status": "approved",
       "license": "ISC",
       "source": "MoonWitness contributors"
     },
@@ -2316,7 +2316,8 @@
       "format": "webp",
       "width": 1800,
       "height": 900,
-      "license": "OpenAI Terms of Use (Output owned by user, subject to applicable law)"
+      "license": "OpenAI Terms of Use (Output owned by user, subject to applicable law)",
+      "status": "approved"
     },
     {
       "path": "illustrations/home-hero-mobile.webp",
@@ -2326,7 +2327,8 @@
       "format": "webp",
       "width": 920,
       "height": 1150,
-      "license": "OpenAI Terms of Use (Output owned by user, subject to applicable law)"
+      "license": "OpenAI Terms of Use (Output owned by user, subject to applicable law)",
+      "status": "approved"
     },
     {
       "path": "illustrations/moon-city-orbit.webp",
@@ -4801,7 +4803,8 @@
       "format": "png",
       "width": 1672,
       "height": 941,
-      "license": "OpenAI Terms of Use (Output owned by user, subject to applicable law)"
+      "license": "OpenAI Terms of Use (Output owned by user, subject to applicable law)",
+      "status": "approved"
     },
     {
       "path": "source/artwork/moon-city-cloud-layer.svg",
@@ -5137,7 +5140,7 @@
       "format": "json",
       "pack": "moon-city",
       "domain": "visual-universe",
-      "status": "review",
+      "status": "approved",
       "license": "ISC",
       "source": "MoonWitness contributors"
     },

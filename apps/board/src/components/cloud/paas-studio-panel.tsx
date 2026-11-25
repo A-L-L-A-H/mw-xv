@@ -5,6 +5,7 @@ import { isRecord } from '@moonwitness/types';
 import { Badge } from '@moonwitness/ui/components/badge';
 import { Button } from '@moonwitness/ui/components/button';
 import { EmptyState } from '@moonwitness/ui/components/empty-state';
+import { ErrorState } from '@moonwitness/ui/components/error-state';
 import { Input } from '@moonwitness/ui/components/input';
 import { Label } from '@moonwitness/ui/components/label';
 import { LogConsole, type LogConsoleEntry } from '@moonwitness/ui/components/log-console';
@@ -587,15 +588,13 @@ export function PaasStudioPanel({
             <Skeleton className="h-28" />
           </div>
         ) : stateError ? (
-          <EmptyState
+          <ErrorState
             role="alert"
+            headingLevel={3}
             title="Live PaaS telemetry unavailable"
             description={stateError}
-            action={
-              <Button variant="outline" onClick={() => void refreshState()}>
-                Retry
-              </Button>
-            }
+            retrying={loading}
+            onRetry={() => void refreshState()}
           />
         ) : !desktopModeAvailable ? (
           <div className="flex items-start gap-3 rounded-md border border-dashed p-4 text-sm">
@@ -716,9 +715,17 @@ export function PaasStudioPanel({
           <div className="flex items-center justify-between gap-3 md:col-span-2">
             <div className="text-sm">
               {errorMessage ? (
-                <span role="alert" className="text-destructive">
-                  {errorMessage}
-                </span>
+                <ErrorState
+                  role="alert"
+                  headingLevel={3}
+                  title="Deploy failed"
+                  description={errorMessage}
+                  onRetry={() => {
+                    void handleDeploy(
+                      new Event('submit', { cancelable: true }) as unknown as FormEvent<HTMLFormElement>
+                    );
+                  }}
+                />
               ) : null}
               {!errorMessage && feedback ? <span>{feedback}</span> : null}
             </div>
@@ -744,15 +751,13 @@ export function PaasStudioPanel({
             <Skeleton className="h-40" />
           </div>
         ) : stateError ? (
-          <EmptyState
+          <ErrorState
             role="alert"
+            headingLevel={3}
             title="Deployed apps unavailable"
-            description="The live app inventory failed to load; no previous or fixture apps are shown."
-            action={
-              <Button variant="outline" onClick={() => void refreshState()}>
-                Retry
-              </Button>
-            }
+            description="The live app inventory failed to load."
+            retrying={loading}
+            onRetry={() => void refreshState()}
           />
         ) : !desktopModeAvailable ? (
           <p className="text-sm opacity-75">
@@ -869,20 +874,16 @@ export function PaasStudioPanel({
                   />
                 </>
               ) : (
-                <EmptyState
-                  role={stateError ? 'alert' : undefined}
+                <ErrorState
+                  role="alert"
+                  headingLevel={3}
                   className="p-4 sm:col-span-2"
-                  title={loading ? 'Loading live metrics' : 'Live metrics unavailable'}
+                  title="Live metrics unavailable"
                   description={
                     stateError ?? 'Live node metrics are only shown after a successful read.'
                   }
-                  action={
-                    stateError ? (
-                      <Button variant="outline" size="sm" onClick={() => void refreshState()}>
-                        Retry
-                      </Button>
-                    ) : undefined
-                  }
+                  retrying={loading}
+                  onRetry={() => void refreshState()}
                 />
               )}
               <div className="space-y-1.5 sm:col-span-2">
@@ -1016,12 +1017,13 @@ export function PaasStudioPanel({
             </div>
 
             {backupError ? (
-              <div
+              <ErrorState
                 role="alert"
-                className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-xs text-destructive"
-              >
-                {backupError}
-              </div>
+                headingLevel={3}
+                title="Backup operation failed"
+                description={backupError}
+                onRetry={() => void handleTriggerPostgresBackup()}
+              />
             ) : null}
             {backupFeedback ? (
               <div

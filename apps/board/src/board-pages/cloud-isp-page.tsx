@@ -306,42 +306,32 @@ export function CloudIspPage() {
         <MetricTile
           label="Docker Agent"
           value={
-            cloudHealthQuery.isError
-              ? 'error'
-              : (cloudHealthQuery.data?.controlPlane ?? (cloudHealthQuery.isLoading ? '...' : '—'))
+            cloudHealthQuery.data?.controlPlane ?? (cloudHealthQuery.isLoading ? '...' : '—')
           }
           detail={`Docker: ${cloudHealthQuery.data?.docker ?? 'unknown'}`}
+          error={cloudHealthQuery.isError ? cloudHealthQuery.error?.message : undefined}
         />
         <MetricTile
           label="ISP RADIUS"
-          value={
-            ispHealthQuery.isError
-              ? 'error'
-              : (ispHealthQuery.data?.runtime ?? (ispHealthQuery.isLoading ? '...' : '—'))
-          }
+          value={ispHealthQuery.data?.runtime ?? (ispHealthQuery.isLoading ? '...' : '—')}
           detail="Control API :3002"
+          error={ispHealthQuery.isError ? ispHealthQuery.error?.message : undefined}
         />
         <MetricTile
           label="NAS Devices"
-          value={
-            ispHealthQuery.isError && nasQuery.isError
-              ? '—'
-              : String(ispHealthQuery.data?.nasCount ?? nasQuery.data?.length ?? 0)
-          }
+          value={String(ispHealthQuery.data?.nasCount ?? nasQuery.data?.length ?? 0)}
           detail={ispHealthQuery.isError && nasQuery.isError ? 'Load failed' : 'Active gateways'}
+          error={(ispHealthQuery.isError || nasQuery.isError) ? (ispHealthQuery.error?.message ?? nasQuery.error?.message) : undefined}
         />
         <MetricTile
           label="Live Sessions"
-          value={
-            liveSessionsQuery.isError
-              ? '—'
-              : String(liveSessionsQuery.data?.runtimeSessions.length ?? 0)
-          }
+          value={String(liveSessionsQuery.data?.runtimeSessions.length ?? 0)}
           detail={
             ispHealthQuery.isError && subscribersQuery.isError
               ? 'Load failed'
               : `${ispHealthQuery.data?.subscriberCount ?? subscribersQuery.data?.length ?? 0} subscribers`
           }
+          error={liveSessionsQuery.isError ? liveSessionsQuery.error?.message : undefined}
         />
       </div>
 

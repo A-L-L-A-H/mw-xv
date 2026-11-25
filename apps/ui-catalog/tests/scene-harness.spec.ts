@@ -33,6 +33,22 @@ test('environment depth inspector toggles and reorders planes and reflows on mob
   expect(overflow).toBeLessThanOrEqual(2);
 });
 
+test('Signals and Archive stay catalog-only until product routes and data contracts exist (W9-004)', async ({
+  page,
+}) => {
+  await page.goto('./#scene-environment-inspector');
+  const specimens = page.getByTestId('signals-archive-specimens');
+  await expect(specimens).toBeVisible();
+  await expect(specimens.getByTestId('signals-scene-specimen')).toContainText(
+    'no route or live signal feed'
+  );
+  await expect(specimens.getByTestId('archive-scene-specimen')).toContainText(
+    'no route or archive records'
+  );
+  await expect(specimens.locator('img')).toHaveCount(2);
+  await expect(specimens.locator('a')).toHaveCount(0);
+});
+
 test('scene runtime supports static fallback, timeline controls, keyboard camera, and deterministic URL harness (W5-004..W5-010)', async ({
   page,
 }) => {

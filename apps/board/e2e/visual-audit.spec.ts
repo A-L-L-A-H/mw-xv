@@ -858,9 +858,20 @@ test('homepage spelling, responsive layout, and reference screenshots', async ({
   ] as const;
   await mkdir(auditDirectory, { recursive: true });
 
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await expect(page.locator('[data-scene-id="moon-city-hero"]')).toHaveAttribute(
+    'data-scene-state',
+    'playing'
+  );
+  await expect(
+    page.getByTestId('home-hero-crew').locator('[data-sprite-clip="crew-01-idle"]')
+  ).toHaveAttribute('data-sprite-state', 'playing');
+
   for (const size of homeSizes) {
     await page.setViewportSize({ width: size.width, height: size.height });
-    await page.goto('/');
+    await page.goto('/?sceneFrame=0&sceneTime=0&scenePaused=1');
     const brandLockup = page.locator('.home-lockup');
     await expect(page.getByRole('link', { name: 'MoonWitness home', exact: true })).toBeVisible();
     await expect(brandLockup).toBeVisible();
@@ -895,6 +906,9 @@ test('homepage spelling, responsive layout, and reference screenshots', async ({
       alt: image.getAttribute('alt'),
     }));
     expect(heroImage).toEqual({ loaded: true, alt: '' });
+    await expect(
+      page.getByTestId('home-hero-crew').locator('[data-sprite-clip="crew-01-idle"]')
+    ).toBeVisible();
     await expectNoA11yViolations(page, `homepage/${size.name}`);
     await writeAuditScreenshot(page, testInfo, `home-${size.name}.png`, {
       fullPage: true,
@@ -910,6 +924,19 @@ test('homepage spelling, responsive layout, and reference screenshots', async ({
       });
     }
   }
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/?sceneFrame=0&sceneTime=0&scenePaused=1');
+  const stillHero = page.locator('.home-hero-art-image');
+  await expect.poll(() => stillHero.evaluate((image: HTMLImageElement) => image.complete)).toBe(true);
+  await expect(page.locator('.mw-ui-layered-scene')).toHaveCount(0);
+  await expect(
+    page.getByTestId('home-hero-crew').locator('[data-sprite-clip="crew-01-idle"]')
+  ).toHaveAttribute('data-sprite-state', 'static');
+  await page.locator('.home-editorial-card').first().scrollIntoViewIfNeeded();
+  await expect(page.locator('.home-editorial-card').first()).toBeInViewport();
+  expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
 });
 
 test('story workbench masthead keeps brand copy readable across viewports', async ({

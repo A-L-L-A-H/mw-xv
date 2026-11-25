@@ -59,6 +59,7 @@ export const Subscription = defineModel('subscription.subscription', {
 export const SubscriptionInvoiceLine = defineModel('subscription.invoice_line', {
   table: 'subscription_invoice_lines',
   order: 'sequence asc, name asc',
+  unique: [['subscription_id', 'name']],
   fields: {
     name: fields.string({ required: true }),
     subscription_id: fields.integer({ required: true, label: 'Subscription' }),

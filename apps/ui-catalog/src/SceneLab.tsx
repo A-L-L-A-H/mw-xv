@@ -23,6 +23,8 @@ import fallbackHeroMobile from '@moonwitness/assets/illustrations/home-hero-mobi
 import moonCitySceneBundle from '@moonwitness/assets/scenes/moon-city-scene.json';
 import idleFrame1 from '@moonwitness/assets/animation/crew-01-idle/crew-01-idle-frame-01.svg';
 import idleFrame2 from '@moonwitness/assets/animation/crew-01-idle/crew-01-idle-frame-02.svg';
+import signalSpecimenArt from '@moonwitness/assets/illustrations/editorial-signal.webp';
+import archiveSpecimenArt from '@moonwitness/assets/illustrations/editorial-archive.webp';
 
 const HERO_SCENE = moonCitySceneBundle.scenes.find((entry) => entry.id === 'moon-city-hero')!;
 const SCENE_LAYER_SOURCES = [
@@ -331,6 +333,38 @@ export function SceneLab() {
           </div>
         </div>
       </div>
+      <section
+        className="scene-lab-selected-scenes"
+        aria-label="Signals and Archive catalog specimens"
+        data-testid="signals-archive-specimens"
+      >
+        <header>
+          <span>ROUTE GAP · CATALOG ONLY</span>
+          <h3>Signals &amp; Archive scene directions</h3>
+          <p>
+            Visual concepts for future routes. These specimens contain no production records,
+            metrics, or live data.
+          </p>
+        </header>
+        <div className="scene-lab-selected-scenes-grid">
+          <article data-testid="signals-scene-specimen">
+            <img src={signalSpecimenArt} alt="Abstract editorial signal artwork" loading="lazy" />
+            <div>
+              <span>01 / SIGNALS</span>
+              <h4>Signal in the city</h4>
+              <p>Editorial atmosphere only · no route or live signal feed</p>
+            </div>
+          </article>
+          <article data-testid="archive-scene-specimen">
+            <img src={archiveSpecimenArt} alt="Abstract editorial archive artwork" loading="lazy" />
+            <div>
+              <span>02 / ARCHIVE</span>
+              <h4>Quiet stacks</h4>
+              <p>Editorial atmosphere only · no route or archive records</p>
+            </div>
+          </article>
+        </div>
+      </section>
     </div>
   );
 }

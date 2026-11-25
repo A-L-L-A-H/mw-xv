@@ -1,4 +1,8 @@
+'use client';
+
 import type { ComponentProps, ReactNode } from 'react';
+import { Tooltip, TooltipTrigger, TooltipContent } from './tooltip.js';
+import { WarningIcon } from '../icons/warning.js';
 
 export type MetricTileProps = Omit<ComponentProps<'article'>, 'children' | 'title'> & {
   label: ReactNode;
@@ -10,6 +14,7 @@ export type MetricTileProps = Omit<ComponentProps<'article'>, 'children' | 'titl
   frame?: 'line' | 'torn' | 'scuffed' | 'grunge';
   size?: 'compact' | 'default' | 'hero';
   interactive?: boolean;
+  error?: string;
 };
 
 /** Presentation only: callers own metric meaning, loading, and error states. */
@@ -23,9 +28,24 @@ export function MetricTile({
   frame = 'line',
   size = 'default',
   interactive = false,
+  error,
   className,
   ...props
 }: MetricTileProps) {
+  const hasError = typeof error === 'string' && error.length > 0;
+  const displayValue = hasError ? (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="mw-ui-metric-tile-error-indicator" aria-label="Error">
+          <WarningIcon className="size-4 text-destructive" title={error} />
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>{error}</TooltipContent>
+    </Tooltip>
+  ) : (
+    value
+  );
+
   return (
     <article
       className={['mw-ui-metric-tile', className].filter(Boolean).join(' ')}
@@ -44,7 +64,7 @@ export function MetricTile({
           </span>
         ) : null}
       </div>
-      <strong className="mw-ui-metric-tile-value">{value}</strong>
+      <strong className="mw-ui-metric-tile-value">{displayValue}</strong>
       {detail ? <p className="mw-ui-metric-tile-detail">{detail}</p> : null}
     </article>
   );

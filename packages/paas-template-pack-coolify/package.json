@@ -1,0 +1,16 @@
+{
+  "name": "paas-template-pack-coolify",
+  "version": "1.0.0",
+  "description": "Coolify service templates (docker compose) pack untuk PaaS control plane MoonWitness.",
+  "source": {
+    "repository": "https://github.com/coollabsio/coolify",
+    "path": "templates",
+    "license": "Apache-2.0"
+  },
+  "files": [
+    "service-templates.json",
+    "service-templates-latest.json",
+    "compose/",
+    "test-database-detection.yaml"
+  ]
+}
