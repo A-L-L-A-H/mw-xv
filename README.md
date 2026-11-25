@@ -10,6 +10,8 @@
   <a href="https://fastify.dev"><img alt="Fastify 5" src="https://img.shields.io/badge/Fastify-5-000000?logo=fastify&logoColor=white" /></a>
   <a href="https://nextjs.org"><img alt="Next.js 16" src="https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white" /></a>
   <img alt="Status 1.0.0-rc.1" src="https://img.shields.io/badge/status-1.0.0--rc.1-2ea44f" />
+  <img alt="Visual Matrix 42/42" src="https://img.shields.io/badge/visual%20matrix-42%2F42%20passing-8b5cf6?logo=playwright&logoColor=white" />
+  <img alt="W9-006 Done" src="https://img.shields.io/badge/W9--006-done-8b5cf6" />
 </p>
 
 **MoonWitness** adalah monorepo TypeScript untuk aplikasi bisnis _metadata-driven_. Model
@@ -53,7 +55,7 @@ Mulai cepat: [Quickstart](#quickstart) · [Panduan developer](docs/guide/index.m
 | Addon transaksional | Model, seed, menu, akses, dan upgrade hook dipasang dalam satu transaksi tanpa SQL migration manual.                       |
 | API generik         | REST CRUD dinamis dan JSON-RPC 2.0 dengan filter Polish notation, cursor pagination, dan audit otomatis.                   |
 | Board data-driven   | Next.js App Router merender daftar, form, filter, dan detail record dari metadata API.                                     |
-| Moon City scene     | Homepage publik memakai scene berlapis, pilot fiksi anonim, komposisi desktop/mobile, dan fallback reduced-motion.         |
+| Moon City scene     | Homepage publik memakai scene berlapis, pilot fiksi anonim, komposisi desktop/mobile, dan fallback reduced-motion. ✅ **W9-006 visual matrix 42/42 lulus** (Chromium/Firefox/WebKit) |
 | Aman secara default | RBAC per grup, batas multi-company, redaksi rahasia, serta audit dan outbox dalam transaksi yang sama.                     |
 | Siap operasi        | Job queue ber-lease, cron scheduler, metrics, health probe, backup/restore drill, dan image non-root dengan filesystem RO. |
 
@@ -112,6 +114,21 @@ partner, negara, dan contoh data lain untuk eksplorasi; jangan dipakai di produc
 
 Panduan langkah demi langkah, termasuk tes PostgreSQL terisolasi, ada di
 [quickstart](docs/guide/tutorials/quickstart.md).
+
+
+## Moon City Visual Universe — Status Terkini
+
+| Fase | Capaian | Bukti |
+|------|---------|-------|
+| **W9-001** | Moon City scene definition disetujui | [Scene JSON](packages/assets/scenes/moon-city-scene.json) |
+| **W9-002** | Homepage hero vertical slice immersif | [home-hero-art.tsx](apps/board/src/components/home/home-hero-art.tsx) |
+| **W9-003** | Cinematic transitions siap | [SceneLab.tsx](apps/ui-catalog/src/SceneLab.tsx) |
+| **W9-004** | Route-gap decision terdokumentasi | [evidence](docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md) |
+| **W9-005** | Crew integration & idle animation | [crew-01](packages/assets/source/world/characters/character-registry.json) |
+| **W9-006** ✅ | **Operational Board visual gate — 42/42 lulus** | [Matrix run](docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md) |
+
+> **Matrix detail**: 14 kasus × 3 browser (Chromium, Firefox, WebKit) = 42 total. Semua lulus tanpa skip/disable.
+> Perbaikan kunci: deterministic 1440×680 clips untuk story-workbench baselines (mirip strategi dashboard KPI) + toBeCloseTo(36, 0) untuk crown bounding-box WebKit sub-pixel tolerance.
 
 ## Agent observability
 

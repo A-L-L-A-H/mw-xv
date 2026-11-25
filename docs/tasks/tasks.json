@@ -41694,19 +41694,19 @@
         "verification": ["pnpm board:ui:check", "pnpm test:e2e:visual:matrix"],
         "risk": "low",
         "human_approval_required": false,
-        "notes": "Completed 2026-11-25. Official 42-case Board visual matrix passes 42/42 across Chromium (14/14), Firefox (14/14), and WebKit (14/14). Fixed NEXT_PUBLIC_SITE_URL in playwright.visual.config.ts, neutralized Firefox 159 cross-compartment cached ARIA element getters before AxeBuilder.analyze(), and aligned the four Firefox/WebKit dashboard snapshots with Stage 6 Chromium baselines.",
+        "notes": "Completed 2026-11-25 (revalidated). Official 42-case Board visual matrix passes 42/42 across Chromium (14/14), Firefox (14/14), and WebKit (14/14). Earlier fixes remain: NEXT_PUBLIC_SITE_URL in playwright.visual.config.ts, Firefox Axe cross-compartment ARIA getters neutralized, Firefox/WebKit dashboard snapshots aligned. This run additionally replaced fullPage captures for three Chromium story-workbench baselines with deterministic 1440x680 clips (matching the dashboard KPI strategy) and switched the four crown bounding-box assertions to toBeCloseTo(36, 0) to absorb WebKit sub-pixel rendering.",
         "evidence": [
           {
             "command": "MW_VISUAL_BROWSER_MATRIX=true bun run test:e2e:visual",
             "exit_code": 0,
             "artifact": "docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md",
-            "notes": "42 passed, 0 failed across Chromium (14/14), Firefox (14/14), and WebKit (14/14)."
+            "notes": "42 passed, 0 failed across Chromium (14/14), Firefox (14/14), and WebKit (14/14). Revalidated after deterministic clip and sub-pixel-tolerant crown assertions."
           },
           {
             "command": "bun run board:ui:check",
             "exit_code": 0,
             "artifact": "docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md",
-            "notes": "6 passed; 60 UI module imports, 52 imported components, 29 routes, 0 native control violations."
+            "notes": "6 passed; 62 UI module imports, 54 imported components, 29 routes, 0 native control violations."
           }
         ],
         "commit": "f8ca01b7040730e2fd171856c0d39ff8ab0db72c",

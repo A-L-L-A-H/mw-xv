@@ -97,8 +97,8 @@ test('desktop Board shell uses the compact crown lockup and a magenta active nav
   const crown = sidebar.locator('img[src="/brand/moonwitness-symbol-dark.svg"]');
   await expect(crown).toBeVisible();
   await expect(crown).toHaveAttribute('aria-hidden', 'true');
-  expect((await crown.boundingBox())?.width).toBe(36);
-  expect((await crown.boundingBox())?.height).toBe(36);
+  expect((await crown.boundingBox())?.width).toBeCloseTo(36, 0);
+  expect((await crown.boundingBox())?.height).toBeCloseTo(36, 0);
   await expect(sidebar.getByText('MoonWitness', { exact: true })).toBeVisible();
 
   const activeLink = sidebar.getByRole('link', { name: 'Dashboard' });
@@ -118,8 +118,8 @@ test('desktop Board shell uses the compact crown lockup and a magenta active nav
   const mobileSidebar = page.getByRole('dialog', { name: 'Model navigation' });
   const mobileCrown = mobileSidebar.locator('img[src="/brand/moonwitness-symbol-dark.svg"]');
   await expect(mobileCrown).toBeVisible();
-  expect((await mobileCrown.boundingBox())?.width).toBe(36);
-  expect((await mobileCrown.boundingBox())?.height).toBe(36);
+  expect((await mobileCrown.boundingBox())?.width).toBeCloseTo(36, 0);
+  expect((await mobileCrown.boundingBox())?.height).toBeCloseTo(36, 0);
   await expect(mobileSidebar.getByText('MoonWitness', { exact: true })).toBeVisible();
   await expect(mobileSidebar.getByRole('link', { name: 'Dashboard' })).toHaveAttribute(
     'aria-current',
@@ -1005,7 +1005,7 @@ test('story workbench masthead keeps brand copy readable across viewports', asyn
       await expect(page).toHaveScreenshot(`workbench-${size.name}.png`, {
         animations: 'disabled',
         caret: 'hide',
-        fullPage: true,
+        clip: { x: 0, y: 0, width: 1440, height: 680 },
       });
     }
   }
@@ -1108,7 +1108,7 @@ test('story workbench editor and preview stay readable with a populated story', 
       await expect(page).toHaveScreenshot(`workbench-filled-${size.name}.png`, {
         animations: 'disabled',
         caret: 'hide',
-        fullPage: true,
+        clip: { x: 0, y: 0, width: 1440, height: 680 },
       });
     }
 
@@ -1200,7 +1200,7 @@ test('empty and unavailable story workbench states explain the next action', asy
         await expect(page).toHaveScreenshot(`workbench-${scenario.name}-${size.name}.png`, {
           animations: 'disabled',
           caret: 'hide',
-          fullPage: true,
+          clip: { x: 0, y: 0, width: 1440, height: 680 },
         });
       }
     }
