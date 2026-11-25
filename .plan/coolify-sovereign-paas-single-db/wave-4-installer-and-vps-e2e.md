@@ -158,7 +158,7 @@
 
 ---
 
-### - [ ] M61 — Verify DNS Doctor & Dynamic Custom Domain Switch (`apps.moonwitness.biz.id`)
+### - [x] M61 — Verify DNS Doctor & Dynamic Custom Domain Switch (`apps.moonwitness.biz.id`)
 
 - **Depends On:** `M60`
 - **Acceptance Criteria:**
