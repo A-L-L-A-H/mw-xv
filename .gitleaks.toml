@@ -43,6 +43,18 @@ description = "Pinned third-party vendor snapshots keep their upstream test fixt
 paths = ["^vendor/"]
 
 [[allowlists]]
+description = "PaaS template packs: third-party service templates with placeholder secrets (REDACTED, empty values) are not credentials"
+paths = [
+  "^packages/paas-template-pack-coolify/",
+  "^packages/paas-template-pack-dokploy/",
+  "^packages/paas-template-pack-bigbear/",
+]
+
+[[allowlists]]
+description = "Agent observatory test: curl with REDACTED placeholder in test fixture"
+paths = ["^tools/agent-observatory/server\\.test\\.mjs$"]
+
+[[allowlists]]
 description = "Coolify service templates: dollar-escaped runtime variables and image digests are not credentials"
 regexTarget = "match"
 paths = [

@@ -98,6 +98,13 @@ const reviewedWorkstreamLines = [
   'peer-key-gamma-0123456789abcdef01234567',
   'FREELLMAPI_COMMIT_SHA: cd65d6485788dfc7828f06c1147cdea207b28322',
 ];
+
+// orm-observability test fixtures: synthetic API keys used in telemetry redaction and ingestion tests
+const ormObservabilityLines = [
+  "api_key: 'sk-test-12345678901234567890'",
+  "providerKey: 'sk-proj-12345678901234567890'",
+];
+
 // Coolify templates commit only dollar-escaped runtime variables and a pinned image digest.
 // Each expression is anchored to the exact gitleaks match emitted by 8.30.1; the allowlist
 // block is also restricted by path so a real credential in any other file still scans.
@@ -122,6 +129,7 @@ export const expectedAllowlistExpressions = [
   ...allowedLines.map(({ source }) => source),
   ...historicalFalsePositiveLines,
   ...reviewedWorkstreamLines,
+  ...ormObservabilityLines,
 ];
 
 export function validateGitleaksSetup(workflow, config) {
