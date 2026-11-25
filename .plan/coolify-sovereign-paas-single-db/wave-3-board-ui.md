@@ -66,7 +66,7 @@
 
 ---
 
-## - [ ] M41 — Complete `setup-page.tsx` Step 2 (3 Domain Modes) + Route `apps/board/src/app/setup/page.tsx`
+## - [x] M41 — Complete `setup-page.tsx` Step 2 (3 Domain Modes) + Route `apps/board/src/app/setup/page.tsx`
 
 - **Owner Files:**
   - `apps/board/src/board-pages/setup-page.tsx` (MODIFY — implement Step 2)
