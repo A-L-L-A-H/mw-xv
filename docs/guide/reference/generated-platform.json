@@ -127,6 +127,10 @@
         "fonts:prepare",
         "inventory",
         "qa",
+        "social:contact-sheets",
+        "social:render",
+        "social:thumbnails",
+        "social:validate",
         "sounds:ambience"
       ]
     },
@@ -401,10 +405,28 @@
       "scripts": ["build", "test"]
     },
     {
+      "name": "paas-template-pack-bigbear",
+      "version": "1.0.0",
+      "directory": "packages/paas-template-pack-bigbear",
+      "scripts": []
+    },
+    {
       "name": "paas-template-pack-coolify",
       "version": "1.0.0",
       "directory": "packages/paas-template-pack-coolify",
       "scripts": []
+    },
+    {
+      "name": "paas-template-pack-dokploy",
+      "version": "1.0.0",
+      "directory": "packages/paas-template-pack-dokploy",
+      "scripts": []
+    },
+    {
+      "name": "@moonwitness/plan-taskos",
+      "version": "1.0.0-rc.1",
+      "directory": "packages/plan-taskos",
+      "scripts": ["build", "test", "typecheck"]
     },
     {
       "name": "@moonwitness/research",
@@ -537,6 +559,10 @@
       "fonts:prepare": "node scripts/prepare-fonts.mjs",
       "inventory": "node scripts/asset-inventory.mjs",
       "qa": "node scripts/asset-qa.mjs",
+      "social:contact-sheets": "node scripts/generate-contact-sheets.mjs --social-formats",
+      "social:render": "node scripts/render-social.mjs --format all --theme both",
+      "social:thumbnails": "node scripts/render-youtube-thumbnails.mjs --theme both",
+      "social:validate": "node scripts/validate-social-assets.mjs",
       "sounds:ambience": "node scripts/generate-scene-ambience.mjs"
     },
     "@moonwitness/auth": {
@@ -719,6 +745,11 @@
       "build": "tsc",
       "test": "tsc -p tsconfig.check.json && vitest run"
     },
+    "@moonwitness/plan-taskos": {
+      "build": "tsc -p tsconfig.json",
+      "test": "tsc --noEmit -p tsconfig.check.json && vitest run",
+      "typecheck": "tsc --noEmit -p tsconfig.check.json"
+    },
     "@moonwitness/research": {
       "build": "tsc -p tsconfig.json",
       "test": "tsc -p tsconfig.test.json && vitest run",
@@ -743,11 +774,15 @@
       "architecture:generate": "bun --filter @moonwitness/knowledge build && bun --filter @moonwitness/corpus build && bun --filter @moonwitness/research build && bun --filter @moonwitness/orm build && bun --filter @moonwitness/orm-base build && bun --filter @moonwitness/auth build && bun --filter @moonwitness/jobs build && bun --filter @moonwitness/orm-integration build && bun --filter @moonwitness/orm-workflow build && bun --filter @moonwitness/orm-whatsapp build && bun --filter @moonwitness/orm-knowledge build && bun --filter @moonwitness/orm-notification build && bun --filter @moonwitness/orm-organization build && bun --filter @moonwitness/orm-project build && bun --filter @moonwitness/orm-request build && bun --filter @moonwitness/orm-storage build && node scripts/architecture/generate-diagrams.mjs",
       "assets:check:bounds": "node packages/assets/scripts/check-svg-bounds.mjs",
       "assets:check:docs": "node scripts/export-doc-assets.mjs --check",
+      "assets:contact-sheets:social": "node packages/assets/scripts/generate-contact-sheets.mjs --social-formats",
       "assets:export:docs": "node scripts/export-doc-assets.mjs",
       "assets:generate": "bun --filter @moonwitness/assets brand:prepare && node packages/assets/scripts/generate.mjs && node packages/assets/scripts/generate-illustrations.mjs && node packages/assets/scripts/generate-materials.mjs && node packages/assets/scripts/generate-sounds.mjs && bun --filter @moonwitness/assets sounds:ambience && bun --filter @moonwitness/assets fonts:prepare && bun --filter @moonwitness/assets artwork:prepare && node scripts/export-doc-assets.mjs && node scripts/copy-board-public-assets.mjs",
       "assets:generate:illustrations": "node packages/assets/scripts/generate-illustrations.mjs && node scripts/export-doc-assets.mjs",
       "assets:render": "node packages/assets/scripts/render-social.mjs",
+      "assets:render:social": "node packages/assets/scripts/render-social.mjs --format all --theme both",
+      "assets:render:thumbnails": "node packages/assets/scripts/render-youtube-thumbnails.mjs --theme both",
       "assets:validate": "node packages/assets/scripts/validate.mjs",
+      "assets:validate:social": "node packages/assets/scripts/validate-social-assets.mjs",
       "attachments:reconcile": "bun --filter @moonwitness/api attachments:reconcile",
       "audit:workspace": "node scripts/audit-workspace.mjs",
       "automation:check:action-pins": "node scripts/check-action-pins.mjs",
@@ -769,6 +804,8 @@
       "dependency:plan": "node scripts/dependency-update-plan.mjs",
       "desktop:build": "bun --filter @moonwitness/types build && bun --filter @moonwitness/desktop... build && bun --filter @moonwitness/desktop build:web",
       "desktop:mcp": "node apps/desktop/dist/cli.js mcp",
+      "desktop:observatory": "node apps/desktop/dist/cli.js serve --serve-web --api-port 4242",
+      "desktop:serve": "node apps/desktop/dist/cli.js serve --api-port 4242",
       "desktop:test": "bun --filter @moonwitness/ai-mcp test && bun --filter @moonwitness/desktop test",
       "desktop:ui:check": "node --test scripts/check-desktop-non-overlap.test.mjs && node scripts/check-desktop-non-overlap.mjs",
       "desktop:web": "bun --filter @moonwitness/desktop build:web",
@@ -10536,5 +10573,5 @@
       "path": "/whatsapp/readyz"
     }
   ],
-  "generatedFromSha256": "811ff49f6d923581fbc52f0867d07a1ccd201dcc37fd66242b2d337663756ac1"
+  "generatedFromSha256": "fd4f0974e0ed1549ee16a1a19983f6df0866b43935d826a4b80c0f10ded7ed1b"
 }

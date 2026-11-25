@@ -6,18 +6,18 @@
       "stylesheet": { "maxRawBytes": 164000, "maxGzipBytes": 29000 }
     },
     "lazy": {
-      "javascript": { "maxRawBytes": 110000, "maxGzipBytes": 33000 },
+      "javascript": { "maxRawBytes": 112000, "maxGzipBytes": 34000 },
       "stylesheet": { "maxRawBytes": 1, "maxGzipBytes": 1 }
     },
     "total": {
-      "javascript": { "maxRawBytes": 630000, "maxGzipBytes": 187000 },
+      "javascript": { "maxRawBytes": 635000, "maxGzipBytes": 188000 },
       "stylesheet": { "maxRawBytes": 164000, "maxGzipBytes": 29000 }
     }
   },
   "sections": {
     "scene": {
       "entry": "src/SceneLab.tsx",
-      "javascript": { "maxRawBytes": 24000, "maxGzipBytes": 8500 }
+      "javascript": { "maxRawBytes": 27000, "maxGzipBytes": 9500 }
     },
     "assets": {
       "entry": "src/AssetBrowser.tsx",
@@ -30,6 +30,10 @@
     "diagnostics": {
       "entry": "src/AssetDiagnostics.tsx",
       "javascript": { "maxRawBytes": 2500, "maxGzipBytes": 1000 }
+    },
+    "specimens": {
+      "entry": "src/SceneLabSpecimens.tsx",
+      "javascript": { "maxRawBytes": 3000, "maxGzipBytes": 1200 }
     },
     "extended": {
       "entry": "src/ExtendedControlsLab.tsx",

@@ -451,7 +451,7 @@ jobs:
             echo "Failure is not a clean cancellation-only flake; skipping retry."
             exit 0
           fi
-          retry_key="autoheal-retry:${EXPECTED_SHA}:${RUN_ID}"
+          retry_key="AUTOHEAL_RETRY_${EXPECTED_SHA}_${RUN_ID}"
           if gh variable get "$retry_key" --repo "$GH_REPO" >/dev/null 2>&1; then
             echo "Exact-SHA retry already queued."
             exit 0
@@ -484,7 +484,7 @@ jobs:
           set -euo pipefail
           issue_number="$(cat dist/gate-failure/issue-number.txt)"
           gh issue edit "$issue_number" --repo "$GITHUB_REPOSITORY" \
-            --add-label "gate-failure,auto-fix-requested,auto-heal,priority:P0" --add-assignee "A-L-L-A-H" || true
+            --add-label "gate-failure,auto-fix-requested,auto-heal,priority:p0" || true
           gh issue comment "$issue_number" --repo "$GITHUB_REPOSITORY" \
             --body "Auto-fix requested: @fixer handle this gate failure. Ratchet and required checks remain mandatory."
 

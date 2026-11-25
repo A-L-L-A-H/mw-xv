@@ -41,7 +41,7 @@ if (targets.length > 1) throw new Error('Multiple auto-heal issues found; refusi
 
 for (const issue of targets) {
   const number = String(issue.number);
-  GH('issue', 'edit', number, '--repo', repo, '--remove-label', 'auto-fix-requested,priority:P0');
+  GH('issue', 'edit', number, '--repo', repo, '--remove-label', 'auto-fix-requested,priority:p0');
   GH(
     'issue', 'close', number, '--repo', repo,
     '--comment',
