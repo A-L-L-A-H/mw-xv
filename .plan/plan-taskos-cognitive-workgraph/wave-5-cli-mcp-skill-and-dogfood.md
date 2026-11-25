@@ -6,7 +6,7 @@
 
 ---
 
-## - [ ] T31 — Implement Standalone MCP Tool Handlers & Stdio JSON-RPC Server (`src/mcp/`)
+## - [x] T31 — Implement Standalone MCP Tool Handlers & Stdio JSON-RPC Server (`src/mcp/`)
 
 - **Owner File(s):** `packages/plan-taskos/src/mcp/tools.ts`, `packages/plan-taskos/src/mcp/stdio-server.ts`
   - `packages/plan-taskos/src/mcp/tools.ts` (CREATE)
