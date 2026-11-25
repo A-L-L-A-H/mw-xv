@@ -111,7 +111,7 @@
 
 ---
 
-## - [ ] M43 — Create `InstanceDomainsPanel` (Modes, `sslip.io`, DNS Doctor, Save & Reload, Promote Preview)
+## - [x] M43 — Create `InstanceDomainsPanel` (Modes, `sslip.io`, DNS Doctor, Save & Reload, Promote Preview)
 
 - **Owner File (CREATE):** `apps/board/src/components/cloud/instance-domains-panel.tsx`
 - **Depends On:** `M25`
