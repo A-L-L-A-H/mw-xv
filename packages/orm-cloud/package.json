@@ -26,7 +26,6 @@
     "@moonwitness/orm-project": "workspace:*",
     "@moonwitness/orm-subscription": "workspace:*",
     "@moonwitness/types": "workspace:*",
-    "objection": "^3.1.5",
     "paas-template-pack-coolify": "workspace:*",
     "yaml": "^2.8.0"
   },
