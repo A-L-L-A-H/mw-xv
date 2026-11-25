@@ -1127,6 +1127,10 @@
         "vitest": "5.0.3",
       },
     },
+    "packages/paas-template-pack-coolify": {
+      "name": "paas-template-pack-coolify",
+      "version": "1.0.0",
+    },
     "packages/research": {
       "name": "@moonwitness/research",
       "version": "1.0.0-rc.1",
@@ -2790,6 +2794,8 @@
     "p-locate": ["p-locate@5.0.0", "", { "dependencies": { "p-limit": "^3.0.2" } }, "sha512-LaNjtRWUBY++zB5nE/NwcaoMylSPk+S+ZHNB1TzdbMJMny6dynpAGt7X/tl/QYq3TIeE6nxHppbo2LGymrG5Pw=="],
 
     "p-try": ["p-try@2.2.0", "", {}, "sha512-R4nPAVTAU0B9D35/Gk3uJf/7XYbQcyohSKdvAxIRSNghFl4e71hVoGnBNQz9cWaXxO2I10KTC+3jMdvvoKw6dQ=="],
+
+    "paas-template-pack-coolify": ["paas-template-pack-coolify@workspace:packages/paas-template-pack-coolify"],
 
     "package-directory": ["package-directory@8.2.0", "", { "dependencies": { "find-up-simple": "^1.0.0" } }, "sha512-qJSu5Mo6tHmRxCy2KCYYKYgcfBdUpy9dwReaZD/xwf608AUk/MoRtIOWzgDtUeGeC7n/55yC3MI1Q+MbSoektw=="],
 
