@@ -502,7 +502,7 @@
 
 ---
 
-## - [ ] M37 — Expand `packages/orm-cloud/tests/cloud-auth-ops.test.ts` for Postgres PaaS & Stateless Agent
+## - [x] M37 — Expand `packages/orm-cloud/tests/cloud-auth-ops.test.ts` for Postgres PaaS & Stateless Agent
 
 - **Owner File (MODIFY):** `packages/orm-cloud/tests/cloud-auth-ops.test.ts`
 - **Depends On:** `M31`

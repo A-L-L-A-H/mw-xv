@@ -266,6 +266,16 @@ export const CLOUD_ROUTE_ACCESS_MATRIX: readonly CloudRouteAccessRule[] = Object
     resourceId: true,
   },
   {
+    method: 'POST',
+    path: '/api/cloud/paas/apps/:slug/env',
+    operation: 'app.deploy',
+    model: 'cloud.app',
+    permission: 'write',
+    adminOnly: false,
+    feature: 'provisioning',
+    resourceId: true,
+  },
+  {
     method: 'GET',
     path: '/api/cloud/paas/apps/:slug/logs/stream',
     operation: 'deployment.logs.stream',
@@ -1549,17 +1559,17 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       return { success: true, data: detail };
     });
 
-    fastify.post<{ Body: { slug?: string; tenantId?: string; composeSpec?: string; env?: Record<string, string>; domain?: string; gitRepo?: string; port?: number } }>('/api/cloud/paas/templates/deploy', async (req, reply) => {
+    fastify.post<{ Body: { slug?: string; tenantId?: string; env?: Record<string, string>; domain?: string; port?: number } }>('/api/cloud/paas/templates/deploy', async (req, reply) => {
       const rule = ruleFor('/api/cloud/paas/templates/deploy');
       const ctx = requireAuthorizedModelAccess(req, reply, rule);
       if (!ctx) return;
       if (!requireFeature(reply, rule)) return;
       if (!requireToken(reply, rule)) return;
 
-      const { slug, tenantId, composeSpec, env, domain, gitRepo: _gitRepo, port } = req.body ?? {};
-      if (!slug || !composeSpec) {
+      const { slug, tenantId, env, domain, port } = req.body ?? {};
+      if (!slug) {
         mark(rule.operation, 'invalid');
-        return reply.code(400).send({ success: false, error: 'slug and composeSpec are required' });
+        return reply.code(400).send({ success: false, error: 'slug is required' });
       }
 
       const detail = getCoolifyTemplateDetail(slug);
@@ -1580,7 +1590,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       await compileCoolifyCompose({
         slug,
         tenantId: tenantId ?? 'default',
-        composeYaml: composeSpec,
+        composeYaml: detail.composeYaml,
         defaultPort: Number(port ?? (detail.port ?? 8080)) || 8080,
         primaryDomain: resolvedDomain,
         ...(previewPort !== undefined ? { previewPort } : {}),
@@ -1588,14 +1598,14 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
         userEnv: env,
       });
 
-      await upAgentCompose({ endpoint: defaultAgentUrl, slug, composeSpec, env });
+      await upAgentCompose({ endpoint: defaultAgentUrl, slug, composeSpec: detail.composeYaml, env, fetchImpl });
 
       await reconcileCaddyWithAgent({});
 
       await reconcileCaddyWithAgent({});
 
       mark(rule.operation, 'success');
-      return reply.code(201).send({ success: true, data: { slug, image: `mw-paas-${slug}:latest`, domain: resolvedDomain } });
+      return reply.code(201).send({ success: true, data: { slug, image: `mw-paas-${slug}:latest`, domain: resolvedDomain, previewPort } });
     });
 
     fastify.post('/api/cloud/paas/apps/deploy', async (req, reply) => {
@@ -2700,6 +2710,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
     try {
       const data = await verifyAgentDns({
         endpoint: defaultAgentUrl,
+        fetchImpl,
         ...(instanceDomain !== undefined ? { instanceDomain } : {}),
         ...(wildcardDomain !== undefined ? { wildcardDomain } : {}),
         ...(whatsappDomain !== undefined ? { whatsappDomain } : {}),
@@ -2741,6 +2752,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
     if (publicPortEnabled === false) {
       const dns = await verifyAgentDns({
         endpoint: defaultAgentUrl,
+        fetchImpl,
         instanceDomain,
         checkHttps: true,
       });
@@ -2813,8 +2825,8 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
     if (!requireToken(reply, rule)) return;
 
     try {
-      const mesh = await fetchAgentMeshStatus({ endpoint: defaultAgentUrl });
-      const containers = await listAgentContainers({ endpoint: defaultAgentUrl });
+      const mesh = await fetchAgentMeshStatus({ endpoint: defaultAgentUrl, fetchImpl });
+      const containers = await listAgentContainers({ endpoint: defaultAgentUrl, fetchImpl });
       const spec = await buildDeclarativeCaddySpec();
       mark(rule.operation, 'success');
       return {
