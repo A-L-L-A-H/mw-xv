@@ -107,7 +107,7 @@
 
 ---
 
-### - [ ] M57 — Run Fresh Zero-Domain `install.sh --reinstall` & Verify Zero SQLite DB
+### - [x] M57 — Run Fresh Zero-Domain `install.sh --reinstall` & Verify Zero SQLite DB
 
 - **Depends On:** `M56`
 - **Action (`vps_exec`, background to `/tmp/mw-reinstall.log`):**
