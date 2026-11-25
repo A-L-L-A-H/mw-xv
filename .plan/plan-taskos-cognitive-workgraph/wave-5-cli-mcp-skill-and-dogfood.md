@@ -58,7 +58,7 @@
 
 ---
 
-## - [ ] T33 — Author Portable Agent Skill & Templates (`packages/plan-taskos/skill/`)
+## - [x] T33 — Author Portable Agent Skill & Templates (`packages/plan-taskos/skill/`)
 
 - **Owner File(s):** `packages/plan-taskos/skill/SKILL.md`, `packages/plan-taskos/skill/mcp-manifest.json`, `packages/plan-taskos/skill/templates/manifest.template.json`, `packages/plan-taskos/skill/templates/wave.template.json`, `packages/plan-taskos/skill/templates/adr.template.md`, `packages/plan-taskos/skill/templates/spec.template.md`
   - `packages/plan-taskos/skill/SKILL.md` (CREATE)
