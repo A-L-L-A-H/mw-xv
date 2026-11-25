@@ -6,7 +6,7 @@ import {
   type TenantPaasQuotaInput,
 } from '../quota.js';
 
-export type MeshPaasAppAction = 'restart' | 'stop' | 'delete' | 'logs';
+export type MeshPaasAppAction = 'start' | 'restart' | 'stop' | 'redeploy' | 'delete' | 'logs';
 
 export interface MeshProviderBaseParams {
   readonly endpoint: string;
@@ -22,6 +22,9 @@ export interface MoonWitnessMeshDeployParams extends MeshProviderBaseParams {
   readonly port?: number;
   readonly tenant?: string;
   readonly env?: Readonly<Record<string, string>>;
+  readonly volumes?: readonly string[];
+  readonly memoryLimit?: string;
+  readonly cpuLimit?: string;
   readonly quotaCheck?: TenantPaasQuotaInput;
 }
 
@@ -40,8 +43,13 @@ export interface MeshPaasAppSummary {
   readonly image: string;
   readonly status: string;
   readonly domain?: string;
+  readonly url?: string;
   readonly port?: number;
   readonly tenant?: string;
+  readonly volumes?: readonly string[];
+  readonly memoryLimit?: string;
+  readonly cpuLimit?: string;
+  readonly containerState?: string;
   readonly updatedAt?: string;
 }
 
@@ -66,8 +74,74 @@ export interface ControlMeshPaasAppResult {
   readonly appIdOrSlug: string;
   readonly action: MeshPaasAppAction;
   readonly status?: string;
+  readonly deploymentId?: string;
   readonly logs?: string;
   readonly message: string;
+}
+
+export interface UpdateMeshPaasAppEnvParams extends MeshProviderBaseParams {
+  readonly appIdOrSlug: string;
+  readonly env: Readonly<Record<string, string>>;
+  readonly merge?: boolean;
+}
+
+export interface UpdateMeshPaasAppEnvResult {
+  readonly ok: boolean;
+  readonly appIdOrSlug: string;
+  readonly slug: string;
+  readonly env?: Readonly<Record<string, string>>;
+  readonly message: string;
+}
+
+export interface UpdateMeshPaasAppDomainParams extends MeshProviderBaseParams {
+  readonly appIdOrSlug: string;
+  readonly domain: string;
+  readonly port?: number;
+}
+
+export interface UpdateMeshPaasAppDomainResult {
+  readonly ok: boolean;
+  readonly appIdOrSlug: string;
+  readonly slug: string;
+  readonly domain: string;
+  readonly port?: number;
+  readonly url?: string;
+  readonly message: string;
+}
+
+export interface MeshPaasTemplateSummary {
+  readonly id: string;
+  readonly name: string;
+  readonly category?: string;
+  readonly description?: string;
+  readonly image: string;
+  readonly defaultPort: number;
+  readonly defaultEnv?: Readonly<Record<string, string>>;
+  readonly requiredEnvKeys?: readonly string[];
+}
+
+export interface MoonWitnessMeshComposeDeployParams extends MeshProviderBaseParams {
+  readonly slug: string;
+  readonly composeSpec: string;
+  readonly primaryService: string;
+  readonly port: number;
+  readonly domain?: string;
+  readonly tenant?: string;
+  readonly env?: Readonly<Record<string, string>>;
+}
+
+export interface ListMeshPaasAppDeploymentsParams extends MeshProviderBaseParams {
+  readonly appIdOrSlug: string;
+}
+
+export interface MeshPaasDeploymentRecord {
+  readonly id: string;
+  readonly slug: string;
+  readonly action: string;
+  readonly image?: string;
+  readonly status: string;
+  readonly message?: string;
+  readonly createdAt: string;
 }
 
 const DEFAULT_TIMEOUT_MS = 30_000;
@@ -143,6 +217,51 @@ async function readErrorSummary(
   }
 }
 
+interface MeshRequestOptions {
+  readonly path: string;
+  readonly method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  readonly body?: unknown;
+  readonly errorPrefix: string;
+  readonly secrets?: readonly (string | undefined)[];
+}
+
+interface MeshRequestResult<T> {
+  readonly baseUrl: string;
+  readonly token: string | undefined;
+  readonly secrets: readonly (string | undefined)[];
+  readonly payload: T;
+}
+
+async function requestMeshJson<T>(
+  params: MeshProviderBaseParams,
+  options: MeshRequestOptions
+): Promise<MeshRequestResult<T>> {
+  const baseUrl = buildBaseUrl(params.endpoint);
+  const token = resolveAuthToken(params.token);
+  const fetchImpl = params.fetchImpl ?? globalThis.fetch;
+  const secrets = [token, ...(options.secrets ?? [])];
+  const hasBody = options.body !== undefined;
+  const needsJsonContentType = hasBody || options.method === 'POST' || options.method === 'PUT';
+
+  const response = await fetchImpl(`${baseUrl}${options.path}`, {
+    method: options.method,
+    headers: controlPlaneAuthHeaders(
+      token,
+      needsJsonContentType ? { 'content-type': 'application/json' } : undefined
+    ),
+    ...(hasBody ? { body: JSON.stringify(options.body) } : {}),
+    signal: AbortSignal.timeout(params.timeoutMs ?? DEFAULT_TIMEOUT_MS),
+  });
+
+  if (!response.ok) {
+    const detail = await readErrorSummary(response, secrets);
+    throw new Error(`${options.errorPrefix} (${response.status}): ${detail}`);
+  }
+
+  const payload = (await response.json()) as T;
+  return { baseUrl, token, secrets, payload };
+}
+
 export async function deployViaMoonWitnessMesh(
   params: MoonWitnessMeshDeployParams
 ): Promise<MoonWitnessMeshDeployResult> {
@@ -153,31 +272,7 @@ export async function deployViaMoonWitnessMesh(
     }
   }
 
-  const baseUrl = buildBaseUrl(params.endpoint);
-  const token = resolveAuthToken(params.token);
-  const fetchImpl = params.fetchImpl ?? globalThis.fetch;
-  const secrets = [token, ...Object.values(params.env ?? {})];
-
-  const response = await fetchImpl(`${baseUrl}/paas/apps`, {
-    method: 'POST',
-    headers: controlPlaneAuthHeaders(token, { 'content-type': 'application/json' }),
-    body: JSON.stringify({
-      slug: params.slug,
-      image: params.image,
-      domain: params.domain,
-      port: params.port,
-      tenant: params.tenant,
-      env: params.env,
-    }),
-    signal: AbortSignal.timeout(params.timeoutMs ?? DEFAULT_TIMEOUT_MS),
-  });
-
-  if (!response.ok) {
-    const detail = await readErrorSummary(response, secrets);
-    throw new Error(`MoonWitness Mesh deploy failed (${response.status}): ${detail}`);
-  }
-
-  const payload = (await response.json()) as {
+  const { payload, secrets } = await requestMeshJson<{
     appId?: string;
     id?: string;
     slug?: string;
@@ -185,7 +280,23 @@ export async function deployViaMoonWitnessMesh(
     url?: string;
     deploymentId?: string;
     message?: string;
-  };
+  }>(params, {
+    path: '/paas/apps',
+    method: 'POST',
+    errorPrefix: 'MoonWitness Mesh deploy failed',
+    secrets: Object.values(params.env ?? {}),
+    body: {
+      slug: params.slug,
+      image: params.image,
+      domain: params.domain,
+      port: params.port,
+      tenant: params.tenant,
+      env: params.env,
+      ...(params.volumes !== undefined ? { volumes: params.volumes } : {}),
+      ...(params.memoryLimit !== undefined ? { memoryLimit: params.memoryLimit } : {}),
+      ...(params.cpuLimit !== undefined ? { cpuLimit: params.cpuLimit } : {}),
+    },
+  });
 
   return {
     appId: payload.appId ?? payload.id ?? params.slug,
@@ -200,22 +311,14 @@ export async function deployViaMoonWitnessMesh(
 export async function listMeshPaasApps(
   params: MeshProviderBaseParams
 ): Promise<readonly MeshPaasAppSummary[]> {
-  const baseUrl = buildBaseUrl(params.endpoint);
-  const token = resolveAuthToken(params.token);
-  const fetchImpl = params.fetchImpl ?? globalThis.fetch;
-
-  const response = await fetchImpl(`${baseUrl}/paas/apps`, {
-    method: 'GET',
-    headers: controlPlaneAuthHeaders(token),
-    signal: AbortSignal.timeout(params.timeoutMs ?? DEFAULT_TIMEOUT_MS),
-  });
-
-  if (!response.ok) {
-    const detail = await readErrorSummary(response, [token]);
-    throw new Error(`MoonWitness Mesh list apps failed (${response.status}): ${detail}`);
-  }
-
-  const payload = (await response.json()) as { apps?: MeshPaasAppSummary[] } | MeshPaasAppSummary[];
+  const { payload } = await requestMeshJson<{ apps?: MeshPaasAppSummary[] } | MeshPaasAppSummary[]>(
+    params,
+    {
+      path: '/paas/apps',
+      method: 'GET',
+      errorPrefix: 'MoonWitness Mesh list apps failed',
+    }
+  );
 
   if (Array.isArray(payload)) {
     return payload;
@@ -226,22 +329,12 @@ export async function listMeshPaasApps(
 export async function fetchMeshNodeMetrics(
   params: MeshProviderBaseParams
 ): Promise<MeshNodeMetrics> {
-  const baseUrl = buildBaseUrl(params.endpoint);
-  const token = resolveAuthToken(params.token);
-  const fetchImpl = params.fetchImpl ?? globalThis.fetch;
-
-  const response = await fetchImpl(`${baseUrl}/paas/metrics`, {
+  const { baseUrl, payload } = await requestMeshJson<Partial<MeshNodeMetrics>>(params, {
+    path: '/paas/metrics',
     method: 'GET',
-    headers: controlPlaneAuthHeaders(token),
-    signal: AbortSignal.timeout(params.timeoutMs ?? DEFAULT_TIMEOUT_MS),
+    errorPrefix: 'MoonWitness Mesh metrics failed',
   });
 
-  if (!response.ok) {
-    const detail = await readErrorSummary(response, [token]);
-    throw new Error(`MoonWitness Mesh metrics failed (${response.status}): ${detail}`);
-  }
-
-  const payload = (await response.json()) as Partial<MeshNodeMetrics>;
   const memoryUsedMb = typeof payload.memoryUsedMb === 'number' ? payload.memoryUsedMb : 0;
   const memoryTotalMb = typeof payload.memoryTotalMb === 'number' ? payload.memoryTotalMb : 0;
   const memoryPercent =
@@ -266,52 +359,191 @@ export async function fetchMeshNodeMetrics(
 export async function controlMeshPaasApp(
   params: ControlMeshPaasAppParams
 ): Promise<ControlMeshPaasAppResult> {
-  const baseUrl = buildBaseUrl(params.endpoint);
-  const token = resolveAuthToken(params.token);
-  const fetchImpl = params.fetchImpl ?? globalThis.fetch;
   const encodedId = encodeURIComponent(params.appIdOrSlug);
 
-  let url: string;
+  let path: string;
   let method: 'POST' | 'DELETE' | 'GET';
 
   if (params.action === 'delete') {
-    url = `${baseUrl}/paas/apps/${encodedId}`;
+    path = `/paas/apps/${encodedId}`;
     method = 'DELETE';
   } else if (params.action === 'logs') {
-    url = `${baseUrl}/paas/apps/${encodedId}/logs`;
+    path = `/paas/apps/${encodedId}/logs`;
     method = 'GET';
   } else {
-    url = `${baseUrl}/paas/apps/${encodedId}/${params.action}`;
+    path = `/paas/apps/${encodedId}/${params.action}`;
     method = 'POST';
   }
 
-  const response = await fetchImpl(url, {
-    method,
-    headers: controlPlaneAuthHeaders(
-      token,
-      method === 'POST' ? { 'content-type': 'application/json' } : undefined
-    ),
-    signal: AbortSignal.timeout(params.timeoutMs ?? DEFAULT_TIMEOUT_MS),
-  });
-
-  if (!response.ok) {
-    const detail = await readErrorSummary(response, [token]);
-    throw new Error(`MoonWitness Mesh app ${params.action} failed (${response.status}): ${detail}`);
-  }
-
-  const payload = (await response.json()) as {
+  const { payload, secrets } = await requestMeshJson<{
     ok?: boolean;
     status?: string;
+    deploymentId?: string;
     logs?: string;
     message?: string;
-  };
+  }>(params, {
+    path,
+    method,
+    errorPrefix: `MoonWitness Mesh app ${params.action} failed`,
+  });
 
   return {
     ok: payload.ok ?? true,
     appIdOrSlug: params.appIdOrSlug,
     action: params.action,
     status: payload.status,
-    logs: typeof payload.logs === 'string' ? redactMeshSecrets(payload.logs, [token]) : undefined,
-    message: redactMeshSecrets(payload.message ?? `App ${params.action} completed`, [token]),
+    ...(typeof payload.deploymentId === 'string' ? { deploymentId: payload.deploymentId } : {}),
+    logs: typeof payload.logs === 'string' ? redactMeshSecrets(payload.logs, secrets) : undefined,
+    message: redactMeshSecrets(payload.message ?? `App ${params.action} completed`, secrets),
   };
+}
+
+export async function updateMeshPaasAppEnv(
+  params: UpdateMeshPaasAppEnvParams
+): Promise<UpdateMeshPaasAppEnvResult> {
+  const encodedId = encodeURIComponent(params.appIdOrSlug);
+  const { payload, secrets } = await requestMeshJson<{
+    ok?: boolean;
+    slug?: string;
+    env?: Record<string, string>;
+    message?: string;
+  }>(params, {
+    path: `/paas/apps/${encodedId}/env`,
+    method: 'PUT',
+    errorPrefix: 'MoonWitness Mesh update env failed',
+    secrets: Object.values(params.env),
+    body: {
+      env: params.env,
+      ...(params.merge !== undefined ? { merge: params.merge } : {}),
+    },
+  });
+
+  return {
+    ok: payload.ok ?? true,
+    appIdOrSlug: params.appIdOrSlug,
+    slug: payload.slug ?? params.appIdOrSlug,
+    ...(payload.env !== undefined ? { env: payload.env } : {}),
+    message: redactMeshSecrets(payload.message ?? 'Environment updated', secrets),
+  };
+}
+
+export async function updateMeshPaasAppDomain(
+  params: UpdateMeshPaasAppDomainParams
+): Promise<UpdateMeshPaasAppDomainResult> {
+  const encodedId = encodeURIComponent(params.appIdOrSlug);
+  const { payload, secrets } = await requestMeshJson<{
+    ok?: boolean;
+    slug?: string;
+    domain?: string;
+    port?: number;
+    url?: string;
+    message?: string;
+  }>(params, {
+    path: `/paas/apps/${encodedId}/domain`,
+    method: 'PUT',
+    errorPrefix: 'MoonWitness Mesh update domain failed',
+    body: {
+      domain: params.domain,
+      ...(params.port !== undefined ? { port: params.port } : {}),
+    },
+  });
+
+  const domain = payload.domain ?? params.domain;
+  return {
+    ok: payload.ok ?? true,
+    appIdOrSlug: params.appIdOrSlug,
+    slug: payload.slug ?? params.appIdOrSlug,
+    domain,
+    ...(payload.port !== undefined
+      ? { port: payload.port }
+      : params.port !== undefined
+        ? { port: params.port }
+        : {}),
+    ...(payload.url !== undefined
+      ? { url: payload.url }
+      : domain
+        ? { url: `https://${domain}` }
+        : {}),
+    message: redactMeshSecrets(payload.message ?? 'Domain updated', secrets),
+  };
+}
+
+export async function listMeshPaasTemplates(
+  params: MeshProviderBaseParams
+): Promise<readonly MeshPaasTemplateSummary[]> {
+  const { payload } = await requestMeshJson<
+    { templates?: MeshPaasTemplateSummary[] } | MeshPaasTemplateSummary[]
+  >(params, {
+    path: '/paas/templates',
+    method: 'GET',
+    errorPrefix: 'MoonWitness Mesh list templates failed',
+  });
+
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+  return Array.isArray(payload.templates) ? payload.templates : [];
+}
+
+export async function deployComposeViaMoonWitnessMesh(
+  params: MoonWitnessMeshComposeDeployParams
+): Promise<MoonWitnessMeshDeployResult> {
+  const { payload, secrets } = await requestMeshJson<{
+    appId?: string;
+    id?: string;
+    slug?: string;
+    status?: string;
+    url?: string;
+    deploymentId?: string;
+    message?: string;
+  }>(params, {
+    path: '/paas/apps/deploy-compose',
+    method: 'POST',
+    errorPrefix: 'MoonWitness Mesh compose deploy failed',
+    secrets: Object.values(params.env ?? {}),
+    body: {
+      slug: params.slug,
+      composeSpec: params.composeSpec,
+      primaryService: params.primaryService,
+      port: params.port,
+      domain: params.domain,
+      tenant: params.tenant,
+      env: params.env,
+    },
+  });
+
+  return {
+    appId: payload.appId ?? payload.id ?? params.slug,
+    slug: payload.slug ?? params.slug,
+    status: payload.status ?? 'running',
+    url: payload.url,
+    deploymentId: payload.deploymentId,
+    message: redactMeshSecrets(payload.message ?? 'Compose deployment triggered', secrets),
+  };
+}
+
+export async function listMeshPaasAppDeployments(
+  params: ListMeshPaasAppDeploymentsParams
+): Promise<readonly MeshPaasDeploymentRecord[]> {
+  const encodedId = encodeURIComponent(params.appIdOrSlug);
+  const { payload, secrets } = await requestMeshJson<
+    { deployments?: MeshPaasDeploymentRecord[] } | MeshPaasDeploymentRecord[]
+  >(params, {
+    path: `/paas/apps/${encodedId}/deployments`,
+    method: 'GET',
+    errorPrefix: 'MoonWitness Mesh list deployments failed',
+  });
+
+  const records = Array.isArray(payload)
+    ? payload
+    : Array.isArray(payload.deployments)
+      ? payload.deployments
+      : [];
+
+  return records.map((record) => ({
+    ...record,
+    ...(typeof record.message === 'string'
+      ? { message: redactMeshSecrets(record.message, secrets) }
+      : {}),
+  }));
 }

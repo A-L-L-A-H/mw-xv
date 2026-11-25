@@ -81,8 +81,11 @@ var controlPlaneRouteMatrix = []controlPlaneRoute{
 	{pattern: "/api/deployments/", family: "api-deployments", access: accessAuthenticated},
 	{pattern: "/api/containers/", family: "container-logs", access: accessPrivileged},
 	{pattern: "/paas/node/metrics", family: "paas-ops", access: accessAuthenticated},
+	{pattern: "/paas/metrics", family: "paas-ops", access: accessAuthenticated, methods: []string{http.MethodGet}},
+	{pattern: "/paas/templates", family: "paas-coolify", access: accessAuthenticated, methods: []string{http.MethodGet}},
 	{pattern: "/paas/apps", family: "paas-apps", access: accessAuthenticated},
 	{pattern: "/paas/apps/deploy", family: "paas-apps", access: accessPrivileged, methods: []string{http.MethodPost}},
+	{pattern: "/paas/apps/deploy-compose", family: "paas-coolify", access: accessPrivileged, methods: []string{http.MethodPost}},
 	{pattern: "/paas/apps/", family: "paas-apps", access: accessPrivileged},
 	{pattern: "/paas/backups/postgres", family: "paas-backups", access: accessPrivileged, methods: []string{http.MethodPost}},
 	{pattern: "/paas/backups", family: "paas-backups", access: accessAuthenticated},
@@ -209,6 +212,26 @@ func main() {
 		log.Printf("legacy registry auto-start disabled (set MW_CONTROL_PLANE_AUTOSTART_LEGACY=true to enable)")
 	}
 
+	paasMgr := NewPaasManager(DB, cfg.dockerBin, meshMgr, nil, nil)
+	paasMgr.SetAdminToken(adminToken)
+	if err := paasMgr.SyncCaddyRoutesOnStartup(ctx); err != nil {
+		log.Printf("warning: initial caddy route sync failed: %v", err)
+	}
+
+	var uiSrv *http.Server
+	if uiAddr := strings.TrimSpace(os.Getenv("MW_PAAS_UI_ADDR")); uiAddr != "" {
+		uiSrv = &http.Server{
+			Addr:    uiAddr,
+			Handler: NewPaasUIHandler(paasMgr, adminToken),
+		}
+		go func() {
+			log.Printf("paas web console listening on %s", uiAddr)
+			if uiErr := uiSrv.ListenAndServe(); uiErr != nil && uiErr != http.ErrServerClosed {
+				log.Printf("warning: paas web console error: %v", uiErr)
+			}
+		}()
+	}
+
 	srv := &http.Server{
 		Addr:    cfg.listenAddr,
 		Handler: buildMux(DB, cfg.dockerBin, adminToken),
@@ -234,6 +257,9 @@ func main() {
 	<-ctx.Done()
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+	if uiSrv != nil {
+		_ = uiSrv.Shutdown(shutdownCtx)
+	}
 	_ = srv.Shutdown(shutdownCtx)
 	log.Println("control-plane stopped")
 }
@@ -283,6 +309,7 @@ func configureA2AMTLS(srv *http.Server) (string, string, error) {
 func buildMux(db *sql.DB, dockerBin, adminToken string) http.Handler {
 	mux := http.NewServeMux()
 	paasMgr := NewPaasManager(db, dockerBin, NewMeshManagerFromEnv(dockerBin), nil, nil)
+	paasMgr.SetAdminToken(adminToken)
 	a2aMgr := NewA2AManagerFromEnv()
 
 	raw := map[string]http.HandlerFunc{
@@ -298,8 +325,11 @@ func buildMux(db *sql.DB, dockerBin, adminToken string) http.Handler {
 		"/api/deployments/":           handleApiDeployment(db),
 		"/api/containers/":            handleContainerSubroutes(dockerBin),
 		"/paas/node/metrics":          paasMgr.handleNodeMetrics(),
+		"/paas/metrics":               paasMgr.handleNodeMetrics(),
+		"/paas/templates":             paasMgr.handleTemplates(),
 		"/paas/apps":                  paasMgr.handleApps(),
 		"/paas/apps/deploy":           paasMgr.handleDeploy(),
+		"/paas/apps/deploy-compose":   paasMgr.handleComposeDeploy(),
 		"/paas/apps/":                 paasMgr.handleAppSubroutes(),
 		"/paas/backups/postgres":      paasMgr.handleBackupPostgres(),
 		"/paas/backups":               paasMgr.handleListBackups(),

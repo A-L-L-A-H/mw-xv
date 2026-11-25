@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -61,6 +62,69 @@ type CaddyRoute struct {
 	Domain       string `json:"domain"`
 	Port         int    `json:"port"`
 	UpstreamHost string `json:"upstreamHost,omitempty"`
+}
+
+// CaddyStaticRoute represents a static public HTTPS reverse-proxy route
+// (such as the PaaS Web UI) appended after dynamic app routes.
+type CaddyStaticRoute struct {
+	Domain   string `json:"domain"`
+	Upstream string `json:"upstream"`
+}
+
+func validateStaticRoute(rt CaddyStaticRoute) error {
+	if err := ValidatePaasDomain(rt.Domain); err != nil {
+		return fmt.Errorf("invalid static route domain: %w", err)
+	}
+	upstream := rt.Upstream
+	if upstream == "" {
+		return errors.New("static route upstream is required")
+	}
+	for _, r := range upstream {
+		if r < 0x20 || r == 0x7f {
+			return fmt.Errorf("static route upstream contains control characters: %q", upstream)
+		}
+	}
+	if strings.ContainsAny(upstream, " \t\r\n{}();#\"'`$\\/?@*") || strings.Contains(upstream, "..") {
+		return fmt.Errorf("static route upstream contains forbidden characters: %q", upstream)
+	}
+	host, portStr, err := net.SplitHostPort(upstream)
+	if err != nil {
+		return fmt.Errorf("static route upstream must be host:port: %q", upstream)
+	}
+	host = strings.TrimSpace(host)
+	if host == "" {
+		return fmt.Errorf("static route upstream host is empty: %q", upstream)
+	}
+	port, err := strconv.Atoi(portStr)
+	if err != nil || port < 1 || port > 65535 {
+		return fmt.Errorf("static route upstream has invalid port: %q", upstream)
+	}
+	hostLower := strings.ToLower(host)
+	switch hostLower {
+	case "control-plane", "moonwitness-postgres", "postgres":
+		return fmt.Errorf("static route upstream %q targets private mesh service", upstream)
+	}
+	if hostLower == "moonwitness-control-plane" && port == 3003 {
+		return fmt.Errorf("static route upstream %q targets private control-plane API port", upstream)
+	}
+	if (hostLower == "127.0.0.1" || hostLower == "localhost" || hostLower == "::1") && (port == 3003 || port == 5432) {
+		return fmt.Errorf("static route upstream %q targets private loopback service", upstream)
+	}
+	return nil
+}
+
+func renderCaddySiteBlock(b *strings.Builder, domain, upstream string) {
+	b.WriteString("\n")
+	b.WriteString(domain)
+	b.WriteString(" {\n")
+	b.WriteString("\tencode zstd gzip\n")
+	b.WriteString("\treverse_proxy ")
+	b.WriteString(upstream)
+	b.WriteString(" {\n")
+	b.WriteString("\t\theader_up X-Forwarded-Proto {scheme}\n")
+	b.WriteString("\t\theader_up X-Real-IP {remote_host}\n")
+	b.WriteString("\t}\n")
+	b.WriteString("}\n")
 }
 
 // ValidateContainerName validates a Docker container name strictly against
@@ -190,18 +254,7 @@ func GenerateCaddyfile(routes []CaddyRoute) (string, error) {
 		if host == "" {
 			host = PaasContainerName(rt.Slug)
 		}
-		upstream := fmt.Sprintf("%s:%d", host, rt.Port)
-		b.WriteString("\n")
-		b.WriteString(rt.Domain)
-		b.WriteString(" {\n")
-		b.WriteString("\tencode zstd gzip\n")
-		b.WriteString("\treverse_proxy ")
-		b.WriteString(upstream)
-		b.WriteString(" {\n")
-		b.WriteString("\t\theader_up X-Forwarded-Proto {scheme}\n")
-		b.WriteString("\t\theader_up X-Real-IP {remote_host}\n")
-		b.WriteString("\t}\n")
-		b.WriteString("}\n")
+		renderCaddySiteBlock(&b, rt.Domain, fmt.Sprintf("%s:%d", host, rt.Port))
 	}
 
 	return b.String(), nil
@@ -210,10 +263,13 @@ func GenerateCaddyfile(routes []CaddyRoute) (string, error) {
 // CaddyManager atomically writes the generated Caddyfile and optionally reloads
 // Caddy using argument-slice exec (never shell interpolation).
 type CaddyManager struct {
-	caddyfilePath string
-	caddyBin      string
-	reloadEnabled bool
-	runner        CommandRunner
+	caddyfilePath  string
+	caddyBin       string
+	reloadEnabled  bool
+	dockerBin      string
+	caddyContainer string
+	staticRoutes   []CaddyStaticRoute
+	runner         CommandRunner
 }
 
 // NewCaddyManager constructs a CaddyManager from configuration.
@@ -229,12 +285,65 @@ func NewCaddyManager(caddyfilePath, caddyBin string, reloadEnabled bool, runner 
 	}
 }
 
+// SetStaticRoutes validates and stores static routes appended to the Caddyfile.
+// Fails closed without mutating existing static routes if any entry is invalid.
+func (m *CaddyManager) SetStaticRoutes(routes []CaddyStaticRoute) error {
+	validated := make([]CaddyStaticRoute, 0, len(routes))
+	seen := make(map[string]bool, len(routes))
+	for _, rt := range routes {
+		if err := validateStaticRoute(rt); err != nil {
+			return err
+		}
+		if seen[rt.Domain] {
+			return fmt.Errorf("duplicate static route domain %q", rt.Domain)
+		}
+		seen[rt.Domain] = true
+		validated = append(validated, rt)
+	}
+	m.staticRoutes = validated
+	return nil
+}
+
+// ConfigureContainerReload configures CaddyManager to reload a containerized
+// Caddy instance via `docker restart <containerName>`.
+func (m *CaddyManager) ConfigureContainerReload(dockerBin, containerName string) {
+	m.dockerBin = strings.TrimSpace(dockerBin)
+	m.caddyContainer = strings.TrimSpace(containerName)
+	if m.caddyContainer != "" {
+		m.reloadEnabled = true
+	}
+}
+
 // Sync generates and atomically writes the Caddyfile for the given routes.
-// If reloadEnabled is true, it invokes `caddy reload --config <path>`.
+// If reloadEnabled is true, it restarts the configured Caddy container or
+// invokes `caddy reload --config <path>`.
 func (m *CaddyManager) Sync(ctx context.Context, routes []CaddyRoute) (string, error) {
 	content, err := GenerateCaddyfile(routes)
 	if err != nil {
 		return "", err
+	}
+	if len(m.staticRoutes) > 0 {
+		dynamicDomains := make(map[string]bool, len(routes))
+		for _, rt := range routes {
+			dynamicDomains[rt.Domain] = true
+		}
+		sortedStatic := make([]CaddyStaticRoute, 0, len(m.staticRoutes))
+		for _, srt := range m.staticRoutes {
+			if !dynamicDomains[srt.Domain] {
+				sortedStatic = append(sortedStatic, srt)
+			}
+		}
+		if len(sortedStatic) > 0 {
+			sort.Slice(sortedStatic, func(i, j int) bool {
+				return sortedStatic[i].Domain < sortedStatic[j].Domain
+			})
+			var sb strings.Builder
+			sb.WriteString(content)
+			for _, srt := range sortedStatic {
+				renderCaddySiteBlock(&sb, srt.Domain, srt.Upstream)
+			}
+			content = sb.String()
+		}
 	}
 	if m.caddyfilePath != "" {
 		dir := filepath.Dir(m.caddyfilePath)
@@ -251,6 +360,11 @@ func (m *CaddyManager) Sync(ctx context.Context, routes []CaddyRoute) (string, e
 			_ = os.Remove(tmpPath)
 			return "", fmt.Errorf("write temp caddyfile: %w", err)
 		}
+		if err := tmpFile.Chmod(0o644); err != nil {
+			_ = tmpFile.Close()
+			_ = os.Remove(tmpPath)
+			return "", fmt.Errorf("chmod temp caddyfile: %w", err)
+		}
 		if err := tmpFile.Close(); err != nil {
 			_ = os.Remove(tmpPath)
 			return "", fmt.Errorf("close temp caddyfile: %w", err)
@@ -260,9 +374,15 @@ func (m *CaddyManager) Sync(ctx context.Context, routes []CaddyRoute) (string, e
 			return "", fmt.Errorf("rename caddyfile: %w", err)
 		}
 	}
-	if m.reloadEnabled && m.caddyBin != "" && m.caddyfilePath != "" {
-		if _, err := m.runner(ctx, m.caddyBin, "reload", "--config", m.caddyfilePath); err != nil {
-			return content, fmt.Errorf("caddy reload failed: %w", err)
+	if m.reloadEnabled {
+		if m.caddyContainer != "" && m.dockerBin != "" {
+			if _, err := m.runner(ctx, m.dockerBin, "restart", m.caddyContainer); err != nil {
+				return content, fmt.Errorf("caddy container reload failed: %w", err)
+			}
+		} else if m.caddyBin != "" && m.caddyfilePath != "" {
+			if _, err := m.runner(ctx, m.caddyBin, "reload", "--config", m.caddyfilePath); err != nil {
+				return content, fmt.Errorf("caddy reload failed: %w", err)
+			}
 		}
 	}
 	return content, nil
