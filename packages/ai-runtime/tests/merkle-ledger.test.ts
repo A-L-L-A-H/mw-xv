@@ -164,8 +164,8 @@ describe('M16.03 RFC 6962 Merkle Sovereignty Ledger', () => {
     expect(isPowerOfTwo(7)).toBe(false);
 
     const payloads = [
-      { id: 1, secret: 'raw-secret-123456' },
-      { id: 2, secret: 'raw-secret-789012' },
+      { id: 1, secret: 'alpha' },
+      { id: 2, secret: 'beta' },
     ];
     const unredactedLeafHashes = payloads.map((p) => hashMerkleLeaf(p));
     const rootHash = computeMerkleTreeHash(unredactedLeafHashes);
