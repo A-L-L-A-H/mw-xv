@@ -54,7 +54,7 @@
 
 ---
 
-## - [ ] T08 — Implement Compile-Time Disjoint Write-Ownership Prover (`src/core/disjoint-prover.ts`)
+## - [x] T08 — Implement Compile-Time Disjoint Write-Ownership Prover (`src/core/disjoint-prover.ts`)
 
 - **Owner File(s):** `packages/plan-taskos/src/core/disjoint-prover.ts`
   - `packages/plan-taskos/src/core/disjoint-prover.ts` (CREATE)
