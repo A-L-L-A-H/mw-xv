@@ -168,7 +168,7 @@
 
 ---
 
-### - [ ] M62 — Verify `promote-wildcard`, App Detail/Stats, & `https://uptime-kuma.apps.moonwitness.biz.id`
+### - [x] M62 — Verify `promote-wildcard`, App Detail/Stats, & `https://uptime-kuma.apps.moonwitness.biz.id`
 
 - **Depends On:** `M61`
 - **Acceptance Criteria:**
