@@ -156,8 +156,12 @@ var registry = map[string]containerMeta{
 	},
 }
 
-// DB is the global SQLite handle for control-plane metadata.
+// DB is the global SQLite handle for control-plane metadata (nil in stateless agent mode).
 var DB *sql.DB
+
+func isStatelessAgentMode() bool {
+	return strings.EqualFold(strings.TrimSpace(os.Getenv("MW_CONTROL_PLANE_STATELESS")), "true")
+}
 
 func main() {
 	cfg := config{
@@ -166,19 +170,30 @@ func main() {
 		dbPath:     env("MW_CONTROL_PLANE_DB_PATH", defaultDbPath),
 	}
 
-	var err error
-	DB, err = sql.Open("sqlite", cfg.dbPath)
-	if err != nil {
-		log.Fatalf("failed to open sqlite: %v", err)
-	}
-	defer DB.Close()
+	stateless := isStatelessAgentMode()
+	if stateless {
+		DB = nil
+		if strings.TrimSpace(os.Getenv("MW_CONTROL_PLANE_TOKEN")) == "" &&
+			strings.TrimSpace(os.Getenv("MW_INTERNAL_SECRET")) == "" &&
+			strings.TrimSpace(os.Getenv("JWT_SECRET")) == "" {
+			log.Fatalf("stateless agent mode requires MW_CONTROL_PLANE_TOKEN, MW_INTERNAL_SECRET, or JWT_SECRET")
+		}
+		log.Printf("control-plane running in stateless agent mode (zero local database)")
+	} else {
+		var err error
+		DB, err = sql.Open("sqlite", cfg.dbPath)
+		if err != nil {
+			log.Fatalf("failed to open sqlite: %v", err)
+		}
+		defer DB.Close()
 
-	if err := DB.Ping(); err != nil {
-		log.Fatalf("failed to ping sqlite: %v", err)
-	}
+		if err := DB.Ping(); err != nil {
+			log.Fatalf("failed to ping sqlite: %v", err)
+		}
 
-	if err := initSchema(); err != nil {
-		log.Fatalf("failed to init schema: %v", err)
+		if err := initSchema(); err != nil {
+			log.Fatalf("failed to init schema: %v", err)
+		}
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
@@ -215,8 +230,10 @@ func main() {
 
 	paasMgr := NewPaasManager(DB, cfg.dockerBin, meshMgr, nil, nil)
 	paasMgr.SetAdminToken(adminToken)
-	if err := paasMgr.SyncCaddyRoutesOnStartup(ctx); err != nil {
-		log.Printf("warning: initial caddy route sync failed: %v", err)
+	if !stateless {
+		if err := paasMgr.SyncCaddyRoutesOnStartup(ctx); err != nil {
+			log.Printf("warning: initial caddy route sync failed: %v", err)
+		}
 	}
 
 	var uiSrv *http.Server
@@ -647,7 +664,7 @@ func handleHealth(db *sql.DB, dockerBin string) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		dbStatus := "ok"
-		if db.Ping() != nil {
+		if db != nil && db.Ping() != nil {
 			dbStatus = "error"
 		}
 		dockerStatus := "unknown"

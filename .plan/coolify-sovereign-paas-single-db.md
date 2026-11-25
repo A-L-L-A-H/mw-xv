@@ -56,7 +56,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 ### Wave 1 — Stateless Control-Plane Agent (`wave-1-control-plane.md`)
 - [x] **M04** — `caddy.go`: switch `admin off` -> `admin localhost:2019` + add `sync.Mutex`
 - [x] **M05** — `caddy.go`: add `CaddyBootstrapListener`, `CaddyPreviewListener`, `ReconcileDeclarative`, zero-downtime `caddy reload`
-- [ ] **M06** — `main.go`: add `MW_CONTROL_PLANE_STATELESS=true`, `DB = nil`, `db == nil`-safe `/health`
+- [x] **M06** — `main.go`: add `MW_CONTROL_PLANE_STATELESS=true`, `DB = nil`, `db == nil`-safe `/health`
 - [ ] **M07** — `main.go`: enable `/agent/` auth middleware prefix in `buildMux`
 - [ ] **M08** — `agent_stateless.go` + `main.go`: `POST /agent/caddy/reconcile` & `GET /agent/metrics`
 - [ ] **M09** — `agent_stateless.go` + `main.go`: `GET /agent/containers` & `POST /agent/containers/run`
@@ -133,7 +133,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 | Wave | Task Range | Completed Tasks | Last Commit SHA | Latest Verification Evidence |
 |---|---|---|---|---|
 | Wave 0 | `M01`–`M03` | `3 / 3` | — | `M03 OK` — frozen-lockfile dry-run exit 0 (zero drift, `bun.lock` unchanged); orm-cloud build exit 0; manifest test pass 10 / fail 0 |
-| Wave 1 | `M04`–`M15` | `2 / 12` | — | `M05 OK` — `go vet` OK; full `go test -C apps/control-plane ./...` PASS; `ReconcileDeclarative`, `validateUpstreamTarget`, `reloadCaddyLocked` added, `admin localhost:2019` + `mu sync.Mutex` retained |
+| Wave 1 | `M04`–`M15` | `3 / 12` | — | `M06 OK` — `go test -C apps/control-plane -run "TestHealth|TestResolveAdminToken"` PASS + full `go test` PASS + `go vet` OK; stateless mode (`DB = nil`, fail-closed token env check, skip SQLite/startup Caddy sync) & `db == nil`-safe `/health` |
 | Wave 2 | `M16`–`M38` | `0 / 23` | — | — |
 | Wave 3 | `M39`–`M51` | `0 / 13` | — | — |
 | Wave 4 | `M52`–`M55` | `0 / 4` | — | — |

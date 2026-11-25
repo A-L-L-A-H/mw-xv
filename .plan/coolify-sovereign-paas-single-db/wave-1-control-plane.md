@@ -75,7 +75,7 @@
 
 ---
 
-## - [ ] M06 — Add `MW_CONTROL_PLANE_STATELESS=true` Mode & `db == nil`-Safe `/health`
+## - [x] M06 — Add `MW_CONTROL_PLANE_STATELESS=true` Mode & `db == nil`-Safe `/health`
 
 - **Owner File (MODIFY):** `apps/control-plane/main.go`
 - **Depends On:** `M05`
