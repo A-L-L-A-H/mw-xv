@@ -160,8 +160,6 @@ export const expectedAllowlistExpressions = [
   "^librechat-dev-api:[0-9a-f]{40} $",
   "WHATSAPP_API_KEY: 'test-api-key-12345",
   "curl -fsS \\\\\\r\\n          -X POST \\\\\\r\\n          -u \"elastic:\\$\\$ELASTIC_PASSWORD\" ",
-  "(?s)curl >/dev/null.*for i in \\$\\$\\(seq 1 60\\).*aws-sigv4 \"aws:amz:us-east-1:s3\".*S3_ACCESS_KEY_ID:\\$\\$S3_SECRET_ACCESS_KEY",
-  "(?s)curl -fsS -X PUT --aws-sigv4 aws:amz:us-east-1:s3.*S3_ACCESS_KEY_ID:\\$\\$S3_SECRET_ACCESS_KEY",
   "LANGFLOW_SECRET_KEY=PP_G4Gwm1lOkyG8r8N0LrdlpWXZ7Tyq5CVyfBquuj6g=",
   "keyzori:93b5d75ac8e5a4cd0740bfe1a46b5663674767fb",
   "secret: 'raw-secret-123456",
