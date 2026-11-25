@@ -49,7 +49,7 @@ export interface HybridRecallInput {
 // FTS5 special operators that would throw syntax errors if a raw path like
 // `packages/plan-taskos/src/brain/storage.ts` or a quoted phrase were passed
 // verbatim into a MATCH expression.
-const FTS5_SPECIAL = /["\[\]\(\)\*\^:!~]/g;
+const FTS5_SPECIAL = /["()[\]*^:!~]/g;
 
 /**
  * Sanitize a free-text query into an FTS5-safe MATCH expression.
@@ -303,8 +303,8 @@ export async function hybridRecall(
   for (const cand of lexicalCandidates) {
     const lr = lexicalRank.get(cand.urn) ?? 0;
     const sr = semanticRank.get(cand.urn);
-    let score = 0;
-    let matchType: "lexical" | "semantic" | "fused" = "lexical";
+    let score: number;
+    let matchType: "lexical" | "semantic" | "fused";
     if (semanticAvailable && sr !== undefined) {
       score = lexicalWeight * (1 / (k + lr)) + semanticWeight * (1 / (k + sr));
       matchType = "fused";
