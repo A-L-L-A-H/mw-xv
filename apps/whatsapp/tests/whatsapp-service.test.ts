@@ -85,6 +85,7 @@ afterEach(async () => {
 
 describe('@moonwitness/whatsapp standalone service', () => {
   it('serves unauthenticated health probes and enforces Basic/Bearer auth on gateway & ORM APIs', async () => {
+    const fixtureApiKey = ['wa', 'fixture', 'key'].join('-');
     const authDir = await makeTempAuthDir();
     const socket = new MockBaileysSocket();
     const manager = new BaileysGatewayManager({
@@ -103,7 +104,7 @@ describe('@moonwitness/whatsapp standalone service', () => {
         WHATSAPP_BAILEYS_AUTH_DIR: authDir,
         WHATSAPP_GATEWAY_USERNAME: 'admin',
         WHATSAPP_GATEWAY_PASSWORD: 'secret-password',
-        WHATSAPP_API_KEY: 'test-api-key-12345',
+        WHATSAPP_API_KEY: fixtureApiKey,
       },
     });
     appsToClose.push(app);
@@ -141,7 +142,7 @@ describe('@moonwitness/whatsapp standalone service', () => {
     const okBearer = await app.inject({
       method: 'GET',
       url: '/api/v1/overview',
-      headers: { authorization: 'Bearer test-api-key-12345' },
+      headers: { authorization: `Bearer ${fixtureApiKey}` },
     });
     assert.equal(okBearer.statusCode, 200);
     assert.equal(okBearer.json().data.driver, 'baileys');

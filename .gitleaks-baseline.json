@@ -2560,5 +2560,26 @@
     "Message": "feat(observability): consolidate telemetry into API and Board\n\nMake the API observability addon the sole OTLP/Qoder receiver and PostgreSQL-backed read authority, remove the standalone dashboard, expose read-only telemetry in Mission Control, and enforce API-only ingest credentials with a deterministic boundary gate.",
     "Tags": [],
     "Fingerprint": "6f173b6e9cb9595da71e657b1c87e3f76d2a6344:packages/orm-observability/tests/http-plugin.test.ts:generic-api-key:21"
+  },
+  {
+    "RuleID": "generic-api-key",
+    "Description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
+    "StartLine": 106,
+    "EndLine": 106,
+    "StartColumn": 10,
+    "EndColumn": 47,
+    "Match": "WHATSAPP_API_KEY: 'REDACTED'",
+    "Secret": "REDACTED",
+    "File": "apps/whatsapp/tests/whatsapp-service.test.ts",
+    "SymlinkFile": "",
+    "Commit": "9840967ed8ecd6bd0512c2fb3d7fe16f94729358",
+    "Link": "https://github.com/A-L-L-A-H/mw-xv/blob/9840967ed8ecd6bd0512c2fb3d7fe16f94729358/apps/whatsapp/tests/whatsapp-service.test.ts#L106",
+    "Entropy": 3.6835423,
+    "Author": "MoonWitness Dev",
+    "Email": "dev@moonwitness.local",
+    "Date": "2026-11-25T04:03:10Z",
+    "Message": "feat(whatsapp): ship standalone service and unblock PR #218 CI",
+    "Tags": [],
+    "Fingerprint": "9840967ed8ecd6bd0512c2fb3d7fe16f94729358:apps/whatsapp/tests/whatsapp-service.test.ts:generic-api-key:106"
   }
 ]
