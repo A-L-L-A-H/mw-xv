@@ -283,7 +283,7 @@
 
 ---
 
-## - [ ] M27 — Refactor `GET /apps` & Add `GET /apps/:slug` (PostgreSQL + Live Agent Merge)
+## - [x] M27 — Refactor `GET /apps` & Add `GET /apps/:slug` (PostgreSQL + Live Agent Merge)
 
 - **Owner File (MODIFY):** `packages/orm-cloud/src/http.ts`
 - **Depends On:** `M26`
