@@ -72,13 +72,28 @@ CREATE TABLE IF NOT EXISTS paas_deployments (
 );
 `
 
-// initPaasSchema ensures the paas_apps and paas_deployments SQLite tables exist
-// and idempotently applies schema migrations.
+const paasUIUsersDDL = `
+CREATE TABLE IF NOT EXISTS paas_ui_users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    salt TEXT NOT NULL,
+    role TEXT NOT NULL DEFAULT 'owner',
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+`
+
+// initPaasSchema ensures the paas_apps, paas_deployments, and paas_ui_users
+// SQLite tables exist and idempotently applies schema migrations.
 func initPaasSchema(db *sql.DB) error {
 	if _, err := db.Exec(paasSchemaDDL); err != nil {
 		return err
 	}
 	if _, err := db.Exec(paasDeploymentsDDL); err != nil {
+		return err
+	}
+	if _, err := db.Exec(paasUIUsersDDL); err != nil {
 		return err
 	}
 	cols := make(map[string]bool)
@@ -514,6 +529,7 @@ func (m *PaasManager) MountRoutes(mux *http.ServeMux, adminToken string) {
 	mux.HandleFunc("/paas/node/metrics", requirePaasAuth(adminToken, m.handleNodeMetrics()))
 	mux.HandleFunc("/paas/metrics", requirePaasAuth(adminToken, m.handleNodeMetrics()))
 	mux.HandleFunc("/paas/templates", requirePaasAuth(adminToken, m.handleTemplates()))
+	mux.HandleFunc("/paas/host/services", requirePaasAuth(adminToken, m.handleHostServices()))
 	mux.HandleFunc("/paas/apps", requirePaasAuth(adminToken, m.handleApps()))
 	mux.HandleFunc("/paas/apps/deploy", requirePaasAuth(adminToken, m.handleDeploy()))
 	mux.HandleFunc("/paas/apps/deploy-compose", requirePrivilegedPaasAuth(adminToken, m.handleComposeDeploy()))

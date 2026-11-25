@@ -304,6 +304,16 @@ func (m *CaddyManager) SetStaticRoutes(routes []CaddyStaticRoute) error {
 	return nil
 }
 
+// StaticRoutes returns a copy of configured validated static routes.
+func (m *CaddyManager) StaticRoutes() []CaddyStaticRoute {
+	if m == nil || len(m.staticRoutes) == 0 {
+		return nil
+	}
+	out := make([]CaddyStaticRoute, len(m.staticRoutes))
+	copy(out, m.staticRoutes)
+	return out
+}
+
 // ConfigureContainerReload configures CaddyManager to reload a containerized
 // Caddy instance via `docker restart <containerName>`.
 func (m *CaddyManager) ConfigureContainerReload(dockerBin, containerName string) {

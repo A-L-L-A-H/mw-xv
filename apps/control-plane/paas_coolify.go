@@ -530,37 +530,55 @@ func (m *PaasManager) handleAppDeployments(w http.ResponseWriter, r *http.Reques
 func (m *PaasManager) handleTemplates() http.HandlerFunc {
 	templates := []PaasTemplate{
 		{
-			ID:          "postgres",
-			Name:        "PostgreSQL 16",
-			Category:    "Database",
-			Description: "Relational database with persistent volume storage",
-			Image:       "postgres:16-alpine",
-			Port:        5432,
-			Volumes:     []string{"pgdata:/var/lib/postgresql/data"},
-			Env:         map[string]string{"POSTGRES_DB": "app_db", "POSTGRES_USER": "postgres"},
-		},
-		{
-			ID:          "redis",
-			Name:        "Redis 7",
-			Category:    "Cache",
-			Description: "In-memory cache and message broker",
-			Image:       "redis:7-alpine",
-			Port:        6379,
-			Volumes:     []string{"redisdata:/data"},
-		},
-		{
-			ID:          "nginx",
-			Name:        "Nginx Static",
+			ID:          "nginx-web",
+			Name:        "Nginx Web Server",
 			Category:    "Web",
 			Description: "High-performance reverse proxy and static site server",
 			Image:       "nginx:1.27-alpine",
 			Port:        80,
 		},
 		{
+			ID:          "static-site",
+			Name:        "Static Site (Caddy)",
+			Category:    "Web",
+			Description: "Lightweight Caddy 2 static web server",
+			Image:       "caddy:2-alpine",
+			Port:        80,
+		},
+		{
+			ID:          "node-api",
+			Name:        "Node.js 22 API",
+			Category:    "API",
+			Description: "Node.js 22 Alpine runtime for REST & microservice backends",
+			Image:       "node:22-alpine",
+			Port:        3000,
+			Env:         map[string]string{"NODE_ENV": "production", "PORT": "3000"},
+		},
+		{
+			ID:          "postgres-16",
+			Name:        "PostgreSQL 16",
+			Category:    "Database",
+			Description: "Production PostgreSQL 16 database with persistent volume storage",
+			Image:       "postgres:16-alpine",
+			Port:        5432,
+			Volumes:     []string{"pgdata:/var/lib/postgresql/data"},
+			Env:         map[string]string{"POSTGRES_DB": "app_db", "POSTGRES_USER": "postgres"},
+		},
+		{
+			ID:          "redis-7",
+			Name:        "Redis 7",
+			Category:    "Cache",
+			Description: "In-memory Redis 7 cache and message broker",
+			Image:       "redis:7-alpine",
+			Port:        6379,
+			Volumes:     []string{"redisdata:/data"},
+			Env:         map[string]string{"REDIS_APPENDONLY": "yes"},
+		},
+		{
 			ID:          "n8n",
 			Name:        "n8n Automation",
 			Category:    "Workflow",
-			Description: "Visual workflow automation engine",
+			Description: "Visual workflow automation & integration engine",
 			Image:       "n8nio/n8n:latest",
 			Port:        5678,
 			Volumes:     []string{"n8ndata:/home/node/.n8n"},
@@ -569,19 +587,57 @@ func (m *PaasManager) handleTemplates() http.HandlerFunc {
 			ID:          "uptime-kuma",
 			Name:        "Uptime Kuma",
 			Category:    "Monitoring",
-			Description: "Self-hosted service uptime monitor",
+			Description: "Self-hosted service uptime & TLS monitor",
 			Image:       "louislam/uptime-kuma:1",
 			Port:        3001,
 			Volumes:     []string{"kumadata:/app/data"},
 		},
 		{
-			ID:          "gitea",
-			Name:        "Gitea",
-			Category:    "Git",
-			Description: "Lightweight self-hosted Git service",
-			Image:       "gitea/gitea:latest",
+			ID:          "minio",
+			Name:        "MinIO Object Storage",
+			Category:    "Storage",
+			Description: "S3-compatible object storage server",
+			Image:       "minio/minio:latest",
+			Port:        9000,
+			Volumes:     []string{"miniodata:/data"},
+		},
+		{
+			ID:          "ghost",
+			Name:        "Ghost Publishing",
+			Category:    "CMS",
+			Description: "Modern headless CMS and publication platform",
+			Image:       "ghost:5-alpine",
+			Port:        2368,
+			Volumes:     []string{"ghostcontent:/var/lib/ghost/content"},
+		},
+		{
+			ID:          "ollama-local",
+			Name:        "Ollama Local LLM",
+			Category:    "AI",
+			Description: "Self-hosted Ollama local inference server",
+			Image:       "ollama/ollama:0.6.5",
+			Port:        11434,
+			Volumes:     []string{"ollamadata:/root/.ollama"},
+			Env:         map[string]string{"OLLAMA_HOST": "0.0.0.0:11434"},
+		},
+		{
+			ID:          "moonwitness-whatsapp",
+			Name:        "MoonWitness WhatsApp",
+			Category:    "Platform",
+			Description: "Standalone Fastify + Baileys + @fastify/vite WhatsApp gateway",
+			Image:       "moonwitness-whatsapp:vps",
 			Port:        3000,
-			Volumes:     []string{"giteadata:/data"},
+			Volumes:     []string{"whatsapp_auth_data:/var/lib/moonwitness/whatsapp-auth"},
+			Env:         map[string]string{"NODE_ENV": "production", "WHATSAPP_DRIVER": "baileys"},
+		},
+		{
+			ID:          "moonwitness-tenant",
+			Name:        "MoonWitness Tenant Stack",
+			Category:    "Platform",
+			Description: "Isolated MoonWitness sovereign board & API runtime",
+			Image:       "moonwitness-api:vps",
+			Port:        3000,
+			Env:         map[string]string{"NODE_ENV": "production", "MW_TENANT_MODE": "isolated"},
 		},
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -591,6 +647,112 @@ func (m *PaasManager) handleTemplates() http.HandlerFunc {
 		}
 		writePaasJSON(w, http.StatusOK, map[string]interface{}{
 			"templates": templates,
+		})
+	}
+}
+
+// HostContainerInfo summarizes any Docker container running on the host VPS.
+type HostContainerInfo struct {
+	Name    string `json:"name"`
+	Image   string `json:"image"`
+	Status  string `json:"status"`
+	State   string `json:"state"`
+	Managed bool   `json:"managed"`
+	URL     string `json:"url,omitempty"`
+}
+
+// PlatformRouteInfo describes an active Caddy public reverse-proxy route.
+type PlatformRouteInfo struct {
+	Domain   string `json:"domain"`
+	URL      string `json:"url"`
+	Upstream string `json:"upstream"`
+	Kind     string `json:"kind"`
+}
+
+// handleHostServices handles GET /paas/host/services by inspecting all Docker
+// containers on the VPS and correlating them with configured Caddy routes.
+func (m *PaasManager) handleHostServices() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			writePaasJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
+			return
+		}
+		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+		defer cancel()
+
+		routes := make([]PlatformRouteInfo, 0)
+		urlByUpstreamHost := make(map[string]string)
+
+		if m.caddyMgr != nil {
+			for _, srt := range m.caddyMgr.StaticRoutes() {
+				u := "https://" + srt.Domain
+				routes = append(routes, PlatformRouteInfo{
+					Domain:   srt.Domain,
+					URL:      u,
+					Upstream: srt.Upstream,
+					Kind:     "platform",
+				})
+				host := srt.Upstream
+				if idx := strings.LastIndex(host, ":"); idx > 0 {
+					host = host[:idx]
+				}
+				if _, exists := urlByUpstreamHost[host]; !exists {
+					urlByUpstreamHost[host] = u
+				}
+				if strings.HasPrefix(srt.Domain, "paas.") && urlByUpstreamHost["moonwitness-control-plane"] == "" {
+					urlByUpstreamHost["moonwitness-control-plane"] = u
+				}
+			}
+		}
+
+		managedSet := make(map[string]bool)
+		if m.db != nil {
+			if apps, err := m.listAppsFromDB(); err == nil {
+				for _, app := range apps {
+					managedSet[app.ContainerName] = true
+					if app.Domain != "" {
+						u := "https://" + app.Domain
+						routes = append(routes, PlatformRouteInfo{
+							Domain:   app.Domain,
+							URL:      u,
+							Upstream: fmt.Sprintf("%s:%d", app.ContainerName, app.Port),
+							Kind:     "paas-app",
+						})
+						if _, exists := urlByUpstreamHost[app.ContainerName]; !exists {
+							urlByUpstreamHost[app.ContainerName] = u
+						}
+					}
+				}
+			}
+		}
+
+		containers := make([]HostContainerInfo, 0)
+		if out, err := m.runner(ctx, m.dockerBin, "ps", "-a", "--format", "{{.Names}}\t{{.Image}}\t{{.Status}}\t{{.State}}"); err == nil {
+			for _, rawLine := range strings.Split(strings.TrimSpace(out), "\n") {
+				if rawLine == "" {
+					continue
+				}
+				parts := strings.SplitN(rawLine, "\t", 4)
+				if len(parts) < 4 {
+					continue
+				}
+				name := strings.TrimPrefix(strings.TrimSpace(parts[0]), "/")
+				c := HostContainerInfo{
+					Name:    name,
+					Image:   strings.TrimSpace(parts[1]),
+					Status:  strings.TrimSpace(parts[2]),
+					State:   strings.TrimSpace(parts[3]),
+					Managed: managedSet[name] || strings.HasPrefix(name, paasContainerPrefix),
+					URL:     urlByUpstreamHost[name],
+				}
+				containers = append(containers, c)
+			}
+		}
+
+		writePaasJSON(w, http.StatusOK, map[string]interface{}{
+			"baseDomain": m.baseDomain,
+			"containers": containers,
+			"routes":     routes,
 		})
 	}
 }

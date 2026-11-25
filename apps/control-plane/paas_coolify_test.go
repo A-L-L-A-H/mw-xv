@@ -615,4 +615,124 @@ func TestInitPaasSchemaIdempotentMigration(t *testing.T) {
 	if err := db.QueryRow(fmt.Sprintf("SELECT COUNT(*) FROM pragma_table_info('paas_apps') WHERE name IN ('volumes_json','memory_limit','cpu_limit')")).Scan(&cnt); err != nil || cnt != 3 {
 		t.Fatalf("expected 3 migrated columns, got %d (err=%v)", cnt, err)
 	}
+	if err := db.QueryRow(`SELECT COUNT(*) FROM paas_ui_users`).Scan(&cnt); err != nil {
+		t.Fatalf("expected paas_ui_users table: %v", err)
+	}
+}
+
+func TestPaasUIFirstRunSetupLoginCookieAndHostServices(t *testing.T) {
+	db := openTestPaasDB(t)
+	runner := func(_ context.Context, name string, args ...string) (string, error) {
+		if len(args) > 0 && args[0] == "version" {
+			return "27.0.0\n", nil
+		}
+		if len(args) > 0 && args[0] == "ps" {
+			for _, a := range args {
+				if a == "--format" {
+					continue
+				}
+			}
+			return "moonwitness_board\tmoonwitness-board:vps\tUp 5 minutes\trunning\nmoonwitness_whatsapp\tmoonwitness-whatsapp:vps\tUp 5 minutes\trunning\n", nil
+		}
+		return "", nil
+	}
+	cm := NewCaddyManager("", "caddy", false, runner)
+	if err := cm.SetStaticRoutes([]CaddyStaticRoute{
+		{Domain: "paas.apps.moonwitness.biz.id", Upstream: "10.254.2.1:3004"},
+		{Domain: "board.apps.moonwitness.biz.id", Upstream: "moonwitness_board:8080"},
+		{Domain: "wa.apps.moonwitness.biz.id", Upstream: "moonwitness_whatsapp:3000"},
+	}); err != nil {
+		t.Fatalf("SetStaticRoutes: %v", err)
+	}
+	mgr := NewPaasManager(db, "docker", NewMeshManagerFromEnv("docker"), cm, runner)
+	const adminToken = "ui-session-test-admin-token"
+	ui := NewPaasUIHandler(mgr, adminToken)
+
+	// 1. Initial auth status requires setup.
+	stReq := httptest.NewRequest(http.MethodGet, "/api/auth/status", nil)
+	stRec := httptest.NewRecorder()
+	ui.ServeHTTP(stRec, stReq)
+	if stRec.Code != http.StatusOK || !strings.Contains(stRec.Body.String(), `"setupRequired":true`) {
+		t.Fatalf("expected setupRequired:true, got %d %s", stRec.Code, stRec.Body.String())
+	}
+
+	// 2. First-run setup creates owner and sets HttpOnly session cookie.
+	setupBody := `{"name":"Owner","email":"owner@moonwitness.biz.id","password":"StrongPassword123"}`
+	setupReq := httptest.NewRequest(http.MethodPost, "/api/auth/setup", strings.NewReader(setupBody))
+	setupRec := httptest.NewRecorder()
+	ui.ServeHTTP(setupRec, setupReq)
+	if setupRec.Code != http.StatusCreated {
+		t.Fatalf("expected setup 201, got %d: %s", setupRec.Code, setupRec.Body.String())
+	}
+	cookies := setupRec.Result().Cookies()
+	var sessionCookie *http.Cookie
+	for _, c := range cookies {
+		if c.Name == paasSessionCookieName {
+			sessionCookie = c
+		}
+	}
+	if sessionCookie == nil || !sessionCookie.HttpOnly {
+		t.Fatalf("expected HttpOnly session cookie on setup, got %+v", cookies)
+	}
+
+	// 3. Second setup must fail closed with 403.
+	setup2Req := httptest.NewRequest(http.MethodPost, "/api/auth/setup", strings.NewReader(setupBody))
+	setup2Rec := httptest.NewRecorder()
+	ui.ServeHTTP(setup2Rec, setup2Req)
+	if setup2Rec.Code != http.StatusForbidden {
+		t.Fatalf("expected second setup 403, got %d", setup2Rec.Code)
+	}
+
+	// 4. Session cookie grants access to /api/paas/host/services and 12 templates.
+	hsReq := httptest.NewRequest(http.MethodGet, "/api/paas/host/services", nil)
+	hsReq.AddCookie(sessionCookie)
+	hsRec := httptest.NewRecorder()
+	ui.ServeHTTP(hsRec, hsReq)
+	if hsRec.Code != http.StatusOK || !strings.Contains(hsRec.Body.String(), "board.apps.moonwitness.biz.id") {
+		t.Fatalf("expected host services 200 with board domain, got %d: %s", hsRec.Code, hsRec.Body.String())
+	}
+
+	tplReq := httptest.NewRequest(http.MethodGet, "/api/paas/templates", nil)
+	tplReq.AddCookie(sessionCookie)
+	tplRec := httptest.NewRecorder()
+	ui.ServeHTTP(tplRec, tplReq)
+	var tplResp struct {
+		Templates []PaasTemplate `json:"templates"`
+	}
+	if err := json.Unmarshal(tplRec.Body.Bytes(), &tplResp); err != nil || len(tplResp.Templates) != 12 {
+		t.Fatalf("expected 12 templates, got %d (err=%v)", len(tplResp.Templates), err)
+	}
+
+	// 5. Tampered cookie must fail closed with 401.
+	badCookie := *sessionCookie
+	badCookie.Value = sessionCookie.Value + "tampered"
+	tamperReq := httptest.NewRequest(http.MethodGet, "/api/paas/metrics", nil)
+	tamperReq.AddCookie(&badCookie)
+	tamperRec := httptest.NewRecorder()
+	ui.ServeHTTP(tamperRec, tamperReq)
+	if tamperRec.Code != http.StatusUnauthorized {
+		t.Fatalf("expected tampered cookie 401, got %d", tamperRec.Code)
+	}
+
+	// 6. Login with wrong password -> 401; right password -> 200.
+	badLogin := httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader(`{"email":"owner@moonwitness.biz.id","password":"wrongpass"}`))
+	badLoginRec := httptest.NewRecorder()
+	ui.ServeHTTP(badLoginRec, badLogin)
+	if badLoginRec.Code != http.StatusUnauthorized {
+		t.Fatalf("expected wrong password 401, got %d", badLoginRec.Code)
+	}
+	okLogin := httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader(`{"email":"owner@moonwitness.biz.id","password":"StrongPassword123"}`))
+	okLoginRec := httptest.NewRecorder()
+	ui.ServeHTTP(okLoginRec, okLogin)
+	if okLoginRec.Code != http.StatusOK {
+		t.Fatalf("expected valid login 200, got %d: %s", okLoginRec.Code, okLoginRec.Body.String())
+	}
+
+	// 7. Logout clears cookie.
+	outReq := httptest.NewRequest(http.MethodPost, "/api/auth/logout", nil)
+	outRec := httptest.NewRecorder()
+	ui.ServeHTTP(outRec, outReq)
+	if outRec.Code != http.StatusOK {
+		t.Fatalf("expected logout 200, got %d", outRec.Code)
+	}
 }
