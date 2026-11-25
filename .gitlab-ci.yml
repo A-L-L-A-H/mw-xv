@@ -1,0 +1,183 @@
+# GitLab CI/CD pipeline for MoonWitness mw-xv
+# Runs heavy jobs on self-hosted VPS runner (tags: vps, heavy, build)
+# Mirrors GitHub CI gates: full build, unit tests, SAST, dependency scan
+
+stages:
+  - build
+  - test
+  - security
+
+variables:
+  # Use bun for faster installs
+  BUN_VERSION: "1.4.5"
+  NODE_VERSION: "20"
+  # Cache bun cache across runs
+  BUN_INSTALL_CACHE_DIR: "$CI_PROJECT_DIR/.bun-cache"
+
+# Default image for jobs that don't specify their own
+default:
+  image: node:20-bookworm-slim
+  tags:
+    - vps
+    - heavy
+    - build
+  interruptible: true
+
+# Cache bun dependencies and node_modules
+cache:
+  key: "${CI_COMMIT_REF_SLUG}"
+  paths:
+    - .bun-cache/
+    - node_modules/
+    - "**/node_modules/"
+  policy: pull-push
+
+# ===================================================================
+# BUILD STAGE
+# ===================================================================
+
+build_workspace:
+  stage: build
+  name: "Build workspace (17 packages + apps)"
+  timeout: 45m
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq curl ca-certificates > /dev/null
+    - curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
+    - export PATH="$HOME/.bun/bin:$PATH"
+    - bun --version
+  script:
+    - bun install --frozen-lockfile
+    - bun run build
+  artifacts:
+    when: always
+    expire_in: 1 day
+    reports:
+      dotenv: .gitlab-ci.env # optional: pass env to downstream jobs
+    paths:
+      - dist/
+      - apps/**/dist/
+      - packages/**/dist/
+
+# ===================================================================
+# TEST STAGE
+# ===================================================================
+
+unit_tests:
+  stage: test
+  name: "Unit tests (CI parity)"
+  timeout: 30m
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq curl ca-certificates > /dev/null
+    - curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
+    - export PATH="$HOME/.bun/bin:$PATH"
+  script:
+    - bun install --frozen-lockfile
+    - bun run test:unit:ci
+  coverage: '/Lines\s*:\s*(\d+\.\d+)%/'
+  artifacts:
+    when: always
+    expire_in: 1 day
+    reports:
+      junit: dist/test-results/*.xml # if tests produce JUnit
+    paths:
+      - coverage/
+
+# Optional: knowledge gate (fast)
+knowledge_gate:
+  stage: test
+  name: "Knowledge gate (schema validation)"
+  timeout: 10m
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq curl ca-certificates > /dev/null
+    - curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
+    - export PATH="$HOME/.bun/bin:$PATH"
+  script:
+    - bun install --frozen-lockfile
+    - bun run knowledge:gate || true # allow failure for now
+
+# ===================================================================
+# SECURITY STAGE
+# ===================================================================
+
+sast:
+  stage: security
+  name: "SAST (Static Application Security Testing)"
+  timeout: 30m
+  # GitLab SAST uses its own analyzer images
+  image: registry.gitlab.com/security-products/sast:latest
+  tags:
+    - vps
+  variables:
+    SAST_EXCLUDED_PATHS: "node_modules,vendor,.git,dist,coverage,.gitlab-ci.env"
+  script:
+    - /analyzer run
+  artifacts:
+    when: always
+    expire_in: 1 week
+    reports:
+      sast: gl-sast-report.json
+
+dependency_scan:
+  stage: security
+  name: "Dependency scanning"
+  timeout: 20m
+  image: registry.gitlab.com/security-products/dependency-scanning:latest
+  tags:
+    - vps
+  variables:
+    DS_EXCLUDED_PATHS: "node_modules,vendor,.git,dist,coverage"
+  script:
+    - /analyzer run
+  artifacts:
+    when: always
+    expire_in: 1 week
+    reports:
+      dependency_scanning: gl-dependency-scanning-report.json
+
+container_scan:
+  stage: security
+  name: "Container scanning (if Dockerfile exists)"
+  timeout: 20m
+  image: registry.gitlab.com/security-products/container-scanning:latest
+  tags:
+    - vps
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "dev"
+    - if: $CI_COMMIT_BRANCH == "main"
+  script:
+    - /analyzer run
+  artifacts:
+    when: always
+    expire_in: 1 week
+    reports:
+      container_scanning: gl-container-scanning-report.json
+
+# ===================================================================
+# POST PIPELINE: report back to GitHub (via GitHub App)
+# ===================================================================
+
+report_to_github:
+  stage: .post
+  name: "Report pipeline status to GitHub commit"
+  timeout: 5m
+  image: node:20-bookworm-slim
+  tags:
+    - vps
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq curl ca-certificates > /dev/null
+    - curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
+    - export PATH="$HOME/.bun/bin:$PATH"
+  script:
+    - |
+      if [ -n "$GITHUB_APP_ID" ] && [ -n "$GITHUB_APP_PRIVATE_KEY" ]; then
+        node scripts/gitlab-report-to-github.mjs
+      else
+        echo "GitHub App credentials not configured — skipping status report"
+      fi
+  when: always
+  allow_failure: true
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "dev"
+    - if: $CI_COMMIT_BRANCH == "main"
