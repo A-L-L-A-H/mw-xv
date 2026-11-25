@@ -6501,7 +6501,7 @@
           "notes": "8 passed; scene, registry and source references valid."
         }
       ],
-      "commit": null,
+      "commit": "aa386ea264f6af0575b84106f96b4538152f296d",
       "legacyCardNotes": null,
       "acceptance_criteria_state": [
         {
@@ -6567,7 +6567,7 @@
           "notes": "3 passed across Chromium, Firefox and WebKit."
         }
       ],
-      "commit": null,
+      "commit": "aa386ea264f6af0575b84106f96b4538152f296d",
       "legacyCardNotes": null,
       "acceptance_criteria_state": [
         {
@@ -6752,7 +6752,7 @@
           "exit_code": null
         }
       ],
-      "commit": null,
+      "commit": "aa386ea264f6af0575b84106f96b4538152f296d",
       "legacyCardNotes": null,
       "acceptance_criteria_state": [
         {
@@ -6818,7 +6818,7 @@
           "exit_code": null
         }
       ],
-      "commit": "3d04f0f",
+      "commit": "aa386ea264f6af0575b84106f96b4538152f296d",
       "legacyCardNotes": null,
       "acceptance_criteria_state": [
         {
@@ -7013,7 +7013,7 @@
           "notes": "Desktop and mobile cold-cache JS/CSS/resource bytes, FCP/LCP, scene bytes, RAF and Chromium CDP timing/heap recorded; no hardware performance guarantee inferred."
         }
       ],
-      "commit": null,
+      "commit": "aa386ea264f6af0575b84106f96b4538152f296d",
       "legacyCardNotes": null,
       "acceptance_criteria_state": [
         {
@@ -7079,7 +7079,7 @@
           "exit_code": null
         }
       ],
-      "commit": null,
+      "commit": "aa386ea264f6af0575b84106f96b4538152f296d",
       "legacyCardNotes": null,
       "acceptance_criteria_state": [
         {
@@ -7139,7 +7139,7 @@
           "notes": "3/3 engines pass; preference remains opt-in, unknown capability is not inferred."
         }
       ],
-      "commit": null,
+      "commit": "aa386ea264f6af0575b84106f96b4538152f296d",
       "legacyCardNotes": null,
       "acceptance_criteria_state": [
         {
@@ -7207,7 +7207,7 @@
           "notes": "Latest official 42-case Board matrix: 33 passed, 9 failed (7 Firefox, 2 WebKit)."
         }
       ],
-      "commit": null,
+      "commit": "aa386ea264f6af0575b84106f96b4538152f296d",
       "legacyCardNotes": null,
       "acceptance_criteria_state": [
         {

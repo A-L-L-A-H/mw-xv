@@ -1,3 +1,4 @@
+/* global PerformanceObserver, requestAnimationFrame, window, performance */
 import { chromium } from '@playwright/test';
 
 const baseURL = process.env.MW_SCENE_BASE_URL ?? 'http://127.0.0.1:5188';

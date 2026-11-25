@@ -1,7 +1,7 @@
 {
   "schemaVersion": "2.0.0",
   "format": "moonwitness-tasks/v2",
-  "generatedAt": "2026-11-25T07:42:30.000Z",
+  "generatedAt": "2026-11-25T07:46:02.000Z",
   "projects": [
     {
       "slug": "moonwitness",
@@ -41127,7 +41127,7 @@
           "docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md"
         ],
         "detailFile": "docs/bundles/visual-universe-pack/tasks/W9/W9-001.md",
-        "commitSha": null
+        "commitSha": "aa386ea264f6af0575b84106f96b4538152f296d"
       },
       "references": ["packages/assets/scenes/home"],
       "blockedReason": null,
@@ -41172,7 +41172,7 @@
             "notes": "8 passed; scene, registry and source references valid."
           }
         ],
-        "commit": null,
+        "commit": "aa386ea264f6af0575b84106f96b4538152f296d",
         "legacyCardNotes": null
       }
     },
@@ -41242,7 +41242,7 @@
           "docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md"
         ],
         "detailFile": "docs/bundles/visual-universe-pack/tasks/W9/W9-002.md",
-        "commitSha": null
+        "commitSha": "aa386ea264f6af0575b84106f96b4538152f296d"
       },
       "references": [
         "apps/board/src/app/page.tsx",
@@ -41305,7 +41305,7 @@
             "notes": "3 passed across Chromium, Firefox and WebKit."
           }
         ],
-        "commit": null,
+        "commit": "aa386ea264f6af0575b84106f96b4538152f296d",
         "legacyCardNotes": null
       }
     },
@@ -41555,7 +41555,7 @@
           "docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md"
         ],
         "detailFile": "docs/bundles/visual-universe-pack/tasks/W9/W9-005.md",
-        "commitSha": null
+        "commitSha": "aa386ea264f6af0575b84106f96b4538152f296d"
       },
       "references": ["apps/board/src"],
       "blockedReason": null,
@@ -41606,7 +41606,7 @@
             "notes": "3 passed across Chromium, Firefox and WebKit."
           }
         ],
-        "commit": "a3fa6da",
+        "commit": "aa386ea264f6af0575b84106f96b4538152f296d",
         "legacyCardNotes": null
       }
     },
@@ -41664,7 +41664,7 @@
           "docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md"
         ],
         "detailFile": "docs/bundles/visual-universe-pack/tasks/W9/W9-006.md",
-        "commitSha": "3d04f0f"
+        "commitSha": "aa386ea264f6af0575b84106f96b4538152f296d"
       },
       "references": ["apps/board/src", "packages/ui"],
       "blockedReason": "Official 42-case visual matrix after auth hydration fix: 33 passed, 9 failed (7 Firefox, 2 WebKit). All Chromium cases pass; WebKit protected routes, overlays, icons, activity, homepage, login and workbench pass. Residual failures: 2 dashboard screenshot mismatches in each of Firefox/WebKit, plus 5 reproducible Firefox page crashes during Axe-heavy/mobile/story checks. Focused Firefox homepage reproduces Axe crash; see W9 evidence.",
@@ -41709,7 +41709,7 @@
             "notes": "Save-Data passes all three engines; homepage passes Chromium/WebKit but isolated Firefox Axe scan crashes at mobile viewport."
           }
         ],
-        "commit": "3d04f0f",
+        "commit": "aa386ea264f6af0575b84106f96b4538152f296d",
         "legacyCardNotes": null
       }
     },
@@ -41995,7 +41995,7 @@
           "docs/bundles/visual-universe-pack/evidence/W10-001-runtime-performance-baseline.md"
         ],
         "detailFile": "docs/bundles/visual-universe-pack/tasks/W10/W10-001.md",
-        "commitSha": null
+        "commitSha": "aa386ea264f6af0575b84106f96b4538152f296d"
       },
       "references": ["scripts", "apps/board", "apps/ui-catalog"],
       "blockedReason": null,
@@ -42030,7 +42030,7 @@
             "notes": "Desktop and mobile cold-cache JS/CSS/resource bytes, FCP/LCP, scene bytes, RAF and Chromium CDP timing/heap recorded; no hardware performance guarantee inferred."
           }
         ],
-        "commit": null,
+        "commit": "aa386ea264f6af0575b84106f96b4538152f296d",
         "legacyCardNotes": null
       }
     },
@@ -42088,7 +42088,7 @@
           "docs/bundles/visual-universe-pack/evidence/W10-001-runtime-performance-baseline.md"
         ],
         "detailFile": "docs/bundles/visual-universe-pack/tasks/W10/W10-002.md",
-        "commitSha": null
+        "commitSha": "aa386ea264f6af0575b84106f96b4538152f296d"
       },
       "references": ["apps/board/src", "packages/assets"],
       "blockedReason": null,
@@ -42123,7 +42123,7 @@
             "notes": "Eight environment vectors 5,618 encoded bytes; first idle frame 1,431 bytes; measured bounded cache headers at desktop/mobile."
           }
         ],
-        "commit": null,
+        "commit": "aa386ea264f6af0575b84106f96b4538152f296d",
         "legacyCardNotes": null
       }
     },
@@ -42178,7 +42178,7 @@
       "evidence": {
         "paths": ["docs/bundles/visual-universe-pack/evidence/W10-003-motion-and-save-data.md"],
         "detailFile": "docs/bundles/visual-universe-pack/tasks/W10/W10-003.md",
-        "commitSha": null
+        "commitSha": "aa386ea264f6af0575b84106f96b4538152f296d"
       },
       "references": ["packages/ui", "apps/board"],
       "blockedReason": null,
@@ -42213,7 +42213,7 @@
             "notes": "3/3 engines pass; preference remains opt-in, unknown capability is not inferred."
           }
         ],
-        "commit": null,
+        "commit": "aa386ea264f6af0575b84106f96b4538152f296d",
         "legacyCardNotes": null
       }
     },
@@ -42271,7 +42271,7 @@
           "docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md"
         ],
         "detailFile": "docs/bundles/visual-universe-pack/tasks/W10/W10-004.md",
-        "commitSha": null
+        "commitSha": "aa386ea264f6af0575b84106f96b4538152f296d"
       },
       "references": ["apps/ui-catalog/tests", "apps/board/e2e"],
       "blockedReason": "Blocked by W9-006: homepage and Save-Data evidence is recorded, but the latest full Board matrix remains red (33/42 passed). Firefox crashes during Axe at mobile and has dashboard baseline mismatch; WebKit has two dashboard baseline mismatches. Signals and Archive remain absent routes and their artwork is catalog-only.",
@@ -42312,7 +42312,7 @@
             "notes": "Latest official 42-case Board matrix: 33 passed, 9 failed (7 Firefox, 2 WebKit)."
           }
         ],
-        "commit": null,
+        "commit": "aa386ea264f6af0575b84106f96b4538152f296d",
         "legacyCardNotes": null
       }
     },

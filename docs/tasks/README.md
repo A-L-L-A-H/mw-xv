@@ -7,7 +7,7 @@
 - Canonical registry: **679 unique task codes**; schema version `2.0.0`.
 - Current lifecycle distribution: **477 `done`**, **49 `doing`**, **119 `todo`**, **16 `blocked`**, **18 `backlog`**.
 - Source groups: roadmap 239; WhatsApp 112; Desktop 128; YouTube 13; social media 29; archived open MW 7; AI Corporation PR lifecycle 14; Evolution 4; audit 24; Visual Universe 109.
-- Current working `dev` task registry blob: `bea116f153c81e5b2a2fa04fa570887f24737c61` (recovery changes pending commit); generated at `2026-11-25T07:42:30.000Z`.
+- Current working `dev` task registry blob: `ce1b1b03c039e040e2d85011cd83e585937f283f` (recovery changes pending commit); generated at `2026-11-25T07:46:02.000Z`.
 - Current `main` still carries the original **627-record** TaskOS snapshot at blob `8216b6503d154d635112be96c41939a9efd38390`. The ten additional `AUD-015`–`AUD-024` records are on `dev`; do not describe the main snapshot as the current dev registry.
 - The original 1,358-record source registry is retained at `docs/tasks/archives/tasks-legacy-1358-2026-11-23.json`, blob `d56499936761dcc062704d06588ee2679fd1aae2`.
 
