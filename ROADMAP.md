@@ -261,60 +261,60 @@ Workstream Desktop yang diaktifkan secara terpisah untuk mengembangkan pengalama
 
 Architecture contract: [ADR 0019](docs/decisions/0019-isp-rust-go-boundaries.md). Rust owns ISP protocol/server runtimes; Go in apps/control-plane owns network control-plane behavior. Existing ORM addons remain the business/inventory source of truth. See [docs/roadmap/20-isp-rust-go-architecture-aaa.md](docs/roadmap/20-isp-rust-go-architecture-aaa.md) for task details, dependencies, owned files and acceptance.
 
-- [ ] M19.01 Accept Rust ISP server-plane and Go network control-plane boundary — [detail]( docs/roadmap/20-isp-rust-go-architecture-aaa.md ).
-- [ ] M19.02 Define versioned Go-to-Rust ISP runtime contracts — [detail]( docs/roadmap/20-isp-rust-go-architecture-aaa.md ).
-- [ ] M19.03 Make Rust ISP container build reproducible from a clean clone — [detail]( docs/roadmap/20-isp-rust-go-architecture-aaa.md ).
-- [ ] M19.04 Resolve Rust dependency advisories in the ISP runtime — [detail]( docs/roadmap/20-isp-rust-go-architecture-aaa.md ).
-- [ ] M19.05 Persist RADIUS accounting before sending Accounting-Response — [detail]( docs/roadmap/20-isp-rust-go-architecture-aaa.md ).
-- [ ] M19.06 Add RADIUS 64-bit counters and Gigawords support — [detail]( docs/roadmap/20-isp-rust-go-architecture-aaa.md ).
-- [ ] M19.07 Add MikroTik bandwidth RADIUS Vendor-Specific Attribute — [detail]( docs/roadmap/20-isp-rust-go-architecture-aaa.md ).
-- [ ] M19.08 Make CoA and Disconnect completion depend on verified NAS ACK — [detail]( docs/roadmap/20-isp-rust-go-architecture-aaa.md ).
-- [ ] M19.09 Add ISP control module to the existing Go control-plane — [detail]( docs/roadmap/20-isp-rust-go-architecture-aaa.md ).
-- [ ] M19.10 Implement Go desired-state reconciliation for NAS and subscriber services — [detail]( docs/roadmap/20-isp-rust-go-architecture-aaa.md ).
-- [ ] M19.11 Add read-only MikroTik RouterOS discovery adapter in Go — [detail]( docs/roadmap/20-isp-rust-go-architecture-aaa.md ).
-- [ ] M19.12 Provision MikroTik PPPoE subscribers safely with dry-run and rollback — [detail]( docs/roadmap/20-isp-rust-go-architecture-aaa.md ).
-- [ ] M19.13 Connect protocol-aware NAS probes to actual Go HA decisions — [detail]( docs/roadmap/20-isp-rust-go-architecture-aaa.md ).
+- [ ] M19.01 Accept Rust ISP server-plane and Go network control-plane boundary — [detail](docs/roadmap/20-isp-rust-go-architecture-aaa.md).
+- [ ] M19.02 Define versioned Go-to-Rust ISP runtime contracts — [detail](docs/roadmap/20-isp-rust-go-architecture-aaa.md).
+- [ ] M19.03 Make Rust ISP container build reproducible from a clean clone — [detail](docs/roadmap/20-isp-rust-go-architecture-aaa.md).
+- [ ] M19.04 Resolve Rust dependency advisories in the ISP runtime — [detail](docs/roadmap/20-isp-rust-go-architecture-aaa.md).
+- [ ] M19.05 Persist RADIUS accounting before sending Accounting-Response — [detail](docs/roadmap/20-isp-rust-go-architecture-aaa.md).
+- [ ] M19.06 Add RADIUS 64-bit counters and Gigawords support — [detail](docs/roadmap/20-isp-rust-go-architecture-aaa.md).
+- [ ] M19.07 Add MikroTik bandwidth RADIUS Vendor-Specific Attribute — [detail](docs/roadmap/20-isp-rust-go-architecture-aaa.md).
+- [ ] M19.08 Make CoA and Disconnect completion depend on verified NAS ACK — [detail](docs/roadmap/20-isp-rust-go-architecture-aaa.md).
+- [ ] M19.09 Add ISP control module to the existing Go control-plane — [detail](docs/roadmap/20-isp-rust-go-architecture-aaa.md).
+- [ ] M19.10 Implement Go desired-state reconciliation for NAS and subscriber services — [detail](docs/roadmap/20-isp-rust-go-architecture-aaa.md).
+- [ ] M19.11 Add read-only MikroTik RouterOS discovery adapter in Go — [detail](docs/roadmap/20-isp-rust-go-architecture-aaa.md).
+- [ ] M19.12 Provision MikroTik PPPoE subscribers safely with dry-run and rollback — [detail](docs/roadmap/20-isp-rust-go-architecture-aaa.md).
+- [ ] M19.13 Connect protocol-aware NAS probes to actual Go HA decisions — [detail](docs/roadmap/20-isp-rust-go-architecture-aaa.md).
 
 
 ## M20 — Network OSS, IPAM and FTTH access network
 
 Architecture contract: [ADR 0019](docs/decisions/0019-isp-rust-go-boundaries.md). Rust owns ISP protocol/server runtimes; Go in apps/control-plane owns network control-plane behavior. Existing ORM addons remain the business/inventory source of truth. See [docs/roadmap/21-isp-oss-fttx-ipam.md](docs/roadmap/21-isp-oss-fttx-ipam.md) for task details, dependencies, owned files and acceptance.
 
-- [ ] M20.01 Add canonical ISP network inventory for POPs, devices, interfaces and links — [detail]( docs/roadmap/21-isp-oss-fttx-ipam.md ).
-- [ ] M20.02 Model VLAN, VRF, L2/L3 circuits and upstream connectivity — [detail]( docs/roadmap/21-isp-oss-fttx-ipam.md ).
-- [ ] M20.03 Extend IPAM for IPv4/IPv6 prefixes, VRFs and delegated prefixes — [detail]( docs/roadmap/21-isp-oss-fttx-ipam.md ).
-- [ ] M20.04 Implement transactional and idempotent address/prefix allocation — [detail]( docs/roadmap/21-isp-oss-fttx-ipam.md ).
-- [ ] M20.05 Define vendor-neutral OLT/ONT adapter contract and simulator — [detail]( docs/roadmap/21-isp-oss-fttx-ipam.md ).
-- [ ] M20.06 Add read-only Huawei MA5800 and ZTE C300 discovery — [detail]( docs/roadmap/21-isp-oss-fttx-ipam.md ).
-- [ ] M20.07 Provision FTTH ONT-to-subscriber service through approved Go workflow — [detail]( docs/roadmap/21-isp-oss-fttx-ipam.md ).
-- [ ] M20.08 Add technician work orders for FTTH installation and CPE handoff — [detail]( docs/roadmap/21-isp-oss-fttx-ipam.md ).
+- [ ] M20.01 Add canonical ISP network inventory for POPs, devices, interfaces and links — [detail](docs/roadmap/21-isp-oss-fttx-ipam.md).
+- [ ] M20.02 Model VLAN, VRF, L2/L3 circuits and upstream connectivity — [detail](docs/roadmap/21-isp-oss-fttx-ipam.md).
+- [ ] M20.03 Extend IPAM for IPv4/IPv6 prefixes, VRFs and delegated prefixes — [detail](docs/roadmap/21-isp-oss-fttx-ipam.md).
+- [ ] M20.04 Implement transactional and idempotent address/prefix allocation — [detail](docs/roadmap/21-isp-oss-fttx-ipam.md).
+- [ ] M20.05 Define vendor-neutral OLT/ONT adapter contract and simulator — [detail](docs/roadmap/21-isp-oss-fttx-ipam.md).
+- [ ] M20.06 Add read-only Huawei MA5800 and ZTE C300 discovery — [detail](docs/roadmap/21-isp-oss-fttx-ipam.md).
+- [ ] M20.07 Provision FTTH ONT-to-subscriber service through approved Go workflow — [detail](docs/roadmap/21-isp-oss-fttx-ipam.md).
+- [ ] M20.08 Add technician work orders for FTTH installation and CPE handoff — [detail](docs/roadmap/21-isp-oss-fttx-ipam.md).
 
 
 ## M21 — Rust ISP service servers and Go NOC
 
 Architecture contract: [ADR 0019](docs/decisions/0019-isp-rust-go-boundaries.md). Rust owns ISP protocol/server runtimes; Go in apps/control-plane owns network control-plane behavior. Existing ORM addons remain the business/inventory source of truth. See [docs/roadmap/22-isp-rust-services-noc.md](docs/roadmap/22-isp-rust-services-noc.md) for task details, dependencies, owned files and acceptance.
 
-- [ ] M21.01 Build Rust DHCPv4 server with durable leases and relay support — [detail]( docs/roadmap/22-isp-rust-services-noc.md ).
-- [ ] M21.02 Add Rust DHCPv6 and Prefix Delegation — [detail]( docs/roadmap/22-isp-rust-services-noc.md ).
-- [ ] M21.03 Build Rust authoritative DNS server with tenant-scoped zones — [detail]( docs/roadmap/22-isp-rust-services-noc.md ).
-- [ ] M21.04 Build Rust recursive DNS resolver with cache and policy isolation — [detail]( docs/roadmap/22-isp-rust-services-noc.md ).
-- [ ] M21.05 Build Rust TR-069 ACS server and simulated CPE suite — [detail]( docs/roadmap/22-isp-rust-services-noc.md ).
-- [ ] M21.06 Build Rust syslog and SNMP-trap ingestion service — [detail]( docs/roadmap/22-isp-rust-services-noc.md ).
-- [ ] M21.07 Build Rust IPFIX and sFlow flow collector — [detail]( docs/roadmap/22-isp-rust-services-noc.md ).
-- [ ] M21.08 Implement Go NOC event correlation, alarms and incident workflow — [detail]( docs/roadmap/22-isp-rust-services-noc.md ).
+- [ ] M21.01 Build Rust DHCPv4 server with durable leases and relay support — [detail](docs/roadmap/22-isp-rust-services-noc.md).
+- [ ] M21.02 Add Rust DHCPv6 and Prefix Delegation — [detail](docs/roadmap/22-isp-rust-services-noc.md).
+- [ ] M21.03 Build Rust authoritative DNS server with tenant-scoped zones — [detail](docs/roadmap/22-isp-rust-services-noc.md).
+- [ ] M21.04 Build Rust recursive DNS resolver with cache and policy isolation — [detail](docs/roadmap/22-isp-rust-services-noc.md).
+- [ ] M21.05 Build Rust TR-069 ACS server and simulated CPE suite — [detail](docs/roadmap/22-isp-rust-services-noc.md).
+- [ ] M21.06 Build Rust syslog and SNMP-trap ingestion service — [detail](docs/roadmap/22-isp-rust-services-noc.md).
+- [ ] M21.07 Build Rust IPFIX and sFlow flow collector — [detail](docs/roadmap/22-isp-rust-services-noc.md).
+- [ ] M21.08 Implement Go NOC event correlation, alarms and incident workflow — [detail](docs/roadmap/22-isp-rust-services-noc.md).
 
 
 ## M22 — ISP BSS, customer lifecycle and managed server products
 
 Architecture contract: [ADR 0019](docs/decisions/0019-isp-rust-go-boundaries.md). Rust owns ISP protocol/server runtimes; Go in apps/control-plane owns network control-plane behavior. Existing ORM addons remain the business/inventory source of truth. See [docs/roadmap/23-isp-bss-server-products.md](docs/roadmap/23-isp-bss-server-products.md) for task details, dependencies, owned files and acceptance.
 
-- [ ] M22.01 Define ISP product catalog using existing subscription ownership — [detail]( docs/roadmap/23-isp-bss-server-products.md ).
-- [ ] M22.02 Implement ISP order lifecycle from coverage to verified activation — [detail]( docs/roadmap/23-isp-bss-server-products.md ).
-- [ ] M22.03 Implement contract-aware recurring and usage billing — [detail]( docs/roadmap/23-isp-bss-server-products.md ).
-- [ ] M22.04 Implement collections, suspension and restore as verified lifecycle — [detail]( docs/roadmap/23-isp-bss-server-products.md ).
-- [ ] M22.05 Build customer self-service for usage, sessions, outages and support — [detail]( docs/roadmap/23-isp-bss-server-products.md ).
-- [ ] M22.06 Add managed server products by reusing existing PaaS and cloud control plane — [detail]( docs/roadmap/23-isp-bss-server-products.md ).
-- [ ] M22.07 Verify full ISP order-to-activation-to-billing lifecycle — [detail]( docs/roadmap/23-isp-bss-server-products.md ).
+- [ ] M22.01 Define ISP product catalog using existing subscription ownership — [detail](docs/roadmap/23-isp-bss-server-products.md).
+- [ ] M22.02 Implement ISP order lifecycle from coverage to verified activation — [detail](docs/roadmap/23-isp-bss-server-products.md).
+- [ ] M22.03 Implement contract-aware recurring and usage billing — [detail](docs/roadmap/23-isp-bss-server-products.md).
+- [ ] M22.04 Implement collections, suspension and restore as verified lifecycle — [detail](docs/roadmap/23-isp-bss-server-products.md).
+- [ ] M22.05 Build customer self-service for usage, sessions, outages and support — [detail](docs/roadmap/23-isp-bss-server-products.md).
+- [ ] M22.06 Add managed server products by reusing existing PaaS and cloud control plane — [detail](docs/roadmap/23-isp-bss-server-products.md).
+- [ ] M22.07 Verify full ISP order-to-activation-to-billing lifecycle — [detail](docs/roadmap/23-isp-bss-server-products.md).
 
 
 ## K — Local AI knowledge rebuild (K0–K9)
