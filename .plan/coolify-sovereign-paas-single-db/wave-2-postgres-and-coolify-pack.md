@@ -418,7 +418,7 @@
 
 ---
 
-## - [ ] M33 — Add `GET /auth/setup-status` & `POST /auth/setup-claim` in `apps/api/src/routes/auth.routes.ts`
+## - [x] M33 — Add `GET /auth/setup-status` & `POST /auth/setup-claim` in `apps/api/src/routes/auth.routes.ts`
 
 - **Owner File (MODIFY):** `apps/api/src/routes/auth.routes.ts`
 - **Depends On:** `M32`
