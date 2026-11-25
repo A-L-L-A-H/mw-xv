@@ -2949,12 +2949,21 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       await promotePreviewAppsToWildcard({
         wildcardDomain,
         upAgentCompose: async (slug, env) => {
+          // Use the stored compiled compose spec (with volume declarations + inline files)
+          // so the agent's compose up does not fail on an empty spec.
+          const appRow = await CloudApp.query().findOne({ name: slug });
+          const composeSpec = appRow?.compose_spec;
+          if (!composeSpec) {
+            apps.push(slug);
+            return;
+          }
           const res = await controlPlaneFetch(`${defaultAgentUrl}/agent/compose/up`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ slug, composeSpec: '', env }),
+            body: JSON.stringify({ slug, composeSpec, env }),
           });
           if (!res.ok) throw new Error(`compose up failed: ${res.status}`);
+          apps.push(slug);
         },
       });
       // Record promoted apps for the response by re-reading newly promoted apps.

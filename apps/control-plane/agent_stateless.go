@@ -508,6 +508,20 @@ func (m *PaasManager) handleAgentContainerStats(w http.ResponseWriter, r *http.R
 
 	out, err := m.runner(ctx, m.dockerBin, "stats", "--no-stream", "--format", "json", containerName)
 	if err != nil {
+		// Compose stacks name containers <project>-<service>-1, not the canonical image-mode name.
+		project := PaasContainerName(slug)
+		if listed, lerr := m.runner(ctx, m.dockerBin, "ps", "-q", "--filter", "label=com.docker.compose.project="+project); lerr == nil {
+			candidates := strings.Fields(strings.TrimSpace(listed))
+			for _, candidate := range candidates {
+				if statsOut, serr := m.runner(ctx, m.dockerBin, "stats", "--no-stream", "--format", "json", candidate); serr == nil {
+					parsed, perr := parseDockerStatsJSON(slug, candidate, statsOut)
+					if perr == nil {
+						writePaasJSON(w, http.StatusOK, parsed)
+						return
+					}
+				}
+			}
+		}
 		writePaasJSON(w, http.StatusBadGateway, map[string]string{
 			"error": RedactPaasText(err.Error()),
 		})
