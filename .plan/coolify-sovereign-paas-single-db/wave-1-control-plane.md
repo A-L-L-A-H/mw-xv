@@ -277,7 +277,7 @@
 
 ---
 
-## - [ ] M14 — Add Full Stateless Unit Tests (`agent_stateless_test.go` & `main_test.go`)
+## - [x] M14 — Add Full Stateless Unit Tests (`agent_stateless_test.go` & `main_test.go`)
 
 - **Owner Files:**
   - `apps/control-plane/agent_stateless_test.go` (CREATE)

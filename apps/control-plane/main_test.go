@@ -794,6 +794,10 @@ func TestProtectedRouteFamiliesRejectMalformedAndWrongAudienceCredentials(t *tes
 		{http.MethodPost, "/paas/apps/deploy"},
 		{http.MethodPost, "/paas/apps/deploy-git"},
 		{http.MethodPost, "/paas/backups/restore"},
+		{http.MethodGet, "/agent/metrics"},
+		{http.MethodPost, "/agent/caddy/reconcile"},
+		{http.MethodPost, "/agent/containers/run"},
+		{http.MethodPost, "/agent/compose/up"},
 	}
 
 	wrongAudience := func(secret, domainLabel string) string {
