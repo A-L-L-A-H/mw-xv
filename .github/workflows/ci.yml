@@ -308,6 +308,8 @@ jobs:
           bun-version: '1.4.5'
       - name: Install frozen workspace dependencies
         run: bun install --frozen-lockfile
+      - name: Build @moonwitness/types first (required by orm-cloud and others)
+        run: bun --filter @moonwitness/types build
       - name: Build knowledge workspace dependencies
         run: bun run build
       - name: Run K9-001 deterministic knowledge gate
@@ -348,6 +350,7 @@ jobs:
         run: bun install --frozen-lockfile
       - name: Build workspace and run PostgreSQL integration suites
         run: |
+          bun --filter @moonwitness/types build
           bun run build
           bun run test:integration:built
           node scripts/knowledge/run-k-gate.mjs --json
