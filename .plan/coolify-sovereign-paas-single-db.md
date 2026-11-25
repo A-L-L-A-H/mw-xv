@@ -84,7 +84,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 - [x] **M29** — `packages/orm-cloud/src/http.ts`: add `POST /apps/deploy-git` & `POST /webhooks/github/:slug` (HMAC-SHA256 verified against Postgres)
 - [x] **M30** — `packages/orm-cloud/src/http.ts`: refactor `POST /apps/:slug/:action` + add `GET /apps/:slug/stats` + update `logs/stream` to `/agent/containers/*`
 - [x] **M31** — `packages/orm-cloud/src/http.ts`: add `POST /apps/:slug/env` (`[REDACTED]`-safe) & `POST /apps/:slug/domain` (Postgres + compose recompile + Caddy)
-- [ ] **M32** — `packages/auth/src/service.ts` + `index.ts`: add transactional `claimSuperadminSetup()` (raw password -> auto-hashed by `User` model!)
+- [x] **M32** — `packages/auth/src/service.ts` + `index.ts`: add transactional `claimSuperadminSetup()` (raw password -> auto-hashed by `User` model!)
 - [ ] **M33** — `apps/api/src/routes/auth.routes.ts`: add `GET /auth/setup-status` & `POST /auth/setup-claim` (SHA-256 constant-time `MW_SETUP_TOKEN`, `409` after claim)
 - [ ] **M34** — `apps/api/src/app.ts`: make `strict-transport-security` HTTPS-conditional
 - [ ] **M35** — `packages/client/src/types.ts` + `client.ts`: add `getSetupStatus()` & `claimSetup()`
@@ -134,7 +134,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 |---|---|---|---|---|
 | Wave 0 | `M01`–`M03` | `3 / 3` | — | `M03 OK` — frozen-lockfile dry-run exit 0 (zero drift, `bun.lock` unchanged); orm-cloud build exit 0; manifest test pass 10 / fail 0 |
 | Wave 1 | `M04`–`M15` | `12 / 12` | `177580ee` | `M15 OK` — `CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build` exit 0; binary size `18,091,490` bytes (> 10MB) |
-| Wave 2 | `M16`–`M38` | `16 / 23` | — | `M31 OK` — `@moonwitness/orm-cloud build` exit 0; cloud-auth-ops.test.ts 12/12 passed; `POST /apps/:slug/env` ([REDACTED]-safe merge + redeploy) & `POST /apps/:slug/domain` (collision checks + compose recompile + Caddy) wired |
+| Wave 2 | `M16`–`M38` | `17 / 23` | — | `M32 OK` — `@moonwitness/auth build` exit 0; auth tests 16/16 passed; transactional `claimSuperadminSetup()` with raw password, instance.init gate, login collision check, partner patch, DB flag upsert, refresh-token cleanup |
 | Wave 3 | `M39`–`M51` | `0 / 13` | — | — |
 | Wave 4 | `M52`–`M55` | `0 / 4` | — | — |
 | Wave 5 | `M56`–`M66` | `0 / 11` | — | — |

@@ -388,7 +388,7 @@
 
 ---
 
-## - [ ] M32 — Add Transactional `claimSuperadminSetup()` in `packages/auth`
+## - [x] M32 — Add Transactional `claimSuperadminSetup()` in `packages/auth`
 
 - **Owner Files (MODIFY):**
   - `packages/auth/src/service.ts`
