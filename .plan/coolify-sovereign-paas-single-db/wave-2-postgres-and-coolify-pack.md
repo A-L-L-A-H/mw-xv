@@ -237,7 +237,7 @@
 
 ---
 
-## - [ ] M25 — Wire `promote-wildcard`, Live `mesh/status`, & `onReady` Boot Reconcile (`http.ts`)
+## - [x] M25 — Wire `promote-wildcard`, Live `mesh/status`, & `onReady` Boot Reconcile (`http.ts`)
 
 - **Owner File (MODIFY):** `packages/orm-cloud/src/http.ts`
 - **Depends On:** `M24`

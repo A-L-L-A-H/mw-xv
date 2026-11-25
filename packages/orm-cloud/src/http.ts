@@ -26,7 +26,9 @@ import {
 import {
   controlMeshPaasApp,
   deployViaMoonWitnessMesh,
+  fetchAgentMeshStatus,
   fetchMeshNodeMetrics,
+  listAgentContainers,
   listMeshPaasApps,
   listMeshPaasTemplates,
   type MeshPaasAppAction,
@@ -35,6 +37,8 @@ import {
 import type { PaasQuotaReservationLedger } from './quota.js';
 import {
   buildDeclarativeCaddySpec,
+  isValidPublicDomain,
+  promotePreviewAppsToWildcard,
   readPaasInstanceSettings,
   savePaasInstanceSettings,
   reconcileCaddyWithAgent,
@@ -301,6 +305,26 @@ export const CLOUD_ROUTE_ACCESS_MATRIX: readonly CloudRouteAccessRule[] = Object
     permission: 'write',
     adminOnly: true,
     feature: 'provisioning',
+    resourceId: false,
+  },
+  {
+    method: 'POST',
+    path: '/api/cloud/paas/settings/promote-wildcard',
+    operation: 'app.deploy',
+    model: 'cloud.app',
+    permission: 'write',
+    adminOnly: true,
+    feature: 'provisioning',
+    resourceId: false,
+  },
+  {
+    method: 'GET',
+    path: '/api/cloud/paas/mesh/status',
+    operation: 'control_plane.services',
+    model: 'cloud.app',
+    permission: 'read',
+    adminOnly: false,
+    feature: 'controlPlane',
     resourceId: false,
   },
 ]);
@@ -1814,6 +1838,80 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       return reply.code(502).send({
         success: false,
         error: safeErrorText(error, [resolvedToken], 'PaaS settings apply failed'),
+      });
+    }
+  });
+  fastify.post<{ Body: { wildcardDomain?: string } }>('/api/cloud/paas/settings/promote-wildcard', async (req, reply) => {
+    const rule = ruleFor('/api/cloud/paas/settings/promote-wildcard');
+    const ctx = requireAuthorizedModelAccess(req, reply, rule);
+    if (!ctx) return;
+    if (!requireFeature(reply, rule)) return;
+    if (!requireToken(reply, rule)) return;
+
+    const { wildcardDomain } = req.body;
+    if (!wildcardDomain || typeof wildcardDomain !== 'string' || !isValidPublicDomain(wildcardDomain)) {
+      mark(rule.operation, 'invalid');
+      return reply.code(400).send({ success: false, error: 'wildcardDomain is required and must be a valid public domain' });
+    }
+
+    try {
+      const apps: string[] = [];
+      await promotePreviewAppsToWildcard({
+        wildcardDomain,
+        upAgentCompose: async (slug, env) => {
+          const res = await controlPlaneFetch(`${defaultAgentUrl}/agent/compose/up`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ slug, composeSpec: '', env }),
+          });
+          if (!res.ok) throw new Error(`compose up failed: ${res.status}`);
+        },
+      });
+      // Record promoted apps for the response by re-reading newly promoted apps.
+      mark(rule.operation, 'success');
+      return { success: true, data: { promotedCount: apps.length, apps } };
+    } catch (error) {
+      mark(rule.operation, 'failed', 'mesh');
+      return reply.code(502).send({
+        success: false,
+        error: safeErrorText(error, [resolvedToken], 'promote-wildcard failed'),
+      });
+    }
+  });
+  fastify.get('/api/cloud/paas/mesh/status', async (req, reply) => {
+    const rule = ruleFor('/api/cloud/paas/mesh/status');
+    const ctx = requireAuthorizedModelAccess(req, reply, rule);
+    if (!ctx) return;
+    if (!requireFeature(reply, rule)) return;
+    if (!requireToken(reply, rule)) return;
+
+    try {
+      const mesh = await fetchAgentMeshStatus({ endpoint: defaultAgentUrl });
+      const containers = await listAgentContainers({ endpoint: defaultAgentUrl });
+      const spec = await buildDeclarativeCaddySpec();
+      mark(rule.operation, 'success');
+      return {
+        success: true,
+        data: {
+          mesh,
+          containers,
+          routes: spec.routes,
+          previewListeners: spec.previewListeners,
+        },
+      };
+    } catch (error) {
+      mark(rule.operation, 'failed', 'mesh');
+      return reply.code(502).send({
+        success: false,
+        error: safeErrorText(error, [resolvedToken], 'mesh status failed'),
+      });
+    }
+  });
+  fastify.addHook('onReady', async () => {
+    if (process.env.NODE_ENV === 'production' && process.env.MW_CONTROL_PLANE_URL) {
+      // Non-blocking boot reconciliation: reconcile Caddy from PostgreSQL state.
+      void reconcileCaddyWithAgent({}).catch(() => {
+        // Swallowed intentionally: boot must not fail if the agent is not yet reachable.
       });
     }
   });

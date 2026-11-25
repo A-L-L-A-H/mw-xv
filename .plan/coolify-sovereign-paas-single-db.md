@@ -77,7 +77,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 - [x] **M22** — `packages/orm-cloud/src/paas-state.ts`: `allocatePreviewPort`, `buildDeclarativeCaddySpec`, `reconcileCaddyWithAgent`, `promotePreviewAppsToWildcard`
 - [x] **M23** — `packages/orm-cloud/src/providers/moonwitness-mesh.ts` + `index.ts`: fix RAM MB casing + add stateless `/agent/*` client helpers
 - [x] **M24** — `packages/orm-cloud/src/http.ts`: wire `GET /settings`, `POST /settings/verify-dns`, `POST /settings/apply` (with strict TLS lockdown gate)
-- [ ] **M25** — `packages/orm-cloud/src/http.ts`: wire `POST /settings/promote-wildcard`, `GET /mesh/status`, & `onReady` boot reconciliation hook
+- [x] **M25** — `packages/orm-cloud/src/http.ts`: wire `POST /settings/promote-wildcard`, `GET /mesh/status`, & `onReady` boot reconciliation hook
 - [ ] **M26** — `packages/orm-cloud/src/http.ts`: wire 390+ template endpoints (`GET /templates`, `GET /templates/:id`, `POST /templates/deploy`)
 - [ ] **M27** — `packages/orm-cloud/src/http.ts`: refactor `GET /apps` & add `GET /apps/:slug` (PostgreSQL `CloudApp` + live agent merge + deployment history)
 - [ ] **M28** — `packages/orm-cloud/src/http.ts`: refactor `POST /apps/deploy` & add `POST /apps/deploy-compose` (Postgres + agent + Caddy)
@@ -134,7 +134,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 |---|---|---|---|---|
 | Wave 0 | `M01`–`M03` | `3 / 3` | — | `M03 OK` — frozen-lockfile dry-run exit 0 (zero drift, `bun.lock` unchanged); orm-cloud build exit 0; manifest test pass 10 / fail 0 |
 | Wave 1 | `M04`–`M15` | `12 / 12` | `177580ee` | `M15 OK` — `CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build` exit 0; binary size `18,091,490` bytes (> 10MB) |
-| Wave 2 | `M16`–`M38` | `9 / 23` | — | `M24 OK` — `@moonwitness/orm-cloud build` exit 0; cloud-auth-ops.test.ts 12/12 passed; `/api/cloud/paas/settings`, `verify-dns`, and TLS-gated `apply` routes added |
+| Wave 2 | `M16`–`M38` | `10 / 23` | — | `M25 OK` — `@moonwitness/orm-cloud build` exit 0; cloud-auth-ops.test.ts 12/12 passed; `/api/cloud/paas/settings/promote-wildcard`, `/api/cloud/paas/mesh/status`, and `onReady` boot reconcile added |
 | Wave 3 | `M39`–`M51` | `0 / 13` | — | — |
 | Wave 4 | `M52`–`M55` | `0 / 4` | — | — |
 | Wave 5 | `M56`–`M66` | `0 / 11` | — | — |
