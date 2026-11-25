@@ -5,8 +5,6 @@ import { fileURLToPath } from 'node:url';
 import prettier from 'prettier';
 import { validateTaskRegistryData } from './validate-tasks.mjs';
 import { AUDIT_TASKS } from './sources/audit-tasks.mjs';
-import { YT_TASKS } from './sources/yt-tasks.mjs';
-import { SM_TASKS } from './sources/sm-tasks.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const prettierConfig = await prettier.resolveConfig(fileURLToPath(import.meta.url), {
@@ -123,16 +121,6 @@ export async function sweepAndConsolidate({
   // 2. Ingest Audit Tasks (AUD-001..AUD-024)
   for (const aud of AUDIT_TASKS) {
     addTask(aud);
-  }
-
-  // 2b. Ingest YouTube Tasks (YT-001..YT-007)
-  for (const yt of YT_TASKS) {
-    addTask(yt);
-  }
-
-  // 2c. Ingest Social Media Tasks (SM-001..SM-035)
-  for (const sm of SM_TASKS) {
-    addTask(sm);
   }
 
   // 3. Ingest docs/tasks/sources/todo-wa.md (WhatsApp checklist)

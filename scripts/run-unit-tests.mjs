@@ -243,6 +243,12 @@ const suites = [
     typecheck: true,
   },
   {
+    name: 'whatsapp',
+    packageName: '@moonwitness/whatsapp',
+    packageDir: 'apps/whatsapp',
+    typecheck: true,
+  },
+  {
     name: 'ai-mcp',
     packageName: '@moonwitness/ai-mcp',
     typecheck: true,

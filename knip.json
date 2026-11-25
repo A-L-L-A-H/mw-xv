@@ -15,7 +15,8 @@
     "apps/api": {},
     "apps/docs": {},
     "apps/control-plane": {},
-    "apps/isp": {}
+    "apps/isp": {},
+    "apps/whatsapp": {}
   },
   "rules": {
     "files": "warn",

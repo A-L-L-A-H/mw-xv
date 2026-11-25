@@ -17,6 +17,7 @@ COPY apps/desktop/package.json ./apps/desktop/package.json
 COPY apps/docs/package.json ./apps/docs/package.json
 COPY apps/isp/package.json ./apps/isp/package.json
 COPY apps/ui-catalog/package.json ./apps/ui-catalog/package.json
+COPY apps/whatsapp/package.json ./apps/whatsapp/package.json
 COPY packages/ai-evaluation/package.json ./packages/ai-evaluation/package.json
 COPY packages/ai-mcp/package.json ./packages/ai-mcp/package.json
 COPY packages/ai-runtime/package.json ./packages/ai-runtime/package.json
