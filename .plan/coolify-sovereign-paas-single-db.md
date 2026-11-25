@@ -65,7 +65,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 - [x] **M12** — `agent_stateless.go` + `main.go`: `POST /agent/git/deploy` (stateless SSRF-safe clone + build + swap)
 - [x] **M13** — `agent_stateless.go` + `main.go`: `POST /agent/dns/verify` (apex, synthetic `mw-dns-check.<wildcard>`, Cloudflare-proxy detection, strict TLS `/readyz`)
 - [x] **M14** — `agent_stateless_test.go` + `main_test.go`: full `db == nil` unit test suite & auth matrix tests
-- [ ] **M15** — Verify `go test` + `go vet` + cross-compile Linux `amd64` control-plane binary
+- [x] **M15** — Verify `go test` + `go vet` + cross-compile Linux `amd64` control-plane binary
 
 ### Wave 2 — PostgreSQL Single-DB, 390+ Coolify Compiler, & Setup Claim (`wave-2-postgres-and-coolify-pack.md`)
 - [ ] **M16** — `packages/orm-cloud/src/models/index.ts`: extend `CloudApp` (`managed_by`, `deploy_mode`, `template_id`, `compose_spec`, `git_*`, `ingress_routes`, `webhook_secret`)
@@ -133,7 +133,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 | Wave | Task Range | Completed Tasks | Last Commit SHA | Latest Verification Evidence |
 |---|---|---|---|---|
 | Wave 0 | `M01`–`M03` | `3 / 3` | — | `M03 OK` — frozen-lockfile dry-run exit 0 (zero drift, `bun.lock` unchanged); orm-cloud build exit 0; manifest test pass 10 / fail 0 |
-| Wave 1 | `M04`–`M15` | `11 / 12` | — | `M14 OK` — `go test -C apps/control-plane -v ./...` PASS (`33.821s`, 100% nil-DB + SQLite fixture tests green) + `go vet` VET OK |
+| Wave 1 | `M04`–`M15` | `12 / 12` | `177580ee` | `M15 OK` — `CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build` exit 0; binary size `18,091,490` bytes (> 10MB) |
 | Wave 2 | `M16`–`M38` | `0 / 23` | — | — |
 | Wave 3 | `M39`–`M51` | `0 / 13` | — | — |
 | Wave 4 | `M52`–`M55` | `0 / 4` | — | — |

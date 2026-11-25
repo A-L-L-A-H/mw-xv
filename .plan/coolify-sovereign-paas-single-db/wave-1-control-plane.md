@@ -302,7 +302,7 @@
 
 ---
 
-## - [ ] M15 — Cross-Compile Linux `amd64` Control-Plane Binary
+## - [x] M15 — Cross-Compile Linux `amd64` Control-Plane Binary
 
 - **Owner Artifact (scratch, not committed to git):** `C:\Users\bjo16\.gemini\antigravity\brain\682931c0-bdfe-41e8-84a3-e0a9d98bd906\scratch\moonwitness-control-plane-linux-amd64`
 - **Depends On:** `M14`
