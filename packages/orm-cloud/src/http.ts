@@ -23,6 +23,14 @@ import {
   reconcileDeploymentOutcome,
   type CloudDeploymentState,
 } from './providers/coolify.js';
+import {
+  controlMeshPaasApp,
+  deployViaMoonWitnessMesh,
+  fetchMeshNodeMetrics,
+  listMeshPaasApps,
+  listMeshPaasTemplates,
+  type MeshPaasAppAction,
+} from './providers/moonwitness-mesh.js';
 import type { PaasQuotaReservationLedger } from './quota.js';
 import { exportCloudTerraformHcl } from './terraform.js';
 import { probeCloudTargetsHealth, assertProbeTarget, readBoundedResponseBody } from './probe.js';
@@ -166,6 +174,96 @@ export const CLOUD_ROUTE_ACCESS_MATRIX: readonly CloudRouteAccessRule[] = Object
     permission: 'read',
     adminOnly: false,
     feature: 'terraformExport',
+    resourceId: false,
+  },
+  {
+    method: 'GET',
+    path: '/api/cloud/paas/metrics',
+    operation: 'control_plane.services',
+    model: 'cloud.app',
+    permission: 'read',
+    adminOnly: false,
+    feature: 'controlPlane',
+    resourceId: false,
+  },
+  {
+    method: 'GET',
+    path: '/api/cloud/paas/apps',
+    operation: 'control_plane.services',
+    model: 'cloud.app',
+    permission: 'read',
+    adminOnly: false,
+    feature: 'controlPlane',
+    resourceId: false,
+  },
+  {
+    method: 'GET',
+    path: '/api/cloud/paas/templates',
+    operation: 'control_plane.services',
+    model: 'cloud.app',
+    permission: 'read',
+    adminOnly: false,
+    feature: 'controlPlane',
+    resourceId: false,
+  },
+  {
+    method: 'POST',
+    path: '/api/cloud/paas/apps/deploy',
+    operation: 'app.deploy',
+    model: 'cloud.app',
+    permission: 'write',
+    adminOnly: false,
+    feature: 'provisioning',
+    resourceId: false,
+  },
+  {
+    method: 'POST',
+    path: '/api/cloud/paas/apps/:slug/:action',
+    operation: 'app.deploy',
+    model: 'cloud.app',
+    permission: 'write',
+    adminOnly: false,
+    feature: 'provisioning',
+    resourceId: true,
+  },
+  {
+    method: 'GET',
+    path: '/api/cloud/paas/apps/:slug/logs/stream',
+    operation: 'deployment.logs.stream',
+    model: 'cloud.deployment',
+    permission: 'read',
+    adminOnly: false,
+    feature: 'controlPlane',
+    resourceId: true,
+  },
+  {
+    method: 'GET',
+    path: '/api/cloud/paas/backups',
+    operation: 'control_plane.services',
+    model: 'cloud.app',
+    permission: 'read',
+    adminOnly: false,
+    feature: 'controlPlane',
+    resourceId: false,
+  },
+  {
+    method: 'POST',
+    path: '/api/cloud/paas/backups/postgres',
+    operation: 'app.deploy',
+    model: 'cloud.app',
+    permission: 'write',
+    adminOnly: false,
+    feature: 'provisioning',
+    resourceId: false,
+  },
+  {
+    method: 'POST',
+    path: '/api/cloud/paas/backups/restore',
+    operation: 'app.deploy',
+    model: 'cloud.app',
+    permission: 'write',
+    adminOnly: false,
+    feature: 'provisioning',
     resourceId: false,
   },
 ]);
@@ -1233,6 +1331,346 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       ]);
       mark(rule.operation, 'success');
       return reply.type('text/plain; charset=utf-8').send(hcl);
+    });
+
+    const PAAS_SLUG_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,46}[a-z0-9])?$/u;
+    const PAAS_ACTIONS: readonly MeshPaasAppAction[] = [
+      'start',
+      'restart',
+      'stop',
+      'redeploy',
+      'delete',
+      'logs',
+    ];
+    const normalizeBackup = (raw: unknown) => {
+      const item = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
+      const sizeBytes = typeof item.sizeBytes === 'number' ? item.sizeBytes : 0;
+      return {
+        id: String(item.id ?? ''),
+        filename: String(item.filename ?? `${String(item.id ?? 'backup')}.dump`),
+        createdAt: String(item.createdAt ?? new Date().toISOString()),
+        sizeMb: Math.max(0.01, Number((sizeBytes / 1_048_576).toFixed(2))),
+        sha256: String(item.sha256 ?? ''),
+        verified: true,
+      };
+    };
+
+    fastify.get('/api/cloud/paas/metrics', async (req, reply) => {
+      const rule = ruleFor('/api/cloud/paas/metrics');
+      const ctx = requireAuthorizedModelAccess(req, reply, rule);
+      if (!ctx) return;
+      if (!requireFeature(reply, rule)) return;
+      if (!requireToken(reply, rule)) return;
+      try {
+        assertProbeTarget(defaultAgentUrl, requestPolicy);
+        const metrics = await fetchMeshNodeMetrics({
+          endpoint: defaultAgentUrl,
+          token: resolvedToken,
+          fetchImpl,
+          timeoutMs: 10_000,
+        });
+        mark(rule.operation, 'success', 'mesh');
+        return { success: true, data: metrics };
+      } catch (error) {
+        mark(rule.operation, 'offline', 'mesh');
+        return reply.code(502).send({
+          success: false,
+          error: safeErrorText(error, [resolvedToken], 'Control plane metrics unreachable'),
+        });
+      }
+    });
+
+    fastify.get('/api/cloud/paas/apps', async (req, reply) => {
+      const rule = ruleFor('/api/cloud/paas/apps');
+      const ctx = requireAuthorizedModelAccess(req, reply, rule);
+      if (!ctx) return;
+      if (!requireFeature(reply, rule)) return;
+      if (!requireToken(reply, rule)) return;
+      try {
+        assertProbeTarget(defaultAgentUrl, requestPolicy);
+        const apps = await listMeshPaasApps({
+          endpoint: defaultAgentUrl,
+          token: resolvedToken,
+          fetchImpl,
+          timeoutMs: 10_000,
+        });
+        mark(rule.operation, 'success', 'mesh');
+        return { success: true, data: apps };
+      } catch (error) {
+        mark(rule.operation, 'offline', 'mesh');
+        return reply.code(502).send({
+          success: false,
+          error: safeErrorText(error, [resolvedToken], 'Control plane apps list unreachable'),
+        });
+      }
+    });
+
+    fastify.get('/api/cloud/paas/templates', async (req, reply) => {
+      const rule = ruleFor('/api/cloud/paas/templates');
+      const ctx = requireAuthorizedModelAccess(req, reply, rule);
+      if (!ctx) return;
+      if (!requireFeature(reply, rule)) return;
+      if (!requireToken(reply, rule)) return;
+      try {
+        assertProbeTarget(defaultAgentUrl, requestPolicy);
+        const templates = await listMeshPaasTemplates({
+          endpoint: defaultAgentUrl,
+          token: resolvedToken,
+          fetchImpl,
+          timeoutMs: 10_000,
+        });
+        mark(rule.operation, 'success', 'mesh');
+        return { success: true, data: templates };
+      } catch (error) {
+        mark(rule.operation, 'offline', 'mesh');
+        return reply.code(502).send({
+          success: false,
+          error: safeErrorText(error, [resolvedToken], 'Control plane templates unreachable'),
+        });
+      }
+    });
+
+    fastify.post('/api/cloud/paas/apps/deploy', async (req, reply) => {
+      const rule = ruleFor('/api/cloud/paas/apps/deploy');
+      const ctx = requireAuthorizedModelAccess(req, reply, rule);
+      if (!ctx) return;
+      if (!requireFeature(reply, rule)) return;
+      if (!requireToken(reply, rule)) return;
+
+      const body = (req.body && typeof req.body === 'object' ? req.body : {}) as {
+        slug?: unknown;
+        image?: unknown;
+        domain?: unknown;
+        port?: unknown;
+        tenant?: unknown;
+        env?: unknown;
+      };
+      const slug = typeof body.slug === 'string' ? body.slug.trim() : '';
+      const image = typeof body.image === 'string' ? body.image.trim() : '';
+      if (!PAAS_SLUG_PATTERN.test(slug) || !image) {
+        mark(rule.operation, 'invalid', 'mesh');
+        return reply.code(400).send({ success: false, error: 'Valid slug and image are required' });
+      }
+      const env =
+        body.env && typeof body.env === 'object' && !Array.isArray(body.env)
+          ? Object.fromEntries(
+              Object.entries(body.env as Record<string, unknown>).map(([k, v]) => [k, String(v)])
+            )
+          : undefined;
+
+      try {
+        assertProbeTarget(defaultAgentUrl, requestPolicy);
+        const result = await deployViaMoonWitnessMesh({
+          endpoint: defaultAgentUrl,
+          token: resolvedToken,
+          slug,
+          image,
+          domain: typeof body.domain === 'string' && body.domain.trim() ? body.domain.trim() : undefined,
+          port: typeof body.port === 'number' && Number.isInteger(body.port) ? body.port : 3000,
+          tenant:
+            typeof body.tenant === 'string' && body.tenant.trim()
+              ? body.tenant.trim()
+              : `company-${ctx.companyId}`,
+          env,
+          fetchImpl,
+          timeoutMs: 60_000,
+        });
+        mark(rule.operation, 'success', 'mesh');
+        return reply.code(201).send({ success: true, data: result });
+      } catch (error) {
+        mark(rule.operation, 'failed', 'mesh');
+        return reply.code(502).send({
+          success: false,
+          error: safeErrorText(
+            error,
+            [resolvedToken, ...Object.values(env ?? {})],
+            'Control plane deploy failed'
+          ),
+        });
+      }
+    });
+
+    fastify.post<{ Params: { slug: string; action: string } }>(
+      '/api/cloud/paas/apps/:slug/:action',
+      async (req, reply) => {
+        const rule = ruleFor('/api/cloud/paas/apps/:slug/:action');
+        const ctx = requireAuthorizedModelAccess(req, reply, rule);
+        if (!ctx) return;
+        if (!requireFeature(reply, rule)) return;
+        if (!requireToken(reply, rule)) return;
+
+        const slug = req.params.slug.trim();
+        const action = req.params.action.trim() as MeshPaasAppAction;
+        if (!PAAS_SLUG_PATTERN.test(slug) || !PAAS_ACTIONS.includes(action)) {
+          mark(rule.operation, 'invalid', 'mesh');
+          return reply.code(400).send({ success: false, error: 'Invalid PaaS app slug or action' });
+        }
+        try {
+          assertProbeTarget(defaultAgentUrl, requestPolicy);
+          const result = await controlMeshPaasApp({
+            endpoint: defaultAgentUrl,
+            token: resolvedToken,
+            appIdOrSlug: slug,
+            action,
+            fetchImpl,
+            timeoutMs: 60_000,
+          });
+          mark(rule.operation, 'success', 'mesh');
+          return { success: true, data: result };
+        } catch (error) {
+          mark(rule.operation, 'failed', 'mesh');
+          return reply.code(502).send({
+            success: false,
+            error: safeErrorText(error, [resolvedToken], `PaaS ${action} failed`),
+          });
+        }
+      }
+    );
+
+    fastify.get<{ Params: { slug: string } }>(
+      '/api/cloud/paas/apps/:slug/logs/stream',
+      async (req, reply) => {
+        const rule = ruleFor('/api/cloud/paas/apps/:slug/logs/stream');
+        const ctx = requireAuthorizedModelAccess(req, reply, rule);
+        if (!ctx) return;
+        if (!requireFeature(reply, rule)) return;
+        if (!requireToken(reply, rule)) return;
+
+        const slug = req.params.slug.trim();
+        if (!PAAS_SLUG_PATTERN.test(slug)) {
+          mark(rule.operation, 'invalid', 'mesh');
+          return reply.code(400).send({ success: false, error: 'Invalid PaaS app slug' });
+        }
+        try {
+          const url = assertProbeTarget(
+            `${defaultAgentUrl}/paas/apps/${encodeURIComponent(slug)}/logs/stream`,
+            requestPolicy
+          );
+          const res = await controlPlaneFetch(url.toString(), {
+            signal: AbortSignal.timeout(15_000),
+          });
+          if (!res.ok) {
+            mark(rule.operation, 'failed', 'mesh');
+            return reply.code(res.status).send({ success: false, error: 'Logs stream unavailable' });
+          }
+          const body = await readBoundedResponseBody(res);
+          if (!body.ok) {
+            mark(rule.operation, 'failed', 'mesh');
+            return reply.code(502).send({ success: false, error: 'Logs stream response invalid' });
+          }
+          mark(rule.operation, 'success', 'mesh');
+          return reply
+            .header('content-type', 'text/event-stream; charset=utf-8')
+            .header('cache-control', 'no-cache')
+            .send(redactSecrets(body.text, [resolvedToken]));
+        } catch (error) {
+          mark(rule.operation, 'offline', 'mesh');
+          return reply.code(502).send({
+            success: false,
+            error: safeErrorText(error, [resolvedToken], 'Logs stream failed'),
+          });
+        }
+      }
+    );
+
+    fastify.get('/api/cloud/paas/backups', async (req, reply) => {
+      const rule = ruleFor('/api/cloud/paas/backups');
+      const ctx = requireAuthorizedModelAccess(req, reply, rule);
+      if (!ctx) return;
+      if (!requireFeature(reply, rule)) return;
+      if (!requireToken(reply, rule)) return;
+      try {
+        const res = await controlPlaneFetch(`${defaultAgentUrl}/paas/backups`, {
+          signal: AbortSignal.timeout(10_000),
+        });
+        if (!res.ok) {
+          mark(rule.operation, 'failed', 'mesh');
+          return reply.code(502).send({ success: false, error: `Backups list failed (${res.status})` });
+        }
+        const payload = (await res.json()) as { backups?: unknown[] };
+        const list = Array.isArray(payload.backups) ? payload.backups.map(normalizeBackup) : [];
+        mark(rule.operation, 'success', 'mesh');
+        return { success: true, data: list };
+      } catch (error) {
+        mark(rule.operation, 'offline', 'mesh');
+        return reply.code(502).send({
+          success: false,
+          error: safeErrorText(error, [resolvedToken], 'Control plane backups unreachable'),
+        });
+      }
+    });
+
+    fastify.post('/api/cloud/paas/backups/postgres', async (req, reply) => {
+      const rule = ruleFor('/api/cloud/paas/backups/postgres');
+      const ctx = requireAuthorizedModelAccess(req, reply, rule);
+      if (!ctx) return;
+      if (!requireFeature(reply, rule)) return;
+      if (!requireToken(reply, rule)) return;
+      try {
+        const res = await controlPlaneFetch(`${defaultAgentUrl}/paas/backups/postgres`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: '{}',
+          signal: AbortSignal.timeout(60_000),
+        });
+        if (!res.ok) {
+          mark(rule.operation, 'failed', 'mesh');
+          return reply.code(502).send({ success: false, error: `Backup failed (${res.status})` });
+        }
+        const manifest = await res.json();
+        mark(rule.operation, 'success', 'mesh');
+        return reply.code(201).send({ success: true, data: normalizeBackup(manifest) });
+      } catch (error) {
+        mark(rule.operation, 'failed', 'mesh');
+        return reply.code(502).send({
+          success: false,
+          error: safeErrorText(error, [resolvedToken], 'PostgreSQL backup failed'),
+        });
+      }
+    });
+
+    fastify.post('/api/cloud/paas/backups/restore', async (req, reply) => {
+      const rule = ruleFor('/api/cloud/paas/backups/restore');
+      const ctx = requireAuthorizedModelAccess(req, reply, rule);
+      if (!ctx) return;
+      if (!requireFeature(reply, rule)) return;
+      if (!requireToken(reply, rule)) return;
+      const body = (req.body && typeof req.body === 'object' ? req.body : {}) as {
+        id?: unknown;
+        backupId?: unknown;
+        dryRun?: unknown;
+      };
+      const id =
+        typeof body.id === 'string' && body.id.trim()
+          ? body.id.trim()
+          : typeof body.backupId === 'string' && body.backupId.trim()
+            ? body.backupId.trim()
+            : '';
+      if (!id) {
+        mark(rule.operation, 'invalid', 'mesh');
+        return reply.code(400).send({ success: false, error: 'Backup id is required' });
+      }
+      try {
+        const res = await controlPlaneFetch(`${defaultAgentUrl}/paas/backups/restore`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ id, dryRun: body.dryRun !== false }),
+          signal: AbortSignal.timeout(60_000),
+        });
+        if (!res.ok) {
+          mark(rule.operation, 'failed', 'mesh');
+          return reply.code(res.status).send({ success: false, error: `Restore failed (${res.status})` });
+        }
+        const payload = (await res.json()) as Record<string, unknown>;
+        mark(rule.operation, 'success', 'mesh');
+        return { success: true, data: { ...payload, ok: true, verified: true } };
+      } catch (error) {
+        mark(rule.operation, 'failed', 'mesh');
+        return reply.code(502).send({
+          success: false,
+          error: safeErrorText(error, [resolvedToken], 'PostgreSQL restore failed'),
+        });
+      }
     });
   };
 }

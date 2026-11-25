@@ -337,7 +337,7 @@ export function CloudIspPage() {
 
       {isDesktop ? <MeshFleetDrawer /> : null}
 
-      <PaasStudioPanel />
+      <PaasStudioPanel apiBase={isDesktop ? '/api/desktop/paas' : '/api/cloud/paas'} />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Panel title="Cloud Applications" description="Managed through /api/cloud/apps/:id/deploy">

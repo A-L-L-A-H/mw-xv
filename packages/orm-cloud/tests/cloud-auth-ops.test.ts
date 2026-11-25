@@ -870,4 +870,75 @@ describe('cloud auth and operations hardening', () => {
       await slashed.app.close();
     }
   });
+
+  it('enforces auth and proxies /api/cloud/paas/* endpoints to the private control plane', async () => {
+    const customFetch: typeof fetch = async (input, init) => {
+      const url = String(input);
+      if (url.endsWith('/paas/metrics')) {
+        return new Response(
+          JSON.stringify({
+            nodeId: 'vps-node',
+            meshIp: '10.144.0.1',
+            cpuPercent: 4.5,
+            memoryUsedMb: 1024,
+            memoryTotalMb: 8192,
+            runningApps: 2,
+          }),
+          { status: 200 }
+        );
+      }
+      if (url.endsWith('/paas/apps') && (!init?.method || init.method === 'GET')) {
+        return new Response(
+          JSON.stringify({
+            apps: [{ id: 'demo', slug: 'demo', image: 'nginx:alpine', status: 'running' }],
+          }),
+          { status: 200 }
+        );
+      }
+      if (url.endsWith('/paas/apps') && init?.method === 'POST') {
+        return new Response(
+          JSON.stringify({ appId: 'demo', slug: 'demo', status: 'running', url: 'https://demo.apps.moonwitness.biz.id' }),
+          { status: 201 }
+        );
+      }
+      if (url.endsWith('/paas/backups')) {
+        return new Response(
+          JSON.stringify({
+            backups: [{ id: 'pg-1', filename: 'pg-1.dump', sizeBytes: 2_097_152, sha256: 'abc', createdAt: '2026-11-25T00:00:00Z' }],
+          }),
+          { status: 200 }
+        );
+      }
+      return new Response('{}', { status: 404 });
+    };
+
+    const harness = await buildApp({ fetchImpl: customFetch });
+    try {
+      harness.setAuth(null);
+      const unauth = await harness.app.inject({ method: 'GET', url: '/api/cloud/paas/metrics' });
+      expect(unauth.statusCode).toBe(401);
+
+      harness.setAuth({ userId: 2, role: 'superadmin', companyId: 1 });
+      const metricsRes = await harness.app.inject({ method: 'GET', url: '/api/cloud/paas/metrics' });
+      expect(metricsRes.statusCode).toBe(200);
+      expect(metricsRes.json().data.nodeId).toBe('vps-node');
+
+      const appsRes = await harness.app.inject({ method: 'GET', url: '/api/cloud/paas/apps' });
+      expect(appsRes.statusCode).toBe(200);
+      expect(appsRes.json().data).toHaveLength(1);
+
+      const deployRes = await harness.app.inject({
+        method: 'POST',
+        url: '/api/cloud/paas/apps/deploy',
+        payload: { slug: 'demo', image: 'nginx:alpine', port: 80 },
+      });
+      expect(deployRes.statusCode).toBe(201);
+
+      const backupsRes = await harness.app.inject({ method: 'GET', url: '/api/cloud/paas/backups' });
+      expect(backupsRes.statusCode).toBe(200);
+      expect(backupsRes.json().data[0].sizeMb).toBe(2);
+    } finally {
+      await harness.app.close();
+    }
+  });
 });

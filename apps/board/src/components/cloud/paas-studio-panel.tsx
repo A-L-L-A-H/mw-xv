@@ -29,6 +29,7 @@ import {
   WarningIcon,
 } from '@moonwitness/ui/icons';
 import { ConfirmDialog } from '@/components/views/confirm-dialog';
+import { client } from '@/lib/client';
 import { MeshTopologyPanel } from './mesh-topology-panel';
 import { PaasTemplateCatalog } from './paas-template-catalog';
 import type { PaasTemplateDefinition } from './paas-template-data';
@@ -193,12 +194,54 @@ export function PaasStudioPanel({
   );
 
   const normalizedBase = apiBase.replace(/\/+$/u, '');
+  const isCloudApi = normalizedBase.startsWith('/api/cloud/');
+
+  const paasFetch = useCallback(
+    async (input: string, init?: RequestInit): Promise<Response> => {
+      if (!isCloudApi) {
+        return fetch(input, init);
+      }
+      await client.ready();
+      let accessToken: string | undefined;
+      try {
+        const sessRes = await fetch('/api/session', {
+          credentials: 'same-origin',
+          cache: 'no-store',
+        });
+        if (sessRes.ok) {
+          const sessJson = (await sessRes.json()) as { token?: unknown };
+          if (typeof sessJson.token === 'string') {
+            const parsed = JSON.parse(sessJson.token) as { access_token?: unknown };
+            if (typeof parsed.access_token === 'string' && parsed.access_token.length > 0) {
+              accessToken = parsed.access_token;
+            }
+          }
+        }
+      } catch {
+        // Ignore session read error; unauthenticated request returns 401 cleanly.
+      }
+      const headers = new Headers(init?.headers);
+      if (accessToken && !headers.has('authorization')) {
+        headers.set('authorization', `Bearer ${accessToken}`);
+      }
+      const companyId = client.currentUser?.company_id;
+      if (typeof companyId === 'number' && !headers.has('x-company-id')) {
+        headers.set('x-company-id', String(companyId));
+      }
+      return fetch(input, {
+        ...init,
+        credentials: 'same-origin',
+        headers,
+      });
+    },
+    [isCloudApi]
+  );
 
   const fetchLiveLogs = useCallback(async () => {
     setLogsLoading(true);
     const target = encodeURIComponent(selectedLogApp || 'control-plane');
     try {
-      const streamRes = await fetch(`${normalizedBase}/apps/${target}/logs/stream`, {
+      const streamRes = await paasFetch(`${normalizedBase}/apps/${target}/logs/stream`, {
         cache: 'no-store',
       });
       if (streamRes.ok) {
@@ -222,7 +265,7 @@ export function PaasStudioPanel({
         }
       }
 
-      const fallbackRes = await fetch(`${normalizedBase}/apps/${target}/logs`, {
+      const fallbackRes = await paasFetch(`${normalizedBase}/apps/${target}/logs`, {
         method: 'POST',
       });
       if (fallbackRes.ok) {
@@ -269,7 +312,7 @@ export function PaasStudioPanel({
     } finally {
       setLogsLoading(false);
     }
-  }, [normalizedBase, selectedLogApp]);
+  }, [normalizedBase, paasFetch, selectedLogApp]);
 
   const vpsJoinPlan = useMemo(() => {
     const safeHost = vpsHost.trim() || '203.0.113.42';
@@ -291,15 +334,13 @@ export function PaasStudioPanel({
     setBackupFeedback(null);
     setBackupError(null);
     try {
-      const response = await fetch(`${normalizedBase}/backups/postgres`, {
+      const response = await paasFetch(`${normalizedBase}/backups/postgres`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ trigger: 'manual-studio' }),
       });
       if (!response.ok) {
-        setBackupError(
-          `Snapshot request returned HTTP ${response.status} (Desktop DX bridge required).`
-        );
+        setBackupError(`Snapshot request returned HTTP ${response.status}.`);
         return;
       }
       const payload = (await response.json().catch(() => null)) as unknown;
@@ -317,11 +358,11 @@ export function PaasStudioPanel({
       setBackupError(null);
       setBackupFeedback(`Manual PostgreSQL snapshot created: ${created.filename}`);
     } catch {
-      setBackupError('Unable to reach /paas/backups/postgres (Desktop DX bridge offline).');
+      setBackupError(`Unable to reach ${normalizedBase}/backups/postgres.`);
     } finally {
       setBackupBusy(false);
     }
-  }, [normalizedBase]);
+  }, [normalizedBase, paasFetch]);
 
   const handleVerifyRestore = useCallback(
     async (backup: PostgresBackupRecord) => {
@@ -329,7 +370,7 @@ export function PaasStudioPanel({
       setBackupFeedback(null);
       setBackupError(null);
       try {
-        const response = await fetch(`${normalizedBase}/backups/restore`, {
+        const response = await paasFetch(`${normalizedBase}/backups/restore`, {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({
@@ -365,7 +406,7 @@ export function PaasStudioPanel({
         setBackupBusy(false);
       }
     },
-    [normalizedBase]
+    [normalizedBase, paasFetch]
   );
 
   const refreshState = useCallback(async () => {
@@ -374,8 +415,8 @@ export function PaasStudioPanel({
     setStateError(null);
     try {
       const [metricsRes, appsRes] = await Promise.all([
-        fetch(`${normalizedBase}/metrics`, { cache: 'no-store' }),
-        fetch(`${normalizedBase}/apps`, { cache: 'no-store' }),
+        paasFetch(`${normalizedBase}/metrics`, { cache: 'no-store' }),
+        paasFetch(`${normalizedBase}/apps`, { cache: 'no-store' }),
       ]);
 
       if (metricsRes.status === 404 || appsRes.status === 404) {
@@ -414,6 +455,25 @@ export function PaasStudioPanel({
       setMetrics(metricsData);
       setApps(appsData);
       setDesktopModeAvailable(true);
+
+      if (isCloudApi) {
+        try {
+          const backupsRes = await paasFetch(`${normalizedBase}/backups`, { cache: 'no-store' });
+          if (backupsRes.ok) {
+            const bPayload = (await backupsRes.json().catch(() => null)) as unknown;
+            if (isRecord(bPayload) && bPayload.success === true && Array.isArray(bPayload.data)) {
+              const parsedBackups = bPayload.data
+                .map(parsePostgresBackup)
+                .filter((item): item is PostgresBackupRecord => item !== null);
+              setBackups(parsedBackups);
+              setBackupsLoaded(true);
+              setBackupError(null);
+            }
+          }
+        } catch {
+          // Non-fatal; backup inventory remains optional.
+        }
+      }
     } catch {
       setDesktopModeAvailable(false);
       setMetrics(null);
@@ -422,7 +482,7 @@ export function PaasStudioPanel({
     } finally {
       setLoading(false);
     }
-  }, [normalizedBase]);
+  }, [isCloudApi, normalizedBase, paasFetch]);
 
   useEffect(() => {
     let cancelled = false;
@@ -440,7 +500,7 @@ export function PaasStudioPanel({
       setErrorMessage(null);
       setFeedback(null);
       try {
-        const response = await fetch(`${normalizedBase}/apps/deploy`, {
+        const response = await paasFetch(`${normalizedBase}/apps/deploy`, {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({
@@ -462,7 +522,7 @@ export function PaasStudioPanel({
         setDeployingTemplateId(null);
       }
     },
-    [normalizedBase, refreshState, tenant]
+    [normalizedBase, paasFetch, refreshState, tenant]
   );
 
   const handleDeploy = async (event: FormEvent<HTMLFormElement>) => {
@@ -478,7 +538,7 @@ export function PaasStudioPanel({
 
     try {
       const parsedPort = Number.parseInt(port, 10);
-      const response = await fetch(`${normalizedBase}/apps/deploy`, {
+      const response = await paasFetch(`${normalizedBase}/apps/deploy`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
@@ -501,7 +561,7 @@ export function PaasStudioPanel({
       setDomain('');
       await refreshState();
     } catch {
-      setErrorMessage('Unable to reach Desktop PaaS bridge.');
+      setErrorMessage(`Unable to reach ${normalizedBase} PaaS bridge.`);
     } finally {
       setDeploying(false);
     }
@@ -516,7 +576,7 @@ export function PaasStudioPanel({
       const target = encodeURIComponent(app.slug || app.id);
       const url = `${normalizedBase}/apps/${target}/${action}`;
 
-      const response = await fetch(url, { method: 'POST' });
+      const response = await paasFetch(url, { method: 'POST' });
       if (!response.ok) {
         setErrorMessage(`Action "${action}" failed for ${app.slug} (${response.status}).`);
         return;
@@ -600,10 +660,23 @@ export function PaasStudioPanel({
           <div className="flex items-start gap-3 rounded-md border border-dashed p-4 text-sm">
             <WarningIcon className="mt-0.5 h-4 w-4 shrink-0" />
             <div className="space-y-1">
-              <p className="font-medium">Desktop DX Mode Required for Live Mesh PaaS</p>
+              <p className="font-medium">
+                {isCloudApi
+                  ? 'Mesh PaaS Control Plane Unavailable'
+                  : 'Desktop DX Mode Required for Live Mesh PaaS'}
+              </p>
               <p className="opacity-80">
-                Launch MoonWitness Desktop DX to connect directly to your private mesh control-plane
-                via <code>{normalizedBase}/*</code>.
+                {isCloudApi ? (
+                  <>
+                    Ensure your session is signed in and <code>MW_CONTROL_PLANE_URL</code> is
+                    configured for <code>{normalizedBase}/*</code>.
+                  </>
+                ) : (
+                  <>
+                    Launch MoonWitness Desktop DX to connect directly to your private mesh
+                    control-plane via <code>{normalizedBase}/*</code>.
+                  </>
+                )}
               </p>
             </div>
           </div>
