@@ -34,6 +34,7 @@ describe('unit runner CI ownership', () => {
       'knowledge-gate',
       'postgres-integration',
       'dx-test',
+      'gate-failure-triage',
     ]);
     assert.match(jobsBlock, /bun run test:unit:built/u);
   });
