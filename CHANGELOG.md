@@ -2,6 +2,17 @@
 
 Notable changes to MoonWitness are recorded here. Versions follow SemVer; release tags use the `vMAJOR.MINOR.PATCH` format.
 
+## [Unreleased]
+
+### Added
+
+- Adds the approved Moon City homepage scene with canonical layered art, responsive desktop/mobile composition, an anonymous fictional pilot idle loop, and static/reduced-motion fallbacks.
+- Adds clearly labeled catalog-only Signals and Archive scene concepts while their production routes and data contracts remain unavailable.
+
+### Quality
+
+- Adds focused Chromium, Firefox, and WebKit coverage for the homepage scene. The full operational Board matrix remains under repair; see the [W9-006 evidence](docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md).
+
 ## [1.0.0-rc.1] - 2026-10-04
 
 ### Release candidate

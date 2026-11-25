@@ -10,29 +10,12 @@
       "depictionPolicy": "anonymous-back-facing",
       "silhouette": "hooded crew figure, adult proportions, standard build",
       "outfit": "industrial workwear shirt and trousers",
-      "paletteTokens": [
-        "ink-900",
-        "paper-white",
-        "hot-magenta-500"
-      ],
+      "paletteTokens": ["ink-900", "paper-white", "hot-magenta-500"],
       "proportions": "standard adult",
-      "signatureProps": [
-        "tool-satchel",
-        "crew-badge"
-      ],
-      "allowedVariants": [
-        "idle-standing",
-        "waving",
-        "walking-loop"
-      ],
-      "prohibitedVariants": [
-        "recognizable-face",
-        "sacred-figure",
-        "real-person-likeness"
-      ],
-      "masterAssetIds": [
-        "source/world/characters/crew-01-sheet.svg"
-      ],
+      "signatureProps": ["tool-satchel", "crew-badge"],
+      "allowedVariants": ["idle-standing", "waving", "walking-loop"],
+      "prohibitedVariants": ["recognizable-face", "sacred-figure", "real-person-likeness"],
+      "masterAssetIds": ["source/world/characters/crew-01-sheet.svg"],
       "variantAssetIds": [
         "source/world/characters/crew-01-pose-idle-standing.svg",
         "source/world/characters/crew-01-pose-waving.svg",
@@ -49,13 +32,7 @@
       "depictionPolicy": "identified-approved",
       "silhouette": "oversized hooded street courier with twin-ring headset antenna and chunky lug-sole boots",
       "outfit": "ink-splattered charcoal and magenta hoodie with yellow crown pin, cargo joggers, yellow-soled boots",
-      "paletteTokens": [
-        "ink-black",
-        "paper-cream",
-        "signal-yellow",
-        "riot-magenta",
-        "signal-cyan"
-      ],
+      "paletteTokens": ["ink-black", "paper-cream", "signal-yellow", "riot-magenta", "signal-cyan"],
       "proportions": "stylized anime-cartoon 5.5 heads",
       "signatureProps": [
         "crown-enamel-pin",
@@ -94,11 +71,7 @@
         "pose-holding-objects",
         "pose-celebrating"
       ],
-      "prohibitedVariants": [
-        "sacred-figure",
-        "real-person-likeness",
-        "third-party-logo"
-      ],
+      "prohibitedVariants": ["sacred-figure", "real-person-likeness", "third-party-logo"],
       "masterAssetIds": [
         "source/artwork/riot-universe/kuro-signal-model-sheet-master.png",
         "source/artwork/riot-universe/kuro-signal-portrait-happy-master.png"
@@ -135,22 +108,10 @@
         "riot-magenta"
       ],
       "proportions": "stylized anime-cartoon 6 heads",
-      "signatureProps": [
-        "forehead-tinted-goggles",
-        "tape-patched-satchel",
-        "brass-stylus"
-      ],
-      "allowedVariants": [
-        "portrait"
-      ],
-      "prohibitedVariants": [
-        "sacred-figure",
-        "real-person-likeness",
-        "third-party-logo"
-      ],
-      "masterAssetIds": [
-        "source/artwork/riot-universe/vesper-ink-portrait-master.png"
-      ],
+      "signatureProps": ["forehead-tinted-goggles", "tape-patched-satchel", "brass-stylus"],
+      "allowedVariants": ["portrait"],
+      "prohibitedVariants": ["sacred-figure", "real-person-likeness", "third-party-logo"],
+      "masterAssetIds": ["source/artwork/riot-universe/vesper-ink-portrait-master.png"],
       "variantAssetIds": [
         "illustrations/riot-universe/characters/vesper-ink-portrait.webp",
         "illustrations/riot-universe/characters/vesper-ink-portrait.png",

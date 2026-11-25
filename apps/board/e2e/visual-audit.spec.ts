@@ -899,6 +899,7 @@ test('homepage spelling, responsive layout, and reference screenshots', async ({
       await expect(page.getByRole('button', { name: 'Enable interface sounds' })).toBeVisible();
       await page.keyboard.press('Escape');
       await expect(page.getByRole('dialog', { name: 'Site navigation' })).toBeHidden();
+      await expect(page.locator('.home-mobile-sheet')).toHaveCount(0);
     }
     await expectNoHorizontalOverflow(page, `homepage/${size.name}`);
     const heroImage = await page.locator('.home-hero-art-image').evaluate((image) => ({
@@ -929,7 +930,9 @@ test('homepage spelling, responsive layout, and reference screenshots', async ({
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/?sceneFrame=0&sceneTime=0&scenePaused=1');
   const stillHero = page.locator('.home-hero-art-image');
-  await expect.poll(() => stillHero.evaluate((image: HTMLImageElement) => image.complete)).toBe(true);
+  await expect
+    .poll(() => stillHero.evaluate((image: HTMLImageElement) => image.complete))
+    .toBe(true);
   await expect(page.locator('.mw-ui-layered-scene')).toHaveCount(0);
   await expect(
     page.getByTestId('home-hero-crew').locator('[data-sprite-clip="crew-01-idle"]')

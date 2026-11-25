@@ -72,8 +72,7 @@ export function HomeHeroArt() {
   const [failed, setFailed] = useState(false);
   const mounted = useSyncExternalStore(subscribeNoop, getClientMounted, getServerMounted);
   const reducedMotion = usePrefersReducedMotion();
-  const showInteractiveScene =
-    mounted && !reducedMotion && !failed && MOON_CITY_LAYERS.length > 0;
+  const showInteractiveScene = mounted && !reducedMotion && !failed && MOON_CITY_LAYERS.length > 0;
 
   return (
     <div className="home-hero-art" aria-hidden="true">

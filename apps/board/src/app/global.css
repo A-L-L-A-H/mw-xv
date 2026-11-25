@@ -166,7 +166,7 @@
 }
 .home-hero-crew {
   position: absolute;
-  z-index: 60;
+  z-index: 82;
   left: 80%;
   bottom: -11%;
   width: clamp(12rem, 21vw, 19rem);

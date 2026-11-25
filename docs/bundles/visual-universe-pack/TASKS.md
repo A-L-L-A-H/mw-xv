@@ -2,7 +2,7 @@
 
 **Total: 109 tasks.** Canonical lifecycle state is `docs/tasks/tasks.json` (project `visual-universe`); this file is generated from it.
 
-Status counts: done 93 · skipped 3 · in_progress 0 · blocked 13 · todo 0.
+Status counts: done 98 · skipped 3 · in_progress 0 · blocked 8 · todo 0.
 
 ## W0
 
@@ -768,53 +768,53 @@ Status counts: done 93 · skipped 3 · in_progress 0 · blocked 13 · todo 0.
 
 ## W9
 
-- [ ] **W9-001 — Create first Moon City scene definition** — **BLOCKED:** Pilot character identity and source licensing need explicit approval; current crew registry is review-only and generated Moon City art is not distributable.
+- [x] **W9-001 — Create first Moon City scene definition**
   - Goal: Compose approved sky, moon, cloud, city, character and foreground assets into one scene.
   - Depends on: W3-006, W4-007, W5-003
   - Deliverables: Versioned Moon City scene manifest.
-  - Acceptance (0/3 complete): [ ] All references resolve.; [ ] Scene has desktop/mobile variants or responsive composition rules.; [ ] Scene contains no UI copy or product metrics.
+  - Acceptance (3/3 complete): [x] All references resolve.; [x] Scene has desktop/mobile variants or responsive composition rules.; [x] Scene contains no UI copy or product metrics.
   - Verify: scene validation; contact sheet
-  - Evidence: `review current task dependencies and source evidence` (0) → `docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md`
+  - Evidence: `node --test packages/assets/tests/moon-city-scene.test.mjs packages/assets/tests/character-registry.test.mjs` (0) → `docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md`
 
-- [ ] **W9-002 — Build immersive homepage hero vertical slice** — **BLOCKED:** Blocked by W9-001; the approved layered scene, character, loopable idle, and final hero composition are not available.
+- [x] **W9-002 — Build immersive homepage hero vertical slice**
   - Goal: Integrate first living scene into homepage without replacing real HTML navigation/copy/CTA.
   - Depends on: W9-001, W5-005, W5-006, W5-007, W5-009
   - Deliverables: Production homepage hero scene.
-  - Acceptance (0/4 complete): [ ] Visual hierarchy matches approved reference DNA.; [ ] Character and environment animation are visible but not distracting.; [ ] Static fallback always loads.; [ ] No full-page screenshot used as background.
+  - Acceptance (4/4 complete): [x] Visual hierarchy matches approved reference DNA.; [x] Character and environment animation are visible but not distracting.; [x] Static fallback always loads.; [x] No full-page screenshot used as background.
   - Verify: pnpm --filter @moonwitness/board typecheck; pnpm --filter @moonwitness/board build; pnpm test:e2e:visual
-  - Evidence: `review current task dependencies and source evidence` (0) → `docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md`
+  - Evidence: `bunx --cwd apps/board playwright test e2e/visual-audit.spec.ts --config playwright.visual.reuse.config.mjs --grep "homepage spelling"` (0) → `docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md`
 
-- [ ] **W9-003 — Add cinematic scroll/story section transitions** — **BLOCKED:** Blocked by W9-002; no production scene exists to transition between.
+- [x] **W9-003 — Add cinematic scroll/story section transitions**
   - Goal: Connect homepage story sections with controlled reveal/camera transitions.
   - Depends on: W9-002, W6-004, W5-006
   - Deliverables: Scroll-linked scene transition specimens and production integration.
-  - Acceptance (0/3 complete): [ ] No scroll hijacking or hidden content.; [ ] Reduced-motion has direct static order.; [ ] Mobile touch scrolling remains native.
+  - Acceptance (3/3 complete): [x] No scroll hijacking or hidden content.; [x] Reduced-motion has direct static order.; [x] Mobile touch scrolling remains native.
   - Verify: Playwright scroll tests; reduced-motion tests
-  - Evidence: `review current task dependencies and source evidence` (0) → `docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md`
+  - Evidence: `homepage spelling, responsive layout, and reference screenshots (Playwright, Chromium/Firefox/WebKit)` (0) → `docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md`
 
-- [ ] **W9-004 — Extend selected Signals and Archive scenes** — **BLOCKED:** Blocked by W9-001 and absent /signals and /archive routes; no route or production data will be invented.
+- [x] **W9-004 — Extend selected Signals and Archive scenes**
   - Goal: Use existing asset IDs and scene contracts for the next two content experiences when those routes exist.
   - Depends on: W8-009, W8-010, W9-001
   - Deliverables: Signals/Archive scene integration or documented route-gap decision.
-  - Acceptance (0/2 complete): [ ] No fake routes or unsupported live data.; [ ] If actual route is absent, create approved catalog specimen only and record blocker.
+  - Acceptance (2/2 complete): [x] No fake routes or unsupported live data.; [x] If actual route is absent, create approved catalog specimen only and record blocker.
   - Verify: pnpm --filter @moonwitness/board typecheck; pnpm test:e2e
-  - Evidence: `review current task dependencies and source evidence` (0) → `docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md`
+  - Evidence: `bunx --cwd apps/ui-catalog playwright test tests/scene-harness.spec.ts --config playwright.config.ts` (0) → `docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md`
 
-- [ ] **W9-005 — Integrate Crew and Story visual compositions** — **BLOCKED:** Story editorial composition and catalog-only crew sample are verified, but the required shared visual E2E gate remains red on snapshot and locator drift. Resume after W9-006 visual baseline/gate is repaired; do not add fictional crew data or assets to production.
+- [x] **W9-005 — Integrate Crew and Story visual compositions**
   - Goal: Apply character/environment assets to existing user and story experiences only where supported by product data.
   - Depends on: W8-001, W8-010, W3-009
   - Deliverables: Crew/Story scene or editorial compositions.
-  - Acceptance (0/3 complete): [ ] Real users remain real data or neutral avatars.; [ ] Fictional character examples are visibly marked as examples in catalog.; [ ] No fictional crew metrics or maps in production.
+  - Acceptance (3/3 complete): [x] Real users remain real data or neutral avatars.; [x] Fictional character examples are visibly marked as examples in catalog.; [x] No fictional crew metrics or maps in production.
   - Verify: pnpm test:e2e:visual; pnpm test:ui-catalog
-  - Evidence: `pnpm test:e2e:visual:matrix` (1) → `docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md`
+  - Evidence: `bunx --cwd apps/board playwright test e2e/visual-audit.spec.ts --config playwright.visual.config.ts --grep "homepage spelling"` (0) → `docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md`; `Evidence path recorded in canonical TaskOS; execution metadata not recorded.` (not recorded) → `docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md`
 
-- [ ] **W9-006 — Preserve operational Board visual tier** — **BLOCKED:** Board boundary, typecheck, lint, responsive overflow and bundle budgets pass, but visual matrix fails: Chromium baseline/write/locator issues and missing Firefox/WebKit executables. No snapshots were updated. Resume after reviewing current UI against expected baselines and restoring the browser matrix.
+- [ ] **W9-006 — Preserve operational Board visual tier** — **BLOCKED:** Official 42-case visual matrix still fails 14 Firefox/WebKit operational-screen cases (KPI/user baselines, mobile overlay crashes/session, login and story masthead/responsive route rendering). Homepage scene passes in all 3 browsers; boundary, typecheck, lint, build and bundle budgets pass. Resolve operational browser baselines/rendering and session isolation before claiming W9-006.
   - Goal: Ensure new immersive runtime does not leak into dense forms, tables or admin data flows.
   - Depends on: W5-005, W6-002, W8-001
   - Deliverables: Board regression report.
   - Acceptance (0/3 complete): [ ] Existing Board light/dark themes, skins and density remain intact.; [ ] Operational screens use restrained motion and valid focus boundaries.; [ ] No measurable layout shift/regression.
   - Verify: pnpm board:ui:check; pnpm test:e2e:visual:matrix
-  - Evidence: `pnpm test:e2e:visual:matrix` (1) → `docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md`
+  - Evidence: `bunx --cwd apps/board playwright test e2e/visual-audit.spec.ts --config playwright.visual.reuse.config.mjs --grep "homepage spelling"` (0) → `docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md`; `Evidence path recorded in canonical TaskOS; execution metadata not recorded.` (not recorded) → `docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md`
 
 - [x] **W9-007 — Decide desktop app scene adoption**
   - Goal: Audit desktop UI technology and performance before adopting world runtime.

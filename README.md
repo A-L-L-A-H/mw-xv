@@ -37,6 +37,7 @@ Mulai cepat: [Quickstart](#quickstart) · [Panduan developer](docs/guide/index.m
 - [Autentikasi dan keamanan](#autentikasi-dan-keamanan)
 - [Job queue, scheduler, dan outbox](#job-queue-scheduler-dan-outbox)
 - [Board admin](#board-admin)
+- [Moon City visual universe](#moon-city-visual-universe)
 - [WhatsApp gateway](#whatsapp-gateway)
 - [Perintah penting](#perintah-penting)
 - [Kualitas dan CI](#kualitas-dan-ci)
@@ -52,6 +53,7 @@ Mulai cepat: [Quickstart](#quickstart) · [Panduan developer](docs/guide/index.m
 | Addon transaksional | Model, seed, menu, akses, dan upgrade hook dipasang dalam satu transaksi tanpa SQL migration manual.                       |
 | API generik         | REST CRUD dinamis dan JSON-RPC 2.0 dengan filter Polish notation, cursor pagination, dan audit otomatis.                   |
 | Board data-driven   | Next.js App Router merender daftar, form, filter, dan detail record dari metadata API.                                     |
+| Moon City scene     | Homepage publik memakai scene berlapis, pilot fiksi anonim, komposisi desktop/mobile, dan fallback reduced-motion.         |
 | Aman secara default | RBAC per grup, batas multi-company, redaksi rahasia, serta audit dan outbox dalam transaksi yang sama.                     |
 | Siap operasi        | Job queue ber-lease, cron scheduler, metrics, health probe, backup/restore drill, dan image non-root dengan filesystem RO. |
 
@@ -459,6 +461,30 @@ dan [TOKENS.md](packages/ui/TOKENS.md).
 Build production memakai `output: 'standalone'`. Set `NEXT_PUBLIC_SITE_URL` ke origin kanonik
 sebelum build agar metadata, sitemap, dan robots benar. Halaman login dan area utama dipisah agar
 bundle awal lebih kecil.
+
+## Moon City visual universe
+
+Homepage publik memiliki vertical slice visual Moon City yang memakai kontrak scene kanonik dari
+`packages/assets/scenes/moon-city-scene.json`. Layer lingkungan, crop desktop/mobile, pilot anonim
+`crew-01`, dan loop idle terdaftar di manifest aset beserta provenance distribusinya. Headline,
+navigasi, copy, dan CTA tetap berupa HTML yang dapat dibaca dan digunakan tanpa gambar.
+
+Scene bergerak hanya saat preferensi pengguna mengizinkan motion. Versi statis desktop/mobile tetap
+tersedia sebagai fallback, dan urutan konten halaman tidak mengambil alih scroll native. Contoh
+crew di UI Catalog ditandai sebagai fiksi; tidak ada profil, angka, peta, atau metrik crew buatan di
+data Board.
+
+| Artefak                                                                                                      | Tujuan                                                  |
+| ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------- |
+| [Visual Universe pack](docs/bundles/visual-universe-pack/README-FIRST.md)                                    | Arsitektur, backlog, aturan kontribusi, dan verifikasi. |
+| [Approval dan batas artwork](docs/decisions/moon-city-production-approval.md)                                | Keputusan owner dan ruang lingkup artwork Moon City.    |
+| [Bukti scene dan route gap](docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md) | Hasil W9-001–W9-004 beserta validasinya.                |
+| [Bukti Board visual gate](docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md)  | Status kru/editorial dan matrix lintas-browser.         |
+
+Route Signals dan Archive belum tersedia di Board; konsep visualnya hanya ada di katalog dan tidak
+menampilkan feed atau record produksi. Matrix visual operasional penuh masih memiliki kegagalan
+Firefox/WebKit yang tercatat di bukti W9-006, meski slice homepage telah lolos pemeriksaan terarah
+di Chromium, Firefox, dan WebKit.
 
 ## WhatsApp gateway
 

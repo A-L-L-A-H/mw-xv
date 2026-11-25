@@ -67,7 +67,7 @@ Salinan historisnya ada di [docs/archive/todos/](archive/todos/).
 
 ## Dokumen tambahan yang sebelumnya belum terindeks
 
-- Desain: [components](design/components.md) · [illustrations](design/illustrations.md) · [artwork review](design/moon-city-artwork-review.md).
+- Desain: [components](design/components.md) · [illustrations](design/illustrations.md) · [visual direction](design/visual-direction.md) · [Moon City artwork review and current approval](design/moon-city-artwork-review.md) · [production approval](decisions/moon-city-production-approval.md).
 - Rekayasa & pengujian: [performance baseline](engineering/performance-baseline.md) · [WhatsApp verification](testing/whatsapp-verification.md).
 - Operasional: [WhatsApp/Whatsmeow migration](operations/whatsapp-whatsmeow-migration-plan.md).
 - Roadmap: [control-plane execution report](roadmap/control-plane-execution-report.md) · [M13 walkthrough](roadmap/evidence/M13-desktop-flow-walkthrough.md).

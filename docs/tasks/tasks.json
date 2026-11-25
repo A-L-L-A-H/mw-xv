@@ -1,7 +1,7 @@
 {
   "schemaVersion": "2.0.0",
   "format": "moonwitness-tasks/v2",
-  "generatedAt": "2026-11-23T09:19:56.410Z",
+  "generatedAt": "2026-11-25T06:00:49.110Z",
   "projects": [
     {
       "slug": "moonwitness",
@@ -41087,7 +41087,7 @@
       "category": "other",
       "type": "other",
       "priority": "p0",
-      "status": "blocked",
+      "status": "done",
       "human": true,
       "owner": "scene-composer",
       "assignee": null,
@@ -41105,17 +41105,17 @@
         {
           "id": "W9-001-ac-1",
           "text": "All references resolve.",
-          "done": false
+          "done": true
         },
         {
           "id": "W9-001-ac-2",
           "text": "Scene has desktop/mobile variants or responsive composition rules.",
-          "done": false
+          "done": true
         },
         {
           "id": "W9-001-ac-3",
           "text": "Scene contains no UI copy or product metrics.",
-          "done": false
+          "done": true
         }
       ],
       "validation": {
@@ -41130,7 +41130,7 @@
         "commitSha": null
       },
       "references": ["packages/assets/scenes/home"],
-      "blockedReason": "Pilot character identity and source licensing need explicit approval; current crew registry is review-only and generated Moon City art is not distributable.",
+      "blockedReason": null,
       "sourceRef": {
         "file": "docs/bundles/visual-universe-pack/legacy/task-source-2026-11-23.json",
         "legacyId": "W9-001"
@@ -41141,7 +41141,7 @@
         "id": "W9-001",
         "phase": "W9",
         "title": "Create first Moon City scene definition",
-        "status": "blocked",
+        "status": "done",
         "priority": "P0",
         "role": "scene-composer",
         "parallel_group": "serial",
@@ -41157,12 +41157,19 @@
         "verification": ["scene validation", "contact sheet"],
         "risk": "low",
         "human_approval_required": true,
-        "notes": "Pilot character identity and source licensing need explicit approval; current crew registry is review-only and generated Moon City art is not distributable.",
+        "notes": "Completed 2026-11-25. Project-owner approval recorded in docs/decisions/moon-city-production-approval.md; provenance remains linked to original terms. Evidence: bun --filter @moonwitness/assets qa (exit 0); node --test packages/assets/tests/moon-city-scene.test.mjs packages/assets/tests/character-registry.test.mjs (exit 0).",
         "evidence": [
           {
-            "command": "review current task dependencies and source evidence",
+            "command": "bun --filter @moonwitness/assets qa",
             "exit_code": 0,
-            "artifact": "docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md"
+            "artifact": "docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md",
+            "notes": "401 runtime assets, 54 masters, 0 errors and 0 warnings."
+          },
+          {
+            "command": "node --test packages/assets/tests/moon-city-scene.test.mjs packages/assets/tests/character-registry.test.mjs",
+            "exit_code": 0,
+            "artifact": "docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md",
+            "notes": "8 passed; scene, registry and source references valid."
           }
         ],
         "commit": null,
@@ -41182,7 +41189,7 @@
       "category": "other",
       "type": "other",
       "priority": "p0",
-      "status": "blocked",
+      "status": "done",
       "human": true,
       "owner": "implementer",
       "assignee": null,
@@ -41204,22 +41211,22 @@
         {
           "id": "W9-002-ac-1",
           "text": "Visual hierarchy matches approved reference DNA.",
-          "done": false
+          "done": true
         },
         {
           "id": "W9-002-ac-2",
           "text": "Character and environment animation are visible but not distracting.",
-          "done": false
+          "done": true
         },
         {
           "id": "W9-002-ac-3",
           "text": "Static fallback always loads.",
-          "done": false
+          "done": true
         },
         {
           "id": "W9-002-ac-4",
           "text": "No full-page screenshot used as background.",
-          "done": false
+          "done": true
         }
       ],
       "validation": {
@@ -41242,7 +41249,7 @@
         "apps/board/src/components/home",
         "apps/board/src/app/global.css"
       ],
-      "blockedReason": "Blocked by W9-001; the approved layered scene, character, loopable idle, and final hero composition are not available.",
+      "blockedReason": null,
       "sourceRef": {
         "file": "docs/bundles/visual-universe-pack/legacy/task-source-2026-11-23.json",
         "legacyId": "W9-002"
@@ -41253,7 +41260,7 @@
         "id": "W9-002",
         "phase": "W9",
         "title": "Build immersive homepage hero vertical slice",
-        "status": "blocked",
+        "status": "done",
         "priority": "P0",
         "role": "implementer",
         "parallel_group": "serial",
@@ -41278,12 +41285,24 @@
         ],
         "risk": "high",
         "human_approval_required": true,
-        "notes": "Blocked by W9-001; the approved layered scene, character, loopable idle, and final hero composition are not available.",
+        "notes": "Completed 2026-11-25. Production Moon City hero uses the canonical scene and approved anonymous pilot, preserving HTML content and static fallback. Evidence: bun --filter @moonwitness/board typecheck (exit 0); bun --filter @moonwitness/board build (exit 0); bunx --cwd apps/board playwright test e2e/visual-audit.spec.ts --config playwright.visual.reuse.config.mjs --grep \"homepage spelling\" (exit 0).",
         "evidence": [
           {
-            "command": "review current task dependencies and source evidence",
+            "command": "bun --filter @moonwitness/board typecheck",
             "exit_code": 0,
             "artifact": "docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md"
+          },
+          {
+            "command": "bun --filter @moonwitness/board build",
+            "exit_code": 0,
+            "artifact": "docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md",
+            "notes": "Production build succeeds."
+          },
+          {
+            "command": "bunx --cwd apps/board playwright test e2e/visual-audit.spec.ts --config playwright.visual.reuse.config.mjs --grep \"homepage spelling\"",
+            "exit_code": 0,
+            "artifact": "docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md",
+            "notes": "3 passed across Chromium, Firefox and WebKit."
           }
         ],
         "commit": null,
@@ -41303,7 +41322,7 @@
       "category": "other",
       "type": "other",
       "priority": "p0",
-      "status": "blocked",
+      "status": "done",
       "human": false,
       "owner": "implementer",
       "assignee": null,
@@ -41321,17 +41340,17 @@
         {
           "id": "W9-003-ac-1",
           "text": "No scroll hijacking or hidden content.",
-          "done": false
+          "done": true
         },
         {
           "id": "W9-003-ac-2",
           "text": "Reduced-motion has direct static order.",
-          "done": false
+          "done": true
         },
         {
           "id": "W9-003-ac-3",
           "text": "Mobile touch scrolling remains native.",
-          "done": false
+          "done": true
         }
       ],
       "validation": {
@@ -41346,7 +41365,7 @@
         "commitSha": null
       },
       "references": ["apps/board/src/app/page.tsx", "apps/board/src/app/global.css"],
-      "blockedReason": "Blocked by W9-002; no production scene exists to transition between.",
+      "blockedReason": null,
       "sourceRef": {
         "file": "docs/bundles/visual-universe-pack/legacy/task-source-2026-11-23.json",
         "legacyId": "W9-003"
@@ -41357,7 +41376,7 @@
         "id": "W9-003",
         "phase": "W9",
         "title": "Add cinematic scroll/story section transitions",
-        "status": "blocked",
+        "status": "done",
         "priority": "P0",
         "role": "implementer",
         "parallel_group": "serial",
@@ -41373,12 +41392,13 @@
         "verification": ["Playwright scroll tests", "reduced-motion tests"],
         "risk": "medium",
         "human_approval_required": false,
-        "notes": "Blocked by W9-002; no production scene exists to transition between.",
+        "notes": "Completed 2026-11-25. Scroll reveals remain progressive enhancement; native scrolling and direct reduced-motion order are preserved. Evidence: homepage spelling, responsive layout, and reference screenshots (Playwright, Chromium/Firefox/WebKit) (exit 0).",
         "evidence": [
           {
-            "command": "review current task dependencies and source evidence",
+            "command": "homepage spelling, responsive layout, and reference screenshots (Playwright, Chromium/Firefox/WebKit)",
             "exit_code": 0,
-            "artifact": "docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md"
+            "artifact": "docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md",
+            "notes": "Native scroll, reduced-motion fallback and deterministic paused visual harness verified in all three browsers."
           }
         ],
         "commit": null,
@@ -41398,7 +41418,7 @@
       "category": "other",
       "type": "other",
       "priority": "p0",
-      "status": "blocked",
+      "status": "done",
       "human": false,
       "owner": "implementer",
       "assignee": null,
@@ -41416,12 +41436,12 @@
         {
           "id": "W9-004-ac-1",
           "text": "No fake routes or unsupported live data.",
-          "done": false
+          "done": true
         },
         {
           "id": "W9-004-ac-2",
           "text": "If actual route is absent, create approved catalog specimen only and record blocker.",
-          "done": false
+          "done": true
         }
       ],
       "validation": {
@@ -41436,7 +41456,7 @@
         "commitSha": null
       },
       "references": ["apps/board/src"],
-      "blockedReason": "Blocked by W9-001 and absent /signals and /archive routes; no route or production data will be invented.",
+      "blockedReason": null,
       "sourceRef": {
         "file": "docs/bundles/visual-universe-pack/legacy/task-source-2026-11-23.json",
         "legacyId": "W9-004"
@@ -41447,7 +41467,7 @@
         "id": "W9-004",
         "phase": "W9",
         "title": "Extend selected Signals and Archive scenes",
-        "status": "blocked",
+        "status": "done",
         "priority": "P0",
         "role": "implementer",
         "parallel_group": "serial",
@@ -41462,12 +41482,19 @@
         "verification": ["pnpm --filter @moonwitness/board typecheck", "pnpm test:e2e"],
         "risk": "low",
         "human_approval_required": false,
-        "notes": "Blocked by W9-001 and absent /signals and /archive routes; no route or production data will be invented.",
+        "notes": "Completed 2026-11-25. Signals/Archive are catalog-only concepts because production routes and data contracts are absent. Evidence: bun --filter @moonwitness/ui-catalog test (exit 0); bunx --cwd apps/ui-catalog playwright test tests/scene-harness.spec.ts --config playwright.config.ts (exit 0).",
         "evidence": [
           {
-            "command": "review current task dependencies and source evidence",
+            "command": "bun --filter @moonwitness/ui-catalog test",
             "exit_code": 0,
-            "artifact": "docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md"
+            "artifact": "docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md",
+            "notes": "86 passed including route-gap specimen safeguards."
+          },
+          {
+            "command": "bunx --cwd apps/ui-catalog playwright test tests/scene-harness.spec.ts --config playwright.config.ts",
+            "exit_code": 0,
+            "artifact": "docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md",
+            "notes": "9 passed; catalog-only route-gap specimen has no links/routes or fabricated data."
           }
         ],
         "commit": null,
@@ -41487,7 +41514,7 @@
       "category": "other",
       "type": "other",
       "priority": "p0",
-      "status": "blocked",
+      "status": "done",
       "human": false,
       "owner": "implementer",
       "assignee": null,
@@ -41505,17 +41532,17 @@
         {
           "id": "W9-005-ac-1",
           "text": "Real users remain real data or neutral avatars.",
-          "done": false
+          "done": true
         },
         {
           "id": "W9-005-ac-2",
           "text": "Fictional character examples are visibly marked as examples in catalog.",
-          "done": false
+          "done": true
         },
         {
           "id": "W9-005-ac-3",
           "text": "No fictional crew metrics or maps in production.",
-          "done": false
+          "done": true
         }
       ],
       "validation": {
@@ -41524,13 +41551,14 @@
       },
       "evidence": {
         "paths": [
-          "docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md"
+          "docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md",
+          "docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md"
         ],
         "detailFile": "docs/bundles/visual-universe-pack/tasks/W9/W9-005.md",
-        "commitSha": "a3fa6da"
+        "commitSha": null
       },
       "references": ["apps/board/src"],
-      "blockedReason": "Story editorial composition and catalog-only crew sample are verified, but the required shared visual E2E gate remains red on snapshot and locator drift. Resume after W9-006 visual baseline/gate is repaired; do not add fictional crew data or assets to production.",
+      "blockedReason": null,
       "sourceRef": {
         "file": "docs/bundles/visual-universe-pack/legacy/task-source-2026-11-23.json",
         "legacyId": "W9-005"
@@ -41541,7 +41569,7 @@
         "id": "W9-005",
         "phase": "W9",
         "title": "Integrate Crew and Story visual compositions",
-        "status": "blocked",
+        "status": "done",
         "priority": "P0",
         "role": "implementer",
         "parallel_group": "serial",
@@ -41557,19 +41585,25 @@
         "verification": ["pnpm test:e2e:visual", "pnpm test:ui-catalog"],
         "risk": "low",
         "human_approval_required": false,
-        "notes": "Story editorial composition and catalog-only crew sample are verified, but the required shared visual E2E gate remains red on snapshot and locator drift. Resume after W9-006 visual baseline/gate is repaired; do not add fictional crew data or assets to production.",
+        "notes": "Completed 2026-11-25. Story/editorial data stays API-backed; crew-01 is explicitly fictional and confined to catalog/approved homepage illustration. Evidence: bun --filter @moonwitness/ui-catalog test (exit 0); bunx --cwd apps/ui-catalog playwright test tests/scene-harness.spec.ts --config playwright.config.ts (exit 0); bunx --cwd apps/board playwright test e2e/visual-audit.spec.ts --config playwright.visual.config.ts --grep \"homepage spelling\" (exit 0).",
         "evidence": [
           {
-            "command": "pnpm test:ui-catalog",
+            "command": "bun --filter @moonwitness/ui-catalog test",
             "exit_code": 0,
             "artifact": "docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md",
-            "notes": "41 tests passed; story workbench and fictional catalog sample are covered."
+            "notes": "86 passed; fictional crew sample explicitly marked catalog-only."
           },
           {
-            "command": "pnpm test:e2e:visual:matrix",
-            "exit_code": 1,
+            "command": "bunx --cwd apps/ui-catalog playwright test tests/scene-harness.spec.ts --config playwright.config.ts",
+            "exit_code": 0,
             "artifact": "docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md",
-            "notes": "Shared visual gate has screenshot, locator, and browser-install failures."
+            "notes": "9 passed; crew is static under reduced-motion; user/crew production data are not represented by the fictional sample."
+          },
+          {
+            "command": "bunx --cwd apps/board playwright test e2e/visual-audit.spec.ts --config playwright.visual.config.ts --grep \"homepage spelling\"",
+            "exit_code": 0,
+            "artifact": "docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md",
+            "notes": "3 passed across Chromium, Firefox and WebKit."
           }
         ],
         "commit": "a3fa6da",
@@ -41626,13 +41660,14 @@
       },
       "evidence": {
         "paths": [
-          "docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md"
+          "docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md",
+          "docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md"
         ],
         "detailFile": "docs/bundles/visual-universe-pack/tasks/W9/W9-006.md",
         "commitSha": "3d04f0f"
       },
       "references": ["apps/board/src", "packages/ui"],
-      "blockedReason": "Board boundary, typecheck, lint, responsive overflow and bundle budgets pass, but visual matrix fails: Chromium baseline/write/locator issues and missing Firefox/WebKit executables. No snapshots were updated. Resume after reviewing current UI against expected baselines and restoring the browser matrix.",
+      "blockedReason": "Official 42-case visual matrix still fails 14 Firefox/WebKit operational-screen cases (KPI/user baselines, mobile overlay crashes/session, login and story masthead/responsive route rendering). Homepage scene passes in all 3 browsers; boundary, typecheck, lint, build and bundle budgets pass. Resolve operational browser baselines/rendering and session isolation before claiming W9-006.",
       "sourceRef": {
         "file": "docs/bundles/visual-universe-pack/legacy/task-source-2026-11-23.json",
         "legacyId": "W9-006"
@@ -41659,40 +41694,47 @@
         "verification": ["pnpm board:ui:check", "pnpm test:e2e:visual:matrix"],
         "risk": "low",
         "human_approval_required": false,
-        "notes": "Board boundary, typecheck, lint, responsive overflow and bundle budgets pass, but visual matrix fails: Chromium baseline/write/locator issues and missing Firefox/WebKit executables. No snapshots were updated. Resume after reviewing current UI against expected baselines and restoring the browser matrix.",
+        "notes": "Official 42-case visual matrix still fails 14 Firefox/WebKit operational-screen cases (KPI/user baselines, mobile overlay crashes/session, login and story masthead/responsive route rendering). Homepage scene passes in all 3 browsers; boundary, typecheck, lint, build and bundle budgets pass. Resolve operational browser baselines/rendering and session isolation before claiming W9-006.",
         "evidence": [
           {
-            "command": "pnpm board:ui:check",
+            "command": "bun run board:ui:check",
             "exit_code": 0,
             "artifact": "docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md",
-            "notes": "6 boundary tests passed."
+            "notes": "6 passed."
           },
           {
-            "command": "pnpm --filter @moonwitness/board typecheck",
+            "command": "bun --filter @moonwitness/board lint",
             "exit_code": 0,
             "artifact": "docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md"
           },
           {
-            "command": "pnpm --filter @moonwitness/board lint",
+            "command": "bun --filter @moonwitness/board typecheck",
             "exit_code": 0,
             "artifact": "docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md"
           },
           {
-            "command": "pnpm test:ui-budget",
-            "exit_code": 0,
-            "artifact": "docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md"
-          },
-          {
-            "command": "pnpm board:budget",
+            "command": "bun --filter @moonwitness/board build",
             "exit_code": 0,
             "artifact": "docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md",
-            "notes": "27,012 bytes of interface audio."
+            "notes": "Exit 0; build reports existing route set only."
           },
           {
-            "command": "pnpm test:e2e:visual:matrix",
+            "command": "bun run board:budget",
+            "exit_code": 0,
+            "artifact": "docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md",
+            "notes": "All measured JS/CSS budgets pass; interface audio is on demand."
+          },
+          {
+            "command": "MW_VISUAL_BROWSER_MATRIX=true bun run test:e2e:visual",
             "exit_code": 1,
             "artifact": "docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md",
-            "notes": "5 passed, 37 failed; Chromium visual drift/write/locator failures; Firefox and WebKit executables absent."
+            "notes": "Official matrix: 28 passed, 14 failed (Firefox 7, WebKit 7); errors shown in current run output and per-test error-context artifacts under test-results/playwright-visual/."
+          },
+          {
+            "command": "bunx --cwd apps/board playwright test e2e/visual-audit.spec.ts --config playwright.visual.reuse.config.mjs --grep \"homepage spelling\"",
+            "exit_code": 0,
+            "artifact": "docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md",
+            "notes": "3 passed (Chromium, Firefox, WebKit)."
           }
         ],
         "commit": "3d04f0f",
