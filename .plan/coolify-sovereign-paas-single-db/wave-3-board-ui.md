@@ -202,7 +202,7 @@
 
 ---
 
-## - [ ] M47 — Create Per-App Management Drawer (`PaasAppDrawer`)
+## - [x] M47 — Create Per-App Management Drawer (`PaasAppDrawer`)
 
 - **Owner File (CREATE):** `apps/board/src/components/cloud/paas-app-drawer.tsx`
 - **Depends On:** `M31`
