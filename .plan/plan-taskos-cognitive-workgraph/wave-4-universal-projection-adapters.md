@@ -6,7 +6,7 @@
 
 ---
 
-## - [ ] T24 — Implement Deterministic `.plan/<id>.md` Projector (`src/adapters/plan-md.adapter.ts`)
+## - [x] T24 — Implement Deterministic `.plan/<id>.md` Projector (`src/adapters/plan-md.adapter.ts`)
 
 - **Owner File(s):** `packages/plan-taskos/src/adapters/plan-md.adapter.ts`
   - `packages/plan-taskos/src/adapters/plan-md.adapter.ts` (CREATE)
@@ -29,7 +29,7 @@
 
 ---
 
-## - [ ] T25 — Implement Global TaskOS v2 Roll-Up & 5-Layer `documents[]` Adapter (`src/adapters/taskos-v2.adapter.ts`)
+## - [x] T25 — Implement Global TaskOS v2 Roll-Up & 5-Layer `documents[]` Adapter (`src/adapters/taskos-v2.adapter.ts`)
 
 - **Owner File(s):** `packages/plan-taskos/src/adapters/taskos-v2.adapter.ts`
   - `packages/plan-taskos/src/adapters/taskos-v2.adapter.ts` (CREATE)
