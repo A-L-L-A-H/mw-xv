@@ -49,11 +49,14 @@ function getAjv(): Ajv2020 {
 }
 
 async function loadSchema<T>(name: string): Promise<T> {
-  const content = await readFile(join(__dirname, "..", "schemas", `${name}.schema.json`), "utf8");
+  const content = await readFile(join(__dirname, "..", "..", "schemas", `${name}.schema.json`), "utf8");
   return JSON.parse(content);
 }
 
+let validatorsInitialized = false;
+
 async function getValidators() {
+  if (validatorsInitialized) return;
   const ajv = getAjv();
   const [manifestSchema, waveSchema, proofSchema, documentSchema] = await Promise.all([
     loadSchema("manifest"),
@@ -65,6 +68,7 @@ async function getValidators() {
   waveValidator = ajv.compile(waveSchema);
   proofValidator = ajv.compile(proofSchema);
   documentValidator = ajv.compile(documentSchema);
+  validatorsInitialized = true;
 }
 
 function validateSchema(validator: ReturnType<Ajv2020["compile"]> | null, data: unknown, context: string): ValidationIssue[] {

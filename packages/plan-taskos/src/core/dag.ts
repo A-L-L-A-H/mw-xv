@@ -189,8 +189,8 @@ export function buildWorkGraphDag(
 
   const depths = computeDepths(tasks, tasksByCode, cyclicCodes);
 
-  const activeLeases = options?.activeLeases ?? new Set<string>();
-  const dirtyFiles = options?.dirtyFiles ?? [];
+  const _activeLeases = options?.activeLeases ?? new Set<string>();
+  const _dirtyFiles = options?.dirtyFiles ?? [];
 
   const nodes: DagNode[] = [];
   for (const task of tasks) {

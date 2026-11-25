@@ -8,7 +8,6 @@ import type {
   WaveFileRef,
   ManifestDocumentRef,
   DocumentNodeIR,
-  PlanBundleFormat,
   TaskGovernance,
   TaskLifecycle,
   TaskGraph,
@@ -16,16 +15,13 @@ import type {
   TaskVerification,
   TaskProjections,
   VerifyCommandIR,
-  AcceptanceCriterionIR,
   RepoIdentity,
-  ExecutionPolicy,
-  ProjectionsConfig,
 } from "./types.js";
 import { redactSensitiveText } from "./redaction.js";
 import { normalizeRepoPath } from "./paths.js";
 
 const TASK_HEADING_RE = /^##\s+(?:(?:-\s+)?\[[ xX]\]\s+)?([A-Z]\d{2,3})\b/;
-const TASK_CHECKLIST_RE = /^-\s+\[[ xX]\]\s+\*\*([A-Z]\d{2,3})\*\*\s*—\s+(.+)$/;
+const TASK_CHECKLIST_RE = /^[#\s]*-\s+\[[ xX]\]\s+(?:\*\*)?([A-Z]\d{2,3})(?:\*\*)?\s*—\s+(.+)$/;
 const WAVE_PLAYBOOK_RE = /^wave-(\d+)-([a-z-]+)\.md$/i;
 const SECTION_RE = /^##\s+(.+)$/;
 
@@ -52,7 +48,7 @@ function toPosix(path: string): string {
   return path.replaceAll(pathSep, "/");
 }
 
-function stripPrefix(path: string, prefix: string): string {
+function _stripPrefix(path: string, prefix: string): string {
   const posixPath = toPosix(path);
   const posixPrefix = toPosix(prefix);
   if (posixPath.startsWith(posixPrefix)) {
@@ -87,10 +83,11 @@ async function parseLegacyPlan(content: string, planFilePath: string): Promise<L
   const repoRoot = resolve(planFilePath, "..", "..");
   const tasks = new Map<string, ParsedLegacyTask>();
   let currentTask: ParsedLegacyTask | null = null;
-  let currentSection = "";
+  let _currentSection = "";
   let inTaskSpec = false;
   let planTitle = "";
-  let repo: RepoIdentity = { org: "", name: "", target_branch: "main" };
+  let planId = "";
+  const repo: RepoIdentity = { org: "", name: "", target_branch: "main" };
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -101,10 +98,16 @@ async function parseLegacyPlan(content: string, planFilePath: string): Promise<L
       continue;
     }
 
+    const planIdMatch = /^-\s+\*\*Plan ID:\*\*\s*`([^`]+)`/.exec(trimmed);
+    if (planIdMatch && !planId) {
+      planId = planIdMatch[1].trim();
+      continue;
+    }
+
     const sectionMatch = SECTION_RE.exec(trimmed);
     if (sectionMatch) {
-      currentSection = sectionMatch[1].trim();
-      inTaskSpec = currentSection.startsWith("- [ ]") || /^\d+\./.test(currentSection);
+      _currentSection = sectionMatch[1].trim();
+      inTaskSpec = _currentSection.startsWith("- [ ]") || /^\d+\./.test(_currentSection);
       continue;
     }
 
@@ -130,7 +133,10 @@ async function parseLegacyPlan(content: string, planFilePath: string): Promise<L
 
     if (currentTask && inTaskSpec) {
       if (trimmed.startsWith("**Owner File(s):**") || trimmed.startsWith("Owner File(s):")) {
-        const filesStr = trimmed.split(":", 2)[1]?.trim() || "";
+        // Handle markdown bold: split by ** and take last part, then split by colon
+        const afterBold = trimmed.split("**").pop() || trimmed;
+        const colonIndex = afterBold.indexOf(":");
+        const filesStr = colonIndex >= 0 ? afterBold.slice(colonIndex + 1).trim() : afterBold.trim();
         currentTask.ownerFiles = filesStr
           .split(",")
           .map((f) => f.trim())
@@ -226,7 +232,7 @@ async function parseLegacyPlan(content: string, planFilePath: string): Promise<L
   }
 
   return {
-    planId: planTitle || "legacy-plan",
+    planId: planId || planTitle || "legacy-plan",
     title: planTitle,
     repo,
     tasks,
@@ -265,7 +271,7 @@ async function loadV2Bundle(repoRoot: string, planId: string): Promise<LoadedPla
     const docFiles = await readdir(docDir);
     for (const docFile of docFiles) {
       if (docFile.endsWith(".md")) {
-        const content = await readText(join(docDir, docFile));
+        await readText(join(docDir, docFile));
         documents.push({
           urn: `urn:mw:doc:${manifest.repo.org}/${manifest.repo.name}:${docFile.replace(".md", "")}`,
           slug: docFile.replace(".md", ""),
@@ -333,7 +339,13 @@ async function loadLegacyPlan(repoRoot: string, planId: string): Promise<LoadedP
     }
 
     const governance: TaskGovernance = {
-      owner_files: task.ownerFiles.map(normalizeRepoPath).filter(Boolean),
+      owner_files: task.ownerFiles.map((f) => {
+        try {
+          return normalizeRepoPath(f);
+        } catch {
+          return f; // keep original for validation to catch
+        }
+      }),
       owner_globs: task.ownerFiles.filter((f) => f.includes("*") || f.includes("**")).map(normalizeRepoPath),
       invariants: [],
       do_not: [],

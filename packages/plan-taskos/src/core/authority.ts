@@ -295,7 +295,7 @@ export function reconcileTaskPlanes(
     planeHash,
     ...(rejectedFields.length > 0
       ? { rejectedFields: Object.freeze(rejectedFields), needsTriage: true }
-      : {}),
+      : { needsTriage: false }),
   };
 
   return Object.freeze(result);
