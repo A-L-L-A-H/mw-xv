@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
+import { Badge } from '@moonwitness/ui/components/badge';
+import { Button } from '@moonwitness/ui/components/button';
+import '@moonwitness/ui/styles/tokens.css';
 
 interface DeviceStatus {
   deviceId: string;
@@ -279,7 +282,7 @@ export function App() {
     <div className="mw-shell">
       <header className="mw-header">
         <div>
-          <span className="mw-badge">Standalone Gateway · Baileys Native</span>
+          <Badge className="mw-badge">Standalone Gateway · Baileys Native</Badge>
           <h1>MoonWitness WhatsApp Service</h1>
           <p className="mw-topology">
             Topology: <code>apps/board</code> ↔ <code>apps/api</code> ↔ <code>apps/whatsapp</code>{' '}
@@ -294,9 +297,9 @@ export function App() {
             Health (/healthz)
           </a>
           {unlocked && (
-            <button type="button" className="mw-btn mw-btn-ghost" onClick={handleLock}>
+            <Button type="button" variant="ghost" className="mw-btn mw-btn-ghost" onClick={handleLock}>
               Lock Session
-            </button>
+            </Button>
           )}
         </div>
       </header>
