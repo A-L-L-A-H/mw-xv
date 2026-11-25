@@ -1,69 +1,46 @@
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { createDatabase } from '../database/knex.js';
-import { bootstrapApiWorker } from '../addons/registry.js';
 import { runOutboxLoop } from '@moonwitness/jobs';
 import { registerNotificationOutboxConsumer } from '@moonwitness/orm-notification';
-import {
-  readWorkerHealthHost,
-  readWorkerHealthPort,
-  startWorkerHealthServer,
-  type WorkerHealthServer,
-} from './worker-health.js';
 import { registerWebhookOutboxConsumer } from '@moonwitness/orm-integration';
-import { createProcessShutdownController } from '../lifecycle/process-shutdown.js';
-import { ServiceContainer, createServiceToken } from '@moonwitness/orm';
+import { createServiceToken } from '@moonwitness/orm';
 import { registerWhatsAppOutboxConsumer } from '../whatsapp/outbox-consumer.js';
 import { createAttachmentStorage } from '../storage/attachment-storage.js';
-import { closeS3AttachmentStorage, S3AttachmentStorage } from '@moonwitness/orm-storage';
+import {
+  closeS3AttachmentStorage,
+  S3AttachmentStorage,
+  type AttachmentStorage,
+} from '@moonwitness/orm-storage';
 import { validateWhatsAppProductionConfig } from '../whatsapp/config.js';
+import { startWorkerCommand } from './worker-bootstrap.js';
 
 validateWhatsAppProductionConfig(process.env);
-const db = createDatabase();
-let workerHealth: Awaited<ReturnType<typeof startWorkerHealthServer>> = null;
-let unregisterNotificationConsumer = () => {};
-let unregisterWebhookConsumer = () => {};
-let unregisterWhatsAppConsumer = () => {};
-const attachmentStorage = createAttachmentStorage();
-const services = new ServiceContainer();
-const workerHealthToken = createServiceToken<WorkerHealthServer>('api.workerHealth');
-const shutdown = createProcessShutdownController(() => workerHealth?.beginDrain('SIGTERM'), {
-  services,
-});
+const attachmentStorageToken = createServiceToken<AttachmentStorage>('api.attachmentStorage');
 
-try {
-  await bootstrapApiWorker(db);
-  unregisterNotificationConsumer = registerNotificationOutboxConsumer();
-  unregisterWebhookConsumer = registerWebhookOutboxConsumer(async (secretRef, companyId) => {
-    if (!secretRef.startsWith(`MW_WEBHOOK_SECRET_C${companyId}_`)) return null;
-    if (!/^MW_WEBHOOK_SECRET_C[1-9][0-9]*_[A-Z0-9_]{1,100}$/u.test(secretRef)) return null;
-    return process.env[secretRef] ?? null;
-  });
-  unregisterWhatsAppConsumer = registerWhatsAppOutboxConsumer(attachmentStorage);
-  const consumerModule = process.env.OUTBOX_HANDLERS_MODULE;
-  if (consumerModule) await import(pathToFileURL(path.resolve(consumerModule)).href);
-  if (!shutdown.signal.aborted) {
-    workerHealth = await startWorkerHealthServer({
-      db,
-      host: readWorkerHealthHost(process.env.WORKER_HEALTH_HOST, 'WORKER_HEALTH_HOST'),
-      name: 'outbox-worker',
-      metricsToken: process.env.METRICS_TOKEN,
-      port: readWorkerHealthPort(
-        process.env.OUTBOX_WORKER_HEALTH_PORT,
-        'OUTBOX_WORKER_HEALTH_PORT'
-      ),
-    });
-    services.register(workerHealthToken, workerHealth, () => workerHealth?.close());
-  }
-  await runOutboxLoop(`moonwitness-outbox-${randomUUID()}`, shutdown.signal);
-} finally {
-  shutdown.dispose();
-  unregisterNotificationConsumer();
-  unregisterWebhookConsumer();
-  unregisterWhatsAppConsumer();
-  await workerHealth?.close();
-  if (attachmentStorage instanceof S3AttachmentStorage)
-    await closeS3AttachmentStorage(attachmentStorage);
-  await db.destroy();
-}
+await startWorkerCommand({
+  name: 'outbox-worker',
+  healthPortEnvVar: 'OUTBOX_WORKER_HEALTH_PORT',
+  metricsToken: process.env.METRICS_TOKEN,
+  async setup({ services, registerCleanup }) {
+    const attachmentStorage = createAttachmentStorage();
+    services.register(attachmentStorageToken, attachmentStorage);
+    if (attachmentStorage instanceof S3AttachmentStorage) {
+      registerCleanup(() => closeS3AttachmentStorage(attachmentStorage));
+    }
+    registerCleanup(registerNotificationOutboxConsumer());
+    registerCleanup(
+      registerWebhookOutboxConsumer(async (secretRef, companyId) => {
+        if (!secretRef.startsWith(`MW_WEBHOOK_SECRET_C${companyId}_`)) return null;
+        if (!/^MW_WEBHOOK_SECRET_C[1-9][0-9]*_[A-Z0-9_]{1,100}$/u.test(secretRef)) return null;
+        return process.env[secretRef] ?? null;
+      })
+    );
+    registerCleanup(registerWhatsAppOutboxConsumer(attachmentStorage));
+    const consumerModule = process.env.OUTBOX_HANDLERS_MODULE;
+    if (consumerModule) await import(pathToFileURL(path.resolve(consumerModule)).href);
+  },
+  async run({ signal }) {
+    await runOutboxLoop(`moonwitness-outbox-${randomUUID()}`, signal);
+  },
+});

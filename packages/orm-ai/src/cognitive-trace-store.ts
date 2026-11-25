@@ -1,9 +1,31 @@
-import { createHash } from 'node:crypto';
 import type { Knex } from 'knex';
+import {
+  computeConsistencySubproof,
+  computeMerkleTreeHash,
+  emptyTreeHash,
+  generateMerkleInclusionProof,
+  hashMerkleLeaf,
+  hashMerkleNode,
+  verifyConsistencyProofHashes,
+  verifyMerkleInclusionProof,
+  type MerkleAuditTree,
+  type MerkleConsistencyResult,
+  type MerkleInclusionProof,
+  type MerkleInclusionVerificationResult,
+} from '@moonwitness/ai-runtime';
+import { sha256Canonical } from '@moonwitness/ai-runtime/canonical-json.js';
 import { defineModel, fields } from '@moonwitness/orm';
 import { Company } from '@moonwitness/orm-base';
 import { modelRef } from './models/helpers.js';
-import { sha256Canonical, toCanonicalJson } from '@moonwitness/ai-runtime/canonical-json.js';
+
+export {
+  hashMerkleLeaf,
+  hashMerkleNode,
+  type MerkleAuditTree,
+  type MerkleConsistencyResult,
+  type MerkleInclusionProof,
+  type MerkleInclusionVerificationResult,
+};
 
 export const COGNITIVE_TRACE_SCHEMA_VERSION = '1.0.0';
 
@@ -41,196 +63,6 @@ export interface StoredCognitiveTrace {
   readonly created_at: string;
 }
 
-const RFC6962_LEAF_DOMAIN_PREFIX = 0x00;
-const RFC6962_NODE_DOMAIN_PREFIX = 0x01;
-const SHA256_HEX_PATTERN = /^[0-9a-f]{64}$/iu;
-
-function emptyTreeHash(): string {
-  return createHash('sha256').update(Buffer.alloc(0)).digest('hex');
-}
-
-function largestPowerOfTwoLessThan(n: number): number {
-  let k = 1;
-  while (k * 2 < n) {
-    k *= 2;
-  }
-  return k;
-}
-
-function isPowerOfTwo(n: number): boolean {
-  return n > 0 && (n & (n - 1)) === 0;
-}
-
-export function hashMerkleLeaf(payload: unknown): string {
-  const canonicalJson = toCanonicalJson(payload);
-  const input = Buffer.concat([
-    Buffer.from([RFC6962_LEAF_DOMAIN_PREFIX]),
-    Buffer.from(canonicalJson, 'utf8'),
-  ]);
-  return createHash('sha256').update(input).digest('hex');
-}
-
-export function hashMerkleNode(leftHex: string, rightHex: string): string {
-  if (!SHA256_HEX_PATTERN.test(leftHex) || !SHA256_HEX_PATTERN.test(rightHex)) {
-    throw new Error('hashMerkleNode requires 64-character hexadecimal SHA-256 digests');
-  }
-  const input = Buffer.concat([
-    Buffer.from([RFC6962_NODE_DOMAIN_PREFIX]),
-    Buffer.from(leftHex, 'hex'),
-    Buffer.from(rightHex, 'hex'),
-  ]);
-  return createHash('sha256').update(input).digest('hex');
-}
-
-function computeMerkleTreeHash(leafHashes: readonly string[]): string {
-  const count = leafHashes.length;
-  if (count === 0) {
-    return emptyTreeHash();
-  }
-  if (count === 1) {
-    return leafHashes[0]!;
-  }
-  const split = largestPowerOfTwoLessThan(count);
-  const left = computeMerkleTreeHash(leafHashes.slice(0, split));
-  const right = computeMerkleTreeHash(leafHashes.slice(split));
-  return hashMerkleNode(left, right);
-}
-
-function computeAuditPath(
-  leafHashes: readonly string[],
-  leafIndex: number
-): readonly { readonly hash: string; readonly position: 'left' | 'right' }[] {
-  const count = leafHashes.length;
-  if (count <= 1) {
-    return [];
-  }
-  const split = largestPowerOfTwoLessThan(count);
-  if (leafIndex < split) {
-    const subPath = computeAuditPath(leafHashes.slice(0, split), leafIndex);
-    const siblingHash = computeMerkleTreeHash(leafHashes.slice(split));
-    return [...subPath, { hash: siblingHash, position: 'right' }];
-  }
-  const subPath = computeAuditPath(leafHashes.slice(split), leafIndex - split);
-  const siblingHash = computeMerkleTreeHash(leafHashes.slice(0, split));
-  return [...subPath, { hash: siblingHash, position: 'left' }];
-}
-
-function computeConsistencySubproof(
-  m: number,
-  leafHashes: readonly string[],
-  isCompleteSubtree: boolean
-): string[] {
-  const n = leafHashes.length;
-  if (m === n) {
-    if (isCompleteSubtree) {
-      return [];
-    }
-    return [computeMerkleTreeHash(leafHashes)];
-  }
-  const split = largestPowerOfTwoLessThan(n);
-  if (m <= split) {
-    const sub = computeConsistencySubproof(m, leafHashes.slice(0, split), isCompleteSubtree);
-    return [...sub, computeMerkleTreeHash(leafHashes.slice(split))];
-  }
-  const sub = computeConsistencySubproof(m - split, leafHashes.slice(split), false);
-  return [...sub, computeMerkleTreeHash(leafHashes.slice(0, split))];
-}
-
-function verifyConsistencyProofHashes(
-  olderSize: number,
-  newerSize: number,
-  olderRootHash: string,
-  newerRootHash: string,
-  proof: readonly string[]
-): boolean {
-  if (olderSize === 0) {
-    return proof.length === 0;
-  }
-  if (olderSize === newerSize) {
-    return proof.length === 0 && olderRootHash === newerRootHash;
-  }
-  if (olderSize > newerSize || proof.length === 0) {
-    return false;
-  }
-
-  const nodes = isPowerOfTwo(olderSize) ? [olderRootHash, ...proof] : [...proof];
-  let fn = olderSize - 1;
-  let sn = newerSize - 1;
-
-  while ((fn & 1) === 1) {
-    fn >>= 1;
-    sn >>= 1;
-  }
-
-  let fr = nodes[0]!;
-  let sr = nodes[0]!;
-
-  for (let i = 1; i < nodes.length; i += 1) {
-    const sibling = nodes[i]!;
-    if (sn === 0) {
-      return false;
-    }
-    if ((fn & 1) === 1 || fn === sn) {
-      fr = hashMerkleNode(sibling, fr);
-      sr = hashMerkleNode(sibling, sr);
-      while (fn !== 0 && (fn & 1) === 0) {
-        fn >>= 1;
-        sn >>= 1;
-      }
-    } else {
-      sr = hashMerkleNode(sr, sibling);
-    }
-    fn >>= 1;
-    sn >>= 1;
-  }
-
-  return sn === 0 && fr === olderRootHash && sr === newerRootHash;
-}
-
-export interface MerkleAuditTree {
-  readonly leafCount: number;
-  readonly rootHash: string;
-  readonly leafHashes: readonly string[];
-  readonly redactedEvents: readonly unknown[];
-  readonly rfc6962DomainSeparated: true;
-  readonly automatedSelfAccept: false;
-  readonly automatedPromotionAllowed: false;
-  readonly treeSha256: string;
-}
-
-export interface MerkleInclusionProof {
-  readonly leafIndex: number;
-  readonly treeSize: number;
-  readonly leafHash: string;
-  readonly rootHash: string;
-  readonly auditPath: readonly { readonly hash: string; readonly position: 'left' | 'right' }[];
-  readonly automatedSelfAccept: false;
-  readonly automatedPromotionAllowed: false;
-  readonly proofSha256: string;
-}
-
-export interface MerkleInclusionVerificationResult {
-  readonly valid: boolean;
-  readonly leafHash: string;
-  readonly computedRootHash: string;
-  readonly expectedRootHash: string;
-  readonly reason?: string;
-}
-
-export interface MerkleConsistencyResult {
-  readonly consistent: boolean;
-  readonly olderTreeSize: number;
-  readonly newerTreeSize: number;
-  readonly olderRootHash: string;
-  readonly newerRootHash: string;
-  readonly consistencyProof: readonly string[];
-  readonly proofHashCount: number;
-  readonly automatedSelfAccept: false;
-  readonly automatedPromotionAllowed: false;
-  readonly verificationSha256: string;
-  readonly reason?: string;
-}
-
 function buildMerkleAuditTreeFromHashes(leafHashes: string[], leafCount: number): MerkleAuditTree {
   const rootHash = computeMerkleTreeHash(leafHashes);
   const core = {
@@ -245,86 +77,6 @@ function buildMerkleAuditTreeFromHashes(leafHashes: string[], leafCount: number)
     ...core,
     redactedEvents: [],
     treeSha256: sha256Canonical(core),
-  };
-}
-
-function generateMerkleInclusionProof(
-  tree: MerkleAuditTree,
-  leafIndex: number
-): MerkleInclusionProof {
-  if (!Number.isInteger(leafIndex) || leafIndex < 0 || leafIndex >= tree.leafCount) {
-    throw new RangeError(
-      `leafIndex ${String(leafIndex)} is out of bounds for tree size ${String(tree.leafCount)}`
-    );
-  }
-  const auditPath = computeAuditPath(tree.leafHashes, leafIndex);
-  const leafHash = tree.leafHashes[leafIndex]!;
-  const core = {
-    leafIndex,
-    treeSize: tree.leafCount,
-    leafHash,
-    rootHash: tree.rootHash,
-    auditPath,
-    automatedSelfAccept: false as const,
-    automatedPromotionAllowed: false as const,
-  };
-  return {
-    ...core,
-    proofSha256: sha256Canonical(core),
-  };
-}
-
-function verifyMerkleInclusionProof(
-  leafPayload: unknown,
-  proof: MerkleInclusionProof,
-  expectedRootHash: string
-): MerkleInclusionVerificationResult {
-  const leafHash = hashMerkleLeaf(leafPayload);
-
-  if (!SHA256_HEX_PATTERN.test(expectedRootHash)) {
-    return {
-      valid: false,
-      leafHash,
-      computedRootHash: '',
-      expectedRootHash,
-      reason: 'INVALID_EXPECTED_ROOT_HASH',
-    };
-  }
-
-  if (proof.leafIndex < 0 || proof.leafIndex >= proof.treeSize) {
-    return {
-      valid: false,
-      leafHash,
-      computedRootHash: '',
-      expectedRootHash,
-      reason: 'LEAF_INDEX_OUT_OF_BOUNDS',
-    };
-  }
-
-  let currentHash = leafHash;
-  for (const step of proof.auditPath) {
-    if (!SHA256_HEX_PATTERN.test(step.hash)) {
-      return {
-        valid: false,
-        leafHash,
-        computedRootHash: '',
-        expectedRootHash,
-        reason: 'INVALID_AUDIT_PATH_HASH',
-      };
-    }
-    currentHash =
-      step.position === 'left'
-        ? hashMerkleNode(step.hash, currentHash)
-        : hashMerkleNode(currentHash, step.hash);
-  }
-
-  const valid = currentHash === expectedRootHash && leafHash === proof.leafHash;
-  return {
-    valid,
-    leafHash,
-    computedRootHash: currentHash,
-    expectedRootHash,
-    ...(valid ? {} : { reason: 'MERKLE_ROOT_MISMATCH' }),
   };
 }
 
@@ -547,7 +299,7 @@ export async function verifyCognitiveTrace(
   }
 
   const proof = generateMerkleInclusionProof(tree, leafIndex);
-  return verifyMerkleInclusionProof(envelope.payload, proof, expectedRoot);
+  return verifyMerkleInclusionProof(envelope.payload, proof, expectedRoot, { redact: false });
 }
 
 export interface VerifyChainOptions {

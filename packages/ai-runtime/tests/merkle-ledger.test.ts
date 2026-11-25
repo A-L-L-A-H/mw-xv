@@ -2,11 +2,18 @@ import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import {
   buildMerkleAuditTree,
+  computeAuditPath,
+  computeConsistencySubproof,
+  computeMerkleTreeHash,
+  emptyTreeHash,
   generateMerkleInclusionProof,
   hashMerkleLeaf,
   hashMerkleNode,
+  isPowerOfTwo,
+  largestPowerOfTwoLessThan,
   RFC6962_LEAF_DOMAIN_PREFIX,
   RFC6962_NODE_DOMAIN_PREFIX,
+  verifyConsistencyProofHashes,
   verifyMerkleConsistency,
   verifyMerkleInclusionProof,
 } from '../src/merkle-ledger.js';
@@ -148,5 +155,33 @@ describe('M16.03 RFC 6962 Merkle Sovereignty Ledger', () => {
     const truncatedCheck = verifyMerkleConsistency(olderEvents, olderEvents.slice(0, 2));
     expect(truncatedCheck.consistent).toBe(false);
     expect(truncatedCheck.reason).toBe('NEWER_TREE_SMALLER_THAN_OLDER');
+  });
+
+  it('exports low-level RFC 6962 helpers and supports optional unredacted inclusion verification', () => {
+    expect(emptyTreeHash()).toBe(createHash('sha256').update(Buffer.alloc(0)).digest('hex'));
+    expect(largestPowerOfTwoLessThan(7)).toBe(4);
+    expect(isPowerOfTwo(8)).toBe(true);
+    expect(isPowerOfTwo(7)).toBe(false);
+
+    const payloads = [
+      { id: 1, secret: 'raw-secret-123456' },
+      { id: 2, secret: 'raw-secret-789012' },
+    ];
+    const unredactedLeafHashes = payloads.map((p) => hashMerkleLeaf(p));
+    const rootHash = computeMerkleTreeHash(unredactedLeafHashes);
+    const auditPath = computeAuditPath(unredactedLeafHashes, 0);
+    expect(auditPath).toHaveLength(1);
+
+    const subproof = computeConsistencySubproof(1, unredactedLeafHashes, true);
+    expect(verifyConsistencyProofHashes(1, 2, unredactedLeafHashes[0]!, rootHash, subproof)).toBe(
+      true
+    );
+
+    const tree = buildMerkleAuditTree(payloads);
+    const redactedProof = generateMerkleInclusionProof(tree, 0);
+    expect(verifyMerkleInclusionProof(payloads[0], redactedProof, tree.rootHash).valid).toBe(true);
+    expect(
+      verifyMerkleInclusionProof(payloads[0], redactedProof, tree.rootHash, { redact: false }).valid
+    ).toBe(false);
   });
 });
