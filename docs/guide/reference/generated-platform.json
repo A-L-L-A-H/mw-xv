@@ -3110,6 +3110,17 @@
               "unique": false,
               "optional": true,
               "hasDefault": false
+            },
+            {
+              "name": "token_version",
+              "kind": "integer",
+              "column": "token_version",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
             }
           ],
           "uniqueConstraints": []
@@ -10498,5 +10509,5 @@
       "path": "/whatsapp/readyz"
     }
   ],
-  "generatedFromSha256": "37d858a960a782920d473e33c16d73cb306ade7b4e518173a20040002a854c73"
+  "generatedFromSha256": "8f810c7053c7027866765c0173a4aadebda234de521ebd3c4437be5e6d8c49b5"
 }
