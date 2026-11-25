@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "clipId": "anim-b-courier-move",
-  "beatId": "beat-2-courier-move",
+  "beatId": "ANIM-B",
   "title": "Courier Move — Rooftop Vault to Archive Loft",
   "status": "experimental-candidate",
   "characterIds": ["kuro-signal"],
@@ -9,7 +9,7 @@
   "playbackMode": "one-shot-or-loop-preview",
   "totalDurationMs": 1900,
   "pivot": { "x": 0.5, "y": 0.88 },
-  "motionDescription": "Kuro Signal coils low on the rooftop parapet, launches along a 35-degree diagonal stretch, vaults over the moonlit gap in a parkour tuck, flashes across the cable span in a cyan-magenta smear dash, brakes with a heel-plant skid, absorbs impact in a wide squash landing, and rebounds upright in front of the archive hatch thrusting the receiver forward.",
+  "motionDescription": "Kuro Signal coils tightly on the concrete parapet, launches left-to-right across the moonlit canyon, vaults mid-air over neon alleys, streaks across utility wires in a cyan-magenta smear dash, brakes with a sparking heel-plant skid, absorbs impact in a deep squash crouch, and rebounds eagerly at the archive loft door.",
   "principlesApplied": [
     "anticipation",
     "squash-and-stretch",
@@ -18,67 +18,74 @@
     "overlapping-action",
     "follow-through"
   ],
-  "fallbackPose": "animations/anim-b-courier-move/frame-07.svg",
+  "fallbackPose": "animations/anim-b-courier-move/frame-03.webp",
   "reducedMotionAlternative": {
-    "asset": "animations/anim-b-courier-move/frame-07.svg",
-    "description": "Kuro Signal standing upright in front of the archive loft hatch, thrusting the glowing portable receiver forward with an impatient grin."
+    "asset": "animations/anim-b-courier-move/frame-03.webp",
+    "description": "Hero mid-air parkour vault of Kuro Signal crossing the moonlit neon alley with portable receiver secured."
   },
   "frames": [
     {
-      "frameId": "frame-01",
-      "asset": "animations/anim-b-courier-move/frame-01.svg",
-      "durationMs": 180,
+      "frameId": "ANIM-B-F01",
+      "asset": "animations/anim-b-courier-move/frame-01.webp",
+      "durationMs": 220,
       "poseLabel": "Deep Coil Anticipation",
-      "actingNote": "Low crouched runner coil on rooftop ledge, heels lifted, receiver tucked tight against chest, hood compressed forward.",
-      "principles": ["anticipation", "squash-and-stretch"]
+      "actingNote": "Tightly compressed sprinter coil at rooftop ledge; yellow lug boots poised, receiver tucked tight to chest.",
+      "principles": ["anticipation", "squash-and-stretch"],
+      "camera": { "scale": 1.02, "x": -10, "y": 6, "rotate": -1.0, "fx": "none" }
     },
     {
-      "frameId": "frame-02",
-      "asset": "animations/anim-b-courier-move/frame-02.svg",
-      "durationMs": 130,
+      "frameId": "ANIM-B-F02",
+      "asset": "animations/anim-b-courier-move/frame-02.webp",
+      "durationMs": 170,
       "poseLabel": "Explosive Launch Stretch",
-      "actingNote": "Diagonal upward launch off rooftop parapet along a 35-degree line of action, yellow boot sole kicking off ledge, magenta hip strap trailing.",
-      "principles": ["squash-and-stretch", "line-of-action"]
+      "actingNote": "Full diagonal extension pushing left-to-right off the concrete parapet; magenta hip strap whips behind.",
+      "principles": ["squash-and-stretch", "line-of-action"],
+      "camera": { "scale": 1.05, "x": 12, "y": -6, "rotate": 1.5, "fx": "speed-lines" }
     },
     {
-      "frameId": "frame-03",
-      "asset": "animations/anim-b-courier-move/frame-03.svg",
-      "durationMs": 180,
+      "frameId": "ANIM-B-F03",
+      "asset": "animations/anim-b-courier-move/frame-03.webp",
+      "durationMs": 260,
       "poseLabel": "Apex Rooftop Vault",
-      "actingNote": "Mid-air parkour tuck over moonlit gap between buildings, hood and hair trailing back, one hand bracing air, receiver clutched secure.",
-      "principles": ["arcs", "overlapping-action"]
+      "actingNote": "Mid-air parkour tuck framed against the crescent moon above neon magenta-cyan alley walls.",
+      "principles": ["arcs", "overlapping-action"],
+      "camera": { "scale": 1.07, "x": 0, "y": -8, "rotate": -1.2, "fx": "speed-lines" }
     },
     {
-      "frameId": "frame-04",
-      "asset": "animations/anim-b-courier-move/frame-04.svg",
-      "durationMs": 110,
-      "poseLabel": "Smear Dash Impact Frame",
-      "actingNote": "Dynamic comic smear streaks with cyan and magenta speed arcs and a stretched motion-blur silhouette across the rooftop cable span.",
-      "principles": ["smear-frame", "exaggeration"]
+      "frameId": "ANIM-B-F04",
+      "asset": "animations/anim-b-courier-move/frame-04.webp",
+      "durationMs": 160,
+      "poseLabel": "Chromatic Smear Dash",
+      "actingNote": "High-impact punk-anime horizontal smear silhouette trailing vivid cyan and hot-magenta afterimages across rooftop cables.",
+      "principles": ["smear-frame", "exaggeration"],
+      "camera": { "scale": 1.09, "x": 18, "y": 0, "rotate": 1.8, "fx": "chromatic-smear" }
     },
     {
-      "frameId": "frame-05",
-      "asset": "animations/anim-b-courier-move/frame-05.svg",
-      "durationMs": 150,
-      "poseLabel": "Heel Plant Skid",
-      "actingNote": "Forward leg drives down onto the archive loft roof, body leaned hard back to brake, yellow boot sole sparking small ink-dust marks.",
-      "principles": ["follow-through", "weight"]
+      "frameId": "ANIM-B-F05",
+      "asset": "animations/anim-b-courier-move/frame-05.webp",
+      "durationMs": 220,
+      "poseLabel": "Heel-Plant Spark Skid",
+      "actingNote": "Yellow lug-boot sole slams down onto the archive roof, kicking up graphic ink-dust clouds and electric impact sparks.",
+      "principles": ["follow-through", "weight"],
+      "camera": { "scale": 1.06, "x": -10, "y": 4, "rotate": -1.4, "fx": "impact-jolt" }
     },
     {
-      "frameId": "frame-06",
-      "asset": "animations/anim-b-courier-move/frame-06.svg",
-      "durationMs": 180,
-      "poseLabel": "Squash Compression Landing",
-      "actingNote": "Low squash impact absorb at archive doorway, knees bent wide, hoodie billowing down over shoulders, hair bouncing up.",
-      "principles": ["squash-and-stretch", "overlapping-action"]
+      "frameId": "ANIM-B-F06",
+      "asset": "animations/anim-b-courier-move/frame-06.webp",
+      "durationMs": 240,
+      "poseLabel": "Squash Landing Crouch",
+      "actingNote": "Deep shock-absorbing crouch outside the amber-lit archive studio doorway; warm doorway light rims Kuro's silhouette.",
+      "principles": ["squash-and-stretch", "overlapping-action"],
+      "camera": { "scale": 1.03, "x": 0, "y": 8, "rotate": 0, "fx": "none" }
     },
     {
-      "frameId": "frame-07",
-      "asset": "animations/anim-b-courier-move/frame-07.svg",
-      "durationMs": 970,
-      "poseLabel": "Impatient Arrival Rebound",
-      "actingNote": "Rebounds upright right in front of the archive hatch, receiver thrust eagerly forward with impatient grin and foot-tap energy.",
-      "principles": ["staging-and-silhouette", "appeal"]
+      "frameId": "ANIM-B-F07",
+      "asset": "animations/anim-b-courier-move/frame-07.webp",
+      "durationMs": 630,
+      "poseLabel": "Impatient Knock Rebound",
+      "actingNote": "Springs upright outside the golden studio hatch, excited grin wide, glowing cyan receiver pulsing as fist rises to knock.",
+      "principles": ["staging-and-silhouette", "appeal"],
+      "camera": { "scale": 1.05, "x": 6, "y": -4, "rotate": 0.6, "fx": "none" }
     }
   ]
 }

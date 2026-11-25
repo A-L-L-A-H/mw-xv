@@ -3,6 +3,7 @@
   "episodeId": "EP-LAB-01",
   "title": "WHEN THE MOON RISES, WE SHARE A MESSAGE",
   "status": "experimental-candidate",
+  "renderingPipeline": "Spider-Verse x Riot 2.5D Motion Comic (reference-anchored 960x540 WebP keyframes + virtual 2.5D camera choreography + vector comic overlays)",
   "entrypoint": "index.html",
   "storyboard": "data/storyboard.json",
   "clips": [
@@ -10,6 +11,20 @@
     "animations/anim-b-courier-move/clip.json",
     "animations/anim-c-archive-reaction/clip.json",
     "animations/anim-d-message-preserved/clip.json"
+  ],
+  "sharedProps": [
+    "animations/shared-props/p01-moon-city-establishing.webp",
+    "animations/shared-props/portable-receiver-closeup.webp",
+    "animations/shared-props/archive-loft-exterior.webp",
+    "animations/shared-props/fragment-slip-incomplete.webp",
+    "animations/shared-props/archive-folio-sealed.webp",
+    "animations/shared-props/episode-cover-keyart.webp",
+    "animations/shared-props/workbench-atmosphere.webp"
+  ],
+  "comicOverlays": [
+    "animations/comic-overlays/speed-lines-burst.svg",
+    "animations/comic-overlays/ink-wipe-mask.svg",
+    "animations/comic-overlays/halftone-corner-frame.svg"
   ],
   "provenanceFiles": [
     "animations/anim-a-signal-detected/provenance.json",
@@ -28,17 +43,9 @@
     "../../../packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-standing.webp",
     "../../../packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-curious.webp",
     "../../../packages/assets/illustrations/riot-universe/characters/kuro-signal-expression-excited.webp",
-    "../../../packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-running.webp",
-    "../../../packages/assets/illustrations/riot-universe/characters/kuro-signal-pose-holding-objects.webp",
     "../../../packages/assets/source/artwork/riot-universe/vesper-ink-portrait-master.png",
     "../../../packages/assets/illustrations/riot-universe/characters/vesper-ink-portrait.webp",
-    "../../../packages/assets/environments/moon-city-sky.svg",
-    "../../../packages/assets/environments/moon-city-moon.svg",
-    "../../../packages/assets/environments/moon-city-clouds-far.svg",
-    "../../../packages/assets/environments/moon-city-skyline-far.svg",
-    "../../../packages/assets/environments/moon-city-clouds-near.svg",
-    "../../../packages/assets/environments/moon-city-skyline-mid.svg",
-    "../../../packages/assets/environments/moon-city-foreground.svg",
+    "../../../packages/assets/illustrations/riot-universe/backgrounds/bg-riot-street-alley.webp",
     "../../../packages/assets/illustrations/riot-universe/backgrounds/bg-riot-arcade-workbench.webp",
     "../../../packages/assets/illustrations/riot-universe/backgrounds/bg-halftone-ink-dark.webp"
   ]

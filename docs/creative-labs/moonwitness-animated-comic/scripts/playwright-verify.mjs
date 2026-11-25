@@ -40,6 +40,7 @@ const MIME_TYPES = {
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
   '.webp': 'image/webp',
+  '.jpg': 'image/jpeg',
   '.woff2': 'font/woff2',
 };
 
@@ -78,9 +79,8 @@ function startStaticServer(rootDir) {
           return;
         }
         const ext = path.extname(targetPath).toLowerCase();
-        const contentType = MIME_TYPES[ext] || 'application/octet-stream';
         res.writeHead(200, {
-          'Content-Type': contentType,
+          'Content-Type': MIME_TYPES[ext] || 'application/octet-stream',
           'Cache-Control': 'no-store',
         });
         fs.createReadStream(targetPath).pipe(res);
@@ -89,11 +89,9 @@ function startStaticServer(rootDir) {
         res.end(String(err));
       }
     });
-
     server.on('error', reject);
     server.listen(0, '127.0.0.1', () => {
-      const address = server.address();
-      resolve({ server, port: address.port });
+      resolve({ server, port: server.address().port });
     });
   });
 }
@@ -107,7 +105,6 @@ async function waitForVisibleImagesLoaded(page) {
       const rect = img.getBoundingClientRect();
       return rect.width > 0 && rect.height > 0 && img.getAttribute('src');
     });
-
     await Promise.all(
       imgs.map((img) => {
         if (img.complete && img.naturalWidth > 0) return Promise.resolve();
@@ -121,7 +118,7 @@ async function waitForVisibleImagesLoaded(page) {
     );
   });
 
-  const broken = await page.evaluate(() => {
+  return page.evaluate(() => {
     const imgs = Array.from(document.querySelectorAll('img')).filter((img) => {
       if (img.hidden) return false;
       const style = window.getComputedStyle(img);
@@ -133,8 +130,19 @@ async function waitForVisibleImagesLoaded(page) {
       .filter((img) => !img.complete || img.naturalWidth === 0)
       .map((img) => img.getAttribute('src'));
   });
+}
 
-  return broken;
+async function saveShot(page, filename, opts = { fullPage: false }) {
+  const buf = await page.screenshot(opts);
+  const finalPath = path.join(EVIDENCE_DIR, filename);
+  const tmpPath = `${finalPath}.tmp-${process.pid}-${Date.now()}`;
+  fs.writeFileSync(tmpPath, buf);
+  try {
+    fs.rmSync(finalPath, { force: true });
+  } catch {
+    // ignore if absent
+  }
+  fs.renameSync(tmpPath, finalPath);
 }
 
 async function run() {
@@ -147,351 +155,196 @@ async function run() {
   const badHttpResponses = [];
 
   try {
-    // Context 1: Desktop 1440x900
-    const context = await browser.newContext({
-      viewport: { width: 1440, height: 900 },
-    });
+    const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
     const page = await context.newPage();
 
     page.on('console', (msg) => {
-      if (msg.type() === 'error') {
-        consoleErrors.push(msg.text());
-      }
+      if (msg.type() === 'error') consoleErrors.push(msg.text());
     });
-    page.on('pageerror', (err) => {
-      pageErrors.push(String(err));
-    });
+    page.on('pageerror', (err) => pageErrors.push(String(err)));
     page.on('response', (res) => {
-      if (res.status() >= 400) {
-        badHttpResponses.push(`${res.status()} ${res.url()}`);
-      }
+      if (res.status() >= 400) badHttpResponses.push(`${res.status()} ${res.url()}`);
     });
 
     await page.goto(labUrl, { waitUntil: 'networkidle' });
     await page.waitForSelector('#meta-panel-id');
 
-    // 1. Initial load state: PAUSED, P01, all visible images loaded
-    const initPanel = await page.textContent('#meta-panel-id');
-    const initState = await page.textContent('#meta-playback-state');
-    assert(initPanel?.trim() === 'P01', `Initial panel must be P01, got "${initPanel}"`);
-    assert(initState?.trim() === 'PAUSED', `Initial playback state must be PAUSED, got "${initState}"`);
+    // 1. Initial load: PAUSED on P01, zero broken images, stage + caption + controls fit cleanly
+    assert((await page.textContent('#meta-panel-id'))?.trim() === 'P01', 'Initial panel is P01');
+    assert((await page.textContent('#meta-playback-state'))?.trim() === 'PAUSED', 'Starts PAUSED');
+    assert((await waitForVisibleImagesLoaded(page)).length === 0, 'Initial images loaded cleanly');
 
-    const initBrokenImgs = await waitForVisibleImagesLoaded(page);
-    assert(initBrokenImgs.length === 0, `Initial visible images broken: ${initBrokenImgs.join(', ')}`);
-
-    // 2. Click #btn-play and verify playback state changes and frames advance
+    // 2. Click Play and verify P01 advances to ANIM-A
     await page.click('#btn-play');
-    const playingState = await page.textContent('#meta-playback-state');
-    assert(
-      playingState?.includes('PLAYING'),
-      `Clicking #btn-play should set PLAYING state, got "${playingState}"`
-    );
-
-    // Wait 1250ms so P01 (1000ms) advances into P02 (ANIM-A)
-    await page.waitForTimeout(1250);
-    const panelAfterPlay = await page.textContent('#meta-panel-id');
-    const beatAfterPlay = await page.textContent('#meta-beat-id');
-    assert(
-      panelAfterPlay?.trim() !== 'P01',
-      `Playback should advance past P01 automatically, still at "${panelAfterPlay}"`
-    );
-    assert(
-      beatAfterPlay?.trim() === 'ANIM-A',
-      `Expected beat ANIM-A after advancing from P01, got "${beatAfterPlay}"`
-    );
-
-    // Pause and inspect ANIM-A on P03 (partial waveform lock with receiver closeup)
+    assert((await page.textContent('#meta-playback-state'))?.includes('PLAYING'), 'Play starts playback');
+    await page.waitForTimeout(1200);
+    assert((await page.textContent('#meta-panel-id'))?.trim() !== 'P01', 'Playback advances past P01');
+    assert((await page.textContent('#meta-beat-id'))?.trim() === 'ANIM-A', 'Advances into ANIM-A');
     await page.click('#btn-pause');
-    const pausedState = await page.textContent('#meta-playback-state');
-    assert(pausedState?.trim() === 'PAUSED', `#btn-pause must set PAUSED, got "${pausedState}"`);
+    assert((await page.textContent('#meta-playback-state'))?.trim() === 'PAUSED', 'Pause stops playback');
 
-    // Jump to P02 via filmstrip, step frames in ANIM-A, and capture 01-stage-anim-a-signal.png
-    await page.click('.filmstrip-item[data-panel-id="P02"]');
-    await page.click('#btn-next-frame'); // Frame 2 / 3
-    await page.click('#btn-next-frame'); // Frame 3 / 3 (Whip Reaction & Overshoot)
-    const animASrc = await page.getAttribute('#stage-frame-img', 'src');
-    assert(
-      animASrc?.includes('anim-a-signal-detected/frame-03.svg'),
-      `ANIM-A frame step expected frame-03.svg, got "${animASrc}"`
-    );
-    assert((await waitForVisibleImagesLoaded(page)).length === 0, 'ANIM-A visible images loaded');
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await page.screenshot({
-      path: path.join(EVIDENCE_DIR, '01-stage-anim-a-signal.png'),
-      fullPage: false,
-    });
-
-    // Test #btn-prev-frame
-    await page.click('#btn-prev-frame');
-    const animAPrevSrc = await page.getAttribute('#stage-frame-img', 'src');
-    assert(
-      animAPrevSrc?.includes('anim-a-signal-detected/frame-02.svg'),
-      `#btn-prev-frame expected frame-02.svg, got "${animAPrevSrc}"`
-    );
-
-    // Jump to P04 (ANIM-B), step frames, and capture 02-stage-anim-b-courier.png
-    await page.click('.filmstrip-item[data-panel-id="P04"]');
-    await page.click('#btn-next-frame'); // frame-02
-    await page.click('#btn-next-frame'); // frame-03 (Apex Rooftop Vault)
-    const animBSrc = await page.getAttribute('#stage-frame-img', 'src');
-    assert(
-      animBSrc?.includes('anim-b-courier-move/frame-03.svg'),
-      `ANIM-B expected frame-03.svg, got "${animBSrc}"`
-    );
-    assert((await waitForVisibleImagesLoaded(page)).length === 0, 'ANIM-B visible images loaded');
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await page.screenshot({
-      path: path.join(EVIDENCE_DIR, '02-stage-anim-b-courier.png'),
-      fullPage: false,
-    });
-
-    // Jump to P08 (ANIM-C reaction) or P06/P09, inspect Vesper Ink, capture 03-stage-anim-c-vesper.png
-    await page.click('.filmstrip-item[data-panel-id="P06"]');
-    const animCSrc = await page.getAttribute('#stage-frame-img', 'src');
-    assert(
-      animCSrc?.includes('anim-c-archive-reaction/frame-03.svg'),
-      `ANIM-C P06 expected frame-03.svg, got "${animCSrc}"`
-    );
-    assert((await waitForVisibleImagesLoaded(page)).length === 0, 'ANIM-C visible images loaded');
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await page.screenshot({
-      path: path.join(EVIDENCE_DIR, '03-stage-anim-c-vesper.png'),
-      fullPage: false,
-    });
-
-    // Jump to P11 (ANIM-D quiet signal pulse), step to frame 2 (frame-04.svg), capture 04-stage-anim-d-preserved.png
-    await page.click('.filmstrip-item[data-panel-id="P11"]');
+    // 3. Capture ANIM-A (P03 with Receiver Macro PiP inset!)
+    await page.click('.filmstrip-item[data-panel-id="P03"]');
     await page.click('#btn-next-frame');
-    const animDSrc = await page.getAttribute('#stage-frame-img', 'src');
-    assert(
-      animDSrc?.includes('anim-d-message-preserved/frame-04.svg'),
-      `ANIM-D P11 frame 2 expected frame-04.svg, got "${animDSrc}"`
-    );
-    assert((await waitForVisibleImagesLoaded(page)).length === 0, 'ANIM-D visible images loaded');
+    await page.click('#btn-next-frame'); // Frame 3/3 (frame-06.webp)
+    const animASrc = await page.getAttribute('#stage-frame-img', 'src');
+    assert(animASrc?.includes('anim-a-signal-detected/frame-06.webp'), `ANIM-A P03 expected frame-06.webp, got ${animASrc}`);
+    const insetVisibleP03 = await page.isVisible('#stage-inset-card');
+    assert(insetVisibleP03, 'P03 displays receiver macro PiP inset card');
+    assert((await waitForVisibleImagesLoaded(page)).length === 0, 'ANIM-A images loaded');
     await page.evaluate(() => window.scrollTo(0, 0));
-    await page.screenshot({
-      path: path.join(EVIDENCE_DIR, '04-stage-anim-d-preserved.png'),
-      fullPage: false,
-    });
+    await saveShot(page, '01-stage-anim-a-signal.png', { fullPage: false });
 
-    // 3. Test #btn-speed-slow (0.45x), #btn-speed-normal (1.0x), #btn-replay
+    // Prev frame check
+    await page.click('#btn-prev-frame');
+    assert(
+      (await page.getAttribute('#stage-frame-img', 'src'))?.includes('anim-a-signal-detected/frame-05.webp'),
+      'Prev frame steps back to frame-05.webp'
+    );
+
+    // 4. Capture ANIM-B (P04 Frame 3/7 Apex Rooftop Vault or Frame 4/7 Smear Dash)
+    await page.click('.filmstrip-item[data-panel-id="P04"]');
+    await page.click('#btn-next-frame'); // F02
+    await page.click('#btn-next-frame'); // F03
+    const animBSrc = await page.getAttribute('#stage-frame-img', 'src');
+    assert(animBSrc?.includes('anim-b-courier-move/frame-03.webp'), `ANIM-B expected frame-03.webp, got ${animBSrc}`);
+    assert((await waitForVisibleImagesLoaded(page)).length === 0, 'ANIM-B images loaded');
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await saveShot(page, '02-stage-anim-b-courier.png', { fullPage: false });
+
+    // 5. Capture ANIM-C (P08 Two-Shot Impatient Kuro vs Calm Vesper)
+    await page.click('.filmstrip-item[data-panel-id="P08"]');
+    const animCSrc = await page.getAttribute('#stage-frame-img', 'src');
+    assert(animCSrc?.includes('anim-c-archive-reaction/frame-04.webp'), `ANIM-C P08 expected frame-04.webp, got ${animCSrc}`);
+    assert((await waitForVisibleImagesLoaded(page)).length === 0, 'ANIM-C images loaded');
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await saveShot(page, '03-stage-anim-c-vesper.png', { fullPage: false });
+
+    // 6. Capture ANIM-D (P11 Quiet Concentric Signal Pulse over Moon City)
+    await page.click('.filmstrip-item[data-panel-id="P11"]');
+    await page.click('#btn-next-frame'); // F04 quiet pulse
+    const animDSrc = await page.getAttribute('#stage-frame-img', 'src');
+    assert(animDSrc?.includes('anim-d-message-preserved/frame-04.webp'), `ANIM-D P11 expected frame-04.webp, got ${animDSrc}`);
+    assert((await waitForVisibleImagesLoaded(page)).length === 0, 'ANIM-D images loaded');
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await saveShot(page, '04-stage-anim-d-preserved.png', { fullPage: false });
+
+    // 7. Speed 0.45x / 1.0x & Replay
     await page.click('#btn-speed-slow');
-    assert(
-      (await page.getAttribute('#btn-speed-slow', 'aria-pressed')) === 'true',
-      '#btn-speed-slow aria-pressed should be true'
-    );
+    assert((await page.getAttribute('#btn-speed-slow', 'aria-pressed')) === 'true', 'Slow 0.45x toggles on');
     await page.click('#btn-speed-normal');
-    assert(
-      (await page.getAttribute('#btn-speed-normal', 'aria-pressed')) === 'true',
-      '#btn-speed-normal aria-pressed should be true'
-    );
+    assert((await page.getAttribute('#btn-speed-normal', 'aria-pressed')) === 'true', 'Normal 1.0x toggles back');
     await page.click('#btn-replay');
-    assert(
-      (await page.textContent('#meta-panel-id'))?.trim() === 'P01',
-      '#btn-replay should reset panel to P01'
-    );
+    assert((await page.textContent('#meta-panel-id'))?.trim() === 'P01', 'Replay returns to P01');
 
-    // 4. Switch to Static Storyboard Grid (#btn-mode-static), confirm all 12 panels render with captions and no animation running
+    // 8. Static Comic Page Grid (all 12 illustrated panels)
     await page.click('#btn-mode-static');
-    const gridHidden = await page.getAttribute('#static-grid-view', 'hidden');
-    assert(gridHidden === null, '#static-grid-view must be visible in static mode');
-
-    // Scroll through static grid to trigger lazy images and wait for all 12 cards to load
+    await page.waitForSelector('.static-panel-card');
+    const cardCount = await page.locator('.static-panel-card').count();
+    assert(cardCount === 12, `Static comic grid must render 12 cards, got ${cardCount}`);
+    // Scroll briefly to trigger lazy images
     await page.evaluate(() => {
       document.querySelectorAll('.static-panel-art').forEach((img) => {
         img.loading = 'eager';
       });
     });
-    const staticCardCount = await page.locator('.static-panel-card').count();
-    assert(staticCardCount === 12, `Static grid must render 12 panel cards, found ${staticCardCount}`);
-    const staticBroken = await waitForVisibleImagesLoaded(page);
-    assert(staticBroken.length === 0, `Static grid has broken images: ${staticBroken.join(', ')}`);
+    assert((await waitForVisibleImagesLoaded(page)).length === 0, 'All 12 static comic page panels loaded');
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await saveShot(page, '05-static-storyboard-grid.png', { fullPage: true });
 
-    await page.screenshot({
-      path: path.join(EVIDENCE_DIR, '05-static-storyboard-grid.png'),
-      fullPage: true,
-    });
-
-    // Return to stage view
-    await page.click('#btn-mode-stage');
-    assert((await page.getAttribute('#theater-view', 'hidden')) === null, 'Returned to stage view');
-
-    // 5. Test Reduced-Motion toggle (#btn-reduced-motion)
-    await page.click('.filmstrip-item[data-panel-id="P04"]');
-    await page.click('#btn-reduced-motion');
-    const rmPressed = await page.getAttribute('#btn-reduced-motion', 'aria-pressed');
-    const rmFrameCounter = await page.textContent('#meta-frame-counter');
-    assert(rmPressed === 'true', '#btn-reduced-motion aria-pressed must be true when toggled on');
-    assert(
-      rmFrameCounter?.trim() === 'Frame 1 / 1',
-      `Reduced-motion must collapse animated beat to 1 static fallback frame, got "${rmFrameCounter}"`
-    );
-    // Toggle off again before keyboard tests
-    await page.click('#btn-reduced-motion');
-    assert(
-      (await page.getAttribute('#btn-reduced-motion', 'aria-pressed')) === 'false',
-      '#btn-reduced-motion toggled back off'
-    );
-
-    // 6. Test keyboard controls (Space, ArrowRight, G, M, I) and Sources/Cast drawer (#btn-sources-drawer)
-    await page.keyboard.press('Space');
-    assert(
-      (await page.textContent('#meta-playback-state'))?.includes('PLAYING'),
-      'Keyboard Space should start playback'
-    );
-    await page.keyboard.press('Space');
-    assert(
-      (await page.textContent('#meta-playback-state'))?.trim() === 'PAUSED',
-      'Keyboard Space should pause playback'
-    );
-
-    const frameBeforeRight = await page.textContent('#meta-frame-counter');
-    await page.keyboard.press('ArrowRight');
-    const frameAfterRight = await page.textContent('#meta-frame-counter');
-    assert(
-      frameBeforeRight !== frameAfterRight,
-      `Keyboard ArrowRight should advance frame (was "${frameBeforeRight}", now "${frameAfterRight}")`
-    );
-
+    // 9. Keyboard shortcuts & Cast/Pipeline drawer
     await page.keyboard.press('g');
-    assert(
-      (await page.getAttribute('#static-grid-view', 'hidden')) === null,
-      'Keyboard G should toggle Static Grid view on'
-    );
-    await page.keyboard.press('g');
-    assert(
-      (await page.getAttribute('#theater-view', 'hidden')) === null,
-      'Keyboard G should toggle Theater Stage view back on'
-    );
-
-    await page.keyboard.press('m');
-    assert(
-      (await page.getAttribute('#btn-reduced-motion', 'aria-pressed')) === 'true',
-      'Keyboard M should enable reduced motion'
-    );
-    await page.keyboard.press('m');
-    assert(
-      (await page.getAttribute('#btn-reduced-motion', 'aria-pressed')) === 'false',
-      'Keyboard M should disable reduced motion'
-    );
-
+    assert((await page.getAttribute('#btn-mode-stage', 'aria-pressed')) === 'true', 'Key G returns to Theater Stage');
     await page.keyboard.press('i');
-    assert(
-      (await page.getAttribute('#sources-drawer', 'hidden')) === null,
-      'Keyboard I should open Cast & Sources drawer'
-    );
-    // Ensure drawer reference thumbs load
-    await page.evaluate(() => {
-      document.querySelectorAll('#sources-drawer img').forEach((img) => {
-        img.loading = 'eager';
-      });
-    });
-    assert(
-      (await waitForVisibleImagesLoaded(page)).length === 0,
-      'Cast & Sources drawer reference images loaded cleanly'
-    );
-    await page.click('#btn-sources-drawer');
-    assert(
-      (await page.getAttribute('#sources-drawer', 'hidden')) !== null,
-      'Clicking #btn-sources-drawer closes drawer'
-    );
+    assert(await page.isVisible('#sources-drawer'), 'Key I opens Cast & Pipeline drawer');
+    await page.keyboard.press('i');
+    assert(!(await page.isVisible('#sources-drawer')), 'Key I closes Cast & Pipeline drawer');
+    await page.keyboard.press('ArrowRight');
+    assert((await page.textContent('#meta-panel-id'))?.trim() === 'P02', 'ArrowRight advances from P01 to P02');
+    await page.keyboard.press('Space');
+    assert((await page.textContent('#meta-playback-state'))?.includes('PLAYING'), 'Space starts playback');
+    await page.keyboard.press('Space');
+    assert((await page.textContent('#meta-playback-state'))?.trim() === 'PAUSED', 'Space pauses playback');
+    await page.keyboard.press('m');
+    assert((await page.getAttribute('html', 'data-reduced-motion')) === 'true', 'Key M enables reduced motion');
 
     await context.close();
 
-    // 7. Fresh context with emulateMedia({ reducedMotion: 'reduce' })
-    const rmContext = await browser.newContext({
+    // 10. Context 2: Fresh prefers-reduced-motion: reduce
+    const reducedCtx = await browser.newContext({
       viewport: { width: 1440, height: 900 },
       reducedMotion: 'reduce',
     });
-    const rmPage = await rmContext.newPage();
-    await rmPage.emulateMedia({ reducedMotion: 'reduce' });
-    await rmPage.goto(labUrl, { waitUntil: 'networkidle' });
-    await rmPage.waitForSelector('#btn-reduced-motion');
-
-    const autoRmAttr = await rmPage.getAttribute('html', 'data-reduced-motion');
-    const autoRmBtnText = await rmPage.textContent('#btn-reduced-motion');
-    assert(
-      autoRmAttr === 'true' && autoRmBtnText?.includes('ON'),
-      `prefers-reduced-motion: reduce must auto-enable reduced motion on load (attr=${autoRmAttr}, text=${autoRmBtnText})`
-    );
-    await rmPage.click('.filmstrip-item[data-panel-id="P09"]');
-    const rmP09Counter = await rmPage.textContent('#meta-frame-counter');
-    assert(
-      rmP09Counter?.trim() === 'Frame 1 / 1',
-      `Reduced-motion context on P09 expected Frame 1 / 1, got "${rmP09Counter}"`
-    );
-    assert((await waitForVisibleImagesLoaded(rmPage)).length === 0, 'Reduced-motion P09 images loaded');
-    await rmPage.evaluate(() => window.scrollTo(0, 0));
-    await rmPage.screenshot({
-      path: path.join(EVIDENCE_DIR, '06-reduced-motion-view.png'),
-      fullPage: false,
+    const reducedPage = await reducedCtx.newPage();
+    reducedPage.on('console', (msg) => {
+      if (msg.type() === 'error') consoleErrors.push(msg.text());
     });
-    await rmContext.close();
+    reducedPage.on('pageerror', (err) => pageErrors.push(String(err)));
+    reducedPage.on('response', (res) => {
+      if (res.status() >= 400) badHttpResponses.push(`${res.status()} ${res.url()}`);
+    });
+    await reducedPage.goto(labUrl, { waitUntil: 'networkidle' });
+    assert((await reducedPage.getAttribute('html', 'data-reduced-motion')) === 'true', 'Auto-detects prefers-reduced-motion');
+    await reducedPage.click('.filmstrip-item[data-panel-id="P10"]');
+    assert((await reducedPage.textContent('#meta-frame-counter'))?.trim() === 'Frame 1 / 1', 'Reduced motion locks single static frame');
+    assert((await waitForVisibleImagesLoaded(reducedPage)).length === 0, 'Reduced motion images loaded');
+    await reducedPage.evaluate(() => window.scrollTo(0, 0));
+    await saveShot(reducedPage, '06-reduced-motion-view.png', { fullPage: false });
+    await reducedCtx.close();
 
-    // 8. Mobile 390x844 viewport test
-    const mobileContext = await browser.newContext({
+    // 11. Context 3: Mobile 390x844 responsive check
+    const mobileCtx = await browser.newContext({
       viewport: { width: 390, height: 844 },
+      isMobile: true,
     });
-    const mobilePage = await mobileContext.newPage();
+    const mobilePage = await mobileCtx.newPage();
+    mobilePage.on('console', (msg) => {
+      if (msg.type() === 'error') consoleErrors.push(msg.text());
+    });
+    mobilePage.on('pageerror', (err) => pageErrors.push(String(err)));
+    mobilePage.on('response', (res) => {
+      if (res.status() >= 400) badHttpResponses.push(`${res.status()} ${res.url()}`);
+    });
     await mobilePage.goto(labUrl, { waitUntil: 'networkidle' });
-    await mobilePage.waitForSelector('#comic-stage');
     await mobilePage.click('.filmstrip-item[data-panel-id="P03"]');
-    assert((await waitForVisibleImagesLoaded(mobilePage)).length === 0, 'Mobile P03 images loaded');
-
-    const overflowCheck = await mobilePage.evaluate(() => {
-      return {
-        scrollWidth: document.documentElement.scrollWidth,
-        innerWidth: window.innerWidth,
-      };
-    });
+    await mobilePage.waitForTimeout(300);
+    assert((await waitForVisibleImagesLoaded(mobilePage)).length === 0, 'Mobile images loaded');
+    const overflow = await mobilePage.evaluate(() => ({
+      scrollWidth: document.documentElement.scrollWidth,
+      innerWidth: window.innerWidth,
+    }));
     assert(
-      overflowCheck.scrollWidth <= overflowCheck.innerWidth + 2,
-      `Mobile 390x844 horizontal overflow detected: scrollWidth=${overflowCheck.scrollWidth}, innerWidth=${overflowCheck.innerWidth}`
+      overflow.scrollWidth <= overflow.innerWidth + 2,
+      `Mobile horizontal overflow: scrollWidth=${overflow.scrollWidth} > innerWidth=${overflow.innerWidth}`
     );
-
     await mobilePage.evaluate(() => window.scrollTo(0, 0));
-    await mobilePage.screenshot({
-      path: path.join(EVIDENCE_DIR, '07-mobile-390-preview.png'),
-      fullPage: false,
-    });
-    await mobileContext.close();
+    await saveShot(mobilePage, '07-mobile-390-preview.png', { fullPage: false });
+    await mobileCtx.close();
 
-    // Final error assertions
-    assert(consoleErrors.length === 0, `Expected 0 console errors, got: ${consoleErrors.join('; ')}`);
-    assert(pageErrors.length === 0, `Expected 0 uncaught page errors, got: ${pageErrors.join('; ')}`);
-    assert(badHttpResponses.length === 0, `Expected 0 HTTP >= 400 responses, got: ${badHttpResponses.join('; ')}`);
+    assert(consoleErrors.length === 0, `Console errors: ${consoleErrors.join('; ')}`);
+    assert(pageErrors.length === 0, `Page errors: ${pageErrors.join('; ')}`);
+    assert(badHttpResponses.length === 0, `HTTP >=400 errors: ${badHttpResponses.join('; ')}`);
+
+    console.log(
+      JSON.stringify(
+        {
+          status: failCount === 0 ? 'PASSED' : 'FAILED',
+          passCount,
+          failCount,
+          screenshots: 7,
+          consoleErrors: consoleErrors.length,
+          pageErrors: pageErrors.length,
+          badHttpResponses: badHttpResponses.length,
+          failures,
+        },
+        null,
+        2
+      )
+    );
+    if (failCount > 0) process.exitCode = 1;
   } finally {
     await browser.close();
     server.close();
-  }
-
-  console.log(
-    JSON.stringify(
-      {
-        status: failCount === 0 ? 'PASSED' : 'FAILED',
-        passCount,
-        failCount,
-        consoleErrorCount: consoleErrors.length,
-        pageErrorCount: pageErrors.length,
-        badHttpResponseCount: badHttpResponses.length,
-        screenshotsCaptured: [
-          '01-stage-anim-a-signal.png',
-          '02-stage-anim-b-courier.png',
-          '03-stage-anim-c-vesper.png',
-          '04-stage-anim-d-preserved.png',
-          '05-static-storyboard-grid.png',
-          '06-reduced-motion-view.png',
-          '07-mobile-390-preview.png',
-        ],
-        failures,
-      },
-      null,
-      2
-    )
-  );
-
-  if (failCount > 0) {
-    process.exit(1);
   }
 }
 

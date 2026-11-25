@@ -1,6 +1,16 @@
 (() => {
   'use strict';
 
+  const FX_CLASSES = [
+    'fx-ink-wipe',
+    'fx-chromatic-hit',
+    'fx-chromatic-smear',
+    'fx-impact-jolt',
+    'fx-spark-hit',
+    'fx-night-haze',
+    'fx-pulse-glow',
+  ];
+
   const state = {
     storyboard: null,
     candidate: null,
@@ -31,13 +41,20 @@
     staticGridView: document.getElementById('static-grid-view'),
     staticGridContainer: document.getElementById('static-grid-container'),
     comicStage: document.getElementById('comic-stage'),
+    stageCamera: document.getElementById('stage-camera'),
     stageBackdrops: document.getElementById('stage-backdrops'),
     stageFrameImg: document.getElementById('stage-frame-img'),
     stageForegroundImg: document.getElementById('stage-foreground-img'),
+    stageInsetCard: document.getElementById('stage-inset-card'),
+    stageInsetLabel: document.getElementById('stage-inset-label'),
+    stageInsetImg: document.getElementById('stage-inset-img'),
+    stageTimelineBar: document.getElementById('stage-timeline-bar'),
+    stageTimelineFill: document.getElementById('stage-timeline-fill'),
     metaPanelId: document.getElementById('meta-panel-id'),
     metaBeatId: document.getElementById('meta-beat-id'),
     metaFrameCounter: document.getElementById('meta-frame-counter'),
     metaShotType: document.getElementById('meta-shot-type'),
+    metaTimecode: document.getElementById('meta-timecode'),
     metaPlaybackState: document.getElementById('meta-playback-state'),
     speechBubbleWrap: document.getElementById('speech-bubble-wrap'),
     captionSpeaker: document.getElementById('caption-speaker'),
@@ -123,10 +140,10 @@
     if (!panel) return [];
     if (state.reducedMotion) {
       const reducedAsset =
+        resolveAssetPath(panel.staticFallbackAsset, panel.clipPath) ||
         (clip && clip.reducedMotionAlternative && clip.reducedMotionAlternative.asset
           ? resolveAssetPath(clip.reducedMotionAlternative.asset, panel.clipPath)
-          : '') ||
-        resolveAssetPath(panel.staticFallbackAsset, panel.clipPath);
+          : '');
       return [
         {
           frameId: 'REDUCED-STATIC',
@@ -134,6 +151,7 @@
           durationMs: panel.timingMs || 1800,
           poseLabel: 'Reduced-motion static frame',
           actingNote: panel.reducedMotionNote || panel.actingIntent || '',
+          camera: { scale: 1, x: 0, y: 0, rotate: 0, fx: 'none' },
         },
       ];
     }
@@ -161,6 +179,13 @@
         durationMs: panel.timingMs || 1800,
         poseLabel: panel.shotType || 'Static frame',
         actingNote: panel.actingIntent || '',
+        camera: {
+          scale: panel.panelId === 'P01' ? 1.035 : 1.0,
+          x: 0,
+          y: 0,
+          rotate: 0,
+          fx: panel.fx || 'none',
+        },
       },
     ];
   }
@@ -182,11 +207,8 @@
       if (panel.foregroundAsset) {
         preloadUrl(resolveAssetPath(panel.foregroundAsset, panel.clipPath));
       }
-      if (Array.isArray(panel.backdropLayers)) {
-        panel.backdropLayers.forEach((layer) => {
-          const src = typeof layer === 'string' ? layer : layer && layer.asset;
-          preloadUrl(resolveAssetPath(src, panel.clipPath));
-        });
+      if (panel.insetAsset) {
+        preloadUrl(resolveAssetPath(panel.insetAsset, panel.clipPath));
       }
     }
   }
@@ -218,11 +240,65 @@
     els.btnPause.setAttribute('aria-pressed', String(!state.isPlaying));
   }
 
-  function triggerStageFx() {
-    if (state.reducedMotion || state.viewMode === 'static') return;
-    els.comicStage.classList.remove('fx-ink-wipe');
+  function applyCameraAndFx(panel, activeFrame, withTransition) {
+    FX_CLASSES.forEach((cls) => els.comicStage.classList.remove(cls));
+
+    if (state.reducedMotion || state.viewMode === 'static') {
+      els.stageCamera.style.transform = 'none';
+      return;
+    }
+
+    const cam = (activeFrame && activeFrame.camera) || { scale: 1, x: 0, y: 0, rotate: 0, fx: 'none' };
+    const scale = typeof cam.scale === 'number' ? cam.scale : 1;
+    const x = typeof cam.x === 'number' ? cam.x : 0;
+    const y = typeof cam.y === 'number' ? cam.y : 0;
+    const rotate = typeof cam.rotate === 'number' ? cam.rotate : 0;
+    els.stageCamera.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${scale}) rotate(${rotate}deg)`;
+
+    const frameFx = cam.fx && cam.fx !== 'none' ? cam.fx : panel.fx || 'none';
     void els.comicStage.offsetWidth;
-    els.comicStage.classList.add('fx-ink-wipe');
+
+    if (withTransition) {
+      els.comicStage.classList.add('fx-ink-wipe');
+    }
+    if (frameFx === 'chromatic-hit') {
+      els.comicStage.classList.add('fx-chromatic-hit');
+    } else if (frameFx === 'chromatic-smear') {
+      els.comicStage.classList.add('fx-chromatic-smear');
+    } else if (frameFx === 'impact-jolt') {
+      els.comicStage.classList.add('fx-impact-jolt');
+    } else if (frameFx === 'spark-hit') {
+      els.comicStage.classList.add('fx-spark-hit');
+    } else if (frameFx === 'night-haze') {
+      els.comicStage.classList.add('fx-night-haze');
+    } else if (frameFx === 'pulse-glow') {
+      els.comicStage.classList.add('fx-pulse-glow');
+    }
+  }
+
+  function updateTimelineProgress(panels, panelIdx, frameIdx, totalFramesInPanel) {
+    if (!panels.length) return;
+    const totalMs = panels.reduce((sum, p) => sum + (p.timingMs || 1000), 0);
+    let elapsedMs = 0;
+    for (let i = 0; i < panelIdx; i += 1) {
+      elapsedMs += panels[i].timingMs || 1000;
+    }
+    const curMs = panels[panelIdx].timingMs || 1000;
+    const frameFrac = totalFramesInPanel > 1 ? frameIdx / totalFramesInPanel : 0;
+    const currentMs = elapsedMs + curMs * frameFrac;
+    const pct = Math.max(4, Math.min(100, Math.round(((panelIdx + (frameIdx + 1) / Math.max(1, totalFramesInPanel)) / panels.length) * 100)));
+
+    if (els.stageTimelineFill) {
+      els.stageTimelineFill.style.width = `${pct}%`;
+    }
+    if (els.stageTimelineBar) {
+      els.stageTimelineBar.setAttribute('aria-valuenow', String(pct));
+    }
+    if (els.metaTimecode) {
+      const curSec = (currentMs / 1000).toFixed(1).padStart(4, '0');
+      const totSec = (totalMs / 1000).toFixed(1);
+      els.metaTimecode.textContent = `${curSec}s / ${totSec}s`;
+    }
   }
 
   async function renderCurrentFrame(withFx = false) {
@@ -250,12 +326,17 @@
       });
     }
 
-    // Active frame
+    // Active studio WebP frame
     els.stageFrameImg.src = activeFrame ? activeFrame.asset : '';
     els.stageFrameImg.alt = `${panel.panelId}: ${panel.visualAction || panel.caption || 'Comic panel'}`;
 
-    // Optional foreground overlay
-    if (panel.foregroundAsset) {
+    // Optional vector FX overlay (e.g., speed-lines only on peak action frames in ANIM-B)
+    const showSpeedOverlay =
+      panel.foregroundAsset &&
+      (!state.reducedMotion || panel.foregroundAsset.endsWith('.svg')) &&
+      (panel.beatId !== 'ANIM-B' || (safeFrameIdx >= 1 && safeFrameIdx <= 4));
+
+    if (showSpeedOverlay) {
       els.stageForegroundImg.src = resolveAssetPath(panel.foregroundAsset, panel.clipPath);
       els.stageForegroundImg.hidden = false;
     } else {
@@ -263,20 +344,32 @@
       els.stageForegroundImg.removeAttribute('src');
     }
 
-    if (withFx) {
-      triggerStageFx();
+    // Angled Comic Picture-in-Picture Macro Inset (P03 Receiver / P10 Sealed Folio)
+    if (panel.insetAsset) {
+      els.stageInsetImg.src = resolveAssetPath(panel.insetAsset, panel.clipPath);
+      els.stageInsetImg.alt = `${panel.panelId} macro detail: ${panel.insetLabel || 'prop close-up'}`;
+      els.stageInsetLabel.textContent = panel.insetLabel || 'MACRO';
+      els.stageInsetCard.hidden = false;
+    } else {
+      els.stageInsetCard.hidden = true;
+      els.stageInsetImg.removeAttribute('src');
     }
+
+    applyCameraAndFx(panel, activeFrame, withFx);
+    updateTimelineProgress(panels, state.panelIndex, safeFrameIdx, frames.length);
 
     // Metadata
     els.metaPanelId.textContent = panel.panelId || `P${String(state.panelIndex + 1).padStart(2, '0')}`;
-    els.metaBeatId.textContent = panel.beatId || 'STATIC/ESTABLISHING';
+    els.metaBeatId.textContent = panel.beatId || 'ESTABLISHING';
     els.metaFrameCounter.textContent = `Frame ${safeFrameIdx + 1} / ${frames.length}`;
     els.metaShotType.textContent = panel.shotType || 'Panel';
 
     // Dialogue & Caption
     if (panel.dialogue && panel.dialogue.trim() !== '') {
+      const speaker = panel.speaker || 'VOICE';
       els.speechBubbleWrap.hidden = false;
-      els.captionSpeaker.textContent = panel.speaker || 'VOICE';
+      els.speechBubbleWrap.dataset.speaker = speaker;
+      els.captionSpeaker.textContent = speaker;
       els.captionDialogue.textContent = panel.dialogue;
     } else {
       els.speechBubbleWrap.hidden = true;
@@ -286,11 +379,8 @@
 
     els.captionText.textContent = panel.caption || panel.visualAction || '';
     const actingNote = (activeFrame && activeFrame.actingNote) || panel.actingIntent || '';
-    const grammarText = Array.isArray(panel.comicGrammar)
-      ? panel.comicGrammar.join(' · ')
-      : panel.comicGrammar || '';
-    const grammar = grammarText ? `[${grammarText}] ` : '';
-    els.actingNoteText.textContent = `${grammar}${actingNote}`.trim();
+    const poseLabel = activeFrame && activeFrame.poseLabel ? `${activeFrame.poseLabel} — ` : '';
+    els.actingNoteText.textContent = `${poseLabel}${actingNote}`.trim();
 
     updateFilmstripActive(panel.panelId);
     updatePlaybackUi();
@@ -312,7 +402,7 @@
     const frames = getFramesForPanel(panel, clip);
     const currentFrame = frames[state.frameIndex] || frames[0];
     const baseMs = (currentFrame && currentFrame.durationMs) || panel.timingMs || 1200;
-    const delayMs = Math.max(80, Math.round(baseMs / state.speed));
+    const delayMs = Math.max(90, Math.round(baseMs / state.speed));
 
     state.timerId = window.setTimeout(async () => {
       if (!state.isPlaying) return;
@@ -332,9 +422,7 @@
         return;
       }
 
-      // End of scope
       if (state.scope !== 'EP-LAB-01') {
-        // Loop individual beat
         state.panelIndex = 0;
         state.frameIndex = 0;
         await renderCurrentFrame(true);
@@ -420,7 +508,7 @@
     state.viewMode = mode;
     const isStatic = mode === 'static';
     if (isStatic) {
-      pausePlayback('Switched to static comic storyboard grid. Animation stopped.');
+      pausePlayback('Switched to static comic page view. Animation stopped.');
     }
     els.theaterView.hidden = isStatic;
     els.staticGridView.hidden = !isStatic;
@@ -441,7 +529,7 @@
     if (!silent) {
       announce(
         state.reducedMotion
-          ? 'Reduced-motion preview enabled. Showing static fallback frames.'
+          ? 'Reduced-motion preview enabled. Holding static fallback frames.'
           : 'Reduced-motion preview disabled.'
       );
     }
@@ -462,10 +550,16 @@
       btn.className = 'filmstrip-item';
       btn.dataset.panelId = panel.panelId;
       btn.setAttribute('role', 'listitem');
+      const thumbSrc = resolveAssetPath(panel.staticFallbackAsset, panel.clipPath);
       btn.innerHTML = `
-        <span class="filmstrip-id">${panel.panelId}</span>
-        <span class="filmstrip-beat">${panel.beatId || 'STATIC'}</span>
-        <span class="filmstrip-shot">${panel.shotType || ''}</span>
+        <div class="filmstrip-thumb-wrap">
+          <img class="filmstrip-thumb" src="${thumbSrc}" alt="${panel.panelId} thumbnail" loading="lazy" />
+          <span class="filmstrip-badge">${panel.panelId}</span>
+        </div>
+        <div class="filmstrip-meta">
+          <span class="filmstrip-beat">${panel.beatId || 'STATIC'}</span>
+          <span class="filmstrip-shot">${panel.shotType || ''}</span>
+        </div>
       `;
       btn.addEventListener('click', async () => {
         pausePlayback();
@@ -543,15 +637,12 @@
     const name =
       state.candidate.title ||
       state.candidate.displayName ||
-      state.candidate.name ||
       state.candidate.candidateId ||
       'Proposed Candidate';
     const status = state.candidate.status || 'experimental-noncanonical-proposed';
     const role =
       (state.candidate.narrativeFunction && state.candidate.narrativeFunction.summary) ||
-      state.candidate.proposedRole ||
       state.candidate.role ||
-      state.candidate.summary ||
       '';
     els.candidateInfo.innerHTML = `
       <p><strong>${name}</strong> (<code>${status}</code>)</p>

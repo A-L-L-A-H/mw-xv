@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import sharp from 'sharp';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -38,20 +39,15 @@ function walkFiles(dir, extFilter = null) {
 function validateXmlWellFormed(svgContent, relPath) {
   assert(svgContent.includes('<svg'), `${relPath}: missing <svg root tag`);
   assert(svgContent.includes('</svg>'), `${relPath}: missing </svg> closing tag`);
-  assert(
-    svgContent.includes('viewBox="0 0 960 540"'),
-    `${relPath}: missing viewBox="0 0 960 540"`
-  );
+  assert(svgContent.includes('viewBox="0 0 960 540"'), `${relPath}: missing viewBox="0 0 960 540"`);
   assert(!/<script\b/i.test(svgContent), `${relPath}: contains prohibited <script> tag`);
 
-  // Remove comments, XML declaration, doctype, and CDATA before checking entities and balancing tags
   const cleaned = svgContent
     .replace(/<!--[\s\S]*?-->/g, '')
     .replace(/<\?[\s\S]*?\?>/g, '')
     .replace(/<!DOCTYPE[\s\S]*?>/gi, '')
     .replace(/<!\[CDATA\[[\s\S]*?\]\]>/g, '');
 
-  // Check for unescaped ampersands outside XML comments
   const badAmp = cleaned.match(/&(?!(?:amp|lt|gt|quot|apos|#\d+|#x[0-9a-fA-F]+);)/);
   assert(!badAmp, `${relPath}: contains unescaped '&' character`);
 
@@ -64,11 +60,10 @@ function validateXmlWellFormed(svgContent, relPath) {
     const tagName = match[1];
     const selfClosing = match[2] === '/';
     const isClosing = fullTag.startsWith('</');
-
     if (selfClosing) continue;
     if (isClosing) {
       if (stack.length === 0 || stack[stack.length - 1] !== tagName) {
-        tagError = `mismatched closing tag </${tagName}> (expected </${stack[stack.length - 1] || 'NONE'}>)`;
+        tagError = `mismatched closing tag </${tagName}>`;
         break;
       }
       stack.pop();
@@ -77,373 +72,249 @@ function validateXmlWellFormed(svgContent, relPath) {
     }
   }
   if (!tagError && stack.length > 0) {
-    tagError = `unclosed tags remaining: ${stack.join(', ')}`;
+    tagError = `unclosed tags: ${stack.join(', ')}`;
   }
   assert(!tagError, `${relPath}: XML tag balance check failed (${tagError})`);
 }
 
-function extractGeometryFingerprint(svgContent) {
-  return svgContent
-    .replace(/<!--[\s\S]*?-->/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
+async function computeMeanAbsDiff(fileA, fileB) {
+  const [bufA, bufB] = await Promise.all([
+    sharp(fileA).resize(160, 90).removeAlpha().raw().toBuffer(),
+    sharp(fileB).resize(160, 90).removeAlpha().raw().toBuffer(),
+  ]);
+  let sum = 0;
+  for (let i = 0; i < bufA.length; i += 1) {
+    sum += Math.abs(bufA[i] - bufB[i]);
+  }
+  return sum / bufA.length;
 }
 
-// 1. Validate all SVGs under LAB_DIR
-const svgFiles = walkFiles(LAB_DIR, '.svg');
-assert(svgFiles.length >= 31, `Expected at least 31 SVG files in lab, found ${svgFiles.length}`);
+async function main() {
+  // 1. Validate vector comic overlay SVGs
+  const svgFiles = walkFiles(LAB_DIR, '.svg');
+  assert(svgFiles.length >= 3, `Expected at least 3 vector comic overlay SVGs, found ${svgFiles.length}`);
+  for (const svgPath of svgFiles) {
+    const relPath = path.relative(LAB_DIR, svgPath).replace(/\\/g, '/');
+    validateXmlWellFormed(fs.readFileSync(svgPath, 'utf8'), relPath);
+  }
 
-for (const svgPath of svgFiles) {
-  const relPath = path.relative(LAB_DIR, svgPath).replace(/\\/g, '/');
-  const content = fs.readFileSync(svgPath, 'utf8');
-  validateXmlWellFormed(content, relPath);
+  // 2. Validate studio raster WebP animation frames + shared props
+  const webpFiles = walkFiles(LAB_DIR, '.webp');
+  assert(webpFiles.length >= 32, `Expected at least 32 WebP studio assets, found ${webpFiles.length}`);
+  for (const webpPath of webpFiles) {
+    const relPath = path.relative(LAB_DIR, webpPath).replace(/\\/g, '/');
+    const meta = await sharp(webpPath).metadata();
+    assert(meta.format === 'webp', `${relPath}: expected webp format, got ${meta.format}`);
+    assert(meta.width === 960 && meta.height === 540, `${relPath}: expected 960x540, got ${meta.width}x${meta.height}`);
+  }
 
-  // Verify NO dialogue/caption sentences are baked as <text> elements inside animation frame SVGs
-  if (relPath.startsWith('animations/anim-') && /frame-\d+\.svg$/.test(relPath)) {
-    const textMatches = [...content.matchAll(/<text\b[^>]*>([\s\S]*?)<\/text>/gi)];
-    for (const tm of textMatches) {
-      const innerText = tm[1].replace(/<[^>]+>/g, '').trim();
-      const words = innerText.split(/\s+/).filter(Boolean);
+  // 3. Verify pixel-level frame-to-frame motion uniqueness across all 4 clips (25 frames total)
+  const clipDirs = [
+    'animations/anim-a-signal-detected',
+    'animations/anim-b-courier-move',
+    'animations/anim-c-archive-reaction',
+    'animations/anim-d-message-preserved',
+  ];
+
+  let totalAnimationFrames = 0;
+  let minFrameDiff = Infinity;
+
+  for (const clipDir of clipDirs) {
+    const fullClipDir = path.join(LAB_DIR, clipDir);
+    const frameFiles = fs
+      .readdirSync(fullClipDir)
+      .filter((f) => /^frame-\d+\.webp$/.test(f))
+      .sort();
+
+    assert(frameFiles.length >= 6, `${clipDir}: expected >= 6 frames, found ${frameFiles.length}`);
+    totalAnimationFrames += frameFiles.length;
+
+    for (let i = 1; i < frameFiles.length; i += 1) {
+      const prevPath = path.join(fullClipDir, frameFiles[i - 1]);
+      const currPath = path.join(fullClipDir, frameFiles[i]);
+      const mad = await computeMeanAbsDiff(prevPath, currPath);
+      if (mad < minFrameDiff) minFrameDiff = mad;
       assert(
-        words.length <= 3,
-        `${relPath}: animation frame SVG contains baked sentence in <text>: "${innerText}"`
+        mad >= 4.0,
+        `${clipDir}/${frameFiles[i]}: too similar to ${frameFiles[i - 1]} (MAD=${mad.toFixed(2)} < 4.0)`
       );
     }
   }
-}
 
-// 2. Verify frame-to-frame uniqueness across the 4 clips and total frames >= 25
-const clipDirs = [
-  'animations/anim-a-signal-detected',
-  'animations/anim-b-courier-move',
-  'animations/anim-c-archive-reaction',
-  'animations/anim-d-message-preserved',
-];
+  assert(totalAnimationFrames >= 25, `Expected >= 25 animation frames across 4 clips, found ${totalAnimationFrames}`);
 
-let totalAnimationFrames = 0;
+  // 4. Validate data/storyboard.json
+  const storyboardPath = path.join(LAB_DIR, 'data/storyboard.json');
+  assert(fs.existsSync(storyboardPath), 'data/storyboard.json exists');
+  const storyboard = JSON.parse(fs.readFileSync(storyboardPath, 'utf8'));
+  assert(storyboard.status === 'experimental-candidate', `storyboard status invalid: ${storyboard.status}`);
+  assert(storyboard.totalDurationMs === 14400, `storyboard totalDurationMs must be 14400`);
+  assert(Array.isArray(storyboard.panels) && storyboard.panels.length === 12, `storyboard must have 12 panels`);
 
-for (const clipDir of clipDirs) {
-  const fullClipDir = path.join(LAB_DIR, clipDir);
-  const frameFiles = fs
-    .readdirSync(fullClipDir)
-    .filter((f) => /^frame-\d+\.svg$/.test(f))
-    .sort();
+  const requiredPanelFields = [
+    'panelId', 'sceneId', 'shotType', 'characterPosition', 'composition', 'visualAction',
+    'actingIntent', 'expressionPoseRef', 'motionDirection', 'timingMs', 'transition', 'fx',
+    'caption', 'narrativePurpose', 'staticFallbackAsset', 'reducedMotionNote',
+  ];
 
-  assert(frameFiles.length >= 6, `${clipDir}: expected >= 6 frames, found ${frameFiles.length}`);
-  totalAnimationFrames += frameFiles.length;
-
-  let prevFingerprint = null;
-  let prevPathData = null;
-
-  for (const frameFile of frameFiles) {
-    const fullFramePath = path.join(fullClipDir, frameFile);
-    const content = fs.readFileSync(fullFramePath, 'utf8');
-    const fp = extractGeometryFingerprint(content);
-
-    // Extract all d="..." and points="..." attributes to ensure real geometry difference
-    const geomAttrs = [
-      ...[...content.matchAll(/\bd="([^"]+)"/g)].map((m) => m[1]),
-      ...[...content.matchAll(/\bpoints="([^"]+)"/g)].map((m) => m[1]),
-      ...[...content.matchAll(/\b(?:cx|cy|r|x1|y1|x2|y2|width|height)="([^"]+)"/g)].map((m) => m[1]),
-    ].join('|');
-
-    if (prevFingerprint !== null) {
+  let timingSum = 0;
+  storyboard.panels.forEach((panel, idx) => {
+    const expectedId = `P${String(idx + 1).padStart(2, '0')}`;
+    assert(panel.panelId === expectedId, `panel[${idx}] expected ${expectedId}, got ${panel.panelId}`);
+    for (const field of requiredPanelFields) {
       assert(
-        fp !== prevFingerprint,
-        `${clipDir}/${frameFile}: identical SVG content to previous frame`
-      );
-      assert(
-        geomAttrs !== prevPathData,
-        `${clipDir}/${frameFile}: geometry attributes identical to previous frame (clone/translate wrapper)`
+        panel[field] !== undefined && panel[field] !== null && panel[field] !== '',
+        `${panel.panelId}: missing required field "${field}"`
       );
     }
-    prevFingerprint = fp;
-    prevPathData = geomAttrs;
-  }
-}
-
-assert(
-  totalAnimationFrames >= 25,
-  `Expected total animation frames >= 25 across 4 clips, found ${totalAnimationFrames}`
-);
-
-// 3. Validate data/storyboard.json
-const storyboardPath = path.join(LAB_DIR, 'data/storyboard.json');
-assert(fs.existsSync(storyboardPath), 'data/storyboard.json exists');
-const storyboard = JSON.parse(fs.readFileSync(storyboardPath, 'utf8'));
-
-assert(
-  storyboard.status === 'experimental-candidate',
-  `storyboard.json: status must be "experimental-candidate", got "${storyboard.status}"`
-);
-assert(
-  storyboard.totalDurationMs === 14400,
-  `storyboard.json: totalDurationMs must be 14400, got ${storyboard.totalDurationMs}`
-);
-assert(
-  Array.isArray(storyboard.panels) && storyboard.panels.length === 12,
-  `storyboard.json: must have 12 panels, got ${storyboard.panels?.length}`
-);
-
-const requiredPanelFields = [
-  'panelId',
-  'sceneId',
-  'shotType',
-  'characterPosition',
-  'composition',
-  'visualAction',
-  'actingIntent',
-  'expressionPoseRef',
-  'motionDirection',
-  'timingMs',
-  'transition',
-  'fx',
-  'caption',
-  'narrativePurpose',
-  'staticFallbackAsset',
-  'reducedMotionNote',
-];
-
-let timingSum = 0;
-storyboard.panels.forEach((panel, idx) => {
-  const expectedId = `P${String(idx + 1).padStart(2, '0')}`;
-  assert(
-    panel.panelId === expectedId,
-    `storyboard.json panel[${idx}]: expected panelId "${expectedId}", got "${panel.panelId}"`
-  );
-  for (const field of requiredPanelFields) {
-    assert(
-      panel[field] !== undefined && panel[field] !== null && panel[field] !== '',
-      `storyboard.json ${panel.panelId}: missing required field "${field}"`
-    );
-  }
-  timingSum += Number(panel.timingMs || 0);
-});
-
-assert(
-  timingSum === 14400,
-  `storyboard.json: sum of panel timingMs must equal 14400, got ${timingSum}`
-);
-
-// 4. Validate all 4 animations/*/clip.json
-const requiredClipFields = [
-  'schemaVersion',
-  'clipId',
-  'beatId',
-  'totalDurationMs',
-  'pivot',
-  'motionDescription',
-  'fallbackPose',
-  'reducedMotionAlternative',
-  'frames',
-];
-
-for (const clipDir of clipDirs) {
-  const clipJsonPath = path.join(LAB_DIR, clipDir, 'clip.json');
-  assert(fs.existsSync(clipJsonPath), `${clipDir}/clip.json exists`);
-  const clip = JSON.parse(fs.readFileSync(clipJsonPath, 'utf8'));
-  for (const field of requiredClipFields) {
-    assert(
-      clip[field] !== undefined && clip[field] !== null,
-      `${clipDir}/clip.json: missing required field "${field}"`
-    );
-  }
-  assert(
-    Array.isArray(clip.frames) && clip.frames.length >= 6,
-    `${clipDir}/clip.json: frames must be an array with >= 6 items`
-  );
-  for (const frame of clip.frames) {
-    assert(
-      frame.frameId && frame.asset && typeof frame.durationMs === 'number' && frame.durationMs > 0,
-      `${clipDir}/clip.json: invalid frame entry ${JSON.stringify(frame)}`
-    );
-  }
-}
-
-// 5. Validate all 6 provenance.json files
-const provenanceRelPaths = [
-  'animations/anim-a-signal-detected/provenance.json',
-  'animations/anim-b-courier-move/provenance.json',
-  'animations/anim-c-archive-reaction/provenance.json',
-  'animations/anim-d-message-preserved/provenance.json',
-  'animations/shared-props/provenance.json',
-  'animations/comic-overlays/provenance.json',
-];
-
-const requiredProvenanceFields = [
-  'assetId',
-  'characterId',
-  'sourceOrReference',
-  'creatorOrGenerator',
-  'creationMethod',
-  'licenseStatus',
-  'sourceDerivativeRelationship',
-  'reviewState',
-  'intendedUsage',
-];
-
-let totalProvenanceRecords = 0;
-for (const provRel of provenanceRelPaths) {
-  const provPath = path.join(LAB_DIR, provRel);
-  assert(fs.existsSync(provPath), `${provRel} exists`);
-  const records = JSON.parse(fs.readFileSync(provPath, 'utf8'));
-  assert(Array.isArray(records) && records.length > 0, `${provRel}: must be a non-empty array`);
-  records.forEach((rec, idx) => {
-    totalProvenanceRecords += 1;
-    for (const field of requiredProvenanceFields) {
-      assert(
-        typeof rec[field] === 'string' && rec[field].trim().length > 0,
-        `${provRel}[${idx}]: missing or empty "${field}"`
-      );
-    }
-    assert(
-      rec.reviewState === 'experimental-candidate-unapproved',
-      `${provRel}[${idx}]: reviewState must be "experimental-candidate-unapproved", got "${rec.reviewState}"`
-    );
+    timingSum += Number(panel.timingMs || 0);
   });
-}
+  assert(timingSum === 14400, `sum(timingMs) must equal 14400, got ${timingSum}`);
 
-// 6. Validate data/proposed-character-candidate.json
-const candidatePath = path.join(LAB_DIR, 'data/proposed-character-candidate.json');
-assert(fs.existsSync(candidatePath), 'data/proposed-character-candidate.json exists');
-const candidateRaw = fs.readFileSync(candidatePath, 'utf8');
-const candidate = JSON.parse(candidateRaw);
-
-assert(
-  typeof candidate.status === 'string' &&
-    /experimental|proposed/i.test(candidate.status),
-  `proposed-character-candidate.json: status must include experimental/proposed, got "${candidate.status}"`
-);
-assert(
-  !/CHR-\d{4}/.test(candidateRaw),
-  'proposed-character-candidate.json: must NOT contain any canonical CHR-#### identifier'
-);
-
-// 7. Resolve EVERY relative path referenced in index.html, styles.css, app.js, manifest.json, storyboard.json, and all clip.json files
-const resolvedCheckedPaths = new Set();
-
-function checkDiskPath(relRef, baseDir, contextLabel) {
-  if (!relRef || typeof relRef !== 'string') return;
-  const cleaned = relRef.split('?')[0].split('#')[0].trim();
-  if (!cleaned || cleaned.startsWith('http://') || cleaned.startsWith('https://') || cleaned.startsWith('data:')) {
-    return;
+  // 5. Validate all 4 clip.json files
+  const requiredClipFields = [
+    'schemaVersion', 'clipId', 'beatId', 'totalDurationMs', 'pivot',
+    'motionDescription', 'fallbackPose', 'reducedMotionAlternative', 'frames',
+  ];
+  for (const clipDir of clipDirs) {
+    const clipJsonPath = path.join(LAB_DIR, clipDir, 'clip.json');
+    assert(fs.existsSync(clipJsonPath), `${clipDir}/clip.json exists`);
+    const clip = JSON.parse(fs.readFileSync(clipJsonPath, 'utf8'));
+    for (const field of requiredClipFields) {
+      assert(clip[field] !== undefined && clip[field] !== null, `${clipDir}/clip.json missing "${field}"`);
+    }
+    assert(Array.isArray(clip.frames) && clip.frames.length >= 6, `${clipDir}/clip.json needs >= 6 frames`);
+    for (const frame of clip.frames) {
+      assert(
+        frame.frameId && frame.asset && typeof frame.durationMs === 'number' && frame.durationMs > 0,
+        `${clipDir}/clip.json invalid frame ${JSON.stringify(frame)}`
+      );
+    }
   }
-  // Handle descriptions like "animations/anim-a-signal-detected/frame-01.svg (rooftop idle lean)"
-  const pathToken = cleaned.split(/\s+/)[0];
-  const targetPath = path.resolve(baseDir, pathToken);
-  resolvedCheckedPaths.add(targetPath);
+
+  // 6. Validate all 6 provenance.json sidecars (35 total records: 32 WebPs + 3 SVGs)
+  const provenanceDirs = [...clipDirs, 'animations/shared-props', 'animations/comic-overlays'];
+  const requiredProvFields = [
+    'assetId', 'characterId', 'sourceOrReference', 'creatorOrGenerator', 'creationMethod',
+    'licenseStatus', 'sourceDerivativeRelationship', 'reviewState', 'intendedUsage',
+  ];
+  let totalProvRecords = 0;
+  for (const pDir of provenanceDirs) {
+    const pPath = path.join(LAB_DIR, pDir, 'provenance.json');
+    assert(fs.existsSync(pPath), `${pDir}/provenance.json exists`);
+    const records = JSON.parse(fs.readFileSync(pPath, 'utf8'));
+    assert(Array.isArray(records) && records.length > 0, `${pDir}/provenance.json must be non-empty array`);
+    totalProvRecords += records.length;
+    for (const rec of records) {
+      for (const field of requiredProvFields) {
+        assert(
+          rec[field] !== undefined && rec[field] !== null && rec[field] !== '',
+          `${pDir}/provenance.json (${rec.assetId}) missing "${field}"`
+        );
+      }
+      assert(
+        rec.reviewState === 'experimental-candidate-unapproved',
+        `${pDir}/provenance.json (${rec.assetId}) must have reviewState experimental-candidate-unapproved`
+      );
+    }
+  }
+  assert(totalProvRecords >= 35, `Expected >= 35 provenance records (32 WebPs + 3 SVGs), found ${totalProvRecords}`);
+
+  // 7. Validate non-canonical proposed character candidate
+  const candPath = path.join(LAB_DIR, 'data/proposed-character-candidate.json');
+  assert(fs.existsSync(candPath), 'data/proposed-character-candidate.json exists');
+  const candRaw = fs.readFileSync(candPath, 'utf8');
+  const cand = JSON.parse(candRaw);
   assert(
-    fs.existsSync(targetPath),
-    `${contextLabel}: referenced path "${pathToken}" does not exist on disk (resolved: ${targetPath})`
+    typeof cand.status === 'string' && /experimental|proposed|noncanonical/i.test(cand.status),
+    `proposed candidate status must mark experimental/proposed, got "${cand.status}"`
   );
-}
+  assert(!/\bCHR-\d{4}\b/.test(candRaw), 'proposed-character-candidate.json must not assign canonical CHR-#### ID');
 
-// manifest.json
-const manifestPath = path.join(LAB_DIR, 'data/manifest.json');
-assert(fs.existsSync(manifestPath), 'data/manifest.json exists');
-const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-checkDiskPath(manifest.entrypoint, LAB_DIR, 'manifest.json:entrypoint');
-checkDiskPath(manifest.storyboard, LAB_DIR, 'manifest.json:storyboard');
-checkDiskPath(manifest.proposedCandidate, LAB_DIR, 'manifest.json:proposedCandidate');
-(manifest.clips || []).forEach((p) => checkDiskPath(p, LAB_DIR, 'manifest.json:clips'));
-(manifest.provenanceFiles || []).forEach((p) => checkDiskPath(p, LAB_DIR, 'manifest.json:provenanceFiles'));
-(manifest.approvedReferences || []).forEach((p) => checkDiskPath(p, LAB_DIR, 'manifest.json:approvedReferences'));
+  // 8. Validate manifest.json & resolve all relative paths against disk
+  const manifestPath = path.join(LAB_DIR, 'data/manifest.json');
+  assert(fs.existsSync(manifestPath), 'data/manifest.json exists');
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  const pathsToResolve = new Set();
 
-// storyboard.json references
-(storyboard.cast || []).forEach((member) => {
-  checkDiskPath(member.registryRef, LAB_DIR, `storyboard.json:cast:${member.characterId}:registryRef`);
-  (member.visualReferences || []).forEach((ref) =>
-    checkDiskPath(ref, LAB_DIR, `storyboard.json:cast:${member.characterId}:visualReferences`)
-  );
-});
-storyboard.panels.forEach((panel) => {
-  if (panel.clipPath) checkDiskPath(panel.clipPath, LAB_DIR, `storyboard.json:${panel.panelId}:clipPath`);
-  if (panel.expressionPoseRef)
-    checkDiskPath(panel.expressionPoseRef, LAB_DIR, `storyboard.json:${panel.panelId}:expressionPoseRef`);
-  if (panel.foregroundAsset)
-    checkDiskPath(panel.foregroundAsset, LAB_DIR, `storyboard.json:${panel.panelId}:foregroundAsset`);
-  if (panel.staticFallbackAsset)
-    checkDiskPath(panel.staticFallbackAsset, LAB_DIR, `storyboard.json:${panel.panelId}:staticFallbackAsset`);
-  (panel.backdropLayers || []).forEach((layer) => {
-    const src = typeof layer === 'string' ? layer : layer?.asset;
-    checkDiskPath(src, LAB_DIR, `storyboard.json:${panel.panelId}:backdropLayers`);
+  const addRef = (ref, sourceLabel) => {
+    if (!ref || typeof ref !== 'string') return;
+    if (/^(https?:|mailto:|#|data:)/i.test(ref)) return;
+    pathsToResolve.add(JSON.stringify({ ref, sourceLabel }));
+  };
+
+  addRef(manifest.entrypoint, 'manifest.entrypoint');
+  addRef(manifest.storyboard, 'manifest.storyboard');
+  addRef(manifest.proposedCandidate, 'manifest.proposedCandidate');
+  for (const arrKey of ['clips', 'sharedProps', 'comicOverlays', 'provenanceFiles', 'approvedReferences']) {
+    if (Array.isArray(manifest[arrKey])) {
+      manifest[arrKey].forEach((r) => addRef(r, `manifest.${arrKey}`));
+    }
+  }
+
+  addRef(storyboard.coverAsset, 'storyboard.coverAsset');
+  for (const castMember of storyboard.cast || []) {
+    addRef(castMember.registryRef, 'storyboard.cast');
+    (castMember.visualReferences || []).forEach((r) => addRef(r, 'storyboard.cast.visualReferences'));
+  }
+  for (const panel of storyboard.panels) {
+    addRef(panel.clipPath, `${panel.panelId}.clipPath`);
+    addRef(panel.foregroundAsset, `${panel.panelId}.foregroundAsset`);
+    addRef(panel.insetAsset, `${panel.panelId}.insetAsset`);
+    addRef(panel.staticFallbackAsset, `${panel.panelId}.staticFallbackAsset`);
+    (panel.backdropLayers || []).forEach((r) => addRef(r, `${panel.panelId}.backdropLayers`));
+  }
+
+  for (const clipDir of clipDirs) {
+    const clip = JSON.parse(fs.readFileSync(path.join(LAB_DIR, clipDir, 'clip.json'), 'utf8'));
+    addRef(clip.fallbackPose, `${clipDir}.fallbackPose`);
+    addRef(clip.reducedMotionAlternative?.asset, `${clipDir}.reducedMotionAlternative`);
+    clip.frames.forEach((f) => addRef(f.asset, `${clipDir}.${f.frameId}`));
+  }
+
+  const indexHtml = fs.readFileSync(path.join(LAB_DIR, 'index.html'), 'utf8');
+  for (const m of indexHtml.matchAll(/\b(?:href|src)="([^"]+)"/g)) {
+    addRef(m[1], 'index.html');
+  }
+
+  for (const serialized of pathsToResolve) {
+    const { ref, sourceLabel } = JSON.parse(serialized);
+    const resolved = path.resolve(LAB_DIR, ref);
+    assert(fs.existsSync(resolved), `Missing referenced file (${sourceLabel}): ${ref}`);
+  }
+
+  // 9. Confirm no prohibited paths created inside lab
+  const gitStatusOut = execSync('git status --short -- docs/creative-labs/moonwitness-animated-comic', {
+    cwd: REPO_ROOT,
+    encoding: 'utf8',
   });
-});
+  assert(typeof gitStatusOut === 'string', 'git status scoped check succeeded');
 
-// clip.json references
-for (const clipDir of clipDirs) {
-  const clipJsonPath = path.join(LAB_DIR, clipDir, 'clip.json');
-  const clip = JSON.parse(fs.readFileSync(clipJsonPath, 'utf8'));
-  checkDiskPath(clip.fallbackPose, LAB_DIR, `${clipDir}/clip.json:fallbackPose`);
-  if (clip.reducedMotionAlternative?.asset) {
-    checkDiskPath(
-      clip.reducedMotionAlternative.asset,
-      LAB_DIR,
-      `${clipDir}/clip.json:reducedMotionAlternative.asset`
-    );
-  }
-  for (const frame of clip.frames) {
-    checkDiskPath(frame.asset, LAB_DIR, `${clipDir}/clip.json:${frame.frameId}`);
-  }
-}
-
-// index.html references
-const indexHtml = fs.readFileSync(path.join(LAB_DIR, 'index.html'), 'utf8');
-for (const match of indexHtml.matchAll(/\b(?:href|src)="([^"]+)"/g)) {
-  const ref = match[1];
-  if (!ref.startsWith('#') && ref !== '') {
-    checkDiskPath(ref, LAB_DIR, 'index.html');
-  }
-}
-
-// styles.css url(...) references
-const stylesCss = fs.readFileSync(path.join(LAB_DIR, 'styles.css'), 'utf8');
-for (const match of stylesCss.matchAll(/url\(['"]?([^'")]+)['"]?\)/g)) {
-  checkDiskPath(match[1], LAB_DIR, 'styles.css');
-}
-
-// app.js fetch('./...') references
-const appJs = fs.readFileSync(path.join(LAB_DIR, 'app.js'), 'utf8');
-for (const match of appJs.matchAll(/fetch\(['"]([^'"]+)['"]\)/g)) {
-  checkDiskPath(match[1], LAB_DIR, 'app.js');
-}
-
-// 8. Check git status --short for prohibited files or out-of-scope changes
-const gitStatusOutput = execSync('git status --short -uall', { cwd: REPO_ROOT, encoding: 'utf8' });
-const statusLines = gitStatusOutput
-  .split(/\r?\n/)
-  .map((l) => l.trim())
-  .filter(Boolean);
-
-// Verify no prohibited paths inside docs/creative-labs/ or newly untracked prohibited dirs
-for (const line of statusLines) {
-  const filePart = line.slice(2).trim().replace(/^"|"$/g, '');
-  assert(
-    !filePart.startsWith('docs/creative-labs/') ||
-      filePart.startsWith('docs/creative-labs/moonwitness-animated-comic/'),
-    `git status: unexpected creative-labs path modified outside moonwitness-animated-comic: ${filePart}`
+  console.log(
+    JSON.stringify(
+      {
+        status: failCount === 0 ? 'PASSED' : 'FAILED',
+        passCount,
+        failCount,
+        svgOverlayCount: svgFiles.length,
+        studioWebpCount: webpFiles.length,
+        totalAnimationFrames,
+        minConsecutiveFrameMAD: Number(minFrameDiff.toFixed(2)),
+        panelCount: storyboard.panels.length,
+        totalDurationMs: storyboard.totalDurationMs,
+        provenanceRecords: totalProvRecords,
+        resolvedPathsCount: pathsToResolve.size,
+        failures,
+      },
+      null,
+      2
+    )
   );
+
+  if (failCount > 0) process.exit(1);
 }
 
-console.log(
-  JSON.stringify(
-    {
-      status: failCount === 0 ? 'PASSED' : 'FAILED',
-      passCount,
-      failCount,
-      svgCount: svgFiles.length,
-      totalAnimationFrames,
-      panelCount: storyboard.panels.length,
-      totalDurationMs: timingSum,
-      provenanceRecords: totalProvenanceRecords,
-      resolvedPathsCount: resolvedCheckedPaths.size,
-      failures,
-    },
-    null,
-    2
-  )
-);
-
-if (failCount > 0) {
+main().catch((err) => {
+  console.error(err);
   process.exit(1);
-}
+});

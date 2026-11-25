@@ -1,99 +1,79 @@
-# MoonWitness Animated Comic Creative Lab (`EP-LAB-01`)
+# MoonWitness Animated Comic Lab — EP-LAB-01
 
-> [!IMPORTANT]
-> **Experimental Candidate Status Notice (`experimental-candidate-unapproved`)**  
-> Everything under `docs/creative-labs/moonwitness-animated-comic/` is a sandboxed creative exploration and candidate storyboard/animation prototype. Nothing in this directory is promoted to canonical production asset status (`packages/assets/manifest.json` or `packages/assets/source/world/characters/character-registry.json`) without explicit human owner review and approval.
-
----
-
-## 1. Lab Overview
-
-The **MoonWitness Animated Comic Creative Lab** prototypes an original 12-panel animated comic and editorial storyboard episode (**`EP-LAB-01`: "WHEN THE MOON RISES, WE SHARE A MESSAGE"**) built around the approved Signal Riot / Moon City recurring characters **Kuro Signal** (`kuro-signal`, signal courier) and **Vesper Ink** (`vesper-ink`, zine archivist).
-
-Key boundaries enforced in this lab:
-- **Original Fictional Editorial Adaptation:** This episode is an original fictional adaptation inspired by MoonWitness II World Rules (`01`–`10`) and the MW-XV bounded `SIGNAL/RADIO` + zine archive domain. It is **not** a recovered historical transcript, does **not** fabricate user identities or metrics, and does **not** depict Allah, prophets, or sacred figures (`CAN-0011`).
-- **Live Text Separation:** All dialogue, speaker badges, and panel captions are stored as structured JSON fields and rendered as accessible live HTML text outside the SVG/WebP artwork (`VISUAL_BIBLE.md`).
-- **Strict Character Continuity:** Kuro Signal matches the 5.5-head hooded street courier model sheet (`kuro-signal-model-sheet-master.png`), and Vesper Ink is framed strictly waist-up behind her archive workbench (`vesper-ink-portrait-master.png`) or as a distant window silhouette—never an unapproved full-body redesign.
-- **Static-First & Reduced-Motion Safe:** The theater preview loads in a paused static state on `P01`, contains zero `<audio>` elements, pauses automatically when the tab is hidden, and provides both a **Reduced-Motion Preview Toggle** and a **Static Comic Storyboard Grid**.
+> **Status:** `experimental-candidate` (`experimental-candidate-unapproved`)
+> **Episode:** **WHEN THE MOON RISES, WE SHARE A MESSAGE** (`EP-LAB-01`)
+> **Rendering Pipeline:** Studio 2.5D Motion-Comic (*Spider-Verse* stepped keyframes + Riot Games 2.5D virtual camera choreography + reference-anchored 960×540 punk-manga WebP frames + vector comic overlays + live HTML typography)
 
 ---
 
-## 2. Quick-Start Local Server Command
+## 1. Story Synopsis
 
-From the repository root (`z:\repo\mw-xv`), run a local static HTTP server so the browser can fetch `data/storyboard.json`, `animations/*/clip.json`, and relative `../../../packages/assets/*` references cleanly:
+*Original fictional editorial adaptation for Creative R&D — NOT a recovered historical transcript; contains zero real user identities, testimony, or personal data.*
 
-```bash
-# Option A: Using Node / npx
-npx serve . -l 4173
+1. **Moon City Rooftop (`P01`–`P03`, `ANIM-A`):** Under the watching silver halftone crescent moon, courier **Kuro Signal** catches a sudden faint carrier spark on sub-band four. The portable receiver locks three crisp signal bars and two dead dropouts.
+2. **Rooftop Sprint (`P04`, `ANIM-B`):** Refusing to lose the fading trace, Kuro coils, vaults the neon alley chasm, streaks through a cyan-magenta chromatic smear dash, skids onto the archive loft roof, and knocks impatiently at the warm studio hatch.
+3. **Archive Restraint (`P05`–`P09`, `ANIM-C`):** Zine archivist **Vesper Ink** (framed strictly waist-up behind her lamp-lit workbench honoring her approved portrait canon) inspects the strip beside her cyan CRT monitor. Kuro wants to infer the missing bridge and publish tonight; Vesper calmly raises one steady hand and brass stylus—*a witness records what arrived, not what we wish filled the silence.*
+4. **Quiet Preservation (`P10`–`P12`, `ANIM-D`):** Together they clip the incomplete slip inside a kraft archival folio with yellow binder clips and magenta tape, keeping the blank voids intact. The rooftop parabolic dish emits one delicate concentric silver-cyan pulse across Moon City as distant windows answer softly beneath the crescent moon.
 
-# Option B: Using Python 3
+**Central dramatic theme:** *A message is worth preserving even when not every part is known.*
+
+---
+
+## 2. How to Run the Local Preview
+
+Serve from the repository root (`z:\repo\mw-xv`) so relative paths to `../../../packages/assets/` resolve cleanly:
+
+```powershell
 python -m http.server 4173
 ```
 
-Then open in your browser:
+Open:
 
 ```text
-http://localhost:4173/docs/creative-labs/moonwitness-animated-comic/index.html
+http://127.0.0.1:4173/docs/creative-labs/moonwitness-animated-comic/index.html
 ```
 
----
-
-## 3. Episode Synopsis — `EP-LAB-01`: "WHEN THE MOON RISES, WE SHARE A MESSAGE"
-
-- **Central Theme:** `END OF AN ERA` · `CAPTURE → CONNECT → WITNESS → UNDERSTAND → PRESERVE → PROMOTE`
-- **Core Rule Demonstrated:** *Incomplete evidence remains honestly incomplete.* (`MoonWitness II` World Rules `01`, `02`, `03`)
-- **Total Duration:** `14,400 ms` across 12 panels (`P01`–`P12`) and 4 key-pose animation clips (`ANIM-A` through `ANIM-D`).
-
-**Story Sequence:**
-1. **Rooftop Watch (`P01`):** Under the silver crescent moon anchoring Moon City's nocturnal skyline, signal courier **Kuro Signal** waits by a high parapet rail with a quiet portable receiver.
-2. **Signal Intercept (`P02`–`P03`, `ANIM-A`):** Sub-band four suddenly keys open. A cyan-magenta pulse sparks across Kuro's twin-ring headset antenna. Raising the matte charcoal receiver, Kuro captures three verified carrier bars interrupted by two dead drop-out voids.
-3. **Courier Transit (`P04`, `ANIM-B`):** Refusing to lose the live packet to frequency drift, Kuro coils low and vaults across the moonlit rooftop gap, skidding to an impatient rebound stop at the archive loft hatch.
-4. **Archive Workbench Handoff & Inspection (`P05`–`P07`, `ANIM-C`):** Inside the warm lamp-lit zine workshop, Kuro slides the receiver and transfer slip across the cutting mat to **Vesper Ink**. Framed waist-up with tinted brass forehead goggles and stylus in hand, Vesper inspects the macro artifact (`fragment-slip-incomplete.svg`): three intact clauses and two unrecovered `[REDACTED / UNKNOWN]` gap slots.
-5. **Temptation vs. Restraint (`P08`–`P09`, `ANIM-C`):** Kuro lunges forward, eager to infer the missing bridge from last week's cadence and publish a complete headline immediately. Vesper raises her brass stylus vertically to halt the rush, tapping the blank gap slots: *"A witness records what arrived, Kuro—not what we wish filled the silence. The gap stays marked as unknown."*
-6. **Preservation & Quiet Relay (`P10`–`P12`, `ANIM-D`):** Together they align the partial slip inside a MoonWitness archive folio (`archive-folio-sealed.svg`), sealing it with yellow binder clips and magenta gaffer tape while leaving the unknown gap visibly intact. Above the loft, the rooftop antenna emits one quiet, rhythmic concentric radio ring across the dark city before dissolving into the night mist beneath the witnessing moon.
+Controls:
+- **Play / Pause / Replay** (`Space` / `R`), **Frame Stepping** (`←` / `→`), **Panel Stepping** (`[` / `]`)
+- **Normal `1.0x` / Slow `0.45x`** (`S`) for acting timing study
+- **Scope Selector:** Full 14.4s episode (`EP-LAB-01`) or single-beat loops (`ANIM-A`, `ANIM-B`, `ANIM-C`, `ANIM-D`)
+- **View Modes:** Theater Stage, Static Comic Page (`G`), Reduced-Motion Preview (`M` + automatic `prefers-reduced-motion`), Cast & 2.5D Pipeline Drawer (`I`)
+- Starts paused with zero autoplay audio and pauses automatically when hidden (`visibilitychange`).
 
 ---
 
-## 4. File Index
+## 3. Studio 2.5D Motion-Comic Pipeline (Why V2 Replaces Raw SVG Primitives)
 
-| Path (relative to `docs/creative-labs/moonwitness-animated-comic/`) | Role | Status |
-| --- | --- | --- |
-| [`README.md`](file:///z:/repo/mw-xv/docs/creative-labs/moonwitness-animated-comic/README.md) | Lab overview, quick-start commands, synopsis, file index, and production adoption checklist | Experimental lab doc |
-| [`index.html`](file:///z:/repo/mw-xv/docs/creative-labs/moonwitness-animated-comic/index.html) | Self-contained 16:9 comic theater stage, static grid view, and provenance inspector | Experimental preview UI |
-| [`styles.css`](file:///z:/repo/mw-xv/docs/creative-labs/moonwitness-animated-comic/styles.css) | Punk/grunge zine styling using self-hosted fonts and contrast-verified MoonWitness tokens | Experimental preview UI |
-| [`app.js`](file:///z:/repo/mw-xv/docs/creative-labs/moonwitness-animated-comic/app.js) | Deterministic frame/panel player, keyboard shortcuts, reduced-motion handling, progressive preload | Experimental preview UI |
-| [`data/manifest.json`](file:///z:/repo/mw-xv/docs/creative-labs/moonwitness-animated-comic/data/manifest.json) | Sandbox index linking storyboard, 4 clips, 6 provenance files, candidate JSON, and approved asset refs | Experimental data contract |
-| [`data/storyboard.json`](file:///z:/repo/mw-xv/docs/creative-labs/moonwitness-animated-comic/data/storyboard.json) | Complete 12-panel storyboard data (`P01`–`P12`, `14400ms`, shot scales, comic grammar, live dialogue/captions) | Experimental data contract |
-| [`data/proposed-character-candidate.json`](file:///z:/repo/mw-xv/docs/creative-labs/moonwitness-animated-comic/data/proposed-character-candidate.json) | Non-canonical candidate record (`PCC-SIGNAL-SWITCHBOARD-01`, no `CHR-####` ID) | Experimental candidate (`humanReviewRequired: true`) |
-| [`docs/NARRATIVE_SOURCES.md`](file:///z:/repo/mw-xv/docs/creative-labs/moonwitness-animated-comic/docs/NARRATIVE_SOURCES.md) | Cross-repository source audit (8 sibling repositories + local MW-XV with exact SHAs & blob hashes) | Experimental research doc |
-| [`docs/CHARACTER_GAP_RESEARCH.md`](file:///z:/repo/mw-xv/docs/creative-labs/moonwitness-animated-comic/docs/CHARACTER_GAP_RESEARCH.md) | 9-column comparison table across MW II, MW XII, V10/V10.1, and ROCKSOUL with strict non-merging identity rules | Experimental research doc |
-| [`docs/PROPOSED_CHARACTER_CANDIDATE.md`](file:///z:/repo/mw-xv/docs/creative-labs/moonwitness-animated-comic/docs/PROPOSED_CHARACTER_CANDIDATE.md) | Design dossier for `PCC-SIGNAL-SWITCHBOARD-01` (Night Relay Operator / Signal Switchboard Minder) | Experimental proposal doc |
-| [`docs/STORYBOARD.md`](file:///z:/repo/mw-xv/docs/creative-labs/moonwitness-animated-comic/docs/STORYBOARD.md) | Human-readable 12-panel director's breakdown, acting notes, camera grammar, and timing ledger | Experimental storyboard doc |
-| `animations/anim-a-signal-detected/` | Beat 1 (`ANIM-A`, 6 key-pose SVG frames + `clip.json` + `provenance.json`) | Experimental animation clip |
-| `animations/anim-b-courier-move/` | Beat 2 (`ANIM-B`, 7 key-pose SVG frames + `clip.json` + `provenance.json`) | Experimental animation clip |
-| `animations/anim-c-archive-reaction/` | Beat 3 (`ANIM-C`, 6 key-pose SVG frames + `clip.json` + `provenance.json`) | Experimental animation clip |
-| `animations/anim-d-message-preserved/` | Beat 4 (`ANIM-D`, 6 key-pose SVG frames + `clip.json` + `provenance.json`) | Experimental animation clip |
-| `animations/shared-props/` | 3 narrative prop SVGs (`portable-receiver-closeup.svg`, `fragment-slip-incomplete.svg`, `archive-folio-sealed.svg`) + `provenance.json` | Experimental prop assets |
-| `animations/comic-overlays/` | 3 transparent manga/zine FX overlays (`speed-lines-burst.svg`, `ink-wipe-mask.svg`, `halftone-corner-frame.svg`) + `provenance.json` | Experimental FX overlays |
+Informed by *Spider-Verse* stepped framing, Riot Games 2.5D motion comics, and reference-locked sprite-sheet production:
+- **Canonical Reference Locking:** Every 2×2 keyframe sheet is generated directly against approved MW-XV masters (`kuro-signal-model-sheet-master.png`, `kuro-signal-fullbody-standing-master.png`, `vesper-ink-portrait-master.png`, `bg-riot-arcade-workbench.webp`, `bg-riot-street-alley.webp`) to eliminate face drift and preserve exact silhouette, palette, goggles, pins, and line weight.
+- **Auto-Trimmed Lanczos3 WebP Frames:** `scripts/slice-sheets.mjs` trims divider seams cleanly and exports 32 crisp `960×540` WebP assets (25 key-pose animation frames + 7 macro props & plates, ~2.3 MB total).
+- **Hybrid Stepped Acting + 60fps Virtual Camera:** Illustrated key poses step crisply on twos/threes while CSS 2.5D camera push-ins, whip tilts, chromatic cyan/magenta impact hits, diagonal speed-line overlays, and angled picture-in-picture macro insets bring the comic page alive without baking text into artwork.
 
 ---
 
-## 5. Production Adoption Handoff Checklist (Human Review Gate)
+## 4. Directory Index
 
-Before any file from this creative lab is migrated into the canonical production pipeline (`packages/assets`, `packages/ui`, or `apps/ui-catalog`), a human reviewer must verify and approve each candidate item below:
+- `index.html`, `styles.css`, `app.js` — Self-contained 2.5D comic theater & static page viewer
+- `data/storyboard.json`, `docs/STORYBOARD.md` — 12-panel storyboard (`P01`–`P12`, `14,400ms`)
+- `data/manifest.json` — Experimental lab asset & provenance index
+- `animations/anim-a-signal-detected/` — 6 WebP keyframes (`2300ms`) + `clip.json` + `provenance.json`
+- `animations/anim-b-courier-move/` — 7 WebP keyframes (`1900ms`) + `clip.json` + `provenance.json`
+- `animations/anim-c-archive-reaction/` — 6 WebP keyframes (`4200ms`) + `clip.json` + `provenance.json`
+- `animations/anim-d-message-preserved/` — 6 WebP keyframes (`4000ms`) + `clip.json` + `provenance.json`
+- `animations/shared-props/` — 7 WebP establishing, macro prop & cover plates + `provenance.json`
+- `animations/comic-overlays/` — 3 transparent SVG graphic overlays (`speed-lines-burst.svg`, `ink-wipe-mask.svg`, `halftone-corner-frame.svg`) + `provenance.json`
+- `docs/NARRATIVE_SOURCES.md` — Cross-repository narrative citations with exact GitHub commit & blob SHAs
+- `docs/CHARACTER_GAP_RESEARCH.md` — 9-column cross-generation character comparison table
+- `docs/PROPOSED_CHARACTER_CANDIDATE.md`, `data/proposed-character-candidate.json` — Non-canonical experimental candidate `PCC-SIGNAL-SWITCHBOARD-01`
+- `scripts/slice-sheets.mjs`, `scripts/validate-lab.mjs`, `scripts/playwright-verify.mjs` — Slicing, structural/pixel validation & Playwright QA automation
+- `evidence/` — 7 Playwright verification screenshots (`01`..`07`) + `VALIDATION_REPORT.md`
 
-- [ ] **1. Animation Clips (`animations/anim-a-signal-detected/` .. `animations/anim-d-message-preserved/`):**
-  - Review key-pose silhouettes, line weights, and palette compliance against `docs/bundles/visual-universe-pack/VISUAL_BIBLE.md`.
-  - Confirm Vesper Ink remains waist-up behind the workbench (or approve a dedicated full-body turnaround sheet first).
-  - Upon approval, promote selected SVG frame sequences and `clip.json` descriptors into `packages/assets/animation/` and register their hashes, dimensions, and provenance in `packages/assets/manifest.json` and `packages/assets/licenses.json`.
-- [ ] **2. Shared Narrative Props & Comic Overlays (`animations/shared-props/`, `animations/comic-overlays/`):**
-  - Review `portable-receiver-closeup.svg`, `fragment-slip-incomplete.svg`, `archive-folio-sealed.svg`, `speed-lines-burst.svg`, `ink-wipe-mask.svg`, and `halftone-corner-frame.svg` for Pack D (Props), Pack G (Anime/Grunge FX), and Pack H (Editorial/Comic Materials) eligibility.
-  - Confirm zero baked prose or fake metrics exist inside the vectors.
-- [ ] **3. Storyboard & Scene Descriptor (`data/storyboard.json`, `docs/STORYBOARD.md`):**
-  - Verify compatibility with the typed `SceneDefinition` and `TimelineTrack` contracts in `docs/bundles/visual-universe-pack/ANIMATION_RUNTIME.md`.
-  - Decide whether `EP-LAB-01` enters `apps/ui-catalog` Creative Lab workspaces (`docs/bundles/visual-universe-pack/CREATIVE_LAB.md`) as an official scene fixture.
-- [ ] **4. Proposed Character Candidate (`data/proposed-character-candidate.json`, `docs/PROPOSED_CHARACTER_CANDIDATE.md`):**
-  - Evaluate `PCC-SIGNAL-SWITCHBOARD-01` (Night Relay Operator / Signal Switchboard Minder) for narrative necessity, visual silhouette distinctiveness, and zero collision with historical `CHR-0001`..`CHR-0019` records.
-  - **Only if explicitly approved by the owner:** assign a canonical ID, author an approved master sheet, and register in `packages/assets/source/world/characters/character-registry.json`.
-- [ ] **5. Cross-Repository Research Docs (`docs/NARRATIVE_SOURCES.md`, `docs/CHARACTER_GAP_RESEARCH.md`):**
-  - Retain as source-qualified crosswalk references alongside `docs/knowledge/idea-archive/`; never flatten generation boundaries or auto-merge unresolved historical aliases.
+---
+
+## 5. Production Adoption Handoff (Human Review Required)
+
+No canonical production files were modified. If approved after owner visual & rights review:
+1. Review and approve all 32 WebP candidate frames & 3 SVG overlays before promoting into `packages/assets/animation/` and `packages/assets/manifest.json` + `packages/assets/licenses.json`.
+2. Review `vesper-ink` waist-up workbench poses before expanding `allowedVariants` in `packages/assets/source/world/characters/character-registry.json`.
+3. Review `PCC-SIGNAL-SWITCHBOARD-01` separately before assigning any canonical `CHR-####` identifier.
+4. Port the 2.5D stepped-keyframe + virtual-camera timeline player into `packages/ui` / `apps/ui-catalog` only under an approved visual-universe task.

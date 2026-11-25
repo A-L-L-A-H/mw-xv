@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "clipId": "anim-c-archive-reaction",
-  "beatId": "beat-3",
+  "beatId": "ANIM-C",
   "title": "Archive Reaction — Measured Restraint",
   "status": "experimental-candidate",
   "characterIds": ["vesper-ink", "kuro-signal"],
@@ -9,7 +9,7 @@
   "playbackMode": "one-shot-or-loop-preview",
   "totalDurationMs": 4200,
   "pivot": { "x": 0.5, "y": 0.86 },
-  "motionDescription": "Vesper Ink receives Kuro Signal's incomplete fragment slip at the archive workbench, inspects the missing gaps under cyan CRT glow, calmly halts Kuro's eager rush with a vertical brass stylus gesture, taps the two blank zones, and settles into a composed restraint hold.",
+  "motionDescription": "Vesper Ink receives Kuro Signal's incomplete fragment slip across the lamp-lit archive workbench, lifts and inspects the waveform voids, calmly raises one steady hand to halt Kuro's impatient rush, annotates the blank slots with her brass stylus, and holds composed eye contact.",
   "principlesApplied": [
     "contrast-in-acting",
     "anticipation",
@@ -17,59 +17,65 @@
     "staging-and-lighting-contrast",
     "follow-through-and-settle"
   ],
-  "fallbackPose": "animations/anim-c-archive-reaction/frame-06.svg",
+  "fallbackPose": "animations/anim-c-archive-reaction/frame-06.webp",
   "reducedMotionAlternative": {
-    "asset": "animations/anim-c-archive-reaction/frame-06.svg",
-    "description": "Held composed two-shot of Vesper Ink framing the incomplete signal sheet with a yellow binder clip ready while Kuro Signal settles back listening."
+    "asset": "animations/anim-c-archive-reaction/frame-06.webp",
+    "description": "Balanced warm two-shot of Vesper Ink waist-up framing the incomplete transmission slip while Kuro Signal leans back listening thoughtfully."
   },
   "frames": [
     {
-      "frameId": "anim-c-f01",
-      "asset": "animations/anim-c-archive-reaction/frame-01.svg",
+      "frameId": "ANIM-C-F01",
+      "asset": "animations/anim-c-archive-reaction/frame-01.webp",
       "durationMs": 520,
       "poseLabel": "Over-the-Shoulder Reception",
-      "actingNote": "Kuro slides portable receiver and signal slip onto Vesper's desk; Vesper waist-up in warm lamp pool looks down calmly.",
-      "principles": ["staging-and-lighting-contrast", "pose-to-pose-keyframing"]
+      "actingNote": "Framed past Kuro's magenta-lined hood onto the zine workbench; Vesper Ink waist-up calmly studies the arriving waveform strip.",
+      "principles": ["staging-and-lighting-contrast", "pose-to-pose-keyframing"],
+      "camera": { "scale": 1.0, "x": 0, "y": 0, "rotate": 0, "fx": "none" }
     },
     {
-      "frameId": "anim-c-f02",
-      "asset": "animations/anim-c-archive-reaction/frame-02.svg",
+      "frameId": "ANIM-C-F02",
+      "asset": "animations/anim-c-archive-reaction/frame-02.webp",
       "durationMs": 480,
-      "poseLabel": "Desk Pick-Up",
-      "actingNote": "Vesper reaches deliberately with both hands and brass stylus poised, lifting the slip toward the cyan CRT glow.",
-      "principles": ["anticipation", "contrast-in-acting"]
+      "poseLabel": "Deliberate Pick-Up",
+      "actingNote": "Vesper lifts the printed strip cleanly beside the glowing cyan CRT oscilloscope, brass stylus poised in right hand.",
+      "principles": ["anticipation", "contrast-in-acting"],
+      "camera": { "scale": 1.03, "x": 6, "y": -2, "rotate": 0, "fx": "none" }
     },
     {
-      "frameId": "anim-c-f03",
-      "asset": "animations/anim-c-archive-reaction/frame-03.svg",
+      "frameId": "ANIM-C-F03",
+      "asset": "animations/anim-c-archive-reaction/frame-03.webp",
       "durationMs": 1100,
-      "poseLabel": "Analytical Inspection",
-      "actingNote": "Medium close-up on Vesper waist-up; goggles catch cyan/violet glint as eyes pause sharply on the missing blank gaps.",
-      "principles": ["staging-and-lighting-contrast", "pose-to-pose-keyframing"]
+      "poseLabel": "Analytical Inspection Close-Up",
+      "actingNote": "Medium close-up on Vesper waist-up; brass violet-and-cyan forehead goggles catch studio glow while eyes pause sharply on the missing waveform gaps.",
+      "principles": ["staging-and-lighting-contrast", "pose-to-pose-keyframing"],
+      "camera": { "scale": 1.055, "x": 0, "y": -4, "rotate": 0, "fx": "none" }
     },
     {
-      "frameId": "anim-c-f04",
-      "asset": "animations/anim-c-archive-reaction/frame-04.svg",
+      "frameId": "ANIM-C-F04",
+      "asset": "animations/anim-c-archive-reaction/frame-04.webp",
       "durationMs": 1000,
-      "poseLabel": "Kuro Lunges / Vesper Halts",
-      "actingNote": "Split-energy two-shot: Kuro leans eagerly gesturing to ship it now; Vesper stays rooted and raises one hand and brass stylus vertically.",
-      "principles": ["contrast-in-acting", "pose-to-pose-keyframing"]
+      "poseLabel": "Impatient Kuro vs Calm Vesper",
+      "actingNote": "Peak asymmetric acting contrast: Kuro gestures enthusiastically urging immediate broadcast while Vesper calmly raises one steady hand to halt the rush.",
+      "principles": ["contrast-in-acting", "pose-to-pose-keyframing"],
+      "camera": { "scale": 1.04, "x": -8, "y": 0, "rotate": -0.5, "fx": "impact-jolt" }
     },
     {
-      "frameId": "anim-c-f05",
-      "asset": "animations/anim-c-archive-reaction/frame-05.svg",
-      "durationMs": 320,
-      "poseLabel": "Stylus Tap Anticipation",
-      "actingNote": "Vesper lowers the slip to the blotter with a knowing half-smile and taps the two blank gap zones with the brass stylus.",
-      "principles": ["anticipation", "contrast-in-acting"]
+      "frameId": "ANIM-C-F05",
+      "asset": "animations/anim-c-archive-reaction/frame-05.webp",
+      "durationMs": 420,
+      "poseLabel": "Stylus Gap Annotation",
+      "actingNote": "Vesper lowers the brass stylus cleanly beside the two empty dashed void slots on the blotter with a knowing half-smile.",
+      "principles": ["anticipation", "contrast-in-acting"],
+      "camera": { "scale": 1.02, "x": 4, "y": 2, "rotate": 0, "fx": "none" }
     },
     {
-      "frameId": "anim-c-f06",
-      "asset": "animations/anim-c-archive-reaction/frame-06.svg",
-      "durationMs": 780,
-      "poseLabel": "Measured Restraint Held Pose",
-      "actingNote": "Vesper rests hands cleanly framing the incomplete sheet with yellow binder clip ready; Kuro settles back listening.",
-      "principles": ["follow-through-and-settle", "pose-to-pose-keyframing"]
+      "frameId": "ANIM-C-F06",
+      "asset": "animations/anim-c-archive-reaction/frame-06.webp",
+      "durationMs": 680,
+      "poseLabel": "Measured Restraint Hold",
+      "actingNote": "Vesper frames the incomplete sheet cleanly with both hands beside a yellow binder clip; Kuro relaxes thoughtfully in profile.",
+      "principles": ["follow-through-and-settle", "pose-to-pose-keyframing"],
+      "camera": { "scale": 1.0, "x": 0, "y": 0, "rotate": 0, "fx": "none" }
     }
   ]
 }

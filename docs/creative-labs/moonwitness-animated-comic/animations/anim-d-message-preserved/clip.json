@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "clipId": "anim-d-message-preserved",
-  "beatId": "beat-4",
+  "beatId": "ANIM-D",
   "title": "Message Preserved — Quiet Relay",
   "status": "experimental-candidate",
   "characterIds": ["vesper-ink", "kuro-signal"],
@@ -9,66 +9,72 @@
   "playbackMode": "one-shot-or-loop-preview",
   "totalDurationMs": 4000,
   "pivot": { "x": 0.5, "y": 0.88 },
-  "motionDescription": "Vesper Ink aligns and seals the incomplete signal sheet inside a MoonWitness zine folio with a yellow binder clip and magenta tape while Kuro nods; the scene cuts outside to the archive loft rooftop antenna warming up, radiating one delicate concentric cyan-silver radio ring that dissolves into Moon City night mist.",
+  "motionDescription": "Vesper Ink and Kuro Signal align and seal the incomplete record inside an archival kraft zine sleeve using a yellow binder clip and magenta tape; the rooftop parabolic dish switches on its quiet pilot LED and releases one delicate concentric silver-cyan pulse that dissolves into misty Moon City night under the halftone crescent moon.",
   "principlesApplied": [
     "restrained-timing",
     "pose-to-pose-keyframing",
     "atmospheric-dissolve",
     "negative-space-composition"
   ],
-  "fallbackPose": "animations/anim-d-message-preserved/frame-06.svg",
+  "fallbackPose": "animations/anim-d-message-preserved/frame-06.webp",
   "reducedMotionAlternative": {
-    "asset": "animations/anim-d-message-preserved/frame-06.svg",
-    "description": "Serene wide Moon City skyline with deliberate negative space, silver crescent moon above, and quiet rooftop antenna over the warm lit archive loft window."
+    "asset": "animations/anim-d-message-preserved/frame-06.webp",
+    "description": "Serene wide Moon City ending frame with generous night-sky negative space, halftone crescent moon above, and quiet cyan beacon on the archive relay mast."
   },
   "frames": [
     {
-      "frameId": "anim-d-f01",
-      "asset": "animations/anim-d-message-preserved/frame-01.svg",
+      "frameId": "ANIM-D-F01",
+      "asset": "animations/anim-d-message-preserved/frame-01.webp",
       "durationMs": 550,
-      "poseLabel": "Folio Alignment",
-      "actingNote": "Kuro watches closely from the left while Vesper aligns the partial sheet inside a MoonWitness zine sleeve.",
-      "principles": ["pose-to-pose-keyframing", "restrained-timing"]
+      "poseLabel": "Two-Shot Folio Alignment",
+      "actingNote": "Kuro stands calmly beside the cyan CRT monitor watching as Vesper aligns the incomplete record inside a kraft zine folio.",
+      "principles": ["pose-to-pose-keyframing", "restrained-timing"],
+      "camera": { "scale": 1.0, "x": 0, "y": 0, "rotate": 0, "fx": "none" }
     },
     {
-      "frameId": "anim-d-f02",
-      "asset": "animations/anim-d-message-preserved/frame-02.svg",
+      "frameId": "ANIM-D-F02",
+      "asset": "animations/anim-d-message-preserved/frame-02.webp",
       "durationMs": 650,
-      "poseLabel": "Gentle Seal",
-      "actingNote": "Vesper presses a yellow binder clip and magenta tape strip cleanly onto the folio corner, leaving the blank unknown section visibly unfilled; Kuro nods thoughtfully.",
-      "principles": ["restrained-timing", "pose-to-pose-keyframing"]
+      "poseLabel": "Gentle Preservation Seal",
+      "actingNote": "Vesper fastens a yellow binder clip and magenta tape tab cleanly onto the folio beside the reel-to-reel deck while Kuro approves warmly.",
+      "principles": ["restrained-timing", "pose-to-pose-keyframing"],
+      "camera": { "scale": 1.035, "x": 6, "y": 2, "rotate": 0, "fx": "none" }
     },
     {
-      "frameId": "anim-d-f03",
-      "asset": "animations/anim-d-message-preserved/frame-03.svg",
+      "frameId": "ANIM-D-F03",
+      "asset": "animations/anim-d-message-preserved/frame-03.webp",
       "durationMs": 550,
       "poseLabel": "Rooftop Relay Warmup",
-      "actingNote": "Exterior cut to the archive loft rooftop antenna dish against Moon City dusk-blue sky as a small indicator light glows amber-cyan.",
-      "principles": ["restrained-timing", "negative-space-composition"]
+      "actingNote": "Exterior cut to the rooftop parabolic dish and relay box under the full halftone moon; tiny amber-cyan LEDs switch on softly.",
+      "principles": ["restrained-timing", "negative-space-composition"],
+      "camera": { "scale": 1.02, "x": -4, "y": 0, "rotate": 0, "fx": "none" }
     },
     {
-      "frameId": "anim-d-f04",
-      "asset": "animations/anim-d-message-preserved/frame-04.svg",
+      "frameId": "ANIM-D-F04",
+      "asset": "animations/anim-d-message-preserved/frame-04.webp",
       "durationMs": 750,
-      "poseLabel": "Quiet Signal Pulse",
-      "actingNote": "One delicate concentric cyan-silver radio ring radiates quietly off the rooftop antenna over distant apartment windows.",
-      "principles": ["restrained-timing", "atmospheric-dissolve"]
+      "poseLabel": "Quiet Concentric Signal Pulse",
+      "actingNote": "One delicate concentric silver-cyan radio wave leaves the parabolic dish while distant apartment windows illuminate warm gold in response.",
+      "principles": ["restrained-timing", "atmospheric-dissolve"],
+      "camera": { "scale": 1.0, "x": 0, "y": -4, "rotate": 0, "fx": "pulse-glow" }
     },
     {
-      "frameId": "anim-d-f05",
-      "asset": "animations/anim-d-message-preserved/frame-05.svg",
-      "durationMs": 450,
-      "poseLabel": "Pulse Dissolve into Night",
-      "actingNote": "The quiet ring fades outward into drifting night mist while two tiny shadowed silhouettes sit peacefully behind the warm lit loft window far below.",
-      "principles": ["atmospheric-dissolve", "negative-space-composition"]
+      "frameId": "ANIM-D-F05",
+      "asset": "animations/anim-d-message-preserved/frame-05.webp",
+      "durationMs": 550,
+      "poseLabel": "Pulse Dissolve & Loft Silhouettes",
+      "actingNote": "Faint ripple dissolves into Moon City night haze while two calm shadowed silhouettes sit inside the amber loft window below.",
+      "principles": ["atmospheric-dissolve", "negative-space-composition"],
+      "camera": { "scale": 1.03, "x": 0, "y": 0, "rotate": 0, "fx": "night-haze" }
     },
     {
-      "frameId": "anim-d-f06",
-      "asset": "animations/anim-d-message-preserved/frame-06.svg",
-      "durationMs": 1050,
+      "frameId": "ANIM-D-F06",
+      "asset": "animations/anim-d-message-preserved/frame-06.webp",
+      "durationMs": 950,
       "poseLabel": "Final Moon Witness Wide",
-      "actingNote": "Serene wide Moon City skyline with deliberate negative space, silver crescent moon above, and quiet rooftop antenna below.",
-      "principles": ["negative-space-composition", "restrained-timing"]
+      "actingNote": "Serene wide Moon City horizon with generous sky negative space, halftone crescent moon above, and one steady cyan beacon atop the relay tower.",
+      "principles": ["negative-space-composition", "restrained-timing"],
+      "camera": { "scale": 1.0, "x": 0, "y": 0, "rotate": 0, "fx": "night-haze" }
     }
   ]
 }
