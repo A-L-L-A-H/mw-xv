@@ -1526,7 +1526,7 @@ function parseOpenCodeParts(partRows) {
     } else if (row.type === 'reasoning' || parsedPart.type === 'reasoning') {
       const thought = clip(redactSecrets(String(parsedPart.text || '')), 120);
       if (thought) {
-        if (!focus) focus = thought;
+        focus = thought;
         events.push({ at: atIso, kind: 'focus', tool: 'reasoning', summary: thought });
       }
     } else if (row.type === 'text' || parsedPart.type === 'text') {
@@ -1541,6 +1541,18 @@ function parseOpenCodeParts(partRows) {
   return { focus, lastTool, lastError, errorCount, hasRecentError, toolCounts, events };
 }
 
+function refreshCachedStatuses(sessions, nowMs = Date.now()) {
+  for (const session of sessions) {
+    const recentError = Boolean(session.lastError && nowMs - session.mtimeMs <= 120_000);
+    const freshStatus = deriveStatus(session.mtimeMs, null, recentError, nowMs);
+    if (session.status !== freshStatus) {
+      session.status = freshStatus;
+      session.runState = freshStatus.toUpperCase();
+    }
+  }
+  return sessions;
+}
+
 export async function collectOpenCodeSessions(homeDir, repoRoot, openCodeCache = null) {
   const dbPath = path.join(homeDir, '.local', 'share', 'opencode', 'opencode.db');
   if (!existsSync(dbPath)) return [];
@@ -1551,7 +1563,7 @@ export async function collectOpenCodeSessions(homeDir, repoRoot, openCodeCache =
 
   const cacheSig = `${dbStat.mtimeMs}:${dbStat.size}:${walStat?.mtimeMs || 0}:${walStat?.size || 0}`;
   if (openCodeCache && openCodeCache.sig === cacheSig) {
-    return openCodeCache.sessions;
+    return refreshCachedStatuses(openCodeCache.sessions);
   }
 
   let sqliteDb;
@@ -1778,6 +1790,7 @@ export async function collectMagpieTelemetry(homeDir, repoRoot, magpieCache = nu
 
   const cacheSig = `${usageStat?.mtimeMs || 0}:${usageStat?.size || 0}:${gatewayOpen}:${memoryStats?.searches || 0}`;
   if (magpieCache && magpieCache.sig === cacheSig) {
+    refreshCachedStatuses(magpieCache.bundle.sessions);
     return magpieCache.bundle;
   }
 
@@ -1808,6 +1821,7 @@ export async function collectMagpieTelemetry(homeDir, repoRoot, magpieCache = nu
   const providerMap = new Map();
   const routedRuntimeSet = new Set();
   const recentRoutes = [];
+  const okLatencies = [];
   let okCalls = 0;
   let rateLimit429 = 0;
   let errorCalls = 0;
@@ -1838,8 +1852,10 @@ export async function collectMagpieTelemetry(homeDir, repoRoot, magpieCache = nu
     const is429 = statusCode === 429;
     const isErr = statusCode >= 400;
 
-    if (statusCode >= 200 && statusCode < 400) okCalls += 1;
-    else if (is429) rateLimit429 += 1;
+    if (statusCode >= 200 && statusCode < 400) {
+      okCalls += 1;
+      if (msVal > 0) okLatencies.push(msVal);
+    } else if (is429) rateLimit429 += 1;
     else if (isErr) errorCalls += 1;
 
     if (msVal > 0) {
@@ -2010,6 +2026,10 @@ export async function collectMagpieTelemetry(homeDir, repoRoot, magpieCache = nu
     .sort((left, right) => right.calls - left.calls)
     .slice(0, 10);
 
+  okLatencies.sort((left, right) => left - right);
+  const p50LatencyMs =
+    okLatencies.length > 0 ? Math.round(okLatencies[Math.floor(okLatencies.length / 2)]) : 0;
+
   const summary = {
     connected: gatewayOpen,
     addr: gatewayInfo?.addr || `127.0.0.1:${gatewayPort}`,
@@ -2019,6 +2039,7 @@ export async function collectMagpieTelemetry(homeDir, repoRoot, magpieCache = nu
     rateLimit429,
     errorCalls,
     avgLatencyMs: latencyCount > 0 ? Math.round(sumLatencyMs / latencyCount) : 0,
+    p50LatencyMs,
     avgTtftMs: ttftCount > 0 ? Math.round(sumTtftMs / ttftCount) : 0,
     providers,
     memoryStats,
@@ -2032,6 +2053,115 @@ export async function collectMagpieTelemetry(homeDir, repoRoot, magpieCache = nu
     magpieCache.bundle = bundle;
   }
   return bundle;
+}
+
+const TOUCHED_PATH_RE =
+  /(?:apps|packages|tools|scripts|docs|\.plan)\/[A-Za-z0-9._/-]+\.(?:go|ts|tsx|js|mjs|json|md|css|html|rs|sql|yml|yaml)/g;
+
+export function detectOperationalAlerts(sessions, gitState, magpieSummary, probes) {
+  const alerts = [];
+  const fileOwners = new Map();
+
+  for (const session of sessions || []) {
+    if (session.runtime === 'magpie') continue;
+    if (session.status !== 'running' && session.status !== 'recent') continue;
+
+    if ((session.errorCount || 0) >= 3) {
+      alerts.push({
+        id: `loop:${session.runtime}:${session.id}`,
+        kind: 'error-loop',
+        severity: 'high',
+        title: 'ERROR LOOP',
+        target: clip(session.title, 48),
+        detail: `${session.runtimeLabel} hit ${session.errorCount} errors (${clip(session.lastError || session.lastTool || 'failing', 72)})`,
+        runtime: session.runtime,
+        sessionId: session.id,
+        nodeIds: [`agent:${session.runtime}:${session.id}`],
+      });
+    }
+
+    const touchedSet = new Set();
+    const corpusParts = [session.focus || '', session.title || ''];
+    for (const ev of (session.recentEvents || []).slice(-8)) {
+      if (ev.summary) corpusParts.push(ev.summary);
+    }
+    const normalizedCorpus = normalizePathSlashes(corpusParts.join('\n'));
+    const pathMatches = normalizedCorpus.match(TOUCHED_PATH_RE) || [];
+    for (const hitPath of pathMatches) {
+      touchedSet.add(hitPath);
+    }
+
+    for (const filePath of touchedSet) {
+      if (!fileOwners.has(filePath)) fileOwners.set(filePath, []);
+      fileOwners.get(filePath).push(session);
+    }
+  }
+
+  for (const [filePath, owners] of fileOwners.entries()) {
+    if (owners.length < 2) continue;
+    const uniqueOwners = owners.slice(0, 4);
+    alerts.push({
+      id: `collision:${filePath}`,
+      kind: 'collision',
+      severity: 'high',
+      title: 'FILE COLLISION',
+      target: filePath,
+      detail: `${uniqueOwners.map((owner) => `${owner.runtimeLabel}:${clip(owner.title, 22)}`).join(' ⚡ ')}`,
+      nodeIds: uniqueOwners.map((owner) => `agent:${owner.runtime}:${owner.id}`),
+      sessions: uniqueOwners.map((owner) => ({
+        runtime: owner.runtime,
+        runtimeLabel: owner.runtimeLabel,
+        id: owner.id,
+        title: owner.title,
+      })),
+    });
+  }
+
+  if (magpieSummary && magpieSummary.rateLimit429 > 0) {
+    const throttledProvs = (magpieSummary.providers || [])
+      .filter((prov) => prov.rateLimits > 0)
+      .map((prov) => `${prov.provider}(${prov.rateLimits})`)
+      .join(', ');
+    alerts.push({
+      id: 'magpie:429',
+      kind: 'ratelimit',
+      severity: magpieSummary.rateLimit429 >= 5 ? 'high' : 'warn',
+      title: 'MAGPIE 429',
+      target: throttledProvs || 'router providers',
+      detail: `${magpieSummary.rateLimit429} rate-limited call(s) in last 2h`,
+      nodeIds: ['rt:magpie'],
+    });
+  }
+
+  for (const probe of probes?.vps || []) {
+    if (probe.status === 'down') {
+      alerts.push({
+        id: `infra:${probe.id}`,
+        kind: 'infra-down',
+        severity: 'warn',
+        title: 'VPS DOWN',
+        target: probe.label,
+        detail: probe.detail || `HTTP ${probe.httpCode ?? 'ERR'}`,
+        nodeIds: [`vps:${probe.id}`],
+      });
+    }
+  }
+
+  if ((gitState?.dirtyCount || 0) >= 35) {
+    alerts.push({
+      id: 'git:dirty-surge',
+      kind: 'git-dirty',
+      severity: 'warn',
+      title: 'DIRTY TREE SURGE',
+      target: `${gitState.dirtyCount} uncommitted files`,
+      detail: `Branch ${gitState.branch} has heavy parallel edits — stage scoped paths only`,
+      nodeIds: ['hub:workspace'],
+    });
+  }
+
+  const sevRank = { high: 3, warn: 2, info: 1 };
+  alerts.sort((left, right) => (sevRank[right.severity] || 0) - (sevRank[left.severity] || 0));
+  return alerts.slice(0, 14);
 }
 
 // ============================================================================
@@ -2277,7 +2407,8 @@ export function buildFlowGraph(
   gitState,
   probes,
   activityFeed,
-  repoRoot
+  repoRoot,
+  alerts = []
 ) {
   const nodes = [];
   const edges = [];
@@ -2601,6 +2732,24 @@ export function buildFlowGraph(
     }
   }
 
+  // Multi-agent file collision warning conduits
+  for (const alertEntry of alerts || []) {
+    if (alertEntry.kind !== 'collision' || !Array.isArray(alertEntry.nodeIds)) continue;
+    const validNodes = alertEntry.nodeIds.filter((nodeId) => nodeIds.has(nodeId));
+    for (let idx = 0; idx < validNodes.length - 1; idx += 1) {
+      edges.push({
+        id: `edge:collision-${idx}-${alertEntry.target}`,
+        from: validNodes[idx],
+        to: validNodes[idx + 1],
+        kind: 'collision-link',
+        runtime: 'error',
+        weight: 4,
+        active: true,
+        label: path.basename(alertEntry.target),
+      });
+    }
+  }
+
   // Real-time event pulses for p5 particle emission (balance Magpie vs coding hero pulses)
   const balancedFeed = [];
   let magpiePulsesCount = 0;
@@ -2818,6 +2967,15 @@ export function formatSnapshotMarkdown(snapshot) {
       '## Magpie Router',
       `- **Gateway:** ${snapshot.magpie.addr || 'local'} (${snapshot.magpie.connected ? 'ONLINE' : 'STANDBY'}) · ${snapshot.magpie.totalRecentCalls} recent calls (${snapshot.magpie.okCalls} ok, ${snapshot.magpie.rateLimit429}×429, avg ${snapshot.magpie.avgLatencyMs}ms)`
     );
+  }
+
+  if ((snapshot.alerts || []).length > 0) {
+    lines.push('', '## Operational Alerts');
+    for (const alertEntry of snapshot.alerts.slice(0, 10)) {
+      lines.push(
+        `- [${alertEntry.severity.toUpperCase()}] **${alertEntry.title}** (\`${alertEntry.target}\`): ${alertEntry.detail}`
+      );
+    }
   }
 
   lines.push('', '## VPS Health Probes');
@@ -3451,6 +3609,12 @@ export function createObservatoryController(config = {}) {
       planBundle.plans.find((planEntry) => planEntry.id === planBundle.defaultPlanId) ||
       planBundle.plans[0] ||
       null;
+    const alerts = detectOperationalAlerts(
+      allSessions,
+      cachedGitState,
+      magpieBundle.summary,
+      cachedProbes
+    );
     const flowGraph = buildFlowGraph(
       allSessions,
       swarms,
@@ -3458,7 +3622,8 @@ export function createObservatoryController(config = {}) {
       cachedGitState,
       cachedProbes,
       activityFeed,
-      repoRoot
+      repoRoot,
+      alerts
     );
     const analytics = computeAnalytics(allSessions, activityFeed);
 
@@ -3479,7 +3644,7 @@ export function createObservatoryController(config = {}) {
     return {
       rawSessions: allSessions,
       snapshot: {
-        version: 3,
+        version: 4,
         generatedAt: nowIso,
         repoRoot: normalizePathSlashes(repoRoot),
         antigravityApiConnected: agBundle.connectedApi,
@@ -3517,6 +3682,7 @@ export function createObservatoryController(config = {}) {
         swarms,
         magpie: magpieBundle.summary,
         battle,
+        alerts,
         activityFeed: activityFeed.slice(0, 90),
         git: cachedGitState,
         probes: cachedProbes,
@@ -3748,7 +3914,7 @@ export async function createObservatoryServer(options = {}) {
       httpResponse.end(
         JSON.stringify({
           ok: true,
-          version: 3,
+          version: 4,
           host,
           port: httpServer.address()?.port ?? port,
           clients: sseClients.size,
@@ -3924,7 +4090,7 @@ if (isDirectEntry) {
     .then((handle) => {
       const boundPort = handle.address?.port ?? cliOptions.port;
       process.stdout.write(
-        `MoonWitness Agent Observatory v3 listening at http://${cliOptions.host}:${boundPort}\n`
+        `MoonWitness Agent Observatory v4 listening at http://${cliOptions.host}:${boundPort}\n`
       );
       const handleShutdown = () => {
         void handle.stop().finally(() => process.exit(0));

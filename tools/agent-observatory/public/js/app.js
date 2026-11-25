@@ -26,6 +26,8 @@
     taskSearch: '',
     taskStatusFilter: 'all',
     chaosLevel: 'riot',
+    zenMode: false,
+    ambienceMode: 'off',
     autoCam: false,
     comboCount: 1,
     lastHeadSha: null,
@@ -395,6 +397,18 @@
         run: () => switchTab('flow'),
       },
       {
+        kind: 'CINEMA',
+        label: '📺 Toggle Fullscreen Zen Anime Cinema Mode (Z)',
+        sub: 'Hide HUD chrome and watch pure animated cartoon war',
+        run: () => toggleZenMode(),
+      },
+      {
+        kind: 'AUDIO',
+        label: '🌙 Cycle Moon City Ambience (NIGHT / RAIN / HUM / OFF)',
+        sub: 'Authentic MoonWitness ambient WAV soundtrack',
+        run: () => cycleAmbienceMode(),
+      },
+      {
         kind: 'WARZONE',
         label: '⚔️ Warzone: Anime Cartoon Boss Battle Arena',
         sub: 'Heroes dash, laser, slash & clash against Plan Boss',
@@ -592,6 +606,35 @@
     dagCanvas.setVisible(appState.activeTab === 'dag' && mode !== 'list');
   }
 
+  function toggleZenMode(forceState) {
+    const nextZen = typeof forceState === 'boolean' ? forceState : !appState.zenMode;
+    appState.zenMode = nextZen;
+    if (nextZen && appState.activeTab !== 'flow') {
+      switchTab('flow');
+    }
+    byId('cinemaViewport')?.classList.toggle('zen-mode', nextZen);
+    byId('exitZenBtn')?.classList.toggle('hidden', !nextZen);
+    byId('zenModeBtn')?.classList.toggle('active-cyan', nextZen);
+    flowCanvas.setZenMode(nextZen);
+    sfxEngine.play(nextZen ? 'whoosh' : 'pop');
+  }
+
+  function cycleAmbienceMode() {
+    const order = ['off', 'night', 'rain', 'hum'];
+    const labels = { off: '🌙 AMB', night: '🌙 NIGHT', rain: '🌧️ RAIN', hum: '⚡ HUM' };
+    const nextIdx = (order.indexOf(appState.ambienceMode) + 1) % order.length;
+    appState.ambienceMode = order[nextIdx];
+    void ensureAudioUnlocked().then(() => {
+      sfxEngine.setAmbience(appState.ambienceMode);
+      sfxEngine.play('click');
+    });
+    const btn = byId('ambienceToggleBtn');
+    if (btn) {
+      btn.textContent = labels[appState.ambienceMode];
+      btn.classList.toggle('active-cyan', appState.ambienceMode !== 'off');
+    }
+  }
+
   function cycleChaosLevel() {
     const order = ['chill', 'riot', 'overdrive'];
     const nextIdx = (order.indexOf(appState.chaosLevel) + 1) % order.length;
@@ -769,6 +812,13 @@
 
   byId('chaosToggleBtn')?.addEventListener('click', cycleChaosLevel);
   byId('beatToggleBtn')?.addEventListener('click', toggleFunkyBeat);
+  byId('ambienceToggleBtn')?.addEventListener('click', cycleAmbienceMode);
+  byId('zenModeBtn')?.addEventListener('click', () => toggleZenMode());
+  byId('exitZenBtn')?.addEventListener('click', () => toggleZenMode(false));
+  byId('alertSirenBadge')?.addEventListener('click', () => {
+    sfxEngine.play('bonk');
+    switchTab('telemetry');
+  });
   byId('boomTestBtn')?.addEventListener('click', triggerShowstopperCutIn);
 
   byId('autoCamBtn')?.addEventListener('click', () => {
@@ -1004,6 +1054,7 @@
       closeCmdPalette();
       destroyDrawerSketch();
       byId('drawerBackdrop').classList.remove('open');
+      if (appState.zenMode) toggleZenMode(false);
       if (appState.activeTab !== 'flow') switchTab('flow');
       return;
     }
@@ -1011,10 +1062,13 @@
 
     const tabByKey = { 1: 'flow', 2: 'dag', 3: 'telemetry', 4: 'agents', 5: 'swarms', 6: 'infra' };
     if (tabByKey[evt.key]) {
+      if (appState.zenMode) toggleZenMode(false);
       switchTab(tabByKey[evt.key]);
     } else if (evt.key === ' ') {
       evt.preventDefault();
       togglePauseStream();
+    } else if (evt.key.toLowerCase() === 'z') {
+      toggleZenMode();
     } else if (evt.key.toLowerCase() === 'f') {
       if (appState.activeTab === 'flow') flowCanvas.fitView();
       if (appState.activeTab === 'dag') dagCanvas.fitView();

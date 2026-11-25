@@ -53,6 +53,15 @@
       '/mw-assets/illustrations/riot-universe/characters/kuro-signal-expression-sleepy.webp',
     kuroLaugh:
       '/mw-assets/illustrations/riot-universe/characters/kuro-signal-expression-laughing.webp',
+    poseRunning: '/mw-assets/illustrations/riot-universe/characters/kuro-signal-pose-running.webp',
+    poseJumping: '/mw-assets/illustrations/riot-universe/characters/kuro-signal-pose-jumping.webp',
+    posePointing:
+      '/mw-assets/illustrations/riot-universe/characters/kuro-signal-pose-pointing.webp',
+    poseGaming: '/mw-assets/illustrations/riot-universe/characters/kuro-signal-pose-gaming.webp',
+    poseCelebrating:
+      '/mw-assets/illustrations/riot-universe/characters/kuro-signal-pose-celebrating.webp',
+    poseWorking: '/mw-assets/illustrations/riot-universe/characters/kuro-signal-pose-working.webp',
+    poseSitting: '/mw-assets/illustrations/riot-universe/characters/kuro-signal-pose-sitting.webp',
     vesper: '/mw-assets/illustrations/riot-universe/characters/vesper-ink-portrait.webp',
     avatarKuro: '/mw-assets/illustrations/riot-universe/game/avatar-kuro.png',
     avatarVesper: '/mw-assets/illustrations/riot-universe/game/avatar-vesper.png',
@@ -101,6 +110,7 @@
         setMode() {},
         setBackdrop() {},
         setChaosLevel() {},
+        setZenMode() {},
         setAutoCam() {},
         setOptions() {},
         setVisible() {},
@@ -116,6 +126,7 @@
     let layoutMode = 'warzone';
     let stageBackdropKey = 'rooftop';
     let chaosLevel = 'riot'; // 'chill' | 'riot' | 'overdrive'
+    let zenMode = false;
     let autoCamEnabled = false;
     let showSubagents = true;
     let showTargets = true;
@@ -141,10 +152,11 @@
 
     // Living anime cartoon battle FX pools
     const ambientPackets = [];
-    const combatAttacks = []; // { kind: 'laser'|'slash'|'bolt'|'rocket'|'boost', fromId, toId, fromX, fromY, toX, toY, progress, speed, rgb, label, damageText, impacted }
-    const comicBursts = []; // { x, y, text, rgb, life, maxLife, rot, scale, stickerKey }
-    const damagePopups = []; // { x, y, vx, vy, text, rgb, life, maxLife, big }
-    const speechBubbles = new Map(); // nodeId -> { text, rgb, bornAt, durationMs }
+    const combatAttacks = [];
+    const comicBursts = [];
+    const damagePopups = [];
+    const killFeedEntries = []; // { tag, text, rgb, bornAt }
+    const speechBubbles = new Map();
     const inkSplashes = []; // { x, y, vx, vy, r, rgb, alpha, angular }
     const shockwaves = []; // { x, y, r, maxR, rgb, alpha, weight }
     const rainDrops = [];
@@ -907,6 +919,7 @@
               damageText: formatToolDamage(pulse.tool, pulse.kind, pulse.runtime),
               heavy: pulse.kind === 'error' || pulse.kind === 'swarm',
             });
+            pushKillFeed(pulse.runtime || 'HERO', pulse.summary || pulse.tool || 'STRIKE', rgb);
           }
           newestHotNodeId = attackerNode.id;
         }
@@ -1024,30 +1037,48 @@
         maxY = Math.max(maxY, pos.y + rad + 44);
       }
       if (!Number.isFinite(minX)) return;
-      const usableW = Math.max(380, sketchInstance.width - 390);
-      const usableH = Math.max(300, sketchInstance.height - 220);
+      const usableW = Math.max(380, sketchInstance.width - (zenMode ? 80 : 390));
+      const usableH = Math.max(300, sketchInstance.height - (zenMode ? 80 : 220));
       const spanW = Math.max(260, maxX - minX);
       const spanH = Math.max(200, maxY - minY);
-      const scale = Math.min(1.12, Math.max(0.45, Math.min(usableW / spanW, usableH / spanH)));
+      const scale = Math.min(1.18, Math.max(0.45, Math.min(usableW / spanW, usableH / spanH)));
       targetCamScale = scale;
-      targetCamX = usableW / 2 + 24 - ((minX + maxX) / 2) * scale;
-      targetCamY = 128 + usableH / 2 - ((minY + maxY) / 2) * scale;
+      targetCamX = usableW / 2 + (zenMode ? 40 : 24) - ((minX + maxX) / 2) * scale;
+      targetCamY = (zenMode ? 40 : 128) + usableH / 2 - ((minY + maxY) / 2) * scale;
     }
 
-    function pickSpriteForNode(nodeEntry) {
+    function pickSpriteForNode(nodeEntry, pos) {
+      const isLunging = pos && Math.hypot(pos.dashX || 0, pos.dashY || 0) > 10;
       if (nodeEntry.status === 'error') return spriteImgs.kuroAngry;
-      if (nodeEntry.runtime === 'opencode') {
-        return nodeEntry.status === 'running' ? spriteImgs.kuroWork : spriteImgs.avatarKuro;
-      }
       if (nodeEntry.runtime === 'magpie') return spriteImgs.avatarVesper || spriteImgs.stickerBolt;
       if (nodeEntry.runtime === 'claude') return spriteImgs.vesper;
-      if (nodeEntry.runtime === 'codex') return spriteImgs.kuroGaming;
+      if (isLunging && spriteImgs.poseJumping) return spriteImgs.poseJumping;
+      if (nodeEntry.kind === 'swarm') return spriteImgs.poseCelebrating || spriteImgs.kuroCelebrate;
+      if (nodeEntry.runtime === 'opencode') {
+        return nodeEntry.status === 'running'
+          ? spriteImgs.poseWorking || spriteImgs.kuroWork
+          : spriteImgs.posePointing || spriteImgs.avatarKuro;
+      }
+      if (nodeEntry.runtime === 'codex') {
+        return spriteImgs.poseGaming || spriteImgs.kuroGaming;
+      }
       if (nodeEntry.runtime === 'qoder') return spriteImgs.kuroLaugh;
       if (nodeEntry.runtime === 'gemini-cli') return spriteImgs.kuroCurious;
-      if (nodeEntry.kind === 'swarm') return spriteImgs.kuroCelebrate;
-      if (nodeEntry.status === 'running') return spriteImgs.kuroRun;
-      if (nodeEntry.status === 'recent') return spriteImgs.kuroWork;
-      return spriteImgs.kuroSleepy;
+      if (nodeEntry.status === 'running') return spriteImgs.poseRunning || spriteImgs.kuroRun;
+      if (nodeEntry.status === 'recent') return spriteImgs.posePointing || spriteImgs.kuroWork;
+      return spriteImgs.poseSitting || spriteImgs.kuroSleepy;
+    }
+
+    function pushKillFeed(tag, text, rgb) {
+      killFeedEntries.unshift({
+        tag: String(tag || 'RIOT')
+          .toUpperCase()
+          .slice(0, 12),
+        text: String(text || '').slice(0, 46),
+        rgb: rgb || YELLOW,
+        bornAt: Date.now(),
+      });
+      if (killFeedEntries.length > 4) killFeedEntries.length = 4;
     }
 
     function findNodeAtWorld(wx, wy) {
@@ -1437,13 +1468,33 @@
           }
         }
 
-        // 4. CEL-SHADED INK-OUTLINED NEON ENERGY CONDUITS
+        // 4. CEL-SHADED INK-OUTLINED NEON ENERGY CONDUITS & COLLISION HAZARD SPARKS
         const edgeMap = new Map();
         for (const edgeEntry of filteredEdges) {
           edgeMap.set(edgeEntry.id, edgeEntry);
           const fromPos = nodePositions.get(edgeEntry.from);
           const toPos = nodePositions.get(edgeEntry.to);
           if (!fromPos || !toPos) continue;
+          if (edgeEntry.kind === 'collision-link') {
+            drawLightningBolt(sketch, fromPos.x, fromPos.y, toPos.x, toPos.y, RED, 4.5);
+            const midX = (fromPos.x + toPos.x) * 0.5;
+            const midY = (fromPos.y + toPos.y) * 0.5;
+            sketch.stroke(INK[0], INK[1], INK[2], 255);
+            sketch.strokeWeight(2);
+            sketch.fill(RED[0], RED[1], RED[2], 245);
+            sketch.rect(midX - 54, midY - 10, 108, 18, 2);
+            sketch.noStroke();
+            sketch.fill(YELLOW[0], YELLOW[1], YELLOW[2], 255);
+            sketch.textFont('Anton, Impact, sans-serif');
+            sketch.textSize(10);
+            sketch.textAlign(sketch.CENTER, sketch.CENTER);
+            sketch.text(
+              `⚠ CONFLICT: ${String(edgeEntry.label || 'FILE').slice(0, 10)}`,
+              midX,
+              midY - 1
+            );
+            continue;
+          }
           const isRouter = edgeEntry.kind === 'router-link';
           const rgb = isRouter ? GOLD : RUNTIME_COLORS[edgeEntry.runtime] || CYAN;
           const isLit = !hoveredNodeId || litEdges.has(edgeEntry.id);
@@ -1652,7 +1703,7 @@
               sketch.circle(6, -6, rad * 0.85);
             }
           } else if (nodeEntry.kind === 'agent' || nodeEntry.kind === 'swarm') {
-            const sprite = pickSpriteForNode(nodeEntry);
+            const sprite = pickSpriteForNode(nodeEntry, pos);
             // Comic drop shadow
             sketch.noStroke();
             sketch.fill(INK[0], INK[1], INK[2], 230 * alphaMul);
@@ -2108,6 +2159,31 @@
           sketch.rect(0, 0, w, h);
           if (!frozen) screenFlashAlpha *= 0.78;
         }
+
+        // 13. LIVE ANIME BATTLE KILLFEED RIBBON (Screen-space bottom-left — awesome in Zen & Warzone!)
+        if (killFeedEntries.length > 0) {
+          const feedNow = Date.now();
+          const visibleFeed = killFeedEntries.filter((entry) => feedNow - entry.bornAt < 18000);
+          const baseY = zenMode ? h - 22 : h - 72;
+          sketch.textFont('JetBrains Mono, Consolas, monospace');
+          sketch.textSize(10);
+          for (let fIdx = 0; fIdx < visibleFeed.length; fIdx += 1) {
+            const entry = visibleFeed[fIdx];
+            const age = (feedNow - entry.bornAt) / 18000;
+            const alphaVal = age > 0.8 ? Math.max(0, (1 - age) / 0.2) : 1;
+            const fy = baseY - fIdx * 24;
+            const lineTxt = `${entry.tag} · ${entry.text}`;
+            const boxW = Math.min(370, sketch.textWidth(lineTxt) + 22);
+            sketch.noStroke();
+            sketch.fill(INK[0], INK[1], INK[2], 205 * alphaVal);
+            sketch.rect(14, fy - 16, boxW, 20, 2);
+            sketch.fill(entry.rgb[0], entry.rgb[1], entry.rgb[2], 245 * alphaVal);
+            sketch.rect(14, fy - 16, 4, 20, 1);
+            sketch.fill(PAPER[0], PAPER[1], PAPER[2], 245 * alphaVal);
+            sketch.textAlign(sketch.LEFT, sketch.CENTER);
+            sketch.text(lineTxt, 24, fy - 6);
+          }
+        }
       };
 
       sketch.mouseMoved = () => {
@@ -2229,6 +2305,13 @@
       setChaosLevel(nextLevel) {
         if (nextLevel === 'chill' || nextLevel === 'riot' || nextLevel === 'overdrive') {
           chaosLevel = nextLevel;
+        }
+      },
+      setZenMode(nextZen) {
+        zenMode = Boolean(nextZen);
+        if (sketchInstance) {
+          applyFilterAndTargets(sketchInstance.width, sketchInstance.height);
+          fitViewToGraph();
         }
       },
       setAutoCam(nextAuto) {

@@ -2,6 +2,21 @@
 (function () {
   window.MWObservatory = window.MWObservatory || {};
 
+  // Unified MoonWitness Riot Comic Palette
+  const INK = [13, 13, 13];
+  const NIGHT = [14, 14, 16];
+  const CHARCOAL = [24, 24, 30];
+  const PAPER = [243, 239, 228];
+  const YELLOW = [255, 224, 49];
+  const MAGENTA = [255, 46, 136];
+  const CYAN = [0, 184, 240];
+  const VIOLET = [192, 132, 252];
+  const ORANGE = [255, 122, 24];
+  const LIME = [180, 255, 57];
+  const GREEN = [74, 222, 128];
+  const RED = [255, 59, 92];
+  const MUTED = [168, 162, 152];
+
   function createTelemetryViz(oscHost, specHost, radarHost) {
     if (typeof p5 === 'undefined') {
       return {
@@ -28,14 +43,25 @@
       observers.push(obs);
     }
 
-    // 1. OSCILLOSCOPE: Real CPU %, RAM %, Active Agents, Recent Event Velocity
+    function drawComicGridBg(sketch, w, h) {
+      sketch.background(NIGHT[0], NIGHT[1], NIGHT[2]);
+      sketch.noStroke();
+      sketch.fill(255, 224, 49, 14);
+      for (let gx = 12; gx < w; gx += 24) {
+        for (let gy = 12; gy < h; gy += 24) {
+          sketch.circle(gx, gy, 1.8);
+        }
+      }
+    }
+
+    // 1. AMP OSCILLOSCOPE (MoonWitness Comic Ink Traces)
     if (oscHost) {
       const oscSketch = new p5((sketch) => {
         sketch.setup = () => {
           const canvas = sketch.createCanvas(Math.max(260, oscHost.clientWidth || 420), 270);
           canvas.parent(oscHost);
           sketch.pixelDensity(Math.min(2, window.devicePixelRatio || 1));
-          sketch.textFont('ui-monospace, SFMono-Regular, Menlo, Consolas, monospace');
+          sketch.textFont('JetBrains Mono, Consolas, monospace');
           sketch.noLoop();
         };
 
@@ -43,33 +69,33 @@
           if (!isVisible) return;
           const w = sketch.width;
           const h = sketch.height;
-          sketch.background(7, 12, 21);
+          drawComicGridBg(sketch, w, h);
 
-          const padL = 36;
+          const padL = 38;
           const padR = 14;
-          const padT = 28;
-          const padB = 26;
+          const padT = 30;
+          const padB = 24;
           const plotW = w - padL - padR;
           const plotH = h - padT - padB;
 
-          // Reticle grid
-          sketch.stroke(52, 74, 102, 55);
+          // Crisp horizontal street reticle
+          sketch.stroke(243, 239, 228, 30);
           sketch.strokeWeight(1);
           for (let step = 0; step <= 4; step += 1) {
             const y = padT + (plotH * step) / 4;
             sketch.line(padL, y, w - padR, y);
             sketch.noStroke();
-            sketch.fill(103, 123, 147, 175);
+            sketch.fill(MUTED[0], MUTED[1], MUTED[2], 195);
             sketch.textSize(9);
             sketch.textAlign(sketch.RIGHT, sketch.CENTER);
             sketch.text(`${100 - step * 25}%`, padL - 6, y);
-            sketch.stroke(52, 74, 102, 55);
+            sketch.stroke(243, 239, 228, 30);
           }
 
           const history = latestSnapshot?.telemetryHistory || [];
           if (history.length < 1) {
             sketch.noStroke();
-            sketch.fill(103, 123, 147);
+            sketch.fill(MUTED[0], MUTED[1], MUTED[2]);
             sketch.textAlign(sketch.CENTER, sketch.CENTER);
             sketch.text('Collecting telemetry frames…', w / 2, h / 2);
             return;
@@ -77,24 +103,37 @@
 
           const maxEvents = Math.max(10, ...history.map((pt) => pt.recentEvents || 0));
           const series = [
-            { label: 'CPU', rgb: [56, 232, 240], getVal: (pt) => pt.cpuPct || 0 },
-            { label: 'RAM', rgb: [167, 139, 250], getVal: (pt) => pt.memPct || 0 },
+            { label: 'CPU', rgb: CYAN, getVal: (pt) => pt.cpuPct || 0 },
+            { label: 'RAM', rgb: MAGENTA, getVal: (pt) => pt.memPct || 0 },
             {
-              label: 'Events',
-              rgb: [251, 191, 36],
+              label: 'EVENTS',
+              rgb: YELLOW,
               getVal: (pt) => ((pt.recentEvents || 0) / maxEvents) * 100,
             },
             {
-              label: 'Active',
-              rgb: [74, 222, 128],
-              getVal: (pt) => Math.min(100, (pt.runningSessions || 0) * 15),
+              label: 'ACTIVE',
+              rgb: LIME,
+              getVal: (pt) => Math.min(100, (pt.runningSessions || 0) * 10),
             },
           ];
 
           for (const trace of series) {
+            // Bold comic ink backing under trace
             sketch.noFill();
-            sketch.stroke(trace.rgb[0], trace.rgb[1], trace.rgb[2], 215);
-            sketch.strokeWeight(1.8);
+            sketch.stroke(INK[0], INK[1], INK[2], 210);
+            sketch.strokeWeight(4.5);
+            sketch.beginShape();
+            for (let idx = 0; idx < history.length; idx += 1) {
+              const frac = history.length === 1 ? 1 : idx / (history.length - 1);
+              const px = padL + frac * plotW;
+              const val = Math.max(0, Math.min(100, trace.getVal(history[idx])));
+              const py = padT + plotH - (val / 100) * plotH;
+              sketch.vertex(px, py);
+            }
+            sketch.endShape();
+
+            sketch.stroke(trace.rgb[0], trace.rgb[1], trace.rgb[2], 245);
+            sketch.strokeWeight(2.3);
             sketch.beginShape();
             let lastX = padL;
             let lastY = padT + plotH;
@@ -109,15 +148,12 @@
             }
             sketch.endShape();
 
-            // Phosphor lead glow
-            sketch.noStroke();
-            sketch.fill(trace.rgb[0], trace.rgb[1], trace.rgb[2], 95);
-            sketch.circle(lastX, lastY, 10);
-            sketch.fill(245, 252, 255);
-            sketch.circle(lastX, lastY, 4);
+            sketch.stroke(INK[0], INK[1], INK[2]);
+            sketch.strokeWeight(1.8);
+            sketch.fill(trace.rgb[0], trace.rgb[1], trace.rgb[2]);
+            sketch.circle(lastX, lastY, 8);
           }
 
-          // Hover crosshair readout
           if (
             sketch.mouseX >= padL &&
             sketch.mouseX <= w - padR &&
@@ -127,33 +163,37 @@
             const idx = Math.round(((sketch.mouseX - padL) / plotW) * (history.length - 1));
             const sample = history[Math.max(0, Math.min(history.length - 1, idx))];
             if (sample) {
-              sketch.stroke(56, 232, 240, 110);
-              sketch.strokeWeight(1);
+              sketch.stroke(YELLOW[0], YELLOW[1], YELLOW[2], 185);
+              sketch.strokeWeight(1.5);
               sketch.line(sketch.mouseX, padT, sketch.mouseX, padT + plotH);
+              sketch.stroke(INK[0], INK[1], INK[2]);
+              sketch.strokeWeight(2);
+              sketch.fill(YELLOW[0], YELLOW[1], YELLOW[2], 245);
+              sketch.rect(padL + 6, padT + 4, 260, 22, 2);
               sketch.noStroke();
-              sketch.fill(10, 16, 26, 225);
-              sketch.rect(padL + 6, padT + 4, 248, 22, 6);
-              sketch.fill(239, 246, 255);
+              sketch.fill(INK[0], INK[1], INK[2]);
               sketch.textAlign(sketch.LEFT, sketch.CENTER);
               sketch.textSize(9.5);
               sketch.text(
-                `CPU ${sample.cpuPct}% · RAM ${sample.memPct}% · Act ${sample.runningSessions} · Ev ${sample.recentEvents}`,
+                `CPU ${sample.cpuPct}% · RAM ${sample.memPct}% · ACT ${sample.runningSessions} · EV ${sample.recentEvents}`,
                 padL + 12,
                 padT + 15
               );
             }
           }
 
-          // Top Legend
+          // Top Legend pills
           let lx = padL;
           sketch.textAlign(sketch.LEFT, sketch.CENTER);
           sketch.textSize(9.5);
           for (const trace of series) {
-            sketch.noStroke();
+            sketch.stroke(INK[0], INK[1], INK[2]);
+            sketch.strokeWeight(1.5);
             sketch.fill(trace.rgb[0], trace.rgb[1], trace.rgb[2]);
-            sketch.circle(lx + 4, 13, 6);
-            sketch.fill(180, 198, 218);
-            sketch.text(trace.label, lx + 11, 13);
+            sketch.rect(lx, 8, 8, 8, 1);
+            sketch.noStroke();
+            sketch.fill(PAPER[0], PAPER[1], PAPER[2]);
+            sketch.text(trace.label, lx + 12, 12);
             lx += 68;
           }
         };
@@ -162,14 +202,14 @@
       bindResize(oscHost, oscSketch);
     }
 
-    // 2. 60-MINUTE ACTIVITY SPECTROGRAM (Tools, Subagents, Errors)
+    // 2. 60-MINUTE RIOT TOOL EQUALIZER
     if (specHost) {
       const specSketch = new p5((sketch) => {
         sketch.setup = () => {
           const canvas = sketch.createCanvas(Math.max(260, specHost.clientWidth || 420), 270);
           canvas.parent(specHost);
           sketch.pixelDensity(Math.min(2, window.devicePixelRatio || 1));
-          sketch.textFont('ui-monospace, SFMono-Regular, Menlo, Consolas, monospace');
+          sketch.textFont('JetBrains Mono, Consolas, monospace');
           sketch.noLoop();
         };
 
@@ -177,10 +217,10 @@
           if (!isVisible) return;
           const w = sketch.width;
           const h = sketch.height;
-          sketch.background(7, 12, 21);
+          drawComicGridBg(sketch, w, h);
 
           const buckets = latestSnapshot?.analytics?.activityBuckets || [];
-          const padL = 22;
+          const padL = 20;
           const padR = 16;
           const padT = 30;
           const padB = 30;
@@ -191,11 +231,10 @@
           const maxTotal = Math.max(4, ...buckets.map((bucket) => bucket.total || 0));
           const barGap = 4;
           const barW = Math.max(4, (plotW - barGap * (buckets.length - 1)) / buckets.length);
-          const scanX = padL + ((sketch.millis() * 0.04) % plotW);
+          const scanX = padL + ((sketch.millis() * 0.045) % plotW);
 
-          // Animated scanline glow
-          sketch.stroke(56, 232, 240, 28);
-          sketch.strokeWeight(2);
+          sketch.stroke(MAGENTA[0], MAGENTA[1], MAGENTA[2], 50);
+          sketch.strokeWeight(2.5);
           sketch.line(scanX, padT, scanX, padT + plotH);
 
           let hoveredBucket = null;
@@ -209,10 +248,10 @@
               sketch.mouseY <= padT + plotH;
             if (isHot) hoveredBucket = bucket;
 
-            // Back slot
-            sketch.noStroke();
-            sketch.fill(20, 31, 48, 125);
-            sketch.rect(bx, padT, barW, plotH, 3);
+            sketch.stroke(INK[0], INK[1], INK[2], 180);
+            sketch.strokeWeight(1.5);
+            sketch.fill(CHARCOAL[0], CHARCOAL[1], CHARCOAL[2], 190);
+            sketch.rect(bx, padT, barW, plotH, 2);
 
             const toolH = ((bucket.tools || 0) / maxTotal) * plotH;
             const subH = ((bucket.subagents || 0) / maxTotal) * plotH;
@@ -220,52 +259,53 @@
 
             let cursorY = padT + plotH;
             if (toolH > 0) {
-              sketch.fill(56, 232, 240, isHot ? 255 : 200);
-              sketch.rect(bx, cursorY - toolH, barW, toolH, 2);
+              sketch.fill(CYAN[0], CYAN[1], CYAN[2], isHot ? 255 : 225);
+              sketch.rect(bx, cursorY - toolH, barW, toolH, 1);
               cursorY -= toolH;
             }
             if (subH > 0) {
-              sketch.fill(167, 139, 250, isHot ? 255 : 215);
-              sketch.rect(bx, cursorY - subH, barW, subH, 2);
+              sketch.fill(YELLOW[0], YELLOW[1], YELLOW[2], isHot ? 255 : 230);
+              sketch.rect(bx, cursorY - subH, barW, subH, 1);
               cursorY -= subH;
             }
             if (errH > 0) {
-              sketch.fill(251, 113, 133, 245);
-              sketch.rect(bx, cursorY - errH, barW, errH, 2);
+              sketch.fill(MAGENTA[0], MAGENTA[1], MAGENTA[2], 250);
+              sketch.rect(bx, cursorY - errH, barW, errH, 1);
               cursorY -= errH;
             }
 
             if (bucket.total > 0) {
-              sketch.fill(245, 252, 255, 210);
-              sketch.rect(bx, cursorY - 2, barW, 2, 1);
+              sketch.noStroke();
+              sketch.fill(PAPER[0], PAPER[1], PAPER[2], 245);
+              sketch.rect(bx, cursorY - 2.5, barW, 2.5);
             }
 
             if (idx % 6 === 0 || idx === buckets.length - 1) {
-              sketch.fill(103, 123, 147, 180);
+              sketch.noStroke();
+              sketch.fill(MUTED[0], MUTED[1], MUTED[2], 210);
               sketch.textSize(8.5);
               sketch.textAlign(sketch.CENTER, sketch.TOP);
               sketch.text(bucket.label, bx + barW / 2, padT + plotH + 7);
             }
           }
 
-          // Top status / hover readout
           sketch.noStroke();
           sketch.textAlign(sketch.LEFT, sketch.CENTER);
           sketch.textSize(9.5);
           if (hoveredBucket) {
-            sketch.fill(56, 232, 240);
+            sketch.fill(YELLOW[0], YELLOW[1], YELLOW[2]);
             sketch.text(
-              `${hoveredBucket.label}: ${hoveredBucket.total} ev (tools ${hoveredBucket.tools} · sub ${hoveredBucket.subagents} · err ${hoveredBucket.errors})`,
+              `${hoveredBucket.label}: ${hoveredBucket.total} EV (TOOLS ${hoveredBucket.tools} · SUB ${hoveredBucket.subagents} · BONK ${hoveredBucket.errors})`,
               padL,
               14
             );
           } else {
             const topTool = latestSnapshot?.analytics?.toolFrequency?.[0];
-            sketch.fill(156, 176, 200);
+            sketch.fill(PAPER[0], PAPER[1], PAPER[2]);
             sketch.text(
               topTool
-                ? `Peak tool: ${topTool.name} (${topTool.calls} calls) · Hover bars`
-                : '60m rolling event spectrum',
+                ? `PEAK MOVE: ${topTool.name.toUpperCase()} (${topTool.calls} hits) · Hover bars`
+                : '60m rolling comic equalizer',
               padL,
               14
             );
@@ -276,14 +316,14 @@
       bindResize(specHost, specSketch);
     }
 
-    // 3. POLAR NETWORK & RUNTIME HEALTH RADAR
+    // 3. STREET VPS & RUNTIME RADAR (MoonWitness Comic Neon Sweep)
     if (radarHost) {
       const radarSketch = new p5((sketch) => {
         sketch.setup = () => {
           const canvas = sketch.createCanvas(Math.max(260, radarHost.clientWidth || 420), 270);
           canvas.parent(radarHost);
           sketch.pixelDensity(Math.min(2, window.devicePixelRatio || 1));
-          sketch.textFont('ui-monospace, SFMono-Regular, Menlo, Consolas, monospace');
+          sketch.textFont('JetBrains Mono, Consolas, monospace');
           sketch.noLoop();
         };
 
@@ -291,86 +331,91 @@
           if (!isVisible) return;
           const w = sketch.width;
           const h = sketch.height;
-          sketch.background(7, 12, 21);
+          drawComicGridBg(sketch, w, h);
 
           const cx = w / 2;
           const cy = h / 2 + 4;
           const maxR = Math.min(w, h) * 0.4;
-          const sweepAngle = (sketch.millis() * 0.0014) % sketch.TWO_PI;
+          const sweepAngle = (sketch.millis() * 0.0017) % sketch.TWO_PI;
 
-          // Concentric radar rings & crosshairs
+          // Bold ink radar rings
           sketch.noFill();
           for (let ring = 1; ring <= 4; ring += 1) {
-            sketch.stroke(56, 232, 240, ring === 4 ? 75 : 32);
-            sketch.strokeWeight(1);
+            sketch.stroke(
+              ring === 4 ? YELLOW[0] : PAPER[0],
+              ring === 4 ? YELLOW[1] : PAPER[1],
+              ring === 4 ? YELLOW[2] : PAPER[2],
+              ring === 4 ? 140 : 42
+            );
+            sketch.strokeWeight(ring === 4 ? 2.2 : 1.2);
             sketch.circle(cx, cy, (maxR * 2 * ring) / 4);
           }
-          sketch.stroke(56, 232, 240, 28);
+          sketch.stroke(PAPER[0], PAPER[1], PAPER[2], 42);
+          sketch.strokeWeight(1);
           sketch.line(cx - maxR, cy, cx + maxR, cy);
           sketch.line(cx, cy - maxR, cx, cy + maxR);
 
-          // Phosphor sweep wedge
-          for (let step = 0; step < 14; step += 1) {
-            const a1 = sweepAngle - step * 0.045;
-            const a2 = sweepAngle - (step + 1) * 0.045;
+          // Neon Magenta/Yellow phosphor sweep wedge
+          for (let step = 0; step < 12; step += 1) {
+            const a1 = sweepAngle - step * 0.05;
+            const a2 = sweepAngle - (step + 1) * 0.05;
             sketch.noStroke();
-            sketch.fill(56, 232, 240, Math.max(0, 42 - step * 3));
+            sketch.fill(YELLOW[0], YELLOW[1], YELLOW[2], Math.max(0, 48 - step * 4));
             sketch.arc(cx, cy, maxR * 2, maxR * 2, a2, a1, sketch.PIE);
           }
-          sketch.stroke(56, 232, 240, 220);
-          sketch.strokeWeight(1.8);
+          sketch.stroke(YELLOW[0], YELLOW[1], YELLOW[2], 245);
+          sketch.strokeWeight(2.4);
           sketch.line(cx, cy, cx + Math.cos(sweepAngle) * maxR, cy + Math.sin(sweepAngle) * maxR);
 
-          // Runtime cache-hit inner arcs
+          // Runtime cache-hit inner arcs (including OpenCode Orange & Magpie Magenta!)
           const rtRows = latestSnapshot?.analytics?.runtimeBreakdown || [];
-          for (let idx = 0; idx < Math.min(4, rtRows.length); idx += 1) {
+          const arcColors = [CYAN, ORANGE, MAGENTA, YELLOW, LIME];
+          for (let idx = 0; idx < Math.min(5, rtRows.length); idx += 1) {
             const row = rtRows[idx];
-            const arcR = maxR * (0.28 + idx * 0.11);
-            const span = Math.max(0.25, ((row.cacheHitPct || 15) / 100) * Math.PI * 1.6);
+            const arcR = maxR * (0.24 + idx * 0.11);
+            const span = Math.max(0.28, ((row.cacheHitPct || 20) / 100) * Math.PI * 1.65);
             const startA = -Math.PI / 2 + idx * 0.55;
+            const aRgb = arcColors[idx % arcColors.length];
             sketch.noFill();
-            sketch.stroke(167, 139, 250, 110);
-            sketch.strokeWeight(3);
+            sketch.stroke(aRgb[0], aRgb[1], aRgb[2], 150);
+            sketch.strokeWeight(3.2);
             sketch.arc(cx, cy, arcR * 2, arcR * 2, startA, startA + span);
           }
 
-          // Plot VPS endpoints around perimeter with outer HUD callout labels & leader lines
+          // Plot VPS endpoints with ink-outlined comic targets
           const vpsProbes = latestSnapshot?.probes?.vps || [];
           for (let idx = 0; idx < vpsProbes.length; idx += 1) {
             const probe = vpsProbes[idx];
             const angle = (idx / Math.max(1, vpsProbes.length)) * sketch.TWO_PI - Math.PI / 4;
             const latNorm =
               probe.status === 'down'
-                ? 0.92
-                : Math.min(0.86, Math.max(0.28, (probe.latencyMs || 80) / 800));
+                ? 0.9
+                : Math.min(0.84, Math.max(0.3, (probe.latencyMs || 80) / 800));
             const px = cx + Math.cos(angle) * maxR * latNorm;
             const py = cy + Math.sin(angle) * maxR * latNorm;
 
-            const rgb =
-              probe.status === 'up'
-                ? [74, 222, 128]
-                : probe.status === 'warn'
-                  ? [251, 191, 36]
-                  : [251, 113, 133];
+            const rgb = probe.status === 'up' ? GREEN : probe.status === 'warn' ? YELLOW : RED;
 
             let angleDiff = sweepAngle - ((angle + sketch.TWO_PI) % sketch.TWO_PI);
             if (angleDiff < 0) angleDiff += sketch.TWO_PI;
             const pingGlow = angleDiff < 0.8 ? 1 - angleDiff / 0.8 : 0;
 
-            // Leader line to outer HUD label
             const lx = cx + Math.cos(angle) * (maxR + 14);
             const ly = cy + Math.sin(angle) * (maxR + 14);
-            sketch.stroke(rgb[0], rgb[1], rgb[2], 95);
-            sketch.strokeWeight(1);
+            sketch.stroke(rgb[0], rgb[1], rgb[2], 130);
+            sketch.strokeWeight(1.5);
             sketch.line(px, py, lx, ly);
 
-            sketch.noStroke();
             if (pingGlow > 0.05) {
-              sketch.fill(rgb[0], rgb[1], rgb[2], pingGlow * 140);
-              sketch.circle(px, py, 12 + pingGlow * 16);
+              sketch.noFill();
+              sketch.stroke(rgb[0], rgb[1], rgb[2], pingGlow * 210);
+              sketch.strokeWeight(2);
+              sketch.circle(px, py, 10 + pingGlow * 20);
             }
-            sketch.fill(rgb[0], rgb[1], rgb[2], 240);
-            sketch.circle(px, py, 7.5);
+            sketch.stroke(INK[0], INK[1], INK[2]);
+            sketch.strokeWeight(2);
+            sketch.fill(rgb[0], rgb[1], rgb[2], 250);
+            sketch.circle(px, py, 9.5);
 
             const shortName = probe.label
               .replace(/^HTTPS\s+/i, '')
@@ -378,8 +423,9 @@
               .replace(/^VPS IP\s+/i, 'VPS ')
               .slice(0, 16);
             const statTag =
-              probe.status === 'down' ? probe.detail || 'down' : `${probe.latencyMs ?? 0}ms`;
-            sketch.fill(226, 236, 248, 225);
+              probe.status === 'down' ? probe.detail || 'DOWN' : `${probe.latencyMs ?? 0}ms`;
+            sketch.noStroke();
+            sketch.fill(PAPER[0], PAPER[1], PAPER[2], 245);
             sketch.textSize(8.5);
             const onRight = Math.cos(angle) >= 0;
             sketch.textAlign(onRight ? sketch.LEFT : sketch.RIGHT, sketch.CENTER);
@@ -416,39 +462,41 @@
     };
   }
 
+  // 4. HERO DOSSIER CADENCE RIBBON (MoonWitness Comic Bars)
   function createSessionStripSketch(hostEl, events) {
     if (!hostEl || typeof p5 === 'undefined') return null;
     const KIND_RGB = Object.freeze({
-      tool: [56, 232, 240],
-      focus: [251, 191, 36],
-      subagent: [167, 139, 250],
-      swarm: [244, 114, 182],
-      error: [251, 113, 133],
-      user: [74, 222, 128],
-      message: [96, 165, 250],
+      tool: CYAN,
+      focus: YELLOW,
+      subagent: VIOLET,
+      swarm: MAGENTA,
+      error: RED,
+      user: LIME,
+      message: ORANGE,
     });
 
     const timeline = (events || []).slice(-64);
     return new p5((sketch) => {
       sketch.setup = () => {
         const w = Math.max(240, hostEl.clientWidth || 640);
-        const canvas = sketch.createCanvas(w, 84);
+        const canvas = sketch.createCanvas(w, 86);
         canvas.parent(hostEl);
         sketch.pixelDensity(Math.min(2, window.devicePixelRatio || 1));
-        sketch.textFont('ui-monospace, SFMono-Regular, Menlo, Consolas, monospace');
+        sketch.textFont('JetBrains Mono, Consolas, monospace');
         sketch.frameRate(20);
       };
 
       sketch.draw = () => {
         const w = sketch.width;
         const h = sketch.height;
-        sketch.background(6, 10, 18);
+        sketch.background(NIGHT[0], NIGHT[1], NIGHT[2]);
 
         if (!timeline.length) {
-          sketch.fill(103, 123, 147);
+          sketch.noStroke();
+          sketch.fill(MUTED[0], MUTED[1], MUTED[2]);
           sketch.textAlign(sketch.CENTER, sketch.CENTER);
           sketch.textSize(10);
-          sketch.text('No event cadence recorded', w / 2, h / 2);
+          sketch.text('No action cadence recorded', w / 2, h / 2);
           return;
         }
 
@@ -456,8 +504,9 @@
         const stepX = (w - padX * 2) / Math.max(1, timeline.length);
         let hovered = null;
 
-        sketch.stroke(52, 74, 102, 80);
-        sketch.line(padX, 50, w - padX, 50);
+        sketch.stroke(YELLOW[0], YELLOW[1], YELLOW[2], 95);
+        sketch.strokeWeight(1.5);
+        sketch.line(padX, 52, w - padX, 52);
 
         for (let idx = 0; idx < timeline.length; idx += 1) {
           const ev = timeline[idx];
@@ -465,7 +514,7 @@
           const x = padX + idx * stepX + stepX / 2;
           const barH =
             ev.kind === 'error'
-              ? 32
+              ? 34
               : ev.kind === 'subagent' || ev.kind === 'swarm'
                 ? 28
                 : ev.kind === 'focus'
@@ -477,12 +526,19 @@
             sketch.mouseY <= h;
           if (isHot) hovered = ev;
 
-          sketch.noStroke();
-          sketch.fill(rgb[0], rgb[1], rgb[2], isHot ? 255 : 200);
-          sketch.rect(x - Math.max(2, stepX * 0.34), 50 - barH, Math.max(4, stepX * 0.68), barH, 2);
+          sketch.stroke(INK[0], INK[1], INK[2], 235);
+          sketch.strokeWeight(1.4);
+          sketch.fill(rgb[0], rgb[1], rgb[2], isHot ? 255 : 225);
+          sketch.rect(
+            x - Math.max(2.5, stepX * 0.36),
+            52 - barH,
+            Math.max(4.5, stepX * 0.72),
+            barH,
+            1
+          );
           if (isHot) {
-            sketch.fill(255);
-            sketch.circle(x, 50 - barH - 4, 5);
+            sketch.fill(YELLOW[0], YELLOW[1], YELLOW[2]);
+            sketch.circle(x, 52 - barH - 5, 6);
           }
         }
 
@@ -490,15 +546,15 @@
         sketch.textAlign(sketch.LEFT, sketch.CENTER);
         sketch.textSize(9.5);
         if (hovered) {
-          sketch.fill(56, 232, 240);
+          sketch.fill(YELLOW[0], YELLOW[1], YELLOW[2]);
           const summary = `[${hovered.tool || hovered.kind}] ${hovered.summary || ''}`.slice(0, 82);
-          sketch.text(summary, padX, 68);
+          sketch.text(summary, padX, 70);
         } else {
-          sketch.fill(156, 176, 200);
+          sketch.fill(PAPER[0], PAPER[1], PAPER[2]);
           sketch.text(
-            `Session event cadence (${timeline.length} recent events) · Hover bars to inspect`,
+            `ACTION CADENCE (${timeline.length} moves) · Hover bars to inspect`,
             padX,
-            68
+            70
           );
         }
       };

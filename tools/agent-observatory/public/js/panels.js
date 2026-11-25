@@ -166,6 +166,21 @@
       bossHpEl.textContent = `${snapshot.battle?.bossHpPct ?? 100}%`;
     }
 
+    const alerts = snapshot.alerts || [];
+    const alertSiren = byId('alertSirenBadge');
+    if (alertSiren) {
+      if (alerts.length > 0) {
+        const collisionCount = alerts.filter((entry) => entry.kind === 'collision').length;
+        alertSiren.textContent =
+          collisionCount > 0
+            ? `⚠️ ${collisionCount} COLLISION${collisionCount > 1 ? 'S' : ''} · ${alerts.length} ALERTS`
+            : `⚠️ ${alerts.length} ALERT${alerts.length > 1 ? 'S' : ''}`;
+        alertSiren.classList.remove('hidden');
+      } else {
+        alertSiren.classList.add('hidden');
+      }
+    }
+
     if (activePlan) {
       byId('kpiPlanDone').textContent = `${activePlan.done}/${activePlan.total}`;
       byId('kpiPlanPct').textContent = `${activePlan.percent}%`;
@@ -390,7 +405,8 @@
         const memTxt = mInfo.memoryStats
           ? ` · mem ${mInfo.memoryStats.recalled}/${mInfo.memoryStats.searches} recall`
           : '';
-        magpieSummaryBadge.textContent = `${mInfo.connected ? 'ONLINE' : 'STANDBY'} ${mInfo.addr || ''}${mInfo.version ? ` v${mInfo.version}` : ''} · ${mInfo.totalRecentCalls} calls (${mInfo.okCalls} ok, ${mInfo.rateLimit429}×429, ${mInfo.errorCalls} err) · avg ${mInfo.avgLatencyMs}ms / ttft ${mInfo.avgTtftMs}ms${memTxt}`;
+        const p50Txt = mInfo.p50LatencyMs ? `p50 ${mInfo.p50LatencyMs}ms / ` : '';
+        magpieSummaryBadge.textContent = `${mInfo.connected ? 'ONLINE' : 'STANDBY'} ${mInfo.addr || ''}${mInfo.version ? ` v${mInfo.version}` : ''} · ${mInfo.totalRecentCalls} calls (${mInfo.okCalls} ok, ${mInfo.rateLimit429}×429, ${mInfo.errorCalls} err) · ${p50Txt}avg ${mInfo.avgLatencyMs}ms / ttft ${mInfo.avgTtftMs}ms${memTxt}`;
 
         const provList = mInfo.providers || [];
         const maxProvCalls = Math.max(1, ...provList.map((prov) => prov.calls || 0));
@@ -484,6 +500,27 @@
           : ''
       }
     `;
+
+    const alertsRadarCount = byId('alertsRadarCount');
+    const alertsRadarList = byId('alertsRadarList');
+    if (alertsRadarCount && alertsRadarList) {
+      alertsRadarCount.textContent = `${alerts.length} active alert${alerts.length === 1 ? '' : 's'}`;
+      alertsRadarList.innerHTML = alerts.length
+        ? alerts
+            .map(
+              (alertEntry) => `
+            <div class="feed-row ${alertEntry.severity === 'high' ? 'error' : ''} ${alertEntry.sessionId ? 'clickable' : ''}"
+                 ${alertEntry.sessionId ? `data-runtime="${esc(alertEntry.runtime)}" data-id="${esc(alertEntry.sessionId)}"` : ''}>
+              <div class="feed-head">
+                <span><span class="chip st-${alertEntry.severity === 'high' ? 'error' : 'active'}">${esc(alertEntry.title)}</span> <strong>${esc(alertEntry.target)}</strong></span>
+                <span>${esc(alertEntry.kind.toUpperCase())}</span>
+              </div>
+              <div class="feed-msg">${esc(alertEntry.detail)}</div>
+            </div>`
+            )
+            .join('')
+        : '<div class="empty">ALL CLEAR!! ZERO COLLISIONS OR LOOPS DETECTED!</div>';
+    }
 
     const errors = analytics.errorLedger || [];
     byId('errorLedgerCount').textContent = `${errors.length} bonk(s)`;

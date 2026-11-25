@@ -12,6 +12,7 @@ import {
   collectPlans,
   computeAnalytics,
   createObservatoryServer,
+  detectOperationalAlerts,
   extractTaskDependencies,
   formatSnapshotMarkdown,
   redactSecrets,
@@ -187,7 +188,7 @@ test('Observatory HTTP server serves static p5 bundle, state, export, SSRF-guard
     assert.equal(healthResp.status, 200);
     const healthJson = await healthResp.json();
     assert.equal(healthJson.ok, true);
-    assert.equal(healthJson.version, 3);
+    assert.equal(healthJson.version, 4);
     assert.equal(healthJson.p5Vendored, true);
 
     const p5Resp = await fetch(`${baseUrl}/vendor/p5.min.js`);
@@ -223,12 +224,13 @@ test('Observatory HTTP server serves static p5 bundle, state, export, SSRF-guard
     const stateResp = await fetch(`${baseUrl}/api/state`);
     assert.equal(stateResp.status, 200);
     const snapshot = await stateResp.json();
-    assert.equal(snapshot.version, 3);
+    assert.equal(snapshot.version, 4);
     assert.ok(Array.isArray(snapshot.plans));
     assert.ok(snapshot.flowGraph && Array.isArray(snapshot.flowGraph.nodes));
     assert.ok(snapshot.analytics && Array.isArray(snapshot.analytics.activityBuckets));
     assert.ok(snapshot.magpie && typeof snapshot.magpie.totalRecentCalls === 'number');
     assert.ok(snapshot.battle && typeof snapshot.battle.bossHpPct === 'number');
+    assert.ok(Array.isArray(snapshot.alerts));
     assert.ok(Array.isArray(snapshot.telemetryHistory) && snapshot.telemetryHistory.length >= 1);
 
     // Ensure both real repository plans parsed tasks (including D01-D16 heading format!)
@@ -503,6 +505,132 @@ test('collectMagpieTelemetry aggregates provider calls, 429 rate limits, memory 
           edge.kind === 'router-link' && edge.from === 'rt:magpie' && edge.to === 'rt:opencode'
       )
     );
+  } finally {
+    await rm(tmpHome, { recursive: true, force: true });
+  }
+});
+
+test('detectOperationalAlerts catches multi-agent file collisions, error loops, and Magpie 429 spikes', () => {
+  const nowIso = new Date().toISOString();
+  const sessions = [
+    {
+      id: 'oc-hero',
+      runtime: 'opencode',
+      runtimeLabel: 'OpenCode',
+      title: 'Edit control plane',
+      status: 'running',
+      focus: 'edit: apps/control-plane/main.go',
+      lastTool: 'edit',
+      lastError: '',
+      errorCount: 0,
+      steps: 10,
+      tokens: { input: 100, cached: 0, output: 50, total: 150 },
+      subagents: [],
+      toolCounts: {},
+      recentEvents: [
+        { at: nowIso, kind: 'tool', tool: 'edit', summary: 'edit: apps/control-plane/main.go' },
+      ],
+      updatedAt: nowIso,
+      mtimeMs: Date.now(),
+    },
+    {
+      id: 'cl-hero',
+      runtime: 'claude',
+      runtimeLabel: 'Claude Code',
+      title: 'Fix control plane tests',
+      status: 'running',
+      focus: 'Read: Z:\\repo\\mw-xv\\apps\\control-plane\\main.go',
+      lastTool: 'Read',
+      lastError: 'exit=1 test failed',
+      errorCount: 4,
+      steps: 8,
+      tokens: { input: 200, cached: 0, output: 80, total: 280 },
+      subagents: [],
+      toolCounts: {},
+      recentEvents: [
+        { at: nowIso, kind: 'error', tool: 'Bash', summary: 'apps/control-plane/main.go failed' },
+      ],
+      updatedAt: nowIso,
+      mtimeMs: Date.now(),
+    },
+  ];
+
+  const alerts = detectOperationalAlerts(
+    sessions,
+    { branch: 'dev', dirtyCount: 42 },
+    { rateLimit429: 3, providers: [{ provider: 'kiro', rateLimits: 3 }] },
+    { vps: [{ id: 'vps-a', label: 'VPS :8000', status: 'down', detail: 'timeout' }] }
+  );
+
+  const collision = alerts.find((entry) => entry.kind === 'collision');
+  assert.ok(collision);
+  assert.equal(collision.target, 'apps/control-plane/main.go');
+  assert.equal(collision.nodeIds.length, 2);
+  assert.ok(alerts.some((entry) => entry.kind === 'error-loop' && entry.sessionId === 'cl-hero'));
+  assert.ok(alerts.some((entry) => entry.kind === 'ratelimit'));
+  assert.ok(alerts.some((entry) => entry.kind === 'infra-down'));
+  assert.ok(alerts.some((entry) => entry.kind === 'git-dirty'));
+
+  const graph = buildFlowGraph(
+    sessions,
+    [],
+    null,
+    { branch: 'dev', head: 'abc1234', dirtyCount: 42, dirtyByArea: {}, commits: [] },
+    { vps: [], localPorts: [] },
+    [],
+    'Z:/repo/mw-xv',
+    alerts
+  );
+  assert.ok(graph.edges.some((edge) => edge.kind === 'collision-link'));
+});
+
+test('collectOpenCodeSessions cache refreshes stale running status to idle as time decays', async () => {
+  const tmpHome = await mkdtemp(path.join(os.tmpdir(), 'mw-obs-oc-decay-'));
+  try {
+    const dbDir = path.join(tmpHome, '.local', 'share', 'opencode');
+    await mkdir(dbDir, { recursive: true });
+    const dbPath = path.join(dbDir, 'opencode.db');
+    const sqliteDb = new DatabaseSync(dbPath);
+    const nowMs = Date.now();
+    sqliteDb.exec(`
+      CREATE TABLE session_v2 (
+        id TEXT PRIMARY KEY, parent_id TEXT, title TEXT, directory TEXT, agent TEXT, model TEXT,
+        cost REAL, tokens_input INTEGER, tokens_output INTEGER, tokens_cache_read INTEGER,
+        tokens_cache_write INTEGER, time_created INTEGER, time_updated INTEGER, time_busy INTEGER,
+        time_idle INTEGER, time_archived INTEGER
+      );
+      CREATE TABLE session_part (session_id TEXT, type TEXT, time_updated INTEGER, data TEXT);
+      CREATE TABLE session_message (id TEXT PRIMARY KEY, session_id TEXT);
+    `);
+    sqliteDb
+      .prepare(`INSERT INTO session_v2 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+      .run(
+        'ses_decay_1',
+        null,
+        'Decay check',
+        'Z:/repo/mw-xv',
+        'build',
+        '{"id":"opus"}',
+        0,
+        10,
+        10,
+        0,
+        0,
+        nowMs - 5000,
+        nowMs - 1000,
+        nowMs - 1000,
+        null,
+        null
+      );
+    sqliteDb.close();
+
+    const cache = { sig: '', sessions: [] };
+    const firstRead = await collectOpenCodeSessions(tmpHome, 'Z:/repo/mw-xv', cache);
+    assert.equal(firstRead[0].status, 'running');
+
+    cache.sessions[0].mtimeMs = Date.now() - 30 * 60_000;
+    const cachedRead = await collectOpenCodeSessions(tmpHome, 'Z:/repo/mw-xv', cache);
+    assert.equal(cachedRead[0].status, 'idle');
   } finally {
     await rm(tmpHome, { recursive: true, force: true });
   }

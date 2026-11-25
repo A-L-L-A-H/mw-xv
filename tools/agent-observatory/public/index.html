@@ -38,6 +38,11 @@
         🔊 CLICK ANYWHERE FOR CARTOON SFX &amp; FUNKY BEATS!!
       </button>
 
+      <!-- FLOATING EXIT ZEN CINEMA BUTTON (Visible only in Zen Theater Mode) -->
+      <button id="exitZenBtn" class="exit-zen-sticker hidden" type="button">
+        📺 EXIT ZEN CINEMA (Z)
+      </button>
+
       <!-- ============================================================== -->
       <!-- DIEGETIC GAME-ANIME HUD (NOT A BORING DASHBOARD!)              -->
       <!-- ============================================================== -->
@@ -50,6 +55,14 @@
               <span class="on-air-tag">ON AIR</span>
               <span class="episode-brand">MOONWITNESS</span>
               <span class="episode-sub">RIOT OBSERVATORY</span>
+              <button
+                id="alertSirenBadge"
+                class="mini-tag alert-pill hidden"
+                type="button"
+                title="View active collisions & operational alerts"
+              >
+                ⚠️ 0 ALERTS
+              </button>
             </div>
             <div class="episode-meta-row">
               <span id="sseState" class="mini-tag cyan">SSE LIVE</span>
@@ -89,14 +102,6 @@
               🔥 RIOT
             </button>
             <button
-              id="autoCamBtn"
-              class="comic-btn"
-              type="button"
-              title="Auto-pan camera onto active agents"
-            >
-              🎥 CAM
-            </button>
-            <button
               id="sfxToggleBtn"
               class="comic-btn active-yellow"
               type="button"
@@ -108,9 +113,17 @@
               id="beatToggleBtn"
               class="comic-btn"
               type="button"
-              title="Toggle 128 BPM punk-funk anime breakbeat + city night ambience"
+              title="Toggle 128 BPM punk-funk anime breakbeat"
             >
               🎵 BEAT
+            </button>
+            <button
+              id="ambienceToggleBtn"
+              class="comic-btn"
+              type="button"
+              title="Cycle Moon City ambience (OFF / NIGHT / RAIN / HUM)"
+            >
+              🌙 AMB
             </button>
             <button
               id="boomTestBtn"
@@ -119,6 +132,22 @@
               title="Unleash All-Out Anime Team Clash Barrage!!"
             >
               ⚔️ CLASH!!
+            </button>
+            <button
+              id="zenModeBtn"
+              class="comic-btn"
+              type="button"
+              title="Toggle Fullscreen Zen Anime Cinema Mode (Z)"
+            >
+              📺 ZEN
+            </button>
+            <button
+              id="autoCamBtn"
+              class="comic-btn"
+              type="button"
+              title="Auto-pan camera onto active agents"
+            >
+              🎥
             </button>
             <button id="flowFitBtn" class="comic-btn" type="button" title="Fit stage camera (F)">
               FIT
@@ -447,6 +476,14 @@
               </div>
               <div id="toolModelBreakdown" class="stack-tight"></div>
             </div>
+          </div>
+
+          <div class="sub-panel">
+            <div class="sub-panel-head">
+              <h3 class="sub-title">🚨 COLLISION &amp; OPERATIONAL ALERT RADAR</h3>
+              <span id="alertsRadarCount" class="mini-meta">0 active alerts</span>
+            </div>
+            <div id="alertsRadarList" class="feed-list feed-short"></div>
           </div>
 
           <div class="sub-panel">
