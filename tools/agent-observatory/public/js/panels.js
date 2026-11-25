@@ -1,0 +1,689 @@
+/* global window, document */
+(function () {
+  window.MWObservatory = window.MWObservatory || {};
+
+  function esc(rawText) {
+    return String(rawText ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function fmtNum(rawNumber) {
+    const num = Number(rawNumber || 0);
+    if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(2)}M`;
+    if (num >= 1_000) return `${(num / 1_000).toFixed(1)}K`;
+    return String(num);
+  }
+
+  function relTime(isoString) {
+    if (!isoString) return '—';
+    const diffSec = Math.max(0, Math.floor((Date.now() - new Date(isoString).getTime()) / 1000));
+    if (diffSec < 5) return 'just now';
+    if (diffSec < 60) return `${diffSec}s ago`;
+    if (diffSec < 3600) return `${Math.floor(diffSec / 60)}m ago`;
+    if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}h ago`;
+    return `${Math.floor(diffSec / 86400)}d ago`;
+  }
+
+  function portraitForSession(session) {
+    const base = '/mw-assets/illustrations/riot-universe/characters';
+    if (session.status === 'error') return `${base}/kuro-signal-expression-angry.webp`;
+    if (session.runtime === 'claude') return `${base}/vesper-ink-portrait.webp`;
+    if (session.runtime === 'codex') return `${base}/kuro-signal-expression-victory.webp`;
+    if (session.runtime === 'qoder' || session.runtime === 'gemini-cli') {
+      return `${base}/kuro-signal-expression-curious.webp`;
+    }
+    if (session.status === 'running') return `${base}/kuro-signal-expression-excited.webp`;
+    if (session.status === 'recent') return `${base}/kuro-signal-expression-thinking.webp`;
+    return `${base}/kuro-signal-expression-sleepy.webp`;
+  }
+
+  function renderProbes(containerEl, probes) {
+    if (!containerEl) return;
+    if (!probes || !probes.length) {
+      containerEl.innerHTML = '<div class="empty">No probes configured</div>';
+      return;
+    }
+    containerEl.innerHTML = probes
+      .map(
+        (probe) => `
+      <div class="probe-row">
+        <div>
+          <span class="probe-dot ${esc(probe.status)}"></span>
+          <strong>${esc(probe.label)}</strong>
+          ${probe.detail ? `<span class="brand-sub"> · ${esc(probe.detail)}</span>` : ''}
+        </div>
+        <div class="brand-sub">
+          ${probe.httpCode ? `HTTP ${probe.httpCode}` : probe.status.toUpperCase()} · ${probe.latencyMs ?? '—'}ms
+        </div>
+      </div>`
+      )
+      .join('');
+  }
+
+  function renderTaskInspector(inspectorEl, taskEntry, planEntry) {
+    if (!inspectorEl) return;
+    if (!taskEntry) {
+      const nextTask = planEntry?.tasks?.find(
+        (entry) => entry.dagState === 'active' || entry.dagState === 'ready'
+      );
+      if (!nextTask) {
+        inspectorEl.innerHTML =
+          '<div class="empty">Click any quest node in the p5 Quest Map to inspect details!</div>';
+        return;
+      }
+      taskEntry = nextTask;
+    }
+
+    const depChips =
+      (taskEntry.depIds || []).length > 0
+        ? taskEntry.depIds
+            .map(
+              (depId) =>
+                `<span class="sub-pill" data-jump-task="${esc(depId)}">← ${esc(depId)}</span>`
+            )
+            .join('')
+        : '<span class="brand-sub">Root Quest</span>';
+
+    const downstreamChips =
+      (taskEntry.dependents || []).length > 0
+        ? taskEntry.dependents
+            .slice(0, 10)
+            .map(
+              (childId) =>
+                `<span class="sub-pill" data-jump-task="${esc(childId)}">→ ${esc(childId)}</span>`
+            )
+            .join('')
+        : '<span class="brand-sub">Final Boss Node</span>';
+
+    inspectorEl.innerHTML = `
+      <div class="agent-top">
+        <div class="agent-badges">
+          <span class="task-id">${esc(taskEntry.id)}</span>
+          <span class="chip st-${esc(taskEntry.dagState || (taskEntry.done ? 'done' : 'blocked'))}">
+            ${esc((taskEntry.dagState || (taskEntry.done ? 'done' : 'pending')).toUpperCase())}
+          </span>
+          ${taskEntry.commitSha ? `<span class="chip st-running" data-commit-sha="${esc(taskEntry.commitSha)}">${esc(taskEntry.commitSha)}</span>` : ''}
+        </div>
+      </div>
+      <div class="agent-title">${esc(taskEntry.title)}</div>
+      <div class="brand-sub">${esc(taskEntry.wave)}</div>
+      <div>
+        <div class="kpi-label">PREREQUISITES</div>
+        <div class="subagent-strip no-border">${depChips}</div>
+      </div>
+      <div>
+        <div class="kpi-label">UNLOCKS NEXT</div>
+        <div class="subagent-strip no-border">${downstreamChips}</div>
+      </div>
+      ${taskEntry.ownerFiles ? `<div><div class="kpi-label">OWNER FILES</div><code>${esc(taskEntry.ownerFiles)}</code></div>` : ''}
+      ${taskEntry.verify ? `<div><div class="kpi-label">VERIFY GATE</div><code>${esc(taskEntry.verify)}</code></div>` : ''}
+      ${taskEntry.acceptance ? `<div><div class="kpi-label">ACCEPTANCE</div><div class="brand-sub">${esc(taskEntry.acceptance)}</div></div>` : ''}
+      ${taskEntry.expected ? `<div><div class="kpi-label">EXPECTED</div><div class="brand-sub">${esc(taskEntry.expected)}</div></div>` : ''}
+      ${taskEntry.spec ? `<div><div class="kpi-label">SPEC</div><div class="brand-sub">${esc(taskEntry.spec)}</div></div>` : ''}
+    `;
+  }
+
+  function renderPanels(appState, snapshot, activePlan) {
+    const byId = (id) => document.getElementById(id);
+
+    // 1. Diegetic Top HUD Meters
+    byId('repoMeta').textContent = `${snapshot.repoRoot} · ${relTime(snapshot.generatedAt)}`;
+    const aheadBehind =
+      snapshot.git.ahead || snapshot.git.behind
+        ? ` ↑${snapshot.git.ahead}/↓${snapshot.git.behind}`
+        : '';
+    byId('gitBadge').textContent =
+      `${snapshot.git.branch}@${snapshot.git.head || '—'}${aheadBehind}${snapshot.git.dirtyCount ? ` (${snapshot.git.dirtyCount} dirty)` : ''}`;
+
+    const agBadge = byId('agApiBadge');
+    agBadge.textContent = snapshot.antigravityApiConnected ? 'AG-LIVE' : 'FS-LIVE';
+
+    if (activePlan) {
+      byId('kpiPlanDone').textContent = `${activePlan.done}/${activePlan.total}`;
+      byId('kpiPlanPct').textContent = `${activePlan.percent}%`;
+      byId('kpiPlanBar').style.width = `${activePlan.percent}%`;
+      const dagStats = activePlan.dag?.stats;
+      byId('kpiPlanNext').textContent = activePlan.nextTaskId
+        ? `${dagStats ? `${dagStats.ready} ready · ` : ''}NEXT: ${activePlan.nextTaskId} ${activePlan.nextTaskTitle}`
+        : 'ALL QUESTS CLEARED!!';
+      byId('tabPlanCount').textContent = `${activePlan.done}/${activePlan.total}`;
+    }
+
+    byId('kpiRunning').textContent = String(snapshot.summary.runningSessions);
+    byId('kpiTotalSessions').textContent = `/${snapshot.summary.totalSessions}`;
+    const runtimeCounts = snapshot.summary.runtimeCounts || {};
+    byId('kpiRuntimeSplit').textContent =
+      Object.entries(runtimeCounts)
+        .map(([rtKey, rtCount]) => `${rtKey}:${rtCount}`)
+        .join(' · ') || 'No heroes';
+    byId('tabAgentsCount').textContent = String(snapshot.summary.totalSessions);
+
+    byId('kpiSubagents').textContent = String(snapshot.summary.subagents);
+    byId('kpiSwarms').textContent = String(snapshot.summary.swarms);
+    const graphNodeCount = snapshot.flowGraph?.nodes?.length || 0;
+    byId('tabFlowCount').textContent = String(graphNodeCount);
+    byId('tabSwarmsCount').textContent = String(
+      snapshot.summary.subagents + snapshot.summary.swarms
+    );
+
+    byId('kpiTokens').textContent = fmtNum(snapshot.summary.tokens.total);
+    byId('kpiCachePct').textContent = `${snapshot.summary.tokens.cacheHitPct ?? 0}% cache`;
+
+    byId('kpiHostCpu').textContent = `${snapshot.host.cpuPct ?? 0}%`;
+    byId('kpiHostRam').textContent = `RAM ${snapshot.host.memUsedGb}/${snapshot.host.memTotalGb}G`;
+    byId('kpiHostRamBar').style.width = `${snapshot.host.memPct ?? 0}%`;
+
+    const vpsProbes = snapshot.probes?.vps || [];
+    const upVpsProbes = vpsProbes.filter((probe) => probe.status === 'up');
+    const pendingVps = vpsProbes.some((probe) => probe.status === 'pending');
+    const vpsUp = upVpsProbes.length;
+    const latencySample =
+      upVpsProbes.length > 0
+        ? upVpsProbes
+        : vpsProbes.filter((probe) => typeof probe.latencyMs === 'number');
+    const avgLatency =
+      latencySample.length > 0
+        ? Math.round(
+            latencySample.reduce((acc, probe) => acc + (Number(probe.latencyMs) || 0), 0) /
+              latencySample.length
+          )
+        : 0;
+    byId('kpiVpsUp').textContent = `${vpsUp}/${vpsProbes.length} VPS`;
+    byId('kpiVpsLatency').textContent = pendingVps ? 'probing…' : `${avgLatency}ms`;
+    byId('tabInfraCount').textContent = `${vpsUp}/${vpsProbes.length}`;
+    byId('tabTelemetryCount').textContent = String(snapshot.analytics?.errorLedger?.length || 0);
+    byId('probeAge').textContent = relTime(snapshot.probes?.updatedAt);
+
+    // 2. Manga Subtitle Live Feed Box
+    const activeSessions = (snapshot.sessions || []).filter(
+      (session) => session.status === 'running' || session.status === 'error'
+    );
+    byId('activePulseCount').textContent = `${activeSessions.length} active on stage`;
+
+    const subtitleAvatar = byId('subtitleAvatar');
+    if (subtitleAvatar && activeSessions[0]) {
+      subtitleAvatar.src = portraitForSession(activeSessions[0]);
+    }
+
+    const stripEl = byId('activeQuickStrip');
+    stripEl.innerHTML = activeSessions.length
+      ? activeSessions
+          .slice(0, 5)
+          .map(
+            (session) => `
+          <div class="quick-agent" data-runtime="${esc(session.runtime)}" data-id="${esc(session.id)}"
+               style="border-left-color:${session.status === 'error' ? 'var(--red)' : 'var(--green)'}">
+            <div class="quick-agent-main">
+              <div class="quick-agent-title">
+                <span class="chip rt-${esc(session.runtime)}">${esc(session.runtimeLabel)}</span>
+                ${esc(session.title)}
+              </div>
+              <div class="quick-agent-sub">${esc(session.focus || session.lastTool || 'In action…')}</div>
+            </div>
+            <span class="brand-sub">${relTime(session.updatedAt)}</span>
+          </div>`
+          )
+          .join('')
+      : '<div class="empty">Heroes chilling on the rooftop</div>';
+
+    const feedQuery = (appState.feedSearch || '').trim().toLowerCase();
+    const filteredFeed = (snapshot.activityFeed || []).filter((eventEntry) => {
+      if (appState.feedKind !== 'all' && eventEntry.kind !== appState.feedKind) return false;
+      if (
+        feedQuery &&
+        !`${eventEntry.runtimeLabel} ${eventEntry.sessionTitle} ${eventEntry.tool} ${eventEntry.summary}`
+          .toLowerCase()
+          .includes(feedQuery)
+      ) {
+        return false;
+      }
+      return true;
+    });
+
+    const feedEl = byId('activityFeed');
+    feedEl.innerHTML = filteredFeed.length
+      ? filteredFeed
+          .slice(0, 45)
+          .map(
+            (eventEntry) => `
+          <div class="feed-row clickable ${eventEntry.kind === 'error' ? 'error' : ''}"
+               data-runtime="${esc(eventEntry.runtime)}" data-id="${esc(eventEntry.sessionId)}">
+            <div class="feed-head">
+              <span><span class="chip rt-${esc(eventEntry.runtime)}">${esc(eventEntry.runtimeLabel)}</span> ${esc(eventEntry.sessionTitle)}</span>
+              <span>${relTime(eventEntry.at)}</span>
+            </div>
+            <div class="feed-msg">[${esc(eventEntry.tool || eventEntry.kind)}] ${esc(eventEntry.summary)}</div>
+          </div>`
+          )
+          .join('')
+      : '<div class="empty">No speech bubbles match filter</div>';
+
+    renderProbes(byId('vpsProbeFull'), vpsProbes);
+
+    // 3. Quest Map (DAG + Checklist)
+    if (activePlan) {
+      byId('planViewTitle').textContent =
+        `🗺️ ${activePlan.title} (${activePlan.done}/${activePlan.total} · ${activePlan.percent}%)`;
+      const dagStats = activePlan.dag?.stats;
+      byId('dagStatsBadge').textContent = dagStats
+        ? `CLEARED:${dagStats.done} · ACTIVE:${dagStats.active} · READY:${dagStats.ready} · LOCKED:${dagStats.blocked} · BOSS-CHAIN:${activePlan.dag.criticalPathIds.length}`
+        : '';
+
+      const selectedTask =
+        activePlan.tasks.find((taskEntry) => taskEntry.id === appState.selectedTaskId) || null;
+      renderTaskInspector(byId('dagTaskInspector'), selectedTask, activePlan);
+
+      byId('waveGrid').innerHTML = [
+        `<div class="wave-card ${appState.selectedWave === 'all' ? 'selected' : ''}" data-wave="all">
+          <div style="font-weight:700;margin-bottom:3px">ALL CHAPTERS</div>
+          <div class="brand-sub" style="color:var(--yellow)">${activePlan.done}/${activePlan.total} (${activePlan.percent}%)</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${activePlan.percent}%"></div></div>
+        </div>`,
+        ...activePlan.waves.map(
+          (waveEntry) => `
+          <div class="wave-card ${appState.selectedWave === waveEntry.title ? 'selected' : ''}" data-wave="${esc(waveEntry.title)}">
+            <div style="font-weight:700;font-size:12px;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(waveEntry.title)}</div>
+            <div class="brand-sub">${waveEntry.done}/${waveEntry.total} (${waveEntry.percent}%)</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${waveEntry.percent}%"></div></div>
+          </div>`
+        ),
+      ].join('');
+
+      const query = (appState.taskSearch || '').trim().toLowerCase();
+      const filteredTasks = activePlan.tasks.filter((taskEntry) => {
+        if (appState.selectedWave !== 'all' && taskEntry.wave !== appState.selectedWave)
+          return false;
+        if (appState.taskStatusFilter === 'done' && !taskEntry.done) return false;
+        if (appState.taskStatusFilter === 'pending' && taskEntry.done) return false;
+        if (appState.taskStatusFilter === 'ready' && taskEntry.dagState !== 'ready') return false;
+        if (appState.taskStatusFilter === 'active' && taskEntry.dagState !== 'active') return false;
+        if (
+          query &&
+          !`${taskEntry.id} ${taskEntry.title} ${taskEntry.ownerFiles} ${taskEntry.wave}`
+            .toLowerCase()
+            .includes(query)
+        ) {
+          return false;
+        }
+        return true;
+      });
+
+      byId('taskTable').innerHTML = filteredTasks.length
+        ? filteredTasks
+            .map((taskEntry) => {
+              const expanded = appState.expandedTasks.has(taskEntry.id);
+              const badgeIcon =
+                taskEntry.dagState === 'done'
+                  ? '★'
+                  : taskEntry.dagState === 'active'
+                    ? '⚡'
+                    : taskEntry.dagState === 'ready'
+                      ? '▶'
+                      : '○';
+              return `
+              <div class="task-row ${esc(taskEntry.dagState)}">
+                <div class="task-head" data-task-id="${esc(taskEntry.id)}">
+                  <div>
+                    <span class="chip st-${esc(taskEntry.dagState)}" style="margin-right:7px">${badgeIcon} ${esc(taskEntry.dagState.toUpperCase())}</span>
+                    <span class="task-id">${esc(taskEntry.id)}</span>
+                    <span>${esc(taskEntry.title)}</span>
+                  </div>
+                  <div class="toolbar">
+                    ${taskEntry.commitSha ? `<span class="chip st-running" data-commit-sha="${esc(taskEntry.commitSha)}">${esc(taskEntry.commitSha)}</span>` : ''}
+                    <span class="brand-sub">${expanded ? '▲' : '▼'}</span>
+                  </div>
+                </div>
+                ${
+                  expanded
+                    ? `<div class="task-detail">
+                        <div><strong>Chapter:</strong> ${esc(taskEntry.wave)}</div>
+                        ${taskEntry.ownerFiles ? `<div><strong>Owner Files:</strong> <code>${esc(taskEntry.ownerFiles)}</code></div>` : ''}
+                        ${taskEntry.dependsOn ? `<div><strong>Depends On:</strong> <code>${esc(taskEntry.dependsOn)}</code></div>` : ''}
+                        ${taskEntry.acceptance ? `<div><strong>Acceptance:</strong> ${esc(taskEntry.acceptance)}</div>` : ''}
+                        ${taskEntry.expected ? `<div><strong>Expected:</strong> ${esc(taskEntry.expected)}</div>` : ''}
+                        ${taskEntry.verify ? `<div><strong>Verify:</strong> <code>${esc(taskEntry.verify)}</code></div>` : ''}
+                        ${taskEntry.spec ? `<div><strong>Spec:</strong> ${esc(taskEntry.spec)}</div>` : ''}
+                      </div>`
+                    : ''
+                }
+              </div>`;
+            })
+            .join('')
+        : '<div class="empty">No quests match filter</div>';
+    }
+
+    // 4. Beat & Telemetry Lab
+    const analytics = snapshot.analytics || {};
+    const runtimeRows = analytics.runtimeBreakdown || [];
+    const maxRtTokens = Math.max(1, ...runtimeRows.map((row) => row.totalTokens || 0));
+    byId('runtimeMatrix').innerHTML = runtimeRows.length
+      ? runtimeRows
+          .map((row) => {
+            const pct = Math.max(4, Math.round(((row.totalTokens || 0) / maxRtTokens) * 100));
+            return `
+            <div class="metric-bar-row">
+              <div class="metric-bar-head">
+                <span><span class="chip rt-${esc(row.runtime)}">${esc(row.label)}</span> ${row.running}/${row.sessions} active · ${row.subagents} sidekicks</span>
+                <span>${fmtNum(row.totalTokens)} tok · <strong style="color:var(--yellow)">${row.cacheHitPct}% cache</strong></span>
+              </div>
+              <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+            </div>`;
+          })
+          .join('')
+      : '<div class="empty">No runtime metrics yet</div>';
+
+    const toolRows = analytics.toolFrequency || [];
+    const maxToolCalls = Math.max(1, ...toolRows.map((toolEntry) => toolEntry.calls || 0));
+    const modelRows = analytics.modelBreakdown || [];
+    byId('toolModelBreakdown').innerHTML = `
+      ${toolRows
+        .slice(0, 8)
+        .map((toolEntry) => {
+          const pct = Math.max(4, Math.round((toolEntry.calls / maxToolCalls) * 100));
+          return `
+          <div class="metric-bar-row">
+            <div class="metric-bar-head">
+              <span><strong>${esc(toolEntry.name)}</strong> <span class="brand-sub">(${toolEntry.runtimes.join(', ')})</span></span>
+              <span>${toolEntry.calls} hits${toolEntry.errors ? ` · <span style="color:var(--red)">${toolEntry.errors} bonk</span>` : ''}</span>
+            </div>
+            <div class="bar-track"><div class="bar-fill bar-violet" style="width:${pct}%"></div></div>
+          </div>`;
+        })
+        .join('')}
+      ${
+        modelRows.length
+          ? `<div class="subagent-strip">${modelRows
+              .slice(0, 8)
+              .map(
+                (modelEntry) =>
+                  `<span class="sub-pill">${esc(modelEntry.model)} · ${fmtNum(modelEntry.tokens)} tok (${modelEntry.sessions})</span>`
+              )
+              .join('')}</div>`
+          : ''
+      }
+    `;
+
+    const errors = analytics.errorLedger || [];
+    byId('errorLedgerCount').textContent = `${errors.length} bonk(s)`;
+    byId('errorLedgerList').innerHTML = errors.length
+      ? errors
+          .map(
+            (errEntry) => `
+          <div class="feed-row error clickable" data-runtime="${esc(errEntry.runtime)}" data-id="${esc(errEntry.sessionId)}">
+            <div class="feed-head">
+              <span><span class="chip rt-${esc(errEntry.runtime)}">${esc(errEntry.runtimeLabel)}</span> ${esc(errEntry.sessionTitle)}</span>
+              <span>${relTime(errEntry.at)}</span>
+            </div>
+            <div class="feed-msg">[${esc(errEntry.tool)}] ${esc(errEntry.message)}</div>
+          </div>`
+          )
+          .join('')
+      : '<div class="empty">ZERO BONKS!! ALL HEROES CLEAN!</div>';
+
+    // 5. Cast Roster (Character Select Cards with REAL MoonWitness portraits!)
+    const agentQuery = (appState.agentSearch || '').trim().toLowerCase();
+    const filteredAgents = (snapshot.sessions || [])
+      .filter((session) => {
+        if (appState.filterRuntime !== 'all' && session.runtime !== appState.filterRuntime)
+          return false;
+        if (appState.filterStatus === 'running' && session.status !== 'running') return false;
+        if (
+          appState.filterStatus === 'recent' &&
+          session.status !== 'running' &&
+          session.status !== 'recent'
+        ) {
+          return false;
+        }
+        if (appState.filterStatus === 'error' && !session.lastError) return false;
+        if (appState.workspaceOnly && !session.inCurrentWorkspace) return false;
+        if (
+          agentQuery &&
+          !`${session.title} ${session.focus} ${session.model} ${session.branch || ''} ${session.lastTool} ${session.id}`
+            .toLowerCase()
+            .includes(agentQuery)
+        ) {
+          return false;
+        }
+        return true;
+      })
+      .sort((left, right) => {
+        if (appState.agentSort === 'tokens')
+          return (right.tokens?.total || 0) - (left.tokens?.total || 0);
+        if (appState.agentSort === 'steps') return (right.steps || 0) - (left.steps || 0);
+        if (appState.agentSort === 'subagents') {
+          return (right.subagents?.length || 0) - (left.subagents?.length || 0);
+        }
+        return right.mtimeMs - left.mtimeMs;
+      });
+
+    const agentListEl = byId('agentList');
+    agentListEl.classList.toggle('table-mode', appState.agentView === 'table');
+
+    if (!filteredAgents.length) {
+      agentListEl.innerHTML = '<div class="empty">No heroes match current filters</div>';
+    } else if (appState.agentView === 'table') {
+      agentListEl.innerHTML = `
+        <table class="fleet-table">
+          <thead>
+            <tr>
+              <th>Hero</th>
+              <th>Mood</th>
+              <th>Mission</th>
+              <th>Gear</th>
+              <th>Moves</th>
+              <th>Power</th>
+              <th>Sidekicks</th>
+              <th>Seen</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filteredAgents
+              .map(
+                (session) => `
+              <tr class="clickable" data-runtime="${esc(session.runtime)}" data-id="${esc(session.id)}">
+                <td><span class="chip rt-${esc(session.runtime)}">${esc(session.runtimeLabel)}</span></td>
+                <td><span class="chip st-${esc(session.status)}">${esc(session.status.toUpperCase())}</span></td>
+                <td><strong>${esc(session.title)}</strong><div class="brand-sub">${esc(session.focus || session.lastTool || 'Idle')}</div></td>
+                <td class="brand-sub">${esc(session.model)}</td>
+                <td class="brand-sub">${session.steps || 0}</td>
+                <td class="brand-sub">${fmtNum(session.tokens?.total || 0)}</td>
+                <td class="brand-sub">${(session.subagents || []).length}</td>
+                <td class="brand-sub">${relTime(session.updatedAt)}</td>
+              </tr>`
+              )
+              .join('')}
+          </tbody>
+        </table>`;
+    } else {
+      agentListEl.innerHTML = filteredAgents
+        .map((session) => {
+          const tokSum = Math.max(
+            1,
+            (session.tokens?.input || 0) +
+              (session.tokens?.cached || 0) +
+              (session.tokens?.output || 0)
+          );
+          const inPct = Math.round(((session.tokens?.input || 0) / tokSum) * 100);
+          const cachePct = Math.round(((session.tokens?.cached || 0) / tokSum) * 100);
+          const outPct = Math.max(0, 100 - inPct - cachePct);
+          const subHtml =
+            session.subagents && session.subagents.length
+              ? `<div class="subagent-strip">${session.subagents
+                  .slice(0, 5)
+                  .map(
+                    (subEntry) =>
+                      `<span class="sub-pill">★ ${esc(subEntry.role || subEntry.type)}</span>`
+                  )
+                  .join(
+                    ''
+                  )}${session.subagents.length > 5 ? `<span class="sub-pill">+${session.subagents.length - 5} more</span>` : ''}</div>`
+              : '';
+          return `
+            <article class="agent-card ${esc(session.status)}" data-runtime="${esc(session.runtime)}" data-id="${esc(session.id)}">
+              <div class="cast-card-layout">
+                <img class="cast-avatar" src="${esc(portraitForSession(session))}" alt="${esc(session.runtimeLabel)}" loading="lazy" />
+                <div class="cast-body">
+                  <div class="agent-top">
+                    <div class="agent-badges">
+                      <span class="chip rt-${esc(session.runtime)}">${esc(session.runtimeLabel)}</span>
+                      <span class="chip st-${esc(session.status)}">${esc(session.status.toUpperCase())}</span>
+                      ${session.isCurrentSession ? '<span class="chip st-active">STAR HERO</span>' : ''}
+                      ${session.swarmWorkers ? `<span class="chip rt-visual-swarm">SWARM:${session.swarmWorkers}</span>` : ''}
+                    </div>
+                    <span class="brand-sub">${relTime(session.updatedAt)}</span>
+                  </div>
+                  <div class="agent-title">${esc(session.title)}</div>
+                  <div class="agent-focus">${esc(session.focus || session.lastTool || 'Chilling')}</div>
+                  ${session.lastError ? `<div class="agent-focus" style="color:var(--red);margin-top:3px">BONK: ${esc(session.lastError)}</div>` : ''}
+                  <div class="tok-bar" title="Tokens: input / cache / output">
+                    <span class="tok-in" style="width:${inPct}%"></span>
+                    <span class="tok-cache" style="width:${cachePct}%"></span>
+                    <span class="tok-out" style="width:${outPct}%"></span>
+                  </div>
+                  <div class="agent-meta">
+                    <span>gear:${esc(session.model)}</span>
+                    ${session.branch ? `<span>branch:${esc(session.branch)}</span>` : ''}
+                    <span>moves:${session.steps || 0}</span>
+                    <span>tok:${fmtNum(session.tokens?.total || 0)}</span>
+                  </div>
+                  ${subHtml}
+                </div>
+              </div>
+            </article>`;
+        })
+        .join('');
+    }
+
+    // 6. Swarms & Sidekicks
+    byId('swarmList').innerHTML = (snapshot.swarms || []).length
+      ? snapshot.swarms
+          .map(
+            (swarmEntry) => `
+          <div class="agent-card">
+            <div class="agent-top">
+              <span class="chip rt-${esc(swarmEntry.runtime)}">${esc(swarmEntry.runtime)}</span>
+              <span class="brand-sub">${(swarmEntry.workers || []).length} squad members</span>
+            </div>
+            <div class="agent-title">${esc(swarmEntry.title)}</div>
+            <div class="agent-focus" style="white-space:normal">${esc(swarmEntry.line)}</div>
+            <div class="subagent-strip">
+              ${(swarmEntry.workers || [])
+                .map(
+                  (worker) =>
+                    `<span class="sub-pill">${esc(worker.name)}: ${esc(worker.task || worker.status || '')}</span>`
+                )
+                .join('')}
+            </div>
+          </div>`
+          )
+          .join('')
+      : '<div class="empty">No active swarm squads right now</div>';
+
+    const parentsWithSubs = (snapshot.sessions || []).filter(
+      (session) => session.subagents && session.subagents.length > 0
+    );
+    byId('subagentTree').innerHTML = parentsWithSubs.length
+      ? parentsWithSubs
+          .map(
+            (parentSession) => `
+          <div class="agent-card" data-runtime="${esc(parentSession.runtime)}" data-id="${esc(parentSession.id)}">
+            <div class="agent-top">
+              <div class="agent-badges">
+                <span class="chip rt-${esc(parentSession.runtime)}">${esc(parentSession.runtimeLabel)}</span>
+                <strong>${esc(parentSession.title)}</strong>
+              </div>
+              <span class="brand-sub">${parentSession.subagents.length} chibi sidekick(s)</span>
+            </div>
+            <div class="stack-tight" style="margin-top:8px;padding-left:14px;border-left:3px solid var(--yellow)">
+              ${parentSession.subagents
+                .map(
+                  (subEntry) => `
+                <div class="probe-row">
+                  <div>
+                    <strong>${esc(subEntry.role || subEntry.id)}</strong>
+                    <span class="brand-sub">(${esc(subEntry.type || 'sidekick')} · ${esc(subEntry.model || 'inherit')})</span>
+                  </div>
+                  <span class="brand-sub">${relTime(subEntry.at)}</span>
+                </div>`
+                )
+                .join('')}
+            </div>
+          </div>`
+          )
+          .join('')
+      : '<div class="empty">No sidekick spawns yet</div>';
+
+    // 7. Moon City Infra & Git Reel
+    const diffStat = snapshot.git.diffStat || { filesChanged: 0, insertions: 0, deletions: 0 };
+    byId('gitSummaryDetail').textContent =
+      `branch: ${snapshot.git.branch} · ${snapshot.git.dirtyCount} dirty · ${snapshot.git.stashCount || 0} stash`;
+    byId('gitDiffStatBadge').textContent =
+      `${diffStat.filesChanged} tracked diff · +${diffStat.insertions} / -${diffStat.deletions}`;
+
+    byId('gitCommitList').innerHTML = (snapshot.git.commits || []).length
+      ? snapshot.git.commits
+          .map(
+            (commitEntry) => `
+          <div class="feed-row clickable" data-commit-sha="${esc(commitEntry.sha)}">
+            <div class="feed-head">
+              <span>
+                <strong style="color:var(--yellow)">${esc(commitEntry.sha)}</strong>
+                ${commitEntry.taskId ? `<span class="chip st-running">${esc(commitEntry.taskId)}</span>` : ''}
+                · ${esc(commitEntry.author)}
+              </span>
+              <span>${relTime(commitEntry.at)}</span>
+            </div>
+            <div class="feed-msg">${esc(commitEntry.subject)}</div>
+          </div>`
+          )
+          .join('')
+      : '<div class="empty">No commits found</div>';
+
+    const dirtyAreas = Object.entries(snapshot.git.dirtyByArea || {}).sort(
+      (left, right) => right[1] - left[1]
+    );
+    byId('dirtyAreaPills').innerHTML = dirtyAreas.length
+      ? dirtyAreas
+          .map(([area, count]) => `<span class="sub-pill">${esc(area)}: ${count}</span>`)
+          .join('')
+      : '<span class="brand-sub">Working tree spotless!</span>';
+
+    byId('dirtyFilesList').innerHTML = (snapshot.git.dirtyFiles || []).length
+      ? snapshot.git.dirtyFiles
+          .slice(0, 40)
+          .map(
+            (fileEntry) => `
+          <div class="probe-row">
+            <span><span class="chip st-${fileEntry.status === 'deleted' ? 'error' : fileEntry.status === 'untracked' ? 'ready' : 'active'}">${esc(fileEntry.code)}</span> ${esc(fileEntry.path)}</span>
+            <span class="brand-sub">${esc(fileEntry.area)}</span>
+          </div>`
+          )
+          .join('')
+      : '<div class="empty">Clean working tree</div>';
+
+    byId('localPortGrid').innerHTML = (snapshot.probes?.localPorts || [])
+      .map(
+        (portEntry) => `
+      <div class="probe-row">
+        <span><span class="probe-dot ${portEntry.open ? 'up' : 'pending'}"></span>${esc(portEntry.label)}</span>
+        <span class="brand-sub">${portEntry.open ? 'OPEN' : '—'}</span>
+      </div>`
+      )
+      .join('');
+
+    byId('hostDiagGrid').innerHTML = `
+      <div class="probe-row"><span>Rig / OS</span><span class="brand-sub">${esc(snapshot.host.hostname)} · ${esc(snapshot.host.platform)}/${esc(snapshot.host.arch || '')}</span></div>
+      <div class="probe-row"><span>Engine</span><span class="brand-sub">${snapshot.host.cpus} cores · ${esc(snapshot.host.cpuModel || '')}</span></div>
+      <div class="probe-row"><span>Live CPU Turbo</span><span class="brand-sub" style="color:var(--yellow)">${snapshot.host.cpuPct ?? 0}%</span></div>
+      <div class="probe-row"><span>Memory Tank</span><span class="brand-sub">${snapshot.host.memUsedGb} / ${snapshot.host.memTotalGb} GB (${snapshot.host.memPct}%)</span></div>
+      <div class="probe-row"><span>Broadcast Uptime</span><span class="brand-sub">${snapshot.host.uptimeSec}s · ${snapshot.telemetryHistory?.length || 0} frames</span></div>
+    `;
+  }
+
+  window.MWObservatory.utils = { esc, fmtNum, relTime, portraitForSession };
+  window.MWObservatory.renderPanels = renderPanels;
+  window.MWObservatory.renderTaskInspector = renderTaskInspector;
+})();
