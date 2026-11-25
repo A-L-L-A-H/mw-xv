@@ -75,8 +75,8 @@ Execute strictly **1 micro-task (`Txx`) per cycle** without asking the user any 
 ### Wave 3 — Proof-Carrying Runner, Micro-Brief Compiler & TTL Leases (`wave-3-proof-runner-and-briefs.md`)
 - [x] **T19** — Implement `O(1)` Cognitive Micro-Brief compiler (`src/runner/brief-compiler.ts`: 1 task + `owner_files` + `specs/*.md` slice + 2-hop neighbors + matched `INV-*` + top-3 episodic pitfalls)
 - [x] **T20** — Implement atomic multi-agent TTL Lease manager (`src/runner/lease-manager.ts`: SQLite `BEGIN IMMEDIATE` claim/renew/release/stale-reap + `.leases.local.json` mirror)
-- [ ] **T21** — Implement runtime `git diff` scope membrane & verification executor (`src/runner/scope-gate.ts`: blocks edits outside `owner_files` + redacted stdout/stderr capture)
-- [ ] **T22** — Implement Proof-Carrying Task Runner (`src/runner/proof-runner.ts`: verify -> scope check -> seal DAG-Merkle `evidence/*.proof.json` -> bounded-attempt `flash->neon->argon->blocked` circuit breaker -> atomic `git commit --only`)
+- [x] **T21** — Implement runtime `git diff` scope membrane & verification executor (`src/runner/scope-gate.ts`: blocks edits outside `owner_files` + redacted stdout/stderr capture)
+- [x] **T22** — Implement Proof-Carrying Task Runner (`src/runner/proof-runner.ts`: verify -> scope check -> seal DAG-Merkle `evidence/*.proof.json` -> bounded-attempt `flash->neon->argon->blocked` circuit breaker -> atomic `git commit --only`)
 - [ ] **T23** — Add Wave 3 unit tests (`brief-compiler.test.ts`, `lease-lock.test.ts`, `proof-runner.test.ts`) & pass Wave 3 gate
 
 ### Wave 4 — Universal Split-Authority Projection Adapters (`wave-4-universal-projection-adapters.md`)

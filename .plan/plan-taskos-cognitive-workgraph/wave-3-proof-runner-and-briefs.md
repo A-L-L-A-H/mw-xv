@@ -53,7 +53,7 @@
 
 ---
 
-## - [ ] T21 — Implement Runtime `git diff` Scope Membrane & Verification Executor (`src/runner/scope-gate.ts`)
+## - [x] T21 — Implement Runtime `git diff` Scope Membrane & Verification Executor (`src/runner/scope-gate.ts`)
 
 - **Owner File(s):** `packages/plan-taskos/src/runner/scope-gate.ts`
   - `packages/plan-taskos/src/runner/scope-gate.ts` (CREATE)
@@ -73,7 +73,7 @@
 
 ---
 
-## - [ ] T22 — Implement Proof-Carrying Task Runner & Bounded-Attempt Circuit Breaker (`src/runner/proof-runner.ts`)
+## - [x] T22 — Implement Proof-Carrying Task Runner & Bounded-Attempt Circuit Breaker (`src/runner/proof-runner.ts`)
 
 - **Owner File(s):** `packages/plan-taskos/src/runner/proof-runner.ts`
   - `packages/plan-taskos/src/runner/proof-runner.ts` (CREATE)
