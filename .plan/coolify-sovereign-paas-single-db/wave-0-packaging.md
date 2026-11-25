@@ -55,7 +55,7 @@
 
 ---
 
-## - [ ] M03 — Sync `bun.lock` & Verify `@moonwitness/orm-cloud` Build
+## - [x] M03 — Sync `bun.lock` & Verify `@moonwitness/orm-cloud` Build
 
 - **Owner File (MODIFY if changed):** `bun.lock`
 - **Depends On:** `M02`
