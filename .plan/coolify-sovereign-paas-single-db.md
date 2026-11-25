@@ -111,7 +111,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 - [x] **M52** — `deploy/vps/install.sh`: CLI flags (`--port`, `--unlock-port`, `--wipe-tls`), auto-Docker install, `detect_public_ipv4`, `MW_SETUP_TOKEN`, `TRUST_PROXY_HOPS=2`
 - [x] **M53** — `deploy/vps/install.sh`: full clean `cleanup_for_reinstall()` (Postgres `pgdata` + `mw-*` volumes + networks + stacks + backups + legacy SQLite + `.env`) + stateless `control-plane.env`
 - [x] **M54** — `deploy/vps/install.sh`: Caddy `:80/:443/:8000-8010`, zero-domain Caddyfile (`admin localhost:2019` + `:8000`), UFW, `--unlock-port` PostgreSQL recovery, banner
-- [ ] **M55** — Validate `bash -n`, `gitleaks`, push `origin/dev`
+- [x] **M55** — Validate `bash -n`, `gitleaks`, push `origin/dev`
 
 ### Wave 5 — Live VPS E2E & Full Clean DB-Wipe Proof (`wave-4-installer-and-vps-e2e.md`)
 - [ ] **M56** — Archive clean tarball + upload tarball, Linux binary, `install.sh` to `moonwitness-vps`
@@ -136,5 +136,5 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 | Wave 1 | `M04`–`M15` | `12 / 12` | `177580ee` | `M15 OK` — `CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build` exit 0; binary size `18,091,490` bytes (> 10MB) |
 | Wave 2 | `M16`–`M38` | `23 / 23` | `7de3a496` | `M38 OK` — full Wave 2 gate green: auth 18/18, client 25/25, orm-cloud 137/137, api setup-claim 3/3, api build exit 0, api:addon:check 4/4; setup-status/claim lifecycle + conditional HSTS verified |
 | Wave 3 | `M39`–`M51` | `13 / 13` | `0de765f7` | `M51 OK` — full board gate green: typecheck 0; ui:check 0 findings; build exit 0 (28/28 pages incl /setup); board:budget all routes pass |
-| Wave 4 | `M52`–`M55` | `3 / 4` | — | `M54 OK` — verification snippet passes; Caddy :8000-8010 + admin localhost, UFW rules, --unlock-port PG recovery, IP setup banner |
+| Wave 4 | `M52`–`M55` | `4 / 4` | `7a94fa11` | `M55 OK` — `git push origin dev` succeeded (`c0c19311..7a94fa11`); all pre-push static/UI/doc/gitleaks/TaskOS gates green; dev in sync with origin/dev |
 | Wave 5 | `M56`–`M66` | `0 / 11` | — | — |
