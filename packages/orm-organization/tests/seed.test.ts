@@ -220,7 +220,6 @@ describe('organization seed', () => {
     await seedOrganizationInitialData(db);
 
     const bundle = buildOrganizationInitialSeed();
-    const roleDeptMap = new Map(bundle.roles.map((r) => [r.code, r.departmentCode]));
 
     const members = await db('organization_memberships')
       .where({
@@ -229,14 +228,6 @@ describe('organization seed', () => {
       .select('*');
 
     for (const member of members) {
-      const memberData = bundle.members.find(
-        (m) =>
-          m.login ===
-          (async () => {
-            const user = await db('users').where({ id: member.user_id }).first();
-            return user?.login;
-          })()
-      );
       // Use a simpler check: verify all FKs exist
       expect(
         await db('organization_departments').where({ id: member.department_id }).first()
