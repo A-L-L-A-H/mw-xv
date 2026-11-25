@@ -143,7 +143,7 @@
 
 ---
 
-## - [ ] M21 — Create PostgreSQL Instance Settings Store (`paas-state.ts`, Part 1)
+## - [x] M21 — Create PostgreSQL Instance Settings Store (`paas-state.ts`, Part 1)
 
 - **Owner File (CREATE):** `packages/orm-cloud/src/paas-state.ts`
 - **Depends On:** `M16`

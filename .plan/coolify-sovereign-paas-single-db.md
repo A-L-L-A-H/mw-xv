@@ -73,7 +73,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 - [x] **M18** — `packages/orm-cloud/src/coolify-template-pack.ts`: paginated `listCoolifyTemplates` & `getCoolifyTemplateDetail`
 - [x] **M19** — `packages/orm-cloud/src/coolify-compose-compiler.ts`: security policy gate + idempotent Coolify magic variable resolver (`existingEnv` reuse)
 - [x] **M20** — `packages/orm-cloud/src/coolify-compose-compiler.ts`: full YAML transformer (volume prefixing, top-level `volumes:`, networks/aliases, inline `content:` files)
-- [ ] **M21** — `packages/orm-cloud/src/paas-state.ts`: NULL-safe `base_config_parameters` upsert + `readPaasInstanceSettings` / `savePaasInstanceSettings`
+- [x] **M21** — `packages/orm-cloud/src/paas-state.ts`: NULL-safe `base_config_parameters` upsert + `readPaasInstanceSettings` / `savePaasInstanceSettings`
 - [ ] **M22** — `packages/orm-cloud/src/paas-state.ts`: `allocatePreviewPort`, `buildDeclarativeCaddySpec`, `reconcileCaddyWithAgent`, `promotePreviewAppsToWildcard`
 - [ ] **M23** — `packages/orm-cloud/src/providers/moonwitness-mesh.ts` + `index.ts`: fix RAM MB casing + add stateless `/agent/*` client helpers
 - [ ] **M24** — `packages/orm-cloud/src/http.ts`: wire `GET /settings`, `POST /settings/verify-dns`, `POST /settings/apply` (with strict TLS lockdown gate)
@@ -134,7 +134,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 |---|---|---|---|---|
 | Wave 0 | `M01`–`M03` | `3 / 3` | — | `M03 OK` — frozen-lockfile dry-run exit 0 (zero drift, `bun.lock` unchanged); orm-cloud build exit 0; manifest test pass 10 / fail 0 |
 | Wave 1 | `M04`–`M15` | `12 / 12` | `177580ee` | `M15 OK` — `CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build` exit 0; binary size `18,091,490` bytes (> 10MB) |
-| Wave 2 | `M16`–`M38` | `5 / 23` | — | `M20 OK` — `@moonwitness/orm-cloud build` exit 0; n8n compiles with top-level `mw-n8n-n8n-data` volume, `moonwitness-paas` network, inline `./nginx/nginx.conf` extracted, 1 ingress route |
+| Wave 2 | `M16`–`M38` | `6 / 23` | — | `M21 OK` — `@moonwitness/orm-cloud build` exit 0; `isValidPublicDomain` rejects IP literals/.local/.localhost/.internal/.mesh/.easytier, accepts valid FQDNs |
 | Wave 3 | `M39`–`M51` | `0 / 13` | — | — |
 | Wave 4 | `M52`–`M55` | `0 / 4` | — | — |
 | Wave 5 | `M56`–`M66` | `0 / 11` | — | — |
