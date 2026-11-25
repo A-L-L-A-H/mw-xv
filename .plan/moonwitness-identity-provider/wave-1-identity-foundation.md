@@ -15,7 +15,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
 #### - [ ] I07 — Scaffold packages/orm-identity
 
 - **Owner File(s):** packages/orm-identity/package.json; packages/orm-identity/tsconfig.json
-- **Depends On:** I02
+- **Depends On:** I06
 - **Effort:** XS
 - **Exact Spec:**
   - Check whether the directory or package already exists before creating files; reuse any valid work found.
