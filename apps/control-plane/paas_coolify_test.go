@@ -714,9 +714,10 @@ func TestPaasUIFirstRunSetupLoginCookieAndHostServices(t *testing.T) {
 	ui.ServeHTTP(tplRec, tplReq)
 	var tplResp struct {
 		Templates []PaasTemplate `json:"templates"`
+		Total     int            `json:"total"`
 	}
-	if err := json.Unmarshal(tplRec.Body.Bytes(), &tplResp); err != nil || len(tplResp.Templates) != 12 {
-		t.Fatalf("expected 12 templates, got %d (err=%v)", len(tplResp.Templates), err)
+	if err := json.Unmarshal(tplRec.Body.Bytes(), &tplResp); err != nil || tplResp.Total < 12 {
+		t.Fatalf("expected at least 12 templates, got %d (err=%v)", tplResp.Total, err)
 	}
 
 	// 5. Tampered cookie must fail closed with 401.

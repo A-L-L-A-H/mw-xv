@@ -8,10 +8,11 @@ Notable changes to MoonWitness are recorded here. Versions follow SemVer; releas
 
 - Adds the approved Moon City homepage scene with canonical layered art, responsive desktop/mobile composition, an anonymous fictional pilot idle loop, and static/reduced-motion fallbacks.
 - Adds clearly labeled catalog-only Signals and Archive scene concepts while their production routes and data contracts remain unavailable.
+- Adds canonical layer-ID asset resolution and fail-closed asset review/provenance inspection (`approved`, `review`, `blocked`, `unverified`) in UI Catalog SceneLab and AssetBrowser.
 
 ### Quality
 
-- Adds focused Chromium, Firefox, and WebKit coverage for the homepage scene. The full operational Board matrix remains under repair; see the [W9-006 evidence](docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md).
+- Completes the 42-case operational Board visual and WCAG 2.1 A/AA accessibility matrix (**42/42 passing** across Chromium, Firefox, and WebKit) and the 27-case public homepage matrix (**27/27 passing** across Chromium, Firefox, and WebKit); see the [W9-006 evidence](docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md) and [W10-004 evidence](docs/bundles/visual-universe-pack/evidence/W10-004-home-accessibility-matrix.md).
 
 ## [1.0.0-rc.1] - 2026-10-04
 

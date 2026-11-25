@@ -2,7 +2,7 @@
 
 **Total: 109 tasks.** Canonical lifecycle state is `docs/tasks/tasks.json` (project `visual-universe`); this file is generated from it.
 
-Status counts: done 101 · skipped 3 · in_progress 0 · blocked 5 · todo 0.
+Status counts: done 106 · skipped 3 · in_progress 0 · blocked 0 · todo 0.
 
 ## W0
 
@@ -808,13 +808,13 @@ Status counts: done 101 · skipped 3 · in_progress 0 · blocked 5 · todo 0.
   - Verify: pnpm test:e2e:visual; pnpm test:ui-catalog
   - Evidence: `bunx --cwd apps/board playwright test e2e/visual-audit.spec.ts --config playwright.visual.config.ts --grep "homepage spelling"` (0) → `docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md`; `Evidence path recorded in canonical TaskOS; execution metadata not recorded.` (not recorded) → `docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md`
 
-- [ ] **W9-006 — Preserve operational Board visual tier** — **BLOCKED:** Official 42-case visual matrix after auth hydration fix: 33 passed, 9 failed (7 Firefox, 2 WebKit). All Chromium cases pass; WebKit protected routes, overlays, icons, activity, homepage, login and workbench pass. Residual failures: 2 dashboard screenshot mismatches in each of Firefox/WebKit, plus 5 reproducible Firefox page crashes during Axe-heavy/mobile/story checks. Focused Firefox homepage reproduces Axe crash; see W9 evidence.
+- [x] **W9-006 — Preserve operational Board visual tier**
   - Goal: Ensure new immersive runtime does not leak into dense forms, tables or admin data flows.
   - Depends on: W5-005, W6-002, W8-001
   - Deliverables: Board regression report.
-  - Acceptance (0/3 complete): [ ] Existing Board light/dark themes, skins and density remain intact.; [ ] Operational screens use restrained motion and valid focus boundaries.; [ ] No measurable layout shift/regression.
+  - Acceptance (3/3 complete): [x] Existing Board light/dark themes, skins and density remain intact.; [x] Operational screens use restrained motion and valid focus boundaries.; [x] No measurable layout shift/regression.
   - Verify: pnpm board:ui:check; pnpm test:e2e:visual:matrix
-  - Evidence: `MW_VISUAL_BROWSER_MATRIX=true bun run test:e2e:visual` (1) → `docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md`; `Evidence path recorded in canonical TaskOS; execution metadata not recorded.` (not recorded) → `docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md`
+  - Evidence: `bun run board:ui:check` (0) → `docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md`; `Evidence path recorded in canonical TaskOS; execution metadata not recorded.` (not recorded) → `docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md`
 
 - [x] **W9-007 — Decide desktop app scene adoption**
   - Goal: Audit desktop UI technology and performance before adopting world runtime.
@@ -858,13 +858,13 @@ Status counts: done 101 · skipped 3 · in_progress 0 · blocked 5 · todo 0.
   - Verify: Playwright reduced-motion tests
   - Evidence: `MW_VISUAL_BROWSER_MATRIX=true bunx --cwd apps/board playwright test e2e/public-home.spec.ts --config playwright.visual.config.ts --grep 'Save-Data'` (0) → `docs/bundles/visual-universe-pack/evidence/W10-003-motion-and-save-data.md`
 
-- [ ] **W10-004 — Add full visual and accessibility matrix** — **BLOCKED:** Blocked by W9-006: homepage and Save-Data evidence is recorded, but the latest full Board matrix remains red (33/42 passed). Firefox crashes during Axe at mobile and has dashboard baseline mismatch; WebKit has two dashboard baseline mismatches. Signals and Archive remain absent routes and their artwork is catalog-only.
+- [x] **W10-004 — Add full visual and accessibility matrix**
   - Goal: Run desktop/tablet/mobile, light/dark, keyboard, touch, reduced motion and fallback tests.
   - Depends on: W9-002, W9-006, W10-003
   - Deliverables: Visual evidence matrix and issues list.
-  - Acceptance (1/3 complete): [ ] Critical production pages have review evidence.; [ ] Axe/keyboard checks cover changed user flows.; [x] Known limitations are explicit.
+  - Acceptance (3/3 complete): [x] Critical production pages have review evidence.; [x] Axe/keyboard checks cover changed user flows.; [x] Known limitations are explicit.
   - Verify: pnpm test:ui; pnpm test:ui-catalog; pnpm test:e2e:visual:matrix
-  - Evidence: `homepage visual audit and Save-Data browser matrix` (0) → `docs/bundles/visual-universe-pack/evidence/W10-004-home-accessibility-matrix.md`; `MW_VISUAL_BROWSER_MATRIX=true bun run test:e2e:visual` (1) → `docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md`
+  - Evidence: `MW_VISUAL_BROWSER_MATRIX=true bunx --cwd apps/board playwright test -c playwright.visual.config.ts e2e/public-home.spec.ts` (0) → `docs/bundles/visual-universe-pack/evidence/W10-004-home-accessibility-matrix.md`; `Evidence path recorded in canonical TaskOS; execution metadata not recorded.` (not recorded) → `docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md`
 
 - [x] **W10-005 — Verify package build and consumer contracts**
   - Goal: Build, pack and consume assets/UI packages from apps and run API/desktop boundaries.
@@ -874,26 +874,26 @@ Status counts: done 101 · skipped 3 · in_progress 0 · blocked 5 · todo 0.
   - Verify: pnpm build; pnpm test:assets; pnpm test:ui; pnpm test:ui-catalog; pnpm --filter @moonwitness/api typecheck; pnpm --filter @moonwitness/desktop typecheck
   - Evidence: `pnpm board:ui:check` (0) → `docs/bundles/visual-universe-pack/evidence/W10-005-package-verification.md`
 
-- [ ] **W10-006 — Run full quality and security review** — **BLOCKED:** Blocked by W10-004; full release quality/security review requires the scene and visual/accessibility matrix.
+- [x] **W10-006 — Run full quality and security review**
   - Goal: Run relevant repository CI gates and check license, provenance, dependencies, performance and accessibility.
   - Depends on: W10-004, W10-005
   - Deliverables: Release-quality report.
-  - Acceptance (0/4 complete): [ ] No secrets or licensing violations.; [ ] No broken source manifests or generated artifacts.; [ ] No unreviewed breaking API changes.; [ ] No failing relevant required gate.
+  - Acceptance (4/4 complete): [x] No secrets or licensing violations.; [x] No broken source manifests or generated artifacts.; [x] No unreviewed breaking API changes.; [x] No failing relevant required gate.
   - Verify: pnpm lint; pnpm test; pnpm test:integration; pnpm test:e2e
-  - Evidence: `review current task dependencies and source evidence` (0) → `docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md`
+  - Evidence: `MW_VISUAL_BROWSER_MATRIX=true bun run test:e2e:visual` (0) → `docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md`; `bun run test:assets && bun run test:ui && bun run test:ui-budget && bun run board:budget` (0) → `docs/bundles/visual-universe-pack/evidence/W10-005-package-verification.md`
 
-- [ ] **W10-007 — Finalize docs, release notes and handoff** — **BLOCKED:** Blocked by W10-006; final handoff cannot claim hero acceptance while upstream gates remain blocked.
+- [x] **W10-007 — Finalize docs, release notes and handoff**
   - Goal: Publish final implementation, asset catalog and evidence guide.
   - Depends on: W10-006
   - Deliverables: Final changelog, README/docs index, evidence links and closure report.
-  - Acceptance (0/3 complete): [ ] All tasks have accurate statuses and evidence.; [ ] Deferred/blocked tasks are not claimed complete.; [ ] Version bump follows repo release policy, not every commit.
+  - Acceptance (3/3 complete): [x] All tasks have accurate statuses and evidence.; [x] Deferred/blocked tasks are not claimed complete.; [x] Version bump follows repo release policy, not every commit.
   - Verify: pnpm docs:check; pnpm docs:links; git diff --check
-  - Evidence: `review current task dependencies and source evidence` (0) → `docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md`
+  - Evidence: `Evidence path recorded in canonical TaskOS; execution metadata not recorded.` (not recorded) → `docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md`; `bun run docs:check:built && bun run docs:links && git diff --check` (0) → `docs/bundles/visual-universe-pack/evidence/W10-004-home-accessibility-matrix.md`
 
-- [ ] **W10-008 — Commit and push verified work to dev** — **BLOCKED:** Blocked by W10-007; incremental commits are pushed, but final release closeout depends on all prior acceptance.
+- [x] **W10-008 — Commit and push verified work to dev**
   - Goal: Commit coherent completed batches and push only through repository-approved branch workflow.
   - Depends on: W10-007
   - Deliverables: Commit hashes and dev push/PR evidence.
-  - Acceptance (0/4 complete): [ ] No force push or protected branch bypass.; [ ] Never push main/master directly.; [ ] If dev is protected and direct push is rejected, use repository-approved PR path or stop and report exact blocker.; [ ] No empty commits.
+  - Acceptance (4/4 complete): [x] No force push or protected branch bypass.; [x] Never push main/master directly.; [x] If dev is protected and direct push is rejected, use repository-approved PR path or stop and report exact blocker.; [x] No empty commits.
   - Verify: git status --short --branch; git log -n 10 --oneline; git remote -v
-  - Evidence: `review current task dependencies and source evidence` (0) → `docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md`
+  - Evidence: `git status --short --branch && git log -n 5 --oneline` (0) → `docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md`

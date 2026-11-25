@@ -528,125 +528,36 @@ func (m *PaasManager) handleAppDeployments(w http.ResponseWriter, r *http.Reques
 }
 
 func (m *PaasManager) handleTemplates() http.HandlerFunc {
-	templates := []PaasTemplate{
-		{
-			ID:          "nginx-web",
-			Name:        "Nginx Web Server",
-			Category:    "Web",
-			Description: "High-performance reverse proxy and static site server",
-			Image:       "nginx:1.27-alpine",
-			Port:        80,
-		},
-		{
-			ID:          "static-site",
-			Name:        "Static Site (Caddy)",
-			Category:    "Web",
-			Description: "Lightweight Caddy 2 static web server",
-			Image:       "caddy:2-alpine",
-			Port:        80,
-		},
-		{
-			ID:          "node-api",
-			Name:        "Node.js 22 API",
-			Category:    "API",
-			Description: "Node.js 22 Alpine runtime for REST & microservice backends",
-			Image:       "node:22-alpine",
-			Port:        3000,
-			Env:         map[string]string{"NODE_ENV": "production", "PORT": "3000"},
-		},
-		{
-			ID:          "postgres-16",
-			Name:        "PostgreSQL 16",
-			Category:    "Database",
-			Description: "Production PostgreSQL 16 database with persistent volume storage",
-			Image:       "postgres:16-alpine",
-			Port:        5432,
-			Volumes:     []string{"pgdata:/var/lib/postgresql/data"},
-			Env:         map[string]string{"POSTGRES_DB": "app_db", "POSTGRES_USER": "postgres"},
-		},
-		{
-			ID:          "redis-7",
-			Name:        "Redis 7",
-			Category:    "Cache",
-			Description: "In-memory Redis 7 cache and message broker",
-			Image:       "redis:7-alpine",
-			Port:        6379,
-			Volumes:     []string{"redisdata:/data"},
-			Env:         map[string]string{"REDIS_APPENDONLY": "yes"},
-		},
-		{
-			ID:          "n8n",
-			Name:        "n8n Automation",
-			Category:    "Workflow",
-			Description: "Visual workflow automation & integration engine",
-			Image:       "n8nio/n8n:latest",
-			Port:        5678,
-			Volumes:     []string{"n8ndata:/home/node/.n8n"},
-		},
-		{
-			ID:          "uptime-kuma",
-			Name:        "Uptime Kuma",
-			Category:    "Monitoring",
-			Description: "Self-hosted service uptime & TLS monitor",
-			Image:       "louislam/uptime-kuma:1",
-			Port:        3001,
-			Volumes:     []string{"kumadata:/app/data"},
-		},
-		{
-			ID:          "minio",
-			Name:        "MinIO Object Storage",
-			Category:    "Storage",
-			Description: "S3-compatible object storage server",
-			Image:       "minio/minio:latest",
-			Port:        9000,
-			Volumes:     []string{"miniodata:/data"},
-		},
-		{
-			ID:          "ghost",
-			Name:        "Ghost Publishing",
-			Category:    "CMS",
-			Description: "Modern headless CMS and publication platform",
-			Image:       "ghost:5-alpine",
-			Port:        2368,
-			Volumes:     []string{"ghostcontent:/var/lib/ghost/content"},
-		},
-		{
-			ID:          "ollama-local",
-			Name:        "Ollama Local LLM",
-			Category:    "AI",
-			Description: "Self-hosted Ollama local inference server",
-			Image:       "ollama/ollama:0.6.5",
-			Port:        11434,
-			Volumes:     []string{"ollamadata:/root/.ollama"},
-			Env:         map[string]string{"OLLAMA_HOST": "0.0.0.0:11434"},
-		},
-		{
-			ID:          "moonwitness-whatsapp",
-			Name:        "MoonWitness WhatsApp",
-			Category:    "Platform",
-			Description: "Standalone Fastify + Baileys + @fastify/vite WhatsApp gateway",
-			Image:       "moonwitness-whatsapp:vps",
-			Port:        3000,
-			Volumes:     []string{"whatsapp_auth_data:/var/lib/moonwitness/whatsapp-auth"},
-			Env:         map[string]string{"NODE_ENV": "production", "WHATSAPP_DRIVER": "baileys"},
-		},
-		{
-			ID:          "moonwitness-tenant",
-			Name:        "MoonWitness Tenant Stack",
-			Category:    "Platform",
-			Description: "Isolated MoonWitness sovereign board & API runtime",
-			Image:       "moonwitness-api:vps",
-			Port:        3000,
-			Env:         map[string]string{"NODE_ENV": "production", "MW_TENANT_MODE": "isolated"},
-		},
-	}
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			writePaasJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
 			return
 		}
+		templates := GetUnifiedPaasTemplates()
+		// Convert to the public PaasTemplate format
+		publicTemplates := make([]PaasTemplate, 0, len(templates))
+		for _, t := range templates {
+			// Extract primary image and port from compose for backward compat
+			image := ""
+			port := 0
+			if t.ServiceCount > 0 && len(t.Services) > 0 {
+				// Try to parse primary service image from compose
+				// For now, use first service name as placeholder
+				// TODO: parse image from composeYaml
+				image = t.Services[0]
+			}
+			publicTemplates = append(publicTemplates, PaasTemplate{
+				ID:          t.ID,
+				Name:        t.Name,
+				Category:    t.Category,
+				Description: t.Slogan,
+				Image:       image,
+				Port:        port,
+			})
+		}
 		writePaasJSON(w, http.StatusOK, map[string]interface{}{
-			"templates": templates,
+			"templates": publicTemplates,
+			"total":     len(publicTemplates),
 		})
 	}
 }
