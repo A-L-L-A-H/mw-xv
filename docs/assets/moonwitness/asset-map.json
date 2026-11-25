@@ -648,7 +648,7 @@
       "format": "png",
       "width": 1200,
       "height": 630,
-      "sha256": "d417fe2cb54c13dbc6f2e1b9f12f8d0f0864998d22b431f011451a187e13855a"
+      "sha256": "81e60fb047deb11ca7f4671b77512546dc5885d15181ea11a1a35d21a5c52f03"
     },
     {
       "source": "packages/assets/brand/social-card.dark.svg",
@@ -666,7 +666,7 @@
       "format": "png",
       "width": 1200,
       "height": 630,
-      "sha256": "e4c7b49eabcee78f267583d9af30cb319da2de35d18dba8928ef29ceaa874df2"
+      "sha256": "256196b51cd6339173a3411ed0ca283d879b827893d1dd1656f31ccc33b79346"
     },
     {
       "source": "packages/assets/brand/social-card.svg",
