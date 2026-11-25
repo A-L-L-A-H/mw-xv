@@ -3,22 +3,34 @@ import { stat } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import type { DesktopCapabilityBridge } from '../types.js';
+import {
+  buildFlowGraph,
+  computeAnalytics,
+  computeBattleTelemetry,
+  formatSnapshotMarkdown,
+} from './analytics.js';
 import { AntigravityCollector } from './antigravity-collector.js';
 import { ExternalAgentsCollector } from './external-agents-collector.js';
 import {
   collectGitState,
+  createCpuSampler,
   DEFAULT_LOCAL_PORTS,
   DEFAULT_VPS_PROBE_TARGETS,
+  isBlockedProbeUrl,
+  probeHttpTarget,
   probeLocalPorts,
   probeVpsTargets,
+  readGitCommitDetail,
 } from './infra-collector.js';
 import { clipRedacted, normalizePathSlashes } from './io.js';
-import { collectPlans } from './plan-collector.js';
+import { buildPlanDag, collectPlans } from './plan-collector.js';
 import type {
   InternalObservatorySession,
   ObservatoryActivityFeedItem,
+  ObservatoryGitCommitDetail,
   ObservatoryGitState,
   ObservatoryLocalPortTarget,
+  ObservatoryProbeResult,
   ObservatoryProbesState,
   ObservatoryProbeTarget,
   ObservatoryRuntime,
@@ -27,9 +39,12 @@ import type {
   ObservatorySessionSummary,
   ObservatorySnapshot,
   ObservatorySwarmSummary,
+  ObservatoryTelemetryHistoryPoint,
 } from './types.js';
 
 export type ObservatorySnapshotListener = (snapshot: ObservatorySnapshot, json: string) => void;
+
+const TELEMETRY_HISTORY_LIMIT = 120;
 
 export class DesktopObservatoryService {
   private readonly repoRoot: string;
@@ -42,15 +57,24 @@ export class DesktopObservatoryService {
   private readonly sseTickMs: number;
   private readonly antigravityCollector: AntigravityCollector;
   private readonly externalCollector: ExternalAgentsCollector;
+  private readonly sampleCpuPct: () => number;
 
   private readonly subscribers = new Set<ObservatorySnapshotListener>();
+  private readonly telemetryHistory: ObservatoryTelemetryHistoryPoint[] = [];
+  private previousTokensTotal: number | null = null;
   private lastSnapshot: ObservatorySnapshot | null = null;
   private lastSnapshotJson = '';
   private lastRawSessions: readonly InternalObservatorySession[] = [];
   private gitState: ObservatoryGitState = {
     branch: 'unknown',
     head: '',
+    ahead: 0,
+    behind: 0,
+    stashCount: 0,
     dirtyCount: 0,
+    dirtyFiles: [],
+    dirtyByArea: {},
+    diffStat: { filesChanged: 0, insertions: 0, deletions: 0 },
     commits: [],
     commitByTaskId: {},
     updatedAt: null,
@@ -73,6 +97,7 @@ export class DesktopObservatoryService {
     this.localPorts = options.localPorts ?? DEFAULT_LOCAL_PORTS;
     this.enableNetworkProbes = options.enableNetworkProbes ?? true;
     this.sseTickMs = options.sseTickMs ?? 2_000;
+    this.sampleCpuPct = createCpuSampler();
 
     this.antigravityCollector = new AntigravityCollector({
       homeDir: this.homeDir,
@@ -83,6 +108,7 @@ export class DesktopObservatoryService {
     this.externalCollector = new ExternalAgentsCollector({
       homeDir: this.homeDir,
       knownSecrets: this.knownSecrets,
+      enableLocalPortProbe: this.enableNetworkProbes,
     });
     this.probesState = {
       vps: this.probeTargets.map((target) => ({
@@ -146,6 +172,8 @@ export class DesktopObservatoryService {
       agBundle,
       claudeSessions,
       codexSessions,
+      openCodeSessions,
+      magpieBundle,
       qoderSessions,
       geminiSessions,
       desktopWorktrees,
@@ -155,6 +183,8 @@ export class DesktopObservatoryService {
       this.antigravityCollector.collect(this.repoRoot),
       this.externalCollector.collectClaude(this.repoRoot),
       this.externalCollector.collectCodex(this.repoRoot),
+      this.externalCollector.collectOpenCode(this.repoRoot),
+      this.externalCollector.collectMagpieTelemetry(this.repoRoot),
       this.externalCollector.collectGenericJsonl(
         path.join(this.homeDir, '.qoder', 'projects'),
         'qoder',
@@ -171,6 +201,24 @@ export class DesktopObservatoryService {
       this.externalCollector.collectLocalSwarmManifest(this.repoRoot),
     ]);
 
+    const allSessions: InternalObservatorySession[] = [
+      ...desktopWorktrees,
+      ...agBundle.sessions,
+      ...claudeSessions,
+      ...codexSessions,
+      ...openCodeSessions,
+      ...magpieBundle.sessions,
+      ...qoderSessions,
+      ...geminiSessions,
+    ].sort((left, right) => right.mtimeMs - left.mtimeMs);
+
+    this.lastRawSessions = allSessions;
+
+    const publicSessions: ObservatorySessionSummary[] = allSessions.map((session) => {
+      const { sourcePath: _ignored, ...rest } = session;
+      return rest;
+    });
+
     for (const plan of planBundle.plans) {
       for (const task of plan.tasks) {
         const hit = this.gitState.commitByTaskId[task.id];
@@ -179,21 +227,11 @@ export class DesktopObservatoryService {
           task.commitSubject = hit.subject;
         }
       }
+      plan.dag = buildPlanDag(plan.tasks, plan.waves, publicSessions, this.gitState.dirtyFiles);
     }
 
-    const allSessions: InternalObservatorySession[] = [
-      ...desktopWorktrees,
-      ...agBundle.sessions,
-      ...claudeSessions,
-      ...codexSessions,
-      ...qoderSessions,
-      ...geminiSessions,
-    ].sort((left, right) => right.mtimeMs - left.mtimeMs);
-
-    this.lastRawSessions = allSessions;
-
     const activityFeed: ObservatoryActivityFeedItem[] = [];
-    for (const session of allSessions.slice(0, 24)) {
+    for (const session of publicSessions.slice(0, 30)) {
       for (const event of session.recentEvents) {
         activityFeed.push({
           ...event,
@@ -209,14 +247,16 @@ export class DesktopObservatoryService {
 
     const runtimeCounts: Record<string, number> = {};
     let runningSessions = 0;
+    let errorSessions = 0;
     let subagents = 0;
     let totalInput = 0;
     let totalCached = 0;
     let totalOutput = 0;
 
-    for (const session of allSessions) {
+    for (const session of publicSessions) {
       runtimeCounts[session.runtime] = (runtimeCounts[session.runtime] ?? 0) + 1;
       if (session.status === 'running') runningSessions += 1;
+      if (session.status === 'error' || session.lastError) errorSessions += 1;
       subagents += session.subagents.length;
       totalInput += session.tokens.input;
       totalCached += session.tokens.cached;
@@ -228,28 +268,95 @@ export class DesktopObservatoryService {
 
     const memTotalGb = Math.round((os.totalmem() / 1024 ** 3) * 10) / 10;
     const memUsedGb = Math.round(((os.totalmem() - os.freemem()) / 1024 ** 3) * 10) / 10;
+    const memPct = memTotalGb > 0 ? Math.round((memUsedGb / memTotalGb) * 100) : 0;
+    const cpuPct = this.sampleCpuPct();
+    const tokensTotal = totalInput + totalOutput;
+    const tokenDelta =
+      this.previousTokensTotal === null ? 0 : Math.max(0, tokensTotal - this.previousTokensTotal);
+    this.previousTokensTotal = tokensTotal;
+    const cacheDenom = totalInput + totalCached;
+    const cacheHitPct = cacheDenom > 0 ? Math.round((totalCached / cacheDenom) * 1000) / 10 : 0;
 
-    const publicSessions: ObservatorySessionSummary[] = allSessions.map((session) => {
-      const { sourcePath: _ignored, ...rest } = session;
-      return rest;
+    const vpsProbes = this.probesState.vps;
+    const upProbes = vpsProbes.filter((probe) => probe.status === 'up');
+    const measuredLatencies = vpsProbes
+      .map((probe) => probe.latencyMs)
+      .filter((ms): ms is number => typeof ms === 'number' && ms >= 0);
+    const vpsAvgLatencyMs =
+      measuredLatencies.length > 0
+        ? Math.round(measuredLatencies.reduce((acc, ms) => acc + ms, 0) / measuredLatencies.length)
+        : 0;
+
+    const nowIso = new Date().toISOString();
+    const recentWindowCutoffMs = Date.now() - 120_000;
+    const recentEventsInWindow = activityFeed.filter(
+      (entry) => Date.parse(entry.at || '') >= recentWindowCutoffMs
+    );
+
+    this.telemetryHistory.push({
+      at: nowIso,
+      cpuPct,
+      memPct,
+      runningSessions,
+      totalSessions: publicSessions.length,
+      subagents,
+      tokensTotal,
+      tokenDelta,
+      recentEvents: recentEventsInWindow.length,
+      errors: errorSessions,
+      vpsUp: upProbes.length,
+      vpsAvgLatencyMs,
     });
+    if (this.telemetryHistory.length > TELEMETRY_HISTORY_LIMIT) {
+      this.telemetryHistory.shift();
+    }
+
+    const activePlan =
+      planBundle.plans.find((plan) => plan.id === planBundle.defaultPlanId) ??
+      planBundle.plans[0] ??
+      null;
+    const flowGraph = buildFlowGraph(
+      publicSessions,
+      swarms,
+      activePlan,
+      this.gitState,
+      this.probesState,
+      activityFeed,
+      this.repoRoot,
+      this.knownSecrets
+    );
+    const analytics = computeAnalytics(publicSessions, activityFeed, Date.now(), this.knownSecrets);
+    const battle = computeBattleTelemetry(
+      activePlan,
+      runningSessions,
+      subagents,
+      errorSessions,
+      vpsProbes,
+      magpieBundle.summary,
+      this.knownSecrets
+    );
 
     return {
-      generatedAt: new Date().toISOString(),
+      version: 3,
+      generatedAt: nowIso,
       repoRoot: normalizePathSlashes(this.repoRoot),
       antigravityApiConnected: agBundle.connectedApi,
       host: {
         hostname: os.hostname(),
         platform: os.platform(),
+        arch: os.arch(),
         cpus: os.cpus().length,
+        cpuModel: clipRedacted(os.cpus()[0]?.model ?? 'CPU', 48, this.knownSecrets),
+        cpuPct,
         memUsedGb,
         memTotalGb,
-        memPct: memTotalGb > 0 ? Math.round((memUsedGb / memTotalGb) * 100) : 0,
+        memPct,
         uptimeSec: Math.round(process.uptime()),
       },
       summary: {
-        totalSessions: allSessions.length,
+        totalSessions: publicSessions.length,
         runningSessions,
+        errorSessions,
         subagents,
         swarms: swarms.length,
         runtimeCounts,
@@ -257,16 +364,23 @@ export class DesktopObservatoryService {
           input: totalInput,
           cached: totalCached,
           output: totalOutput,
-          total: totalInput + totalOutput,
+          total: tokensTotal,
+          delta: tokenDelta,
+          cacheHitPct,
         },
       },
       plans: planBundle.plans,
       defaultPlanId: planBundle.defaultPlanId,
       sessions: publicSessions,
       swarms,
-      activityFeed: activityFeed.slice(0, 60),
+      magpie: magpieBundle.summary,
+      battle,
+      activityFeed: activityFeed.slice(0, 90),
       git: this.gitState,
       probes: this.probesState,
+      flowGraph,
+      analytics,
+      telemetryHistory: this.telemetryHistory.slice(),
     };
   }
 
@@ -310,6 +424,7 @@ export class DesktopObservatoryService {
         detail: {
           events: target.recentEvents,
           subagents: target.subagents,
+          toolCounts: target.toolCounts,
         },
       };
     }
@@ -321,6 +436,7 @@ export class DesktopObservatoryService {
         detail: {
           events: target.recentEvents,
           subagents: target.subagents,
+          toolCounts: target.toolCounts,
         },
       };
     }
@@ -332,6 +448,7 @@ export class DesktopObservatoryService {
         detail: {
           events: parsed.events,
           subagents: target.subagents,
+          toolCounts: parsed.toolCounts,
         },
       };
     }
@@ -348,6 +465,7 @@ export class DesktopObservatoryService {
         detail: {
           events: parsed.events,
           subagents: target.subagents,
+          toolCounts: parsed.toolCounts,
         },
       };
     }
@@ -357,6 +475,18 @@ export class DesktopObservatoryService {
         ...publicSession,
         detail: {
           events: parsed.events,
+          toolCounts: parsed.toolCounts,
+        },
+      };
+    }
+    if (runtime === 'opencode') {
+      const parsed = this.externalCollector.readOpenCodeDetail(sourcePath, id);
+      return {
+        ...publicSession,
+        detail: {
+          events: parsed.events,
+          subagents: target.subagents,
+          toolCounts: parsed.toolCounts,
         },
       };
     }
@@ -365,8 +495,39 @@ export class DesktopObservatoryService {
       ...publicSession,
       detail: {
         events: target.recentEvents,
+        subagents: target.subagents,
+        toolCounts: target.toolCounts,
       },
     };
+  }
+
+  async getCommitDetail(rawSha: string): Promise<ObservatoryGitCommitDetail | null> {
+    return readGitCommitDetail(this.repoRoot, rawSha, this.knownSecrets);
+  }
+
+  async probeCustomUrl(rawUrl: string): Promise<ObservatoryProbeResult> {
+    const trimmed = rawUrl.trim();
+    if (!trimmed || isBlockedProbeUrl(trimmed)) {
+      return {
+        id: 'custom-probe',
+        label: trimmed || 'Invalid URL',
+        url: trimmed,
+        status: 'blocked',
+        httpCode: null,
+        latencyMs: 0,
+        detail: 'Blocked by SSRF or invalid URL guard',
+      };
+    }
+    return probeHttpTarget({
+      id: `custom-${Date.now()}`,
+      label: trimmed,
+      url: trimmed,
+    });
+  }
+
+  async exportReportMarkdown(): Promise<string> {
+    const snap = this.lastSnapshot ?? (await this.getSnapshot());
+    return formatSnapshotMarkdown(snap);
   }
 
   private async broadcast(force = false): Promise<void> {

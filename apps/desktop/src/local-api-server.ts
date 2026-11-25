@@ -2867,6 +2867,8 @@ export async function startLocalApiServer(
     'antigravity',
     'claude',
     'codex',
+    'opencode',
+    'magpie',
     'qoder',
     'gemini-cli',
     'desktop-worktree',
@@ -2882,6 +2884,75 @@ export async function startLocalApiServer(
     const data = await observatory.getSnapshot({ fresh });
     reply.header('Cache-Control', 'no-store');
     return { success: true, data };
+  });
+
+  app.get('/api/desktop/observatory/git/commit', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const query = isRecord(req.query) ? req.query : {};
+    const sha = typeof query.sha === 'string' ? query.sha.trim() : '';
+    if (!/^[0-9a-f]{6,40}$/iu.test(sha)) {
+      return reply.code(400).send({
+        success: false,
+        error: 'Valid hexadecimal commit sha query parameter is required',
+      });
+    }
+    const detail = await observatory.getCommitDetail(sha);
+    if (!detail) {
+      return reply.code(404).send({ success: false, error: 'Git commit not found' });
+    }
+    reply.header('Cache-Control', 'no-store');
+    return { success: true, data: detail };
+  });
+
+  app.get('/api/desktop/observatory/probe', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const query = isRecord(req.query) ? req.query : {};
+    const rawUrl = typeof query.url === 'string' ? query.url.trim() : '';
+    if (!rawUrl) {
+      return reply.code(400).send({
+        success: false,
+        error: 'url query parameter is required',
+      });
+    }
+    const result = await observatory.probeCustomUrl(rawUrl);
+    reply.header('Cache-Control', 'no-store');
+    if (result.status === 'blocked') {
+      return reply.code(400).send({
+        success: false,
+        error: result.detail,
+        data: result,
+      });
+    }
+    return { success: true, data: result };
+  });
+
+  app.get('/api/desktop/observatory/export', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const query = isRecord(req.query) ? req.query : {};
+    const format = typeof query.format === 'string' ? query.format.toLowerCase().trim() : 'json';
+    reply.header('Cache-Control', 'no-store');
+    if (format === 'markdown' || format === 'md') {
+      const markdown = await observatory.exportReportMarkdown();
+      reply.header('Content-Type', 'text/markdown; charset=utf-8');
+      reply.header(
+        'Content-Disposition',
+        'attachment; filename="moonwitness-observatory-report.md"'
+      );
+      return reply.code(200).send(markdown);
+    }
+    const snapshot = await observatory.getSnapshot();
+    reply.header('Content-Type', 'application/json; charset=utf-8');
+    reply.header(
+      'Content-Disposition',
+      'attachment; filename="moonwitness-observatory-snapshot.json"'
+    );
+    return reply.code(200).send(JSON.stringify(snapshot, null, 2));
   });
 
   app.get('/api/desktop/observatory/session', async (req, reply) => {

@@ -8,10 +8,9 @@ import { createSkinInitScript } from '@moonwitness/ui/themes';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const boardRoot = path.resolve(__dirname, '../../board');
-const assetsFontsDir = path.resolve(
-  path.dirname(fileURLToPath(import.meta.resolve('@moonwitness/assets/fonts.css'))),
-  'fonts'
-);
+const assetsRootDir = path.dirname(fileURLToPath(import.meta.resolve('@moonwitness/assets/fonts.css')));
+const assetsFontsDir = path.resolve(assetsRootDir, 'fonts');
+const assetsRiotUniverseDir = path.resolve(assetsRootDir, 'illustrations', 'riot-universe');
 const distBoardDir = path.resolve(__dirname, '../dist-board');
 
 function skinPrepaintPlugin(): Plugin {
@@ -51,6 +50,21 @@ function copyBoardRouteHtmlPlugin(): Plugin {
         fs.mkdirSync(fontTargetDir, { recursive: true });
         for (const fontFile of woff2Files) {
           fs.copyFileSync(path.join(sourceDir, fontFile), path.join(fontTargetDir, fontFile));
+        }
+      }
+
+      // Copy Riot Universe portraits & stage backdrops for local CSP-safe Desktop Observatory rendering
+      for (const subdir of ['characters', 'backgrounds', 'game']) {
+        const srcSubdir = path.join(assetsRiotUniverseDir, subdir);
+        if (!fs.existsSync(srcSubdir)) continue;
+        const outSubdir = path.join(distBoardDir, 'observatory-art', subdir);
+        const mediaFiles = fs
+          .readdirSync(srcSubdir)
+          .filter((entry) => /\.(?:webp|png|jpg|jpeg)$/iu.test(entry));
+        if (mediaFiles.length === 0) continue;
+        fs.mkdirSync(outSubdir, { recursive: true });
+        for (const mediaFile of mediaFiles) {
+          fs.copyFileSync(path.join(srcSubdir, mediaFile), path.join(outSubdir, mediaFile));
         }
       }
     },

@@ -151,3 +151,12 @@ export function deriveSessionStatus(
   if (ageMs <= RECENT_SESSION_THRESHOLD_MS) return 'recent';
   return 'idle';
 }
+
+export function bumpCounter(
+  counterMap: Record<string, number>,
+  key: string,
+  amount = 1
+): void {
+  if (!key) return;
+  counterMap[key] = (counterMap[key] ?? 0) + amount;
+}

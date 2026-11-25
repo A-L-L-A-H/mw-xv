@@ -1174,6 +1174,38 @@ describe('LocalApiServer & Desktop Importer', () => {
     expect(sseChunk).toContain('event: snapshot');
     expect(sseChunk).toContain('"defaultPlanId":"sample"');
 
+    // Authenticated v3 export (markdown + json), SSRF-guarded probe, and commit validation
+    const mdExportRes = await fetch(
+      `${server.apiUrl}/api/desktop/observatory/export?format=markdown`,
+      { headers: authHeaders }
+    );
+    expect(mdExportRes.status).toBe(200);
+    expect(mdExportRes.headers.get('content-type')).toContain('text/markdown');
+    const mdText = await mdExportRes.text();
+    expect(mdText).toContain('# MoonWitness Desktop Agent Observatory Report');
+    expect(mdText).toContain('sample');
+
+    const jsonExportRes = await fetch(
+      `${server.apiUrl}/api/desktop/observatory/export?format=json`,
+      { headers: authHeaders }
+    );
+    expect(jsonExportRes.status).toBe(200);
+    const jsonExportBody = (await jsonExportRes.json()) as { version: number; defaultPlanId: string };
+    expect(jsonExportBody.version).toBe(3);
+    expect(jsonExportBody.defaultPlanId).toBe('sample');
+
+    const ssrfProbeRes = await fetch(
+      `${server.apiUrl}/api/desktop/observatory/probe?url=${encodeURIComponent('http://169.254.169.254/latest/meta-data')}`,
+      { headers: authHeaders }
+    );
+    expect(ssrfProbeRes.status).toBe(400);
+
+    const badShaRes = await fetch(
+      `${server.apiUrl}/api/desktop/observatory/git/commit?sha=not-a-sha`,
+      { headers: authHeaders }
+    );
+    expect(badShaRes.status).toBe(400);
+
     // Headless --serve-web serves SPA with injected API URL and blocks path traversal & unknown files
     const spaRes = await fetch(`${server.apiUrl}/board/desktop/observatory`);
     expect(spaRes.status).toBe(200);

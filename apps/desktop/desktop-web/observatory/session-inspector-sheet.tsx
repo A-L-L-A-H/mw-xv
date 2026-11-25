@@ -10,6 +10,8 @@ import {
   SheetTitle,
 } from '@moonwitness/ui/components/sheet';
 import { Skeleton } from '@moonwitness/ui/components/skeleton';
+import { portraitUrlForSession } from './canvas-palette';
+import { SessionCadenceCanvas } from './telemetry-canvases';
 import type { ObservatorySessionDetailDto } from './types';
 
 function formatCompactNumber(value: number): string {
@@ -44,30 +46,45 @@ export function SessionInspectorSheet({
   detail,
   onOpenChange,
 }: SessionInspectorSheetProps) {
-  const events = (detail?.detail.events ?? detail?.recentEvents ?? []).slice().reverse();
+  const chronologicalEvents = detail?.detail.events ?? detail?.recentEvents ?? [];
+  const reversedEvents = chronologicalEvents.slice().reverse();
   const subagents = detail?.detail.subagents ?? detail?.subagents ?? [];
+  const toolCounts = Object.entries(detail?.detail.toolCounts ?? detail?.toolCounts ?? {})
+    .sort((left, right) => right[1] - left[1])
+    .slice(0, 12);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-[min(42rem,95vw)] overflow-y-auto border-l-4 border-ink bg-paper p-5 text-ink"
+        className="w-[min(44rem,95vw)] overflow-y-auto border-l-4 border-ink bg-paper p-5 text-ink"
       >
         <SheetHeader className="border-b-2 border-ink/20 pb-3">
-          <SheetTitle className="font-display text-lg uppercase tracking-wide">
-            {detail?.title ?? 'Session Inspector'}
-          </SheetTitle>
-          <SheetDescription className="font-mono text-xs text-ink-faint">
-            {detail
-              ? `${detail.runtimeLabel} · ${detail.model} · ${detail.status.toUpperCase()} · ${formatCompactNumber(detail.tokens.total)} tokens`
-              : 'Reading agent transcript tail…'}
-          </SheetDescription>
+          <div className="flex items-center gap-3">
+            {detail ? (
+              <img
+                src={portraitUrlForSession(detail.runtime, detail.status)}
+                alt={detail.runtimeLabel}
+                className="desktop-observatory-avatar size-14 shrink-0 border-2 border-ink object-cover"
+              />
+            ) : null}
+            <div className="min-w-0">
+              <SheetTitle className="font-display text-lg uppercase tracking-wide">
+                {detail?.title ?? 'Hero Dossier Inspector'}
+              </SheetTitle>
+              <SheetDescription className="font-mono text-xs text-ink-faint">
+                {detail
+                  ? `${detail.runtimeLabel} · ${detail.model} · ${detail.status.toUpperCase()} · ${formatCompactNumber(detail.tokens.total)} tokens${typeof detail.cost === 'number' && detail.cost > 0 ? ` · $${detail.cost.toFixed(3)}` : ''}`
+                  : 'Reading agent transcript tail…'}
+              </SheetDescription>
+            </div>
+          </div>
         </SheetHeader>
 
         <div className="mt-4 space-y-4">
           {loading ? (
             <div className="space-y-2">
-              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-16 w-full" />
               <Skeleton className="h-24 w-full" />
               <Skeleton className="h-24 w-full" />
             </div>
@@ -76,19 +93,37 @@ export function SessionInspectorSheet({
           ) : !detail ? (
             <EmptyState
               title="No session selected"
-              description="Select any coding agent card to inspect its recent tool calls and subagents."
+              description="Select any coding agent card or canvas node to inspect its recent tool calls and subagents."
             />
           ) : (
             <>
+              <Panel surface="paper" title="Session Event Cadence">
+                <SessionCadenceCanvas events={chronologicalEvents} />
+              </Panel>
+
               <Panel surface="paper" title="Session Metadata">
                 <div className="grid grid-cols-1 gap-2 font-mono text-xs sm:grid-cols-2">
                   <div>
                     <span className="text-ink-faint">Session ID: </span>
-                    <span>{detail.id}</span>
+                    <span className="break-all">{detail.id}</span>
                   </div>
                   <div>
-                    <span className="text-ink-faint">Branch: </span>
+                    <span className="text-ink-faint">Branch / Group: </span>
                     <span>{detail.branch ?? '—'}</span>
+                  </div>
+                  <div>
+                    <span className="text-ink-faint">Tokens (in/cache/out): </span>
+                    <span>
+                      {formatCompactNumber(detail.tokens.input)} /{' '}
+                      {formatCompactNumber(detail.tokens.cached)} /{' '}
+                      {formatCompactNumber(detail.tokens.output)}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-ink-faint">Steps / Errors: </span>
+                    <span>
+                      {detail.steps} moves · {detail.errorCount ?? 0} err
+                    </span>
                   </div>
                   <div className="sm:col-span-2">
                     <span className="text-ink-faint">Workspace: </span>
@@ -97,11 +132,27 @@ export function SessionInspectorSheet({
                 </div>
               </Panel>
 
+              {toolCounts.length > 0 ? (
+                <Panel surface="paper" title="Top Tools Used">
+                  <div className="flex flex-wrap gap-1.5">
+                    {toolCounts.map(([toolName, count]) => (
+                      <Badge key={toolName} variant="default" className="font-mono text-xs">
+                        {toolName}: {count}
+                      </Badge>
+                    ))}
+                  </div>
+                </Panel>
+              ) : null}
+
               {subagents.length > 0 ? (
-                <Panel surface="paper" title={`Subagents (${subagents.length})`}>
+                <Panel surface="paper" title={`Subagents & Sidekicks (${subagents.length})`}>
                   <div className="flex flex-wrap gap-1.5">
                     {subagents.map((sub) => (
-                      <Badge key={`${sub.id}-${sub.role}`} variant="default" className="font-mono text-xs">
+                      <Badge
+                        key={`${sub.id}-${sub.role}`}
+                        variant={sub.status === 'running' ? 'primary' : 'default'}
+                        className="font-mono text-xs"
+                      >
                         {sub.role} ({sub.type})
                       </Badge>
                     ))}
@@ -109,15 +160,15 @@ export function SessionInspectorSheet({
                 </Panel>
               ) : null}
 
-              <Panel surface="paper" title={`Recent Tool Calls & Events (${events.length})`}>
-                {events.length === 0 ? (
+              <Panel surface="paper" title={`Recent Tool Calls & Events (${reversedEvents.length})`}>
+                {reversedEvents.length === 0 ? (
                   <EmptyState
                     title="No recent events"
                     description="No tool calls or log entries found in the transcript tail."
                   />
                 ) : (
                   <div className="space-y-2">
-                    {events.map((ev, idx) => (
+                    {reversedEvents.map((ev, idx) => (
                       <div
                         key={`${ev.at}-${ev.tool}-${idx}`}
                         className="border-2 border-ink/20 bg-paper-raised p-2.5 font-mono text-xs"

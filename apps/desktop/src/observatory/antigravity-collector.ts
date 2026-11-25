@@ -3,6 +3,7 @@ import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { isRecord } from '@moonwitness/types';
 import {
+  bumpCounter,
   clipRedacted,
   DEFAULT_DETAIL_TAIL_BYTES,
   DEFAULT_TAIL_CHUNK_BYTES,
@@ -41,6 +42,7 @@ interface ParsedTranscriptSummary {
   readonly lastAction: string;
   readonly lastTool: string;
   readonly lastError: string;
+  readonly errorCount: number;
   readonly hasRecentError: boolean;
   readonly inputTokens: number;
   readonly cacheTokens: number;
@@ -48,6 +50,7 @@ interface ParsedTranscriptSummary {
   readonly stepCount: number;
   readonly lastTimestamp: string;
   readonly subagents: readonly ObservatorySubagent[];
+  readonly toolCounts: Readonly<Record<string, number>>;
   readonly events: readonly ObservatoryEvent[];
 }
 
@@ -310,6 +313,7 @@ export class AntigravityCollector {
     let lastAction = '';
     let lastTool = '';
     let lastError = '';
+    let errorCount = 0;
     let hasRecentError = false;
     let inputTokens = 0;
     let cacheTokens = 0;
@@ -318,6 +322,7 @@ export class AntigravityCollector {
     let lastTimestamp = new Date(fileStat.mtimeMs).toISOString();
     const subagents: ObservatorySubagent[] = [];
     const events: ObservatoryEvent[] = [];
+    const toolCounts: Record<string, number> = {};
 
     for (const line of headLines) {
       const rec = safeJsonParse<Record<string, unknown>>(line);
@@ -344,6 +349,7 @@ export class AntigravityCollector {
       const at = typeof rec.created_at === 'string' ? rec.created_at : lastTimestamp;
       if (rec.status === 'ERROR' || typeof rec.error === 'string') {
         hasRecentError = true;
+        errorCount += 1;
         lastError = clipRedacted(rec.error ?? rec.content ?? 'Step error', 160, this.knownSecrets);
         events.push({ at, kind: 'error', tool: 'error', summary: lastError });
       }
@@ -353,6 +359,7 @@ export class AntigravityCollector {
           if (!isRecord(rawTc) || typeof rawTc.name !== 'string') continue;
           const args = isRecord(rawTc.args) ? rawTc.args : {};
           lastTool = rawTc.name;
+          bumpCounter(toolCounts, rawTc.name);
           if (rawTc.name === 'update_focus' && args.focus !== undefined) {
             focus = clipRedacted(unwrapArgValue(args.focus), 120, this.knownSecrets);
             lastAction = focus;
@@ -432,6 +439,7 @@ export class AntigravityCollector {
       lastAction,
       lastTool,
       lastError,
+      errorCount,
       hasRecentError,
       inputTokens,
       cacheTokens,
@@ -439,7 +447,8 @@ export class AntigravityCollector {
       stepCount,
       lastTimestamp,
       subagents,
-      events: events.slice(-40),
+      toolCounts,
+      events: events.slice(detailMode ? -80 : -40),
     };
 
     this.parseCache.set(cacheKey, {
@@ -567,6 +576,7 @@ export class AntigravityCollector {
         focus: parsed.focus || parsed.lastAction || '',
         lastTool: parsed.lastTool || '',
         lastError: parsed.lastError || '',
+        errorCount: parsed.errorCount,
         steps: parsed.stepCount,
         tokens: {
           input: parsed.inputTokens,
@@ -576,11 +586,29 @@ export class AntigravityCollector {
         },
         subagents: mergedSubagents,
         swarmWorkers: swarmWorkerCount,
+        toolCounts: parsed.toolCounts,
         updatedAt: live?.state?.updateTime ?? parsed.lastTimestamp,
         mtimeMs: item.fileStat.mtimeMs,
         sourcePath: item.transcriptPath,
-        recentEvents: parsed.events.slice(-8),
+        recentEvents: parsed.events.slice(-10),
       });
+    }
+
+    const sessionById = new Map(sessions.map((entry) => [entry.id, entry]));
+    for (const session of sessions) {
+      if (session.parentId && sessionById.has(session.parentId)) {
+        const parent = sessionById.get(session.parentId);
+        if (parent && !parent.subagents.some((sub) => sub.id === session.id)) {
+          (parent.subagents as ObservatorySubagent[]).push({
+            id: session.id,
+            role: session.title,
+            type: 'conversation',
+            model: session.model,
+            status: session.status,
+            at: session.updatedAt,
+          });
+        }
+      }
     }
 
     return {
