@@ -1,6 +1,6 @@
 # Generated model and addon reference
 
-Source fingerprint: `0d433c28ee6a2e7932fa4cd1271fdd171206d7e547e1b942af46865c02f37f6a`. Seed values and field defaults are intentionally omitted.
+Source fingerprint: `5461f381fd2d9aeb81aa9564023788e1e2f32c68d21034c36c86f72b572abf20`. Seed values and field defaults are intentionally omitted.
 
 ## Addon `auth`
 
@@ -172,6 +172,7 @@ Models: 25; declared views: 25; menu entries: 25; seed rows: 739.
 | `base.user`                  | `users`                  | `password`             | password  | No       | Yes      | No         | —                       |
 | `base.user`                  | `users`                  | `role`                 | enum      | No       | Yes      | [redacted] | —                       |
 | `base.user`                  | `users`                  | `timezone`             | string    | No       | Yes      | No         | —                       |
+| `base.user`                  | `users`                  | `token_version`        | integer   | No       | Yes      | [redacted] | —                       |
 | `ir.feature_flag`            | `ir_feature_flags`       | `company`              | belongsTo | No       | Yes      | No         | `base.company`          |
 | `ir.feature_flag`            | `ir_feature_flags`       | `description`          | text      | No       | Yes      | No         | —                       |
 | `ir.feature_flag`            | `ir_feature_flags`       | `enabled`              | boolean   | No       | Yes      | [redacted] | —                       |
@@ -577,7 +578,7 @@ Models: 3; declared views: 3; menu entries: 3; seed rows: 9.
 
 Version: `1.0.0`; dependencies: none.
 
-Models: 5; declared views: 0; menu entries: 0; seed rows: 0.
+Models: 5; declared views: 0; menu entries: 0; seed rows: 1.
 
 | Model                                   | Table                         | Field            | Kind    | Required | Optional | Default    | Relation |
 | --------------------------------------- | ----------------------------- | ---------------- | ------- | -------- | -------- | ---------- | -------- |
@@ -621,6 +622,8 @@ Models: 5; declared views: 0; menu entries: 0; seed rows: 0.
 
 | Menu model | Label | Group | Sequence | Visibility |
 | ---------- | ----- | ----- | -------: | ---------- |
+
+- Seed coverage: `observability.telemetry_state` has 1 declared seed row(s); seed values are not included.
 
 ## Addon `organization`
 

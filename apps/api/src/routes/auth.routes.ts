@@ -24,7 +24,10 @@ export const authRoutes: FastifyPluginAsync<AuthRoutesOptions> = async (fastify,
   const tokenResponse = (session: AuthSession) => ({
     success: true,
     data: {
-      access_token: fastify.jwt.sign({ role: session.role }, { sub: String(session.userId) }),
+      access_token: fastify.jwt.sign(
+        { role: session.role, tkv: session.tokenVersion },
+        { sub: String(session.userId) }
+      ),
       token_type: 'Bearer',
       expires_in: accessTtlSeconds,
       refresh_token: session.refreshToken,

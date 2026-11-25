@@ -3100,6 +3100,17 @@
               "unique": false,
               "optional": true,
               "hasDefault": false
+            },
+            {
+              "name": "token_version",
+              "kind": "integer",
+              "column": "token_version",
+              "declaredRequired": true,
+              "required": false,
+              "unique": false,
+              "optional": true,
+              "hasDefault": true,
+              "default": "[redacted]"
             }
           ],
           "uniqueConstraints": []
@@ -6814,7 +6825,9 @@
       ],
       "menus": [],
       "views": [],
-      "seeds": {},
+      "seeds": {
+        "observability.telemetry_state": 1
+      },
       "accessRules": []
     },
     {
@@ -10486,5 +10499,5 @@
       "path": "/whatsapp/readyz"
     }
   ],
-  "generatedFromSha256": "0d433c28ee6a2e7932fa4cd1271fdd171206d7e547e1b942af46865c02f37f6a"
+  "generatedFromSha256": "5461f381fd2d9aeb81aa9564023788e1e2f32c68d21034c36c86f72b572abf20"
 }

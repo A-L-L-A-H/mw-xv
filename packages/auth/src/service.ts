@@ -53,6 +53,8 @@ export interface AuthSession {
   refreshToken: string;
   /** ISO-8601 UTC. */
   refreshExpiresAt: string;
+  /** Current token_version from user record. */
+  tokenVersion: number;
 }
 
 export interface AuthServiceOptions {
@@ -103,7 +105,7 @@ export function createAuthService(options: AuthServiceOptions) {
   }
 
   async function issue(
-    user: { id: number; login: string; role: Role; partner_id: number },
+    user: { id: number; login: string; role: Role; partner_id: number; token_version: number },
     family: string,
     meta: RequestMeta,
     trx?: Transaction
@@ -124,6 +126,7 @@ export function createAuthService(options: AuthServiceOptions) {
       partnerId: user.partner_id,
       refreshToken,
       refreshExpiresAt,
+      tokenVersion: user.token_version,
     };
   }
 
@@ -163,7 +166,7 @@ export function createAuthService(options: AuthServiceOptions) {
         if (isUniqueViolation(error)) throw new ConflictError('Login or email already registered');
         throw error;
       }
-      return issue(user, randomUUID(), meta);
+      return issue({ ...user, token_version: user.token_version ?? 1 }, randomUUID(), meta);
     },
 
     async login(login: string, password: string, meta: RequestMeta = {}): Promise<AuthSession> {
@@ -180,7 +183,7 @@ export function createAuthService(options: AuthServiceOptions) {
         .delete()
         .where('user_id', user.id)
         .where('expires_at', '<', new Date().toISOString());
-      return issue(user, randomUUID(), meta);
+      return issue({ ...user, token_version: user.token_version ?? 1 }, randomUUID(), meta);
     },
 
     /** Change credentials only after verifying the current secret, then revoke every session. */
@@ -205,7 +208,7 @@ export function createAuthService(options: AuthServiceOptions) {
 
       const changed = await User.query()
         .where({ id: userId, password: user.password })
-        .patch({ password: newPassword });
+        .patch({ password: newPassword, token_version: user.token_version + 1 });
       if (!changed) throw new AuthError('Current password is incorrect');
       await this.revokeAllForUser(userId);
     },
@@ -267,7 +270,7 @@ export function createAuthService(options: AuthServiceOptions) {
         await revokeFamily(row.family);
         throw new AuthError('Invalid refresh token');
       }
-      return issue(user, row.family, meta);
+      return issue({ ...user, token_version: user.token_version ?? 1 }, row.family, meta);
     },
 
     /** Idempotent: unknown tokens are ignored so callers cannot probe token validity. */

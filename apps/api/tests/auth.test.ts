@@ -571,8 +571,17 @@ describe('authentication and authorization', () => {
         expect((await login('alice', USER_PASSWORD)).statusCode).toBe(401);
         expect((await login('alice', 'twelve-chars')).statusCode).toBe(200);
 
+        // The access token issued before the password change is rejected
+        // immediately via the token_version claim (no 900s staleness window).
+        const staleTokenProbe = await as(alice.access_token, {
+          method: 'GET',
+          url: '/auth/me',
+        });
+        expect(staleTokenProbe.statusCode).toBe(401);
+
         const maximumLengthPassword = 'a'.repeat(1024);
-        const changedToMaximumLength = await as(alice.access_token, {
+        const freshSession = (await login('alice', 'twelve-chars')).json<TokenBody>().data;
+        const changedToMaximumLength = await as(freshSession.access_token, {
           method: 'POST',
           url: '/auth/me/password',
           payload: { current_password: 'twelve-chars', new_password: maximumLengthPassword },
@@ -580,7 +589,9 @@ describe('authentication and authorization', () => {
         expect(changedToMaximumLength.statusCode).toBe(200);
         expect((await login('alice', maximumLengthPassword)).statusCode).toBe(200);
       } finally {
-        await User.query().findById(alice.user.id).patch({ password: USER_PASSWORD });
+        await User.query()
+          .findById(alice.user.id)
+          .patch({ password: USER_PASSWORD, token_version: 1 });
       }
     }, 15000);
   });
