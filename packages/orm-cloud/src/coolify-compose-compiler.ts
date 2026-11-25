@@ -598,6 +598,17 @@ export function compileCoolifyCompose(input: CompileCoolifyComposeInput): Compil
   }
   docObj.networks = networks;
 
+  // 7b. Declare every prefixed named volume at the top level so Docker Compose
+  //     accepts the rewritten service volume references.
+  if (topLevelVolumes.size > 0) {
+    const existingVolumes =
+      docObj.volumes && typeof docObj.volumes === 'object' && !Array.isArray(docObj.volumes)
+        ? { ...(docObj.volumes as Record<string, unknown>) }
+        : {};
+    for (const name of topLevelVolumes) existingVolumes[name] = {};
+    docObj.volumes = existingVolumes;
+  }
+
   // 8. Stringify via yaml.
   const finalYaml = stringifyYaml(docObj);
 

@@ -1607,25 +1607,89 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
         previewPort = (await allocatePreviewPort()) ?? undefined;
       }
 
-      await compileCoolifyCompose({
-        slug,
-        tenantId: tenantId ?? 'default',
-        composeYaml: detail.composeYaml,
-        defaultPort: Number(port ?? (detail.port ?? 8080)) || 8080,
-        primaryDomain: resolvedDomain,
-        ...(previewPort !== undefined ? { previewPort } : {}),
-        existingEnv: {},
-        userEnv: env,
-      });
+      try {
+        const compiled = compileCoolifyCompose({
+          slug,
+          tenantId: tenantId ?? 'default',
+          composeYaml: detail.composeYaml,
+          defaultPort: Number(port ?? (detail.port ?? 8080)) || 8080,
+          primaryDomain: resolvedDomain,
+          ...(previewPort !== undefined ? { previewPort } : {}),
+          existingEnv: {},
+          userEnv: env,
+        });
 
-      await upAgentCompose({ endpoint: defaultAgentUrl, slug, composeSpec: detail.composeYaml, env, fetchImpl });
+        // Deploy the COMPILED compose (volume prefixes + top-level volumes + inline files),
+        // not the raw upstream template which has undeclared named volumes.
+        await upAgentCompose({
+          endpoint: defaultAgentUrl,
+          slug,
+          composeSpec: compiled.composeYaml,
+          env: { ...compiled.env, ...(env ?? {}) },
+          ...(Object.keys(compiled.files).length ? { files: compiled.files } : {}),
+          fetchImpl,
+        });
 
-      await reconcileCaddyWithAgent({});
+        // Persist PaaS metadata in PostgreSQL (single source of truth).
+        let target = await CloudDeploymentTarget.query()
+          .where({ company_id: ctx.companyId, is_active: true })
+          .first();
+        if (!target) target = await CloudDeploymentTarget.query().findOne({ company_id: ctx.companyId });
+        if (!target) target = await CloudDeploymentTarget.query().first();
+        if (!target) {
+          target = await CloudDeploymentTarget.query().insertAndFetch({
+            company_id: ctx.companyId,
+            name: 'default-paas-target',
+            environment: 'production',
+            api_url: defaultAgentUrl,
+            is_active: true,
+          });
+        }
 
-      await reconcileCaddyWithAgent({});
+        const appFields = {
+          company_id: ctx.companyId,
+          deployment_target_id: target.id,
+          image: `mw-paas-${slug}:latest`,
+          port: Number(port ?? (detail.port ?? 8080)) || 8080,
+          domain: resolvedDomain ?? null,
+          host_port: previewPort ?? null,
+          env_vars: { ...compiled.env, ...(env ?? {}) },
+          compose_spec: compiled.composeYaml,
+          template_id: slug,
+          managed_by: 'paas' as const,
+          deploy_mode: 'compose' as const,
+          is_active: true,
+          active: true,
+        } as Record<string, unknown>;
+        let cloudApp = await CloudApp.query().findOne({ name: slug });
+        if (cloudApp) {
+          await CloudApp.query().findById(cloudApp.id).patch(appFields);
+        } else {
+          cloudApp = await CloudApp.query().insertAndFetch({ name: slug, ...appFields });
+        }
+        await CloudDeployment.query().insert({
+          company_id: ctx.companyId,
+          app_id: cloudApp!.id,
+          version: `mw-paas-${slug}:latest`,
+          image_tag: 'latest',
+          status: 'running',
+          container_id: slug,
+          trigger: 'agent',
+          log: `Deployed Coolify template ${slug} via stateless agent`,
+          started_at: new Date().toISOString(),
+        });
 
-      mark(rule.operation, 'success');
-      return reply.code(201).send({ success: true, data: { slug, image: `mw-paas-${slug}:latest`, domain: resolvedDomain, previewPort } });
+        await reconcileCaddyWithAgent({});
+
+        mark(rule.operation, 'success');
+        return reply.code(201).send({ success: true, data: { slug, image: `mw-paas-${slug}:latest`, domain: resolvedDomain, previewPort } });
+      } catch (error) {
+        mark(rule.operation, 'failed', 'mesh');
+        return reply.code(502).send({
+          success: false,
+          error: safeErrorText(error, [resolvedToken], 'Template deploy failed'),
+        });
+      }
     });
 
     fastify.post('/api/cloud/paas/apps/deploy', async (req, reply) => {
