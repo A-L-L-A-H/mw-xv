@@ -6,7 +6,7 @@
 
 ---
 
-## - [ ] T12 — Implement `BrainStorageDriver` (`NodeSqliteBrainStore` & `InMemoryBrainStore`)
+## - [x] T12 — Implement `BrainStorageDriver` (`NodeSqliteBrainStore` & `InMemoryBrainStore`)
 
 - **Owner File(s):** `packages/plan-taskos/src/brain/storage.ts`
   - `packages/plan-taskos/src/brain/storage.ts` (CREATE)
