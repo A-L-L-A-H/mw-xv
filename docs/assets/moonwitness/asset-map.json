@@ -3330,7 +3330,7 @@
       "output": "docs/assets/moonwitness/scenes/moon-city-scene.json",
       "kind": "scene",
       "format": "json",
-      "sha256": "73ab064262c98030df6a672a154e47614a8e65408404204b7ed0e20be79df44c"
+      "sha256": "d327e60e7f4f68729cd0cd0fc21110249113837fc1d11a6f3ab311c3f3322dc9"
     },
     {
       "source": "packages/assets/scenes/riot-alley-scene.json",
