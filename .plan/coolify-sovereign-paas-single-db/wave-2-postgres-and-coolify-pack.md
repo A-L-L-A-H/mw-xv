@@ -461,7 +461,7 @@
 
 ---
 
-## - [ ] M35 — Add `getSetupStatus()` & `claimSetup()` to `MoonWitnessClient`
+## - [x] M35 — Add `getSetupStatus()` & `claimSetup()` to `MoonWitnessClient`
 
 - **Owner Files (MODIFY):**
   - `packages/client/src/types.ts` (export `SetupStatus { setupRequired: boolean }` & `SetupClaimParams { setup_token: string; login: string; password: string; name?: string; email?: string }`)
