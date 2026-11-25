@@ -105,7 +105,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 - [x] **M48** — `apps/board/src/components/cloud/mesh-topology-panel.tsx`: remove hardcoded `a-l-l-a-h.com` mock, wire authenticated live `/mesh/status`
 - [x] **M49** — `apps/board/src/components/cloud/paas-studio-panel.tsx`: wire `InstanceDomainsPanel`, `PaasAppDrawer`, `PaasTemplateCatalog`, `MeshTopologyPanel`
 - [x] **M50** — `apps/board/src/components/cloud/paas-studio-panel.tsx`: 3-tab Deploy panel (`Docker Image` | `Git Repository` | `Docker Compose`)
-- [ ] **M51** — Pass full Board gate (`typecheck`, `ui:check`, `build`, `board:budget`)
+- [x] **M51** — Pass full Board gate (`typecheck`, `ui:check`, `build`, `board:budget`)
 
 ### Wave 4 — Zero-Domain, Zero-SQLite `install.sh` (`wave-4-installer-and-vps-e2e.md`)
 - [ ] **M52** — `deploy/vps/install.sh`: CLI flags (`--port`, `--unlock-port`, `--wipe-tls`), auto-Docker install, `detect_public_ipv4`, `MW_SETUP_TOKEN`, `TRUST_PROXY_HOPS=2`
@@ -135,6 +135,6 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 | Wave 0 | `M01`–`M03` | `3 / 3` | — | `M03 OK` — frozen-lockfile dry-run exit 0 (zero drift, `bun.lock` unchanged); orm-cloud build exit 0; manifest test pass 10 / fail 0 |
 | Wave 1 | `M04`–`M15` | `12 / 12` | `177580ee` | `M15 OK` — `CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build` exit 0; binary size `18,091,490` bytes (> 10MB) |
 | Wave 2 | `M16`–`M38` | `23 / 23` | `7de3a496` | `M38 OK` — full Wave 2 gate green: auth 18/18, client 25/25, orm-cloud 137/137, api setup-claim 3/3, api build exit 0, api:addon:check 4/4; setup-status/claim lifecycle + conditional HSTS verified |
-| Wave 3 | `M39`–`M51` | `12 / 13` | — | `M50 OK` — typecheck exit 0; board:ui:check pass 6/6; 3 deploy tabs (image/git/compose) with shared-UI Textarea + webhook display |
+| Wave 3 | `M39`–`M51` | `13 / 13` | `0de765f7` | `M51 OK` — full board gate green: typecheck 0; ui:check 0 findings; build exit 0 (28/28 pages incl /setup); board:budget all routes pass |
 | Wave 4 | `M52`–`M55` | `0 / 4` | — | — |
 | Wave 5 | `M56`–`M66` | `0 / 11` | — | — |

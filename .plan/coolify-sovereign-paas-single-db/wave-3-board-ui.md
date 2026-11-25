@@ -291,7 +291,7 @@
 
 ---
 
-## - [ ] M51 — Run Full Board Gate (`typecheck`, `ui:check`, `build`, `board:budget`)
+## - [x] M51 — Run Full Board Gate (`typecheck`, `ui:check`, `build`, `board:budget`)
 
 - **Depends On:** `M50`
 - **Acceptance Criteria:**
