@@ -121,7 +121,7 @@
 
 ---
 
-### - [ ] M58 — Verify IP Bootstrap (`http://163.61.134.104:8000`) & Plain-HTTP Cookie
+### - [x] M58 — Verify IP Bootstrap (`http://163.61.134.104:8000`) & Plain-HTTP Cookie
 
 - **Depends On:** `M57`
 - **Acceptance Criteria (probed from Windows via `node -e`):**
