@@ -6,7 +6,7 @@
 
 ---
 
-## - [ ] M04 — Switch Caddy Global Block to `admin localhost:2019` + Add Mutex
+## - [x] M04 — Switch Caddy Global Block to `admin localhost:2019` + Add Mutex
 
 - **Owner File (MODIFY):** `apps/control-plane/caddy.go`
 - **Depends On:** `M03`
