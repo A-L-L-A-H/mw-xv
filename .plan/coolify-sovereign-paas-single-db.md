@@ -93,7 +93,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 - [x] **M38** — `apps/api/tests/auth-setup-claim.test.ts`: test setup-status, `401`/`201`/`409` claim lifecycle, conditional HSTS + full Wave 2 gate
 
 ### Wave 3 — Board Onboarding & Coolify-Grade PaaS Studio (`wave-3-board-ui.md`)
-- [ ] **M39** — `apps/board/src/app/api/session/route.ts`: dynamic HTTP/HTTPS cookie `secure` flag (`sameSite: 'lax'`)
+- [x] **M39** — `apps/board/src/app/api/session/route.ts`: dynamic HTTP/HTTPS cookie `secure` flag (`sameSite: 'lax'`)
 - [ ] **M40** — `apps/board/src/board-pages/setup-page.tsx`: Step 1 Claim Root Superadmin form
 - [ ] **M41** — `apps/board/src/board-pages/setup-page.tsx` + `apps/board/src/app/setup/page.tsx`: Step 2 3-mode domain selector + route page
 - [ ] **M42** — `apps/board/src/board-pages/auth-page.tsx`: first-boot `/setup` banner when `setupRequired === true`
@@ -135,6 +135,6 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 | Wave 0 | `M01`–`M03` | `3 / 3` | — | `M03 OK` — frozen-lockfile dry-run exit 0 (zero drift, `bun.lock` unchanged); orm-cloud build exit 0; manifest test pass 10 / fail 0 |
 | Wave 1 | `M04`–`M15` | `12 / 12` | `177580ee` | `M15 OK` — `CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build` exit 0; binary size `18,091,490` bytes (> 10MB) |
 | Wave 2 | `M16`–`M38` | `23 / 23` | `7de3a496` | `M38 OK` — full Wave 2 gate green: auth 18/18, client 25/25, orm-cloud 137/137, api setup-claim 3/3, api build exit 0, api:addon:check 4/4; setup-status/claim lifecycle + conditional HSTS verified |
-| Wave 3 | `M39`–`M51` | `0 / 13` | — | — |
+| Wave 3 | `M39`–`M51` | `1 / 13` | — | `M39 OK` — `bun --filter @moonwitness/board typecheck` exit 0; session cookie `secure` derived from forwarded proto / request URL, `sameSite: lax` |
 | Wave 4 | `M52`–`M55` | `0 / 4` | — | — |
 | Wave 5 | `M56`–`M66` | `0 / 11` | — | — |

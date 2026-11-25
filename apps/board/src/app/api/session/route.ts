@@ -12,7 +12,7 @@ export async function GET() {
   return NextResponse.json({ token: jar.get(SESSION_COOKIE)?.value ?? null });
 }
 
-/** Stores the session JSON in an HttpOnly, SameSite=Strict cookie. */
+/** Stores the session JSON in an HttpOnly, SameSite=Lax cookie. Secure only on HTTPS. */
 export async function POST(request: Request) {
   let token: unknown;
   try {
@@ -23,11 +23,23 @@ export async function POST(request: Request) {
   if (typeof token !== 'string' || token.length === 0) {
     return NextResponse.json({ error: 'A non-empty token is required' }, { status: 400 });
   }
+  const forwardedProto = request.headers
+    .get('x-forwarded-proto')
+    ?.split(',')[0]
+    ?.trim()
+    .toLowerCase();
+  let urlIsHttps = false;
+  try {
+    urlIsHttps = new URL(request.url).protocol === 'https:';
+  } catch {
+    urlIsHttps = false;
+  }
+  const isHttps = forwardedProto === 'https' || urlIsHttps;
   const jar = await cookies();
   jar.set(SESSION_COOKIE, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    secure: isHttps,
+    sameSite: 'lax',
     path: '/',
     maxAge: SESSION_MAX_AGE_SECONDS,
   });

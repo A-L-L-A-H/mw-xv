@@ -7,7 +7,7 @@
 
 ---
 
-## - [ ] M39 — Fix Dynamic HTTP/HTTPS Cookie `secure` Flag in `/api/session`
+## - [x] M39 — Fix Dynamic HTTP/HTTPS Cookie `secure` Flag in `/api/session`
 
 - **Owner File (MODIFY):** `apps/board/src/app/api/session/route.ts` (lines 26–34)
 - **Depends On:** `M03`
