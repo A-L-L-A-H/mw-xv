@@ -50,7 +50,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 
 ### Wave 0 — Workspace & Docker Packaging (`wave-0-packaging.md`)
 - [x] **M01** — Add `yaml` & `paas-template-pack-coolify` to `packages/orm-cloud/package.json`
-- [ ] **M02** — Add `COPY packages/paas-template-pack-coolify/package.json` in `Dockerfile` & `apps/whatsapp/Dockerfile`
+- [x] **M02** — Add `COPY packages/paas-template-pack-coolify/package.json` in `Dockerfile` & `apps/whatsapp/Dockerfile`
 - [ ] **M03** — Sync `bun.lock` (if needed) & pass `docker-workspace-manifests.test.mjs` + `@moonwitness/orm-cloud build`
 
 ### Wave 1 — Stateless Control-Plane Agent (`wave-1-control-plane.md`)
@@ -132,7 +132,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 
 | Wave | Task Range | Completed Tasks | Last Commit SHA | Latest Verification Evidence |
 |---|---|---|---|---|
-| Wave 0 | `M01`–`M03` | `1 / 3` | — | `M01 OK` (package.json JSON validates; deps present) |
+| Wave 0 | `M01`–`M03` | `2 / 3` | — | `M02 OK` — `node --test scripts/docker-workspace-manifests.test.mjs` pass 10 / fail 0 (`missing = []`); COPY before frozen install in both Dockerfiles |
 | Wave 1 | `M04`–`M15` | `0 / 12` | — | — |
 | Wave 2 | `M16`–`M38` | `0 / 23` | — | — |
 | Wave 3 | `M39`–`M51` | `0 / 13` | — | — |

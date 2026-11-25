@@ -30,7 +30,7 @@
 
 ---
 
-## - [ ] M02 — Add `paas-template-pack-coolify/package.json` COPY to Both Dockerfiles
+## - [x] M02 — Add `paas-template-pack-coolify/package.json` COPY to Both Dockerfiles
 
 - **Owner Files (MODIFY):**
   - `Dockerfile` (insert before `bun install --frozen-lockfile`, right after `packages/orm-workflow/package.json`)

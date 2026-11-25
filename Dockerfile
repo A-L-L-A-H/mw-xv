@@ -70,6 +70,7 @@ COPY packages/research/package.json ./packages/research/package.json
 COPY packages/types/package.json ./packages/types/package.json
 COPY packages/ui/package.json ./packages/ui/package.json
 COPY packages/orm-workflow/package.json ./packages/orm-workflow/package.json
+COPY packages/paas-template-pack-coolify/package.json ./packages/paas-template-pack-coolify/package.json
 RUN --mount=type=cache,id=moonwitness-bun-cache,target=/root/.bun/install/cache \
     bun install --frozen-lockfile
 COPY . .
