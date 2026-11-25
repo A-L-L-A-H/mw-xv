@@ -123,21 +123,30 @@ upsert_env() {
 }
 
 cleanup_for_reinstall() {
-  log "Reinstall mode: wiping MoonWitness containers, database volumes, and env state (preserving unrelated containers & TLS certs)..."
+  log "Reinstall mode: wiping MoonWitness containers, ALL databases/volumes/networks/stacks/backups, and env state (preserving unrelated containers)..."
   systemctl stop moonwitness-control-plane.service 2>/dev/null || true
 
   for c in moonwitness_board moonwitness_api moonwitness_postgres moonwitness_whatsapp moonwitness_whatsapp_tunnel moonwitness-caddy; do
     docker rm -f "$c" >/dev/null 2>&1 || true
   done
   docker ps -a --filter "label=mw.paas.managed=true" -q | xargs -r docker rm -f >/dev/null 2>&1 || true
+  docker ps -a --filter 'name=^mw-paas-' -q | xargs -r docker rm -f >/dev/null 2>&1 || true
 
   for v in moonwitness-xv_pgdata moonwitness-xv_attachments_data moonwitness-whatsapp_whatsapp_auth_data moonwitness_pgdata pgdata; do
     docker volume rm -f "$v" >/dev/null 2>&1 || true
   done
+  docker volume ls -q | grep -E '^(mw-|mw-paas-)' | xargs -r docker volume rm -f >/dev/null 2>&1 || true
 
-  rm -f "${MW_DATA_DIR}/control-plane.db"* "${MW_DATA_DIR}/backups"/*.dump "${MW_DATA_DIR}/backups"/*.meta.json 2>/dev/null || true
+  docker network ls --format '{{.Name}}' | grep -E '^(mw-paas-|mw-stack-)' | xargs -r docker network rm >/dev/null 2>&1 || true
+
+  rm -f "${MW_DATA_DIR}/control-plane.db"* 2>/dev/null || true
   rm -rf "${MW_DATA_DIR}/stacks" 2>/dev/null || true
-  rm -f "${MW_ETC_DIR}/control-plane.env" "${MW_INSTALL_DIR}/.env" "${MW_WA_DIR}/.env" 2>/dev/null || true
+  rm -rf "${MW_DATA_DIR}/backups"/* 2>/dev/null || true
+  rm -f "${MW_ETC_DIR}/control-plane.env" "${MW_ETC_DIR}/Caddyfile" "${MW_INSTALL_DIR}/.env" "${MW_WA_DIR}/.env" 2>/dev/null || true
+  if [ "${WIPE_TLS}" = "true" ]; then
+    rm -rf "${MW_DATA_DIR}/caddy-data"/* "${MW_DATA_DIR}/caddy-config"/* 2>/dev/null || true
+  fi
+  log "Clean wipe complete (unrelated containers such as freellmapi-* and dx-api-postgres-test were left untouched)."
 }
 
 sync_sources() {
@@ -260,15 +269,16 @@ configure_secrets_and_env() {
   mesh_name="$(get_env "$mesh_env" "MW_MESH_NETWORK_NAME")"
   mesh_secret="$(get_env "$mesh_env" "MW_MESH_NETWORK_SECRET")"
 
-  # Control-plane binds strictly to private mesh IP (no public UI port 3004 exposed)
+  # Control-plane binds strictly to private mesh IP (stateless: PostgreSQL is the single source of truth).
   rm -f "$cp_env"
+  upsert_env "$cp_env" "MW_CONTROL_PLANE_STATELESS" "true"
+  upsert_env "$cp_env" "MW_PUBLIC_IPV4" "${MW_PUBLIC_IPV4}"
   upsert_env "$cp_env" "MW_MESH_ENABLED" "true"
   upsert_env "$cp_env" "MW_MESH_NETWORK_NAME" "$mesh_name"
   upsert_env "$cp_env" "MW_MESH_NETWORK_SECRET" "$mesh_secret"
   upsert_env "$cp_env" "MW_MESH_IPV4" "${MW_MESH_IPV4}"
   upsert_env "$cp_env" "MW_MESH_HOSTNAME" "${MW_MESH_HOSTNAME}"
   upsert_env "$cp_env" "MW_CONTROL_PLANE_ADDR" "${MW_MESH_IPV4}:${MW_CONTROL_PLANE_PORT}"
-  upsert_env "$cp_env" "MW_CONTROL_PLANE_DB_PATH" "${MW_DATA_DIR}/control-plane.db"
   upsert_env "$cp_env" "MW_INTERNAL_SECRET" "$jwt_secret"
   upsert_env "$cp_env" "DOCKER_BIN" "docker"
   upsert_env "$cp_env" "MW_PAAS_CADDYFILE_PATH" "${MW_ETC_DIR}/Caddyfile"

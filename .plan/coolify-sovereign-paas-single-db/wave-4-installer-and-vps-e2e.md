@@ -32,7 +32,7 @@
 
 ---
 
-### - [ ] M53 — Update `install.sh` Full Clean DB/Volume Wipe & Stateless `control-plane.env`
+### - [x] M53 — Update `install.sh` Full Clean DB/Volume Wipe & Stateless `control-plane.env`
 
 - **Owner File (MODIFY):** `deploy/vps/install.sh`
 - **Depends On:** `M52`
