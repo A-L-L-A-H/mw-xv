@@ -91,12 +91,25 @@ function renderTemplateIcon(category: PaasTemplateCategory) {
   }
 }
 
+interface CloudTemplateDetail extends CloudTemplateSummary {
+  composeYaml: string;
+  editableEnv?: string[];
+  magicSecrets?: string[];
+  port?: number;
+}
+
 function CloudCatalog({
   apiBase,
   fetchFn,
+  wildcardDomain,
+  publicIpv4,
+  onStackDeployed,
 }: {
   apiBase: string;
   fetchFn: (input: string, init?: RequestInit) => Promise<Response>;
+  wildcardDomain?: string;
+  publicIpv4?: string;
+  onStackDeployed?: () => void | Promise<void>;
 }) {
   const base = apiBase.replace(/\/+$/u, '');
   const [query, setQuery] = useState('');
@@ -107,6 +120,14 @@ function CloudCatalog({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [configuring, setConfiguring] = useState<CloudTemplateSummary | null>(null);
+  const [detail, setDetail] = useState<CloudTemplateDetail | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [slug, setSlug] = useState('');
+  const [domain, setDomain] = useState('');
+  const [envValues, setEnvValues] = useState<Record<string, string>>({});
+  const [deploying, setDeploying] = useState(false);
+  const [deployedUrl, setDeployedUrl] = useState<string | null>(null);
+  const [configError, setConfigError] = useState<string | null>(null);
 
   useEffect(() => {
     const handle = setTimeout(() => {
@@ -137,6 +158,71 @@ function CloudCatalog({
   useEffect(() => {
     void load();
   }, [load]);
+
+  async function openConfigure(tpl: CloudTemplateSummary) {
+    setConfiguring(tpl);
+    setDetail(null);
+    setConfigError(null);
+    setDeployedUrl(null);
+    const safeSlug = tpl.id
+      .toLowerCase()
+      .replace(/[^a-z0-9-]+/gu, '-')
+      .replace(/^-+|-+$/gu, '')
+      .slice(0, 48) || 'app';
+    setSlug(safeSlug);
+    setDomain(wildcardDomain ? `${safeSlug}.${wildcardDomain}` : '');
+    setEnvValues({});
+    setDetailLoading(true);
+    try {
+      const res = await fetchFn(`${base}/templates/${encodeURIComponent(tpl.id)}`, {
+        cache: 'no-store',
+      });
+      if (!res.ok) throw new Error(`Template detail failed (${res.status})`);
+      const body = (await res.json()) as { success?: boolean; data?: CloudTemplateDetail };
+      setDetail(body.data ?? (body as unknown as CloudTemplateDetail));
+    } catch (err) {
+      setConfigError(err instanceof Error ? err.message : 'Failed to load template detail');
+    } finally {
+      setDetailLoading(false);
+    }
+  }
+
+  async function deployStack() {
+    if (!configuring) return;
+    setDeploying(true);
+    setConfigError(null);
+    try {
+      const res = await fetchFn(`${base}/templates/deploy`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          slug,
+          ...(domain ? { domain } : {}),
+          env: envValues,
+        }),
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Deploy failed (${res.status}): ${text.slice(0, 300)}`);
+      }
+      const body = (await res.json()) as {
+        data?: { domain?: string; previewPort?: number };
+      };
+      const data = body.data ?? {};
+      const previewPort = data.previewPort ?? 8001;
+      const url = data.domain
+        ? `https://${data.domain}`
+        : publicIpv4
+          ? `http://${publicIpv4}:${previewPort}`
+          : null;
+      setDeployedUrl(url);
+      await onStackDeployed?.();
+    } catch (err) {
+      setConfigError(err instanceof Error ? err.message : 'Stack deploy failed');
+    } finally {
+      setDeploying(false);
+    }
+  }
 
   const totalPages = catalog ? Math.max(1, Math.ceil(catalog.total / catalog.limit)) : 1;
 
@@ -242,7 +328,7 @@ function CloudCatalog({
                 variant="default"
                 size="sm"
                 disabled={tpl.compatibility === 'restricted'}
-                onClick={() => setConfiguring(tpl)}
+                onClick={() => void openConfigure(tpl)}
               >
                 Configure &amp; Deploy <ChevronRightIcon aria-hidden />
               </Button>
@@ -278,16 +364,94 @@ function CloudCatalog({
       </div>
 
       {configuring ? (
-        <Panel title={`Configure ${configuring.name}`} density="compact" headingLevel={3}>
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Label htmlFor="cloud-slug">App Slug</Label>
-              <Input id="cloud-slug" defaultValue={configuring.id} />
+        <Panel
+          title={`Configure ${configuring.name}`}
+          description="Set an app slug, optional domain, and editable environment values."
+          density="compact"
+          headingLevel={3}
+          actions={
+            <Button size="sm" variant="outline" onClick={() => setConfiguring(null)}>
+              Close
+            </Button>
+          }
+        >
+          {detailLoading ? (
+            <div className="space-y-3">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
             </div>
-            <p className="text-xs text-muted-foreground">
-              Configure &amp; Deploy options are completed in the following step.
-            </p>
-          </div>
+          ) : (
+            <div className="space-y-4">
+              {configError ? (
+                <ErrorState title="Configuration error" description={configError} headingLevel={3} />
+              ) : null}
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className="space-y-1">
+                  <Label htmlFor="cloud-slug">App Slug</Label>
+                  <Input id="cloud-slug" value={slug} onChange={(e) => setSlug(e.target.value)} />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="cloud-domain">Custom Domain (optional)</Label>
+                  <Input
+                    id="cloud-domain"
+                    value={domain}
+                    onChange={(e) => setDomain(e.target.value)}
+                    placeholder={
+                      wildcardDomain
+                        ? `auto: <slug>.${wildcardDomain}`
+                        : publicIpv4
+                          ? `blank = IP preview :8001–8010 on ${publicIpv4}`
+                          : 'blank = IP preview'
+                    }
+                  />
+                </div>
+              </div>
+
+              {detail?.magicSecrets?.length ? (
+                <div className="flex flex-wrap gap-2">
+                  {detail.magicSecrets.map((secret) => (
+                    <Badge key={secret} variant="primary">
+                      Auto secret: {secret} (persistent)
+                    </Badge>
+                  ))}
+                </div>
+              ) : null}
+
+              {detail?.editableEnv?.length ? (
+                <div className="space-y-2">
+                  <h4 className="text-xs font-semibold uppercase tracking-wide">Environment</h4>
+                  {detail.editableEnv.map((key) => (
+                    <div key={key} className="grid items-center gap-2 md:grid-cols-2">
+                      <Label htmlFor={`env-${key}`}>{key}</Label>
+                      <Input
+                        id={`env-${key}`}
+                        value={envValues[key] ?? ''}
+                        onChange={(e) =>
+                          setEnvValues((current) => ({ ...current, [key]: e.target.value }))
+                        }
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+
+              <Button
+                type="button"
+                variant="default"
+                disabled={deploying || configuring.compatibility === 'restricted'}
+                onClick={() => void deployStack()}
+              >
+                <BoltIcon aria-hidden />
+                {deploying ? 'Deploying…' : 'Deploy Stack'}
+              </Button>
+
+              {deployedUrl ? (
+                <a className="block break-all text-sm underline" href={deployedUrl}>
+                  {deployedUrl}
+                </a>
+              ) : null}
+            </div>
+          )}
         </Panel>
       ) : null}
     </Panel>
@@ -300,9 +464,9 @@ export function PaasTemplateCatalog({
   onDeployTemplate,
   apiBase,
   fetchFn,
-  wildcardDomain: _wildcardDomain,
-  publicIpv4: _publicIpv4,
-  onStackDeployed: _onStackDeployed,
+  wildcardDomain,
+  publicIpv4,
+  onStackDeployed,
 }: PaasTemplateCatalogProps) {
   const isCloudApi = Boolean(apiBase?.startsWith('/api/cloud/'));
   const [query, setQuery] = useState<string>('');
@@ -319,7 +483,15 @@ export function PaasTemplateCatalog({
   }, [query, templates]);
 
   if (isCloudApi) {
-    return <CloudCatalog apiBase={apiBase!} fetchFn={fetchFn ?? fetch} />;
+    return (
+      <CloudCatalog
+        apiBase={apiBase!}
+        fetchFn={fetchFn ?? fetch}
+        wildcardDomain={wildcardDomain}
+        publicIpv4={publicIpv4}
+        onStackDeployed={onStackDeployed}
+      />
+    );
   }
 
   return (

@@ -100,7 +100,7 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 - [x] **M43** — `apps/board/src/components/cloud/instance-domains-panel.tsx`: status strip, 1-click `sslip.io`, domain form, DNS table, Verify DNS, Save & Reload, Promote Preview Apps
 - [x] **M44** — `instance-domains-panel.tsx` + `settings-page.tsx`: TLS-gated Port `8000` Lockdown (`ConfirmDialog`) + `/board/settings` admin card
 - [x] **M45** — `apps/board/src/components/cloud/paas-template-catalog.tsx`: paginated server-side 390+ search + category filter + compatibility badges
-- [ ] **M46** — `apps/board/src/components/cloud/paas-template-catalog.tsx`: Configure & Deploy panel/modal (slug, domain/preview, editable env, secret badges)
+- [x] **M46** — `apps/board/src/components/cloud/paas-template-catalog.tsx`: Configure & Deploy panel/modal (slug, domain/preview, editable env, secret badges)
 - [ ] **M47** — `apps/board/src/components/cloud/paas-app-drawer.tsx`: 4-tab per-app management drawer (Overview/Stats, Env Vault, Domain, History/SSE Logs)
 - [ ] **M48** — `apps/board/src/components/cloud/mesh-topology-panel.tsx`: remove hardcoded `a-l-l-a-h.com` mock, wire authenticated live `/mesh/status`
 - [ ] **M49** — `apps/board/src/components/cloud/paas-studio-panel.tsx`: wire `InstanceDomainsPanel`, `PaasAppDrawer`, `PaasTemplateCatalog`, `MeshTopologyPanel`
@@ -135,6 +135,6 @@ Execute strictly **1 micro-task (`Mxx`) per cycle** without asking the user any 
 | Wave 0 | `M01`–`M03` | `3 / 3` | — | `M03 OK` — frozen-lockfile dry-run exit 0 (zero drift, `bun.lock` unchanged); orm-cloud build exit 0; manifest test pass 10 / fail 0 |
 | Wave 1 | `M04`–`M15` | `12 / 12` | `177580ee` | `M15 OK` — `CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build` exit 0; binary size `18,091,490` bytes (> 10MB) |
 | Wave 2 | `M16`–`M38` | `23 / 23` | `7de3a496` | `M38 OK` — full Wave 2 gate green: auth 18/18, client 25/25, orm-cloud 137/137, api setup-claim 3/3, api build exit 0, api:addon:check 4/4; setup-status/claim lifecycle + conditional HSTS verified |
-| Wave 3 | `M39`–`M51` | `7 / 13` | — | `M45 OK` — typecheck exit 0; board:ui:check pass 6/6; cloud server-side paginated catalog with debounced search + category/compat badges |
+| Wave 3 | `M39`–`M51` | `8 / 13` | — | `M46 OK` — typecheck exit 0; board:ui:check pass 6/6; detail fetch + configure panel with slug/domain/env/secret badges + deploy POST |
 | Wave 4 | `M52`–`M55` | `0 / 4` | — | — |
 | Wave 5 | `M56`–`M66` | `0 / 11` | — | — |

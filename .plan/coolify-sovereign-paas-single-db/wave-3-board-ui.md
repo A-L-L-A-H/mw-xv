@@ -181,7 +181,7 @@
 
 ---
 
-## - [ ] M46 — Add Configure & Deploy Panel to `PaasTemplateCatalog`
+## - [x] M46 — Add Configure & Deploy Panel to `PaasTemplateCatalog`
 
 - **Owner File (MODIFY):** `apps/board/src/components/cloud/paas-template-catalog.tsx`
 - **Depends On:** `M45`
