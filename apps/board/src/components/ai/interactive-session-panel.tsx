@@ -409,7 +409,7 @@ export function InteractiveSessionPanel({
             {terminal ? <span className="font-mono text-xs text-ink-soft">Terminal session · read only</span> : null}
           </div>
           {streamState === 'gap' ? (
-            <p role="status" className="border-2 border-yellow-500/40 bg-yellow-500/10 p-3 font-mono text-xs text-ink">
+            <p role="status" className="border-2 border-[color:var(--mw-warning-readable)] bg-[color:color-mix(in_srgb,var(--mw-warning)_50%,var(--mw-paper))] p-3 font-mono text-xs text-ink">
               Event history gap detected. Replacing the snapshot from sequence zero.
             </p>
           ) : null}

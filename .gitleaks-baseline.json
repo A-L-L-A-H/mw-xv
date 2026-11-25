@@ -2965,5 +2965,26 @@
       "decode-depth:1"
     ],
     "Fingerprint": "cb133e0594f0465b96763dcac1b703d4c0131946:apps/control-plane/paas_catalog_gen.go:curl-auth-user:6004"
+  },
+  {
+    "RuleID": "generic-api-key",
+    "Description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
+    "StartLine": 48,
+    "EndLine": 48,
+    "StartColumn": 30,
+    "EndColumn": 62,
+    "Match": "API_KEY=sk-live-1234567890abcdef ",
+    "Secret": "sk-live-1234567890abcdef",
+    "File": "packages/plan-taskos/tests/memory-sleep.test.ts",
+    "SymlinkFile": "",
+    "Commit": "3bd6094456d35e6f9452c87b361700aa16b8725d",
+    "Link": "https://github.com/A-L-L-A-H/mw-xv/blob/3bd6094456d35e6f9452c87b361700aa16b8725d/packages/plan-taskos/tests/memory-sleep.test.ts#L48",
+    "Entropy": 4.418296,
+    "Author": "MoonWitness Dev",
+    "Email": "dev@moonwitness.local",
+    "Date": "2026-11-25T16:02:44Z",
+    "Message": "test(plan-taskos): T18 add wave 2 brain, knowledge graph, sleep, merkle tests",
+    "Tags": [],
+    "Fingerprint": "3bd6094456d35e6f9452c87b361700aa16b8725d:packages/plan-taskos/tests/memory-sleep.test.ts:generic-api-key:48"
   }
 ]
