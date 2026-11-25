@@ -6,7 +6,7 @@
 
 ---
 
-## - [ ] M16 — Extend `CloudApp` Schema in `packages/orm-cloud/src/models/index.ts`
+## - [x] M16 — Extend `CloudApp` Schema in `packages/orm-cloud/src/models/index.ts`
 
 - **Owner File (MODIFY):** `packages/orm-cloud/src/models/index.ts` (inside `CloudApp.fields`)
 - **Depends On:** `M03`
