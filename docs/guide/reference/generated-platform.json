@@ -401,6 +401,12 @@
       "scripts": ["build", "test"]
     },
     {
+      "name": "paas-template-pack-coolify",
+      "version": "1.0.0",
+      "directory": "packages/paas-template-pack-coolify",
+      "scripts": []
+    },
+    {
       "name": "@moonwitness/research",
       "version": "1.0.0-rc.1",
       "directory": "packages/research",
@@ -10528,5 +10534,5 @@
       "path": "/whatsapp/readyz"
     }
   ],
-  "generatedFromSha256": "277acfa308a27ef3bd48083688d792832fc0a999d34bfdc4979ec551c1161446"
+  "generatedFromSha256": "a40ff019a7ae25d69028f252e8256062f773ebce39d6a5f8b083ce6cb463d279"
 }

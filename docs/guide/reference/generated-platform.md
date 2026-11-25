@@ -1,6 +1,6 @@
 # Generated platform reference
 
-Source fingerprint: `277acfa308a27ef3bd48083688d792832fc0a999d34bfdc4979ec551c1161446`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
+Source fingerprint: `a40ff019a7ae25d69028f252e8256062f773ebce39d6a5f8b083ce6cb463d279`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
 
 ## Workspace packages and apps
 
@@ -65,6 +65,7 @@ Source fingerprint: `277acfa308a27ef3bd48083688d792832fc0a999d34bfdc4979ec551c11
 | `@moonwitness/orm-subscription`     | Package | 1.0.0      | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-whatsapp`         | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-workflow`         | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `paas-template-pack-coolify`        | Package | 1.0.0      | —                                                                                                                                                                                                                                                                                  |
 | `@moonwitness/research`             | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
 | `@moonwitness/types`                | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/ui`                   | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
