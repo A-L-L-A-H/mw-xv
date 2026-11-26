@@ -61,7 +61,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - Manual verification: `/setup-status` is registered in the Identity server and emits only `{ setupRequired }` with no-store; service checks unconsumed, unrevoked, unexpired tokens with a boolean SQL query and fails closed on database or owner-check errors; an injected platform-owner checker permanently disables setup without leaking account data.
   - Commit: 56385211 feat(identity): add bootstrap state and setup status for I23
 
-#### - [ ] I24 — Add atomic first Platform Owner creation service
+#### - [x] I24 — Add atomic first Platform Owner creation service
 
 - **Owner File(s):** packages/orm-identity/src/models/account-capability.ts; packages/orm-identity/src/models/account-capability.test.ts; apps/id/src/bootstrap/create-first-owner.ts; apps/id/src/bootstrap/create-first-owner.test.ts; apps/id/src/database/migrations/*account-capability*
 - **Depends On:** I15, I16, I22, I23
@@ -74,12 +74,18 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - Do not create a Business DB user in this service; provisioning happens through the later outbox integration.
 - **DO NOT:** Do not assign the legacy system/superadmin role or grant blanket tenant-data permissions.
 - **Acceptance Criteria:**
-  - [ ] Exactly one first Platform Owner can be created even under concurrent attempts.
-  - [ ] Account, identifier, credential and capability are committed atomically or all rolled back.
-  - [ ] Second owner bootstrap attempt is rejected without revealing sensitive account data.
+  - [x] Exactly one first Platform Owner can be created even under concurrent attempts.
+  - [x] Account, identifier, credential and capability are committed atomically or all rolled back.
+  - [x] Second owner bootstrap attempt is rejected without revealing sensitive account data.
 - **Verify:** bun --filter @moonwitness/orm-identity test; bun --filter @moonwitness/id test; PostgreSQL concurrency test when available.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append exact command, result and commit SHA here.
+- **Evidence:**
+  - Command: `bun --filter @moonwitness/orm-identity test` — passed (10 files, 42 tests)
+  - Command: `bun --filter @moonwitness/id test` — passed (10 files, 46 tests)
+  - Command: `bun --filter @moonwitness/id build` — passed (tsc exited 0)
+  - PostgreSQL concurrency test: not run; no isolated Identity PostgreSQL harness is configured in this environment. Database-level singleton guard is present via `identity_platform_owner_singleton`, and transaction/duplicate tests use deterministic mocks.
+  - Manual verification: capability model supports only `platform_owner`; migration adds account/capability uniqueness and a global partial unique index; first-owner service consumes the bootstrap token and inserts account, verified identifier, hashed credential, and capability in one transaction, returning only `accountSubject` and `bootstrapCompleted`; failures produce a generic error with no password hash, verifier, account email, or token details.
+  - Commit: pending I24 implementation commit
 
 #### - [ ] I25 — Add single-use bootstrap claim endpoint
 

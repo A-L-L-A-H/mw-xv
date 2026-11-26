@@ -100,7 +100,7 @@ Task dependencies are declared inside each playbook. Follow them exactly; the fi
 ### Wave 2 — Bootstrap and login
 - [x] **I22** — Add operator CLI for one-time bootstrap-token issuance
 - [x] **I23** — Add bootstrap-state service and setup-status endpoint
-- [ ] **I24** — Add atomic first Platform Owner creation service
+- [x] **I24** — Add atomic first Platform Owner creation service
 - [ ] **I25** — Add single-use bootstrap claim endpoint
 - [ ] **I26** — Add the minimal first-install setup page
 - [ ] **I27** — Add password verification and login-session service
