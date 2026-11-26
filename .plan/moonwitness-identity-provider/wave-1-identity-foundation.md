@@ -375,7 +375,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - Command: `bun --filter @moonwitness/orm-identity build` — passed (tsc exited 0)
   - Command: `bun --filter @moonwitness/id build` — passed (tsc exited 0)
   - Manual verification: audit events set immutable identity/correlation fields, reject updates/deletes in the model and a database trigger, and redact sensitive nested keys, tokens, private keys and oversized values; outbox rows use a single `FOR UPDATE SKIP LOCKED` claim, increment attempt count, keep delivery state through complete/retry, and have dedicated pending/type indexes.
-  - Commit: pending I21 implementation commit
+  - Commit: 7ede0f8e feat(identity): add audit event and outbox models for I21
 
 
 
