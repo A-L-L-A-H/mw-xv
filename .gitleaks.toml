@@ -358,5 +358,13 @@ secretGroup = 1
 entropy = 4.2
 keywords = ["JWT_SECRET", "METRICS_TOKEN", "WHATSAPP_INTERNAL_TOKEN", "WHATSAPP_SESSION_KEY"]
 [[allowlists]]
+description = "ISP control contract test fixtures: synthetic auth tokens and NAS secrets for Go-to-Rust contract tests"
+regexTarget = "match"
+paths = ["^apps/isp/tests/fixtures/.*\\.json$"]
+regexes = [
+  '''secret-token''',
+  '''nas-secret-1234''',
+]
+[[allowlists]]
 description = "Historical gitleaks reports committed to git history - these contain REDACTED findings from prior scans, not real secrets"
 paths = ["gitleaks-report.json"]
