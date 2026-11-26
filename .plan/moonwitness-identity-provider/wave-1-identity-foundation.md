@@ -302,7 +302,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
     - Manual verification: digest-only storage, single-statement conditional consume, replay family/session revocation, expiry/revocation/concurrent-reuse tests, no token in JSON
     - Commit: d140d390 feat(identity): add refresh token family persistence for I18
 
-#### - [ ] I19 — Add OAuth client registry model
+#### - [x] I19 — Add OAuth client registry model
 
 - **Owner File(s):** packages/orm-identity/src/models/oauth-client.ts; packages/orm-identity/src/models/oauth-client.test.ts; apps/id/src/database/migrations/*oauth-client*
 - **Depends On:** I14
@@ -314,12 +314,18 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - Do not store a raw client secret; machine client secret creation is handled in a later task.
 - **DO NOT:** Do not allow wildcard redirect URIs or turn a public client into a confidential client by configuration.
 - **Acceptance Criteria:**
-  - [ ] Public and confidential client rules are explicit and tested.
-  - [ ] Redirect URI and scope allowlists are persisted deterministically.
-  - [ ] Disabled clients cannot authorize.
+  - [x] Public and confidential client rules are explicit and tested.
+  - [x] Redirect URI and scope allowlists are persisted deterministically.
+  - [x] Disabled clients cannot authorize.
 - **Verify:** bun --filter @moonwitness/orm-identity test; bun --filter @moonwitness/id test.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
+  - **Evidence:**
+    - Command: bun --filter @moonwitness/orm-identity test — passed (7 files, 22 tests)
+    - Command: bun --filter @moonwitness/id test — passed (6 files, 23 tests)
+    - Command: bun --filter @moonwitness/orm-identity build — passed (tsc exited 0)
+    - Command: bun --filter @moonwitness/id build — passed (tsc exited 0)
+    - Manual verification: public clients cannot hold secrets or use client credentials, wildcard redirects rejected, sorted unique allowlists, disabled clients denied, secret digest hidden from JSON
+    - Commit: PENDING_I19_COMMIT
 
 #### - [ ] I20 — Add authorization-code persistence adapter only where provider integration requires it
 
