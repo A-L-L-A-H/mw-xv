@@ -24,3 +24,13 @@ export {
 } from './models.js';
 
 export { observabilitySeedManifest } from './seed-manifest.js';
+export {
+  SelfHealingRemediator,
+  type IncidentSeverity,
+  type RemediationActionType,
+  type RemediationDecisionStatus,
+  type IncidentSignal,
+  type RemediationRule,
+  type RemediationAuditEntry,
+  type RemediationExecutor,
+} from './self-healing-remediator.js';

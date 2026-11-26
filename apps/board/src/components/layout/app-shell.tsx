@@ -9,6 +9,7 @@ import type { ModelInfo } from '@moonwitness/client';
 import { ToastHost } from '@moonwitness/ui/components/toast';
 import {
   ActivityIcon,
+  AddonIcon,
   CalendarIcon,
   CheckIcon,
   CodeIcon,
@@ -165,6 +166,7 @@ function ModelNavigation({
         onNavigate={onNavigate}
       />
       <NavItem to="/board/studio" label="Studio" icon={SparkleIcon} onNavigate={onNavigate} />
+      <NavItem to="/board/addons" label="Addon Consoles" icon={AddonIcon} onNavigate={onNavigate} />
       {!isWorkspaceDesktop && (
         <>
           <NavItem to="/board/cloud" label="Cloud & ISP" icon={GlobeIcon} onNavigate={onNavigate} />

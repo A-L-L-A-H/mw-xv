@@ -19,6 +19,11 @@ import {
   WarningIcon,
 } from '@moonwitness/ui/icons';
 import { MeshNodeCard } from './mesh-node-card';
+import {
+  L7TopologyCanvas,
+  type L7TopologyEdge,
+  type L7TopologyNode,
+} from './l7-topology-canvas';
 
 export type MeshPeerHealth = 'healthy' | 'degraded' | 'offline';
 export type MeshPeerRole = 'primary' | 'standby';
@@ -341,6 +346,49 @@ export function MeshTopologyPanel({
           <EmptyState title="No peers" description="No mesh peers are currently reachable." />
         )}
       </Panel>
+
+      <L7TopologyCanvas
+        nodes={[
+          ...snapshot.routes.map(
+            (route): L7TopologyNode => ({
+              id: `route:${route.domain}`,
+              label: route.domain,
+              kind: 'ingress',
+              protocol: 'HTTPS',
+              health:
+                route.tlsStatus === 'active'
+                  ? 'healthy'
+                  : route.tlsStatus === 'provisioning'
+                    ? 'degraded'
+                    : 'offline',
+              endpoint: route.upstream,
+            })
+          ),
+          ...snapshot.peers.map(
+            (peer): L7TopologyNode => ({
+              id: `peer:${peer.id}`,
+              label: peer.label,
+              kind: peer.tier === 'AI Swarm Node' ? 'service' : 'peer',
+              protocol: peer.tier === 'AI Swarm Node' ? 'gRPC' : 'HTTP/2',
+              health: peer.health,
+              rttMs: peer.rttMs,
+              region: peer.region,
+              endpoint: peer.meshIp,
+            })
+          ),
+        ]}
+        edges={snapshot.routes.flatMap((route): L7TopologyEdge[] =>
+          snapshot.peers.slice(0, 2).map((peer) => ({
+            id: `edge:${route.domain}->${peer.id}`,
+            sourceId: `route:${route.domain}`,
+            targetId: `peer:${peer.id}`,
+            protocol: peer.tier === 'AI Swarm Node' ? 'gRPC' : 'HTTPS',
+            tlsEnabled: route.tlsStatus === 'active',
+            health: peer.health,
+            latencyMs: peer.rttMs,
+          }))
+        )}
+      />
 
       <Panel
         title="Tier 3 · Constitutional & Audit Core"
