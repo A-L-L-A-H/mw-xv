@@ -147,7 +147,7 @@ export function validateAgainstSchema(
 }
 
 export class McpServerRegistry {
-  private readonly tools = new Map<string, McpToolEntry<any, any>>();
+  private readonly tools = new Map<string, McpToolEntry<never, unknown>>();
   private readonly resources = new Map<string, McpResourceEntry>();
   private readonly prompts = new Map<string, McpPromptEntry>();
 
