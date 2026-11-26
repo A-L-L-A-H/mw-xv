@@ -123,7 +123,7 @@ Task dependencies are declared inside each playbook. Follow them exactly; the fi
 ### Wave 4 — Business-user provisioning
 - [x] **I41** — Add opaque identity_subject mapping to base.user
 - [x] **I42** — Add API repository to resolve verified subject to business user
-- [ ] **I43** — Define a versioned Identity-to-Business event contract
+- [x] **I43** — Define a versioned Identity-to-Business event contract
 - [ ] **I44** — Publish account lifecycle events through Identity outbox
 - [ ] **I45** — Consume provisioning events idempotently in API
 - [ ] **I46** — Provision/link base.partner as a business contact only

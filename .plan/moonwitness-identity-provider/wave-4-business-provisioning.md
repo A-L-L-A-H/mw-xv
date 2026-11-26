@@ -60,7 +60,7 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
   - Manual verification: `resolveIdentityPrincipal` and `findActivePrincipalByVerifiedSubject` resolve active `base.user` strictly by `identity_subject`, fail closed on missing (`not_found`), duplicate (`duplicate_subject`), inactive user/partner (`inactive`), or malformed/raw-JWT input (`invalid_subject`), and never fall back to email or login matching.
   - Commit: 48cdf4e1
 
-#### - [ ] I43 — Define a versioned Identity-to-Business event contract
+#### - [x] I43 — Define a versioned Identity-to-Business event contract
 
 - **Owner File(s):** docs/architecture/identity/provisioning-contract.md; packages/types/src/identity-provisioning.ts; packages/types/src/index.ts; packages/types/tests/identity-provisioning.test.ts
 - **Depends On:** I04, I21
@@ -72,12 +72,16 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
   - Use existing shared event/type conventions if present; do not create a second event envelope format.
 - **DO NOT:** Do not include password hash, refresh token, MFA data, private key, raw setup secret or unrestricted account payload.
 - **Acceptance Criteria:**
-  - [ ] Every event has a stable ID and explicit schema version.
-  - [ ] Payload schema is tested and rejects unknown/missing required fields.
-  - [ ] Event contract is documented for producer and consumer.
+  - [x] Every event has a stable ID and explicit schema version.
+  - [x] Payload schema is tested and rejects unknown/missing required fields.
+  - [x] Event contract is documented for producer and consumer.
 - **Verify:** bun --filter @moonwitness/types test; bun --filter @moonwitness/types build.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append exact command, result and commit SHA here.
+- **Evidence:**
+  - Command: `bun --filter @moonwitness/types test` — passed (37 tests passed, including `tests/identity-provisioning.test.mjs`; package uses `.test.mjs` via `node --test tests/*.test.mjs`)
+  - Command: `bun --filter @moonwitness/types build` — passed (`tsc` exited 0)
+  - Manual verification: `docs/architecture/identity/provisioning-contract.md` documents envelope (`identity.outbox_event`), deterministic `event_id` (`sha256_hex`), schema versioning (`v1`), ordering (`occurred_at`), idempotency, retry, and fail-closed unknown-version behavior; `packages/types/src/identity-provisioning.ts` exports strict validators rejecting missing required fields, unknown/credential payload fields, and mismatched `event_type`/`payload` pairs.
+  - Commit: b714a3e9
 
 #### - [ ] I44 — Publish account lifecycle events through Identity outbox
 
