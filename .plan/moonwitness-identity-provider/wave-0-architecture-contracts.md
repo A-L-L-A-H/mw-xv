@@ -86,7 +86,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
 - **Evidence:**
   - Command: git diff --check - passed
   - Manual verification: every architecture invariant traced to at least one named test scenario; MVP/post-MVP separated; all scenarios marked planned
-  - Commit: <placeholder> docs(identity): create acceptance matrix and architecture exit gate for I06
+  - Commit: 89707c5a docs(identity): create acceptance matrix and architecture exit gate for I06
 
 #### - [x] I04 — Define issuer, subject, audience, token and client contracts
 
