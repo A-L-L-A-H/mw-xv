@@ -176,7 +176,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
     - Manual verification: Knex Migrator with identity schema/table, ordered migration, repeat apply, status, refusal to rollback; no business migration imports
     - Commit: 5f5fec5a feat(id): add deterministic identity migration runner for I13
 
-#### - [ ] I14 — Add identity.account model and migration
+#### - [x] I14 — Add identity.account model and migration
 
 - **Owner File(s):** packages/orm-identity/src/models/account.ts; packages/orm-identity/src/models/account.test.ts; apps/id/src/database/migrations/*account*
 - **Depends On:** I13
@@ -188,12 +188,18 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - Keep display/profile attributes minimal; contact and CRM attributes remain in base.partner.
 - **DO NOT:** Do not add password, company permission or CRM address fields to account.
 - **Acceptance Criteria:**
-  - [ ] Migration creates account storage and expected indexes.
-  - [ ] Model create/read/update lifecycle tests pass.
-  - [ ] Public subject is opaque and immutable.
+  - [x] Migration creates account storage and expected indexes.
+  - [x] Model create/read/update lifecycle tests pass.
+  - [x] Public subject is opaque and immutable.
 - **Verify:** bun --filter @moonwitness/orm-identity test; bun --filter @moonwitness/id test.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
+  - **Evidence:**
+    - Command: bun --filter @moonwitness/orm-identity test — passed (2 files, 8 tests)
+    - Command: bun --filter @moonwitness/id test — passed (5 files, 20 tests)
+    - Command: bun --filter @moonwitness/orm-identity build — passed (tsc exited 0)
+    - Command: bun --filter @moonwitness/id build — passed (tsc exited 0)
+    - Manual verification: identity schema `account` table uses UUID primary key, opaque unique subject, status/timestamps and status index; no password, CRM or permission fields; model lifecycle tests verify immutable subject
+    - Commit: PENDING_I14_COMMIT
 
 #### - [ ] I15 — Add identity.identifier model and uniqueness constraints
 

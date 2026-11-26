@@ -88,7 +88,7 @@ Task dependencies are declared inside each playbook. Follow them exactly; the fi
 - [x] **I11** — Add a dedicated Identity PostgreSQL connection
 - [x] **I12** — Add liveness and readiness endpoints
 - [x] **I13** — Add deterministic Identity migration runner
-- [ ] **I14** — Add identity.account model and migration
+- [x] **I14** — Add identity.account model and migration
 - [ ] **I15** — Add identity.identifier model and uniqueness constraints
 - [ ] **I16** — Add identity.credential and password-hash adapter
 - [ ] **I17** — Add identity.session model and expiry indexes
