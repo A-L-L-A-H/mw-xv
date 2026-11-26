@@ -126,7 +126,7 @@
 
 ---
 
-## - [ ] T42 — Add OpenTelemetry Plan-TaskOS Lifecycle Spans & Metrics in `apps/agent-observability`
+## - [x] T42 — Add OpenTelemetry Plan-TaskOS Lifecycle Spans & Metrics in `apps/agent-observability`
 
 - **Owner File(s):** `apps/agent-observability/package.json`, `apps/agent-observability/src/plan-telemetry.ts`, `apps/agent-observability/src/index.ts`, `apps/agent-observability/tests/plan-telemetry.test.ts`
   - `apps/agent-observability/package.json` (MODIFY — add `"@moonwitness/plan-taskos": "workspace:*"`)
