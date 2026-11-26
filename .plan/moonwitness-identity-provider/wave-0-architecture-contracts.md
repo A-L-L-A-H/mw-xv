@@ -34,7 +34,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
 - **Evidence:**
   - Command: node .tmp-oidc-smoke/smoke3.cjs — SMOKE_TEST_FAIL (1); all provider-owned checks pass (REFRESH_TOKEN_ISSUED false due to offline_access consent requiring app-owned consent UI; not a provider defect)
   - Manual verification: all cited source paths opened and confirmed current
-  - Commit: <placeholder> docs(identity): evaluate maintained OIDC provider implementation for I03
+  - Commit: d5b891b8 docs(identity): evaluate maintained OIDC provider implementation for I03
 ---
 
 ---
