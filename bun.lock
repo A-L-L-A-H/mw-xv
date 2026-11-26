@@ -146,7 +146,7 @@
     },
     "apps/control-plane": {
       "name": "@moonwitness/control-plane",
-      "version": "0.1.0",
+      "version": "1.0.0-rc.1",
     },
     "apps/desktop": {
       "name": "@moonwitness/desktop",
@@ -172,6 +172,7 @@
         "@moonwitness/orm-project": "workspace:*",
         "@moonwitness/orm-storage": "workspace:*",
         "@moonwitness/orm-workflow": "workspace:*",
+        "@moonwitness/plan-taskos": "workspace:*",
         "@moonwitness/types": "workspace:*",
         "better-sqlite3": "^13.0.3",
         "fastify": "^5.12.8",
@@ -218,9 +219,29 @@
         "vite": "^8.3.3",
       },
     },
+    "apps/id": {
+      "name": "@moonwitness/id",
+      "version": "1.0.0-rc.1",
+      "dependencies": {
+        "@fastify/cors": "11.3.1",
+        "@fastify/sensible": "^6.0.6",
+        "@moonwitness/logger": "workspace:*",
+        "@moonwitness/orm-identity": "workspace:*",
+        "@moonwitness/types": "workspace:*",
+        "fastify": "^5.12.8",
+        "fastify-plugin": "6.0.1",
+      },
+      "devDependencies": {
+        "@types/node": "^26.6.4",
+        "@vitest/coverage-v8": "5.0.3",
+        "tsx": "^4.23.15",
+        "typescript": "~5.7.3",
+        "vitest": "^5.0.3",
+      },
+    },
     "apps/isp": {
       "name": "@moonwitness/isp",
-      "version": "0.1.0",
+      "version": "1.0.0-rc.1",
     },
     "apps/ui-catalog": {
       "name": "@moonwitness/ui-catalog",
@@ -523,7 +544,7 @@
     },
     "packages/orm-automation-core": {
       "name": "@moonwitness/orm-automation-core",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "dependencies": {
         "@moonwitness/orm": "workspace:*",
         "@moonwitness/orm-base": "workspace:*",
@@ -559,7 +580,7 @@
     },
     "packages/orm-bot-orchestrator": {
       "name": "@moonwitness/orm-bot-orchestrator",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "dependencies": {
         "@moonwitness/orm": "workspace:*",
         "@moonwitness/orm-base": "workspace:*",
@@ -575,7 +596,7 @@
     },
     "packages/orm-catalog": {
       "name": "@moonwitness/orm-catalog",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "dependencies": {
         "@moonwitness/orm": "workspace:*",
         "@moonwitness/orm-base": "workspace:*",
@@ -591,7 +612,7 @@
     },
     "packages/orm-cli": {
       "name": "@moonwitness/orm-cli",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "bin": {
         "db:seed": "./dist/seed-runner.js",
       },
@@ -608,7 +629,7 @@
     },
     "packages/orm-clinical": {
       "name": "@moonwitness/orm-clinical",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "dependencies": {
         "@moonwitness/orm": "workspace:*",
         "@moonwitness/orm-base": "workspace:*",
@@ -624,7 +645,7 @@
     },
     "packages/orm-cloud": {
       "name": "@moonwitness/orm-cloud",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "dependencies": {
         "@moonwitness/jobs": "workspace:*",
         "@moonwitness/orm": "workspace:*",
@@ -652,7 +673,7 @@
     },
     "packages/orm-compliance": {
       "name": "@moonwitness/orm-compliance",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "dependencies": {
         "@moonwitness/orm": "workspace:*",
         "@moonwitness/orm-base": "workspace:*",
@@ -669,7 +690,7 @@
     },
     "packages/orm-content-factory": {
       "name": "@moonwitness/orm-content-factory",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "dependencies": {
         "@moonwitness/orm": "workspace:*",
         "@moonwitness/orm-base": "workspace:*",
@@ -685,7 +706,7 @@
     },
     "packages/orm-crm": {
       "name": "@moonwitness/orm-crm",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "dependencies": {
         "@moonwitness/orm": "workspace:*",
         "@moonwitness/orm-base": "workspace:*",
@@ -702,7 +723,7 @@
     },
     "packages/orm-ecommerce-sync": {
       "name": "@moonwitness/orm-ecommerce-sync",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "dependencies": {
         "@moonwitness/orm": "workspace:*",
         "@moonwitness/orm-base": "workspace:*",
@@ -719,7 +740,7 @@
     },
     "packages/orm-governance": {
       "name": "@moonwitness/orm-governance",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "dependencies": {
         "@moonwitness/orm": "workspace:*",
         "@moonwitness/orm-base": "workspace:*",
@@ -733,7 +754,7 @@
     },
     "packages/orm-helpdesk": {
       "name": "@moonwitness/orm-helpdesk",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "dependencies": {
         "@moonwitness/orm": "workspace:*",
         "@moonwitness/orm-base": "workspace:*",
@@ -768,7 +789,7 @@
     },
     "packages/orm-income-ledger": {
       "name": "@moonwitness/orm-income-ledger",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "dependencies": {
         "@moonwitness/orm": "workspace:*",
         "@moonwitness/orm-base": "workspace:*",
@@ -804,7 +825,7 @@
     },
     "packages/orm-isp": {
       "name": "@moonwitness/orm-isp",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "dependencies": {
         "@moonwitness/jobs": "workspace:*",
         "@moonwitness/orm": "workspace:*",
@@ -912,6 +933,7 @@
         "@moonwitness/orm-notification": "workspace:*",
         "@moonwitness/orm-organization": "workspace:*",
         "@moonwitness/orm-workflow": "workspace:*",
+        "@moonwitness/plan-taskos": "workspace:*",
         "@moonwitness/types": "workspace:*",
         "objection": "^3.1.5",
       },
@@ -926,7 +948,7 @@
     },
     "packages/orm-public-services": {
       "name": "@moonwitness/orm-public-services",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "dependencies": {
         "@moonwitness/orm": "workspace:*",
         "@moonwitness/orm-base": "workspace:*",
@@ -963,7 +985,7 @@
     },
     "packages/orm-rnd": {
       "name": "@moonwitness/orm-rnd",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "dependencies": {
         "@moonwitness/orm": "workspace:*",
         "@moonwitness/orm-base": "workspace:*",
@@ -979,7 +1001,7 @@
     },
     "packages/orm-sales": {
       "name": "@moonwitness/orm-sales",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "dependencies": {
         "@moonwitness/orm": "workspace:*",
         "@moonwitness/orm-base": "workspace:*",
@@ -998,7 +1020,7 @@
     },
     "packages/orm-sensor": {
       "name": "@moonwitness/orm-sensor",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "dependencies": {
         "@moonwitness/orm": "workspace:*",
         "@moonwitness/orm-base": "workspace:*",
@@ -1014,7 +1036,7 @@
     },
     "packages/orm-sharia": {
       "name": "@moonwitness/orm-sharia",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "dependencies": {
         "@moonwitness/orm": "workspace:*",
         "@moonwitness/orm-base": "workspace:*",
@@ -1031,7 +1053,7 @@
     },
     "packages/orm-signal": {
       "name": "@moonwitness/orm-signal",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "dependencies": {
         "@moonwitness/orm": "workspace:*",
         "@moonwitness/orm-base": "workspace:*",
@@ -1049,7 +1071,7 @@
     },
     "packages/orm-sim": {
       "name": "@moonwitness/orm-sim",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "dependencies": {
         "@moonwitness/orm": "workspace:*",
         "@moonwitness/orm-base": "workspace:*",
@@ -1085,7 +1107,7 @@
     },
     "packages/orm-subscription": {
       "name": "@moonwitness/orm-subscription",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "dependencies": {
         "@moonwitness/orm": "workspace:*",
         "@moonwitness/orm-base": "workspace:*",
@@ -1150,19 +1172,19 @@
     },
     "packages/paas-template-pack-bigbear": {
       "name": "paas-template-pack-bigbear",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
     },
     "packages/paas-template-pack-coolify": {
       "name": "paas-template-pack-coolify",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
     },
     "packages/paas-template-pack-dokploy": {
       "name": "paas-template-pack-dokploy",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
     },
     "packages/paas-template-pack-moonwitness": {
       "name": "paas-template-pack-moonwitness",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
     },
     "packages/plan-taskos": {
       "name": "@moonwitness/plan-taskos",
@@ -1578,6 +1600,8 @@
     "@moonwitness/docs": ["@moonwitness/docs@workspace:apps/docs"],
 
     "@moonwitness/eslint-config": ["@moonwitness/eslint-config@workspace:packages/eslint-config"],
+
+    "@moonwitness/id": ["@moonwitness/id@workspace:apps/id"],
 
     "@moonwitness/isp": ["@moonwitness/isp@workspace:apps/isp"],
 
