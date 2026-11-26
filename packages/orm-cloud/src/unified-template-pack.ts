@@ -73,6 +73,18 @@ export function canonicalTemplateSlug(id: string): string {
 }
 
 function resolvePackDir(packName: string, envKey: string): string {
+  const customTemplatesDir = process.env.MW_TEMPLATES_DIR?.trim();
+  if (customTemplatesDir) {
+    const directCandidate = path.resolve(customTemplatesDir, packName);
+    if (existsSync(directCandidate)) {
+      return directCandidate;
+    }
+    const packsCandidate = path.resolve(customTemplatesDir, 'packs', packName);
+    if (existsSync(packsCandidate)) {
+      return packsCandidate;
+    }
+  }
+
   const envDir = process.env[envKey]?.trim();
   if (envDir && existsSync(envDir)) {
     return path.resolve(envDir);

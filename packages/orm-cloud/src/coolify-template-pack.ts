@@ -57,6 +57,18 @@ const HOST_NAMESPACE_KEYS = ['network_mode', 'pid', 'ipc', 'uts'] as const;
 const catalogCache = new Map<string, Map<string, CoolifyTemplateEntry>>();
 
 export function resolveCoolifyServiceTemplatesPath(): string {
+  const customTemplatesDir = process.env.MW_TEMPLATES_DIR?.trim();
+  if (customTemplatesDir) {
+    const directCandidate = path.resolve(customTemplatesDir, 'paas-template-pack-coolify/service-templates.json');
+    if (existsSync(directCandidate)) {
+      return directCandidate;
+    }
+    const packsCandidate = path.resolve(customTemplatesDir, 'packs/paas-template-pack-coolify/service-templates.json');
+    if (existsSync(packsCandidate)) {
+      return packsCandidate;
+    }
+  }
+
   const envDir = process.env.MW_COOLIFY_TEMPLATE_PACK_DIR?.trim();
   if (envDir) {
     const candidate = path.resolve(envDir, 'service-templates.json');

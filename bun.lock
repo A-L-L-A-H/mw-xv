@@ -219,26 +219,6 @@
         "vite": "^8.3.3",
       },
     },
-    "apps/id": {
-      "name": "@moonwitness/id",
-      "version": "1.0.0-rc.1",
-      "dependencies": {
-        "@fastify/cors": "11.3.1",
-        "@fastify/sensible": "^6.0.6",
-        "@moonwitness/logger": "workspace:*",
-        "@moonwitness/orm-identity": "workspace:*",
-        "@moonwitness/types": "workspace:*",
-        "fastify": "^5.12.8",
-        "fastify-plugin": "6.0.1",
-      },
-      "devDependencies": {
-        "@types/node": "^26.6.4",
-        "@vitest/coverage-v8": "5.0.3",
-        "tsx": "^4.23.15",
-        "typescript": "~5.7.3",
-        "vitest": "^5.0.3",
-      },
-    },
     "apps/isp": {
       "name": "@moonwitness/isp",
       "version": "1.0.0-rc.1",
@@ -518,6 +498,23 @@
         "vitest": "5.0.3",
       },
     },
+    "packages/orm-accounting": {
+      "name": "@moonwitness/orm-accounting",
+      "version": "1.0.0-rc.1",
+      "dependencies": {
+        "@moonwitness/orm": "workspace:*",
+        "@moonwitness/orm-base": "workspace:*",
+        "@moonwitness/types": "workspace:*",
+        "knex": "^3.3.0",
+        "objection": "^3.1.5",
+      },
+      "devDependencies": {
+        "@vitest/coverage-v8": "5.0.3",
+        "better-sqlite3": "^13.0.3",
+        "typescript": "~5.7.3",
+        "vitest": "^5.0.3",
+      },
+    },
     "packages/orm-ai": {
       "name": "@moonwitness/orm-ai",
       "version": "1.0.0-rc.1",
@@ -771,6 +768,23 @@
         "vitest": "^5.0.3",
       },
     },
+    "packages/orm-hr": {
+      "name": "@moonwitness/orm-hr",
+      "version": "1.0.0-rc.1",
+      "dependencies": {
+        "@moonwitness/orm": "workspace:*",
+        "@moonwitness/orm-base": "workspace:*",
+        "@moonwitness/types": "workspace:*",
+        "knex": "^3.3.0",
+        "objection": "^3.1.5",
+      },
+      "devDependencies": {
+        "@vitest/coverage-v8": "5.0.3",
+        "better-sqlite3": "^13.0.3",
+        "typescript": "~5.7.3",
+        "vitest": "^5.0.3",
+      },
+    },
     "packages/orm-identity": {
       "name": "@moonwitness/orm-identity",
       "version": "1.0.0-rc.1",
@@ -821,6 +835,23 @@
         "typescript": "~5.7.3",
         "vitest": "5.0.3",
         "vitest-mock-extended": "^6.0.1",
+      },
+    },
+    "packages/orm-inventory": {
+      "name": "@moonwitness/orm-inventory",
+      "version": "1.0.0-rc.1",
+      "dependencies": {
+        "@moonwitness/orm": "workspace:*",
+        "@moonwitness/orm-base": "workspace:*",
+        "@moonwitness/types": "workspace:*",
+        "knex": "^3.3.0",
+        "objection": "^3.1.5",
+      },
+      "devDependencies": {
+        "@vitest/coverage-v8": "5.0.3",
+        "better-sqlite3": "^13.0.3",
+        "typescript": "~5.7.3",
+        "vitest": "^5.0.3",
       },
     },
     "packages/orm-isp": {
@@ -1601,8 +1632,6 @@
 
     "@moonwitness/eslint-config": ["@moonwitness/eslint-config@workspace:packages/eslint-config"],
 
-    "@moonwitness/id": ["@moonwitness/id@workspace:apps/id"],
-
     "@moonwitness/isp": ["@moonwitness/isp@workspace:apps/isp"],
 
     "@moonwitness/jobs": ["@moonwitness/jobs@workspace:packages/jobs"],
@@ -1618,6 +1647,8 @@
     "@moonwitness/orm": ["@moonwitness/orm@workspace:packages/orm"],
 
     "@moonwitness/orm-a2a": ["@moonwitness/orm-a2a@workspace:packages/orm-a2a"],
+
+    "@moonwitness/orm-accounting": ["@moonwitness/orm-accounting@workspace:packages/orm-accounting"],
 
     "@moonwitness/orm-ai": ["@moonwitness/orm-ai@workspace:packages/orm-ai"],
 
@@ -1647,11 +1678,15 @@
 
     "@moonwitness/orm-helpdesk": ["@moonwitness/orm-helpdesk@workspace:packages/orm-helpdesk"],
 
+    "@moonwitness/orm-hr": ["@moonwitness/orm-hr@workspace:packages/orm-hr"],
+
     "@moonwitness/orm-identity": ["@moonwitness/orm-identity@workspace:packages/orm-identity"],
 
     "@moonwitness/orm-income-ledger": ["@moonwitness/orm-income-ledger@workspace:packages/orm-income-ledger"],
 
     "@moonwitness/orm-integration": ["@moonwitness/orm-integration@workspace:packages/orm-integration"],
+
+    "@moonwitness/orm-inventory": ["@moonwitness/orm-inventory@workspace:packages/orm-inventory"],
 
     "@moonwitness/orm-isp": ["@moonwitness/orm-isp@workspace:packages/orm-isp"],
 
