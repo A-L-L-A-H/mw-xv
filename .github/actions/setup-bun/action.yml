@@ -18,3 +18,9 @@ runs:
     - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
       with:
         bun-version: ${{ inputs.bun-version }}
+    - uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+      with:
+        path: ~/.bun/install/cache
+        key: bun-cache-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+        restore-keys: |
+          bun-cache-${{ runner.os }}-

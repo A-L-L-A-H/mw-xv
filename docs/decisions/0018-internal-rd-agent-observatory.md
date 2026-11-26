@@ -1,6 +1,6 @@
 # ADR 0018: Internal R&D Observatory, Discovery & Monitoring Lab (`tools/agent-observatory`)
 
-- **Status:** Accepted
+- **Status:** Superseded (consolidated into `apps/desktop/desktop-web/observatory/`)
 - **Date:** 2026-11-25
 - **Audience & Distribution Scope:** **INTERNAL R&D WORKSTATION LAB ONLY** (non-product developer workbench for live observability, discovery, monitoring, and rapid R&D prototyping; never deployed to end-users, production SaaS, or packaged apps).
 - **Decision owners:** MoonWitness maintainers
@@ -8,7 +8,7 @@
 
 ## Scope & Internal R&D Lab Charter
 
-This ADR governs the standalone local workstation workbench at [`tools/agent-observatory/`](../../tools/agent-observatory/README.md) (`v6`).
+This ADR originally governed the standalone local workstation workbench at `tools/agent-observatory/` (`v6`), which has since been consolidated into `apps/desktop/desktop-web/observatory/`.
 
 **Strict Classification & Charter:**
 
@@ -64,7 +64,7 @@ Without a unified local R&D lens, four failure modes repeatedly occur during int
 
 | Boundary Dimension         | Mandate                                                                                                                               |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Location                   | Exclusively [`tools/agent-observatory/`](../../tools/agent-observatory/) (plus offline p5 vendor asset under `vendor/p5/p5.min.js`).  |
+| Location                   | Exclusively `tools/agent-observatory/` (historical; superseded by `apps/desktop/desktop-web/observatory/`).  |
 | Product Coupling           | `apps/*` and `packages/*` MUST NEVER import from `tools/agent-observatory/`.                                                          |
 | Deployment Exclusion       | Excluded from production Docker/Compose files, Cloudflare Workers deployments, and end-user desktop installers.                       |
 | Network Exposure           | Binds strictly to loopback `127.0.0.1` by default (`--port 4190`), `GET`-only HTTP API (`405` on all mutating verbs).                 |

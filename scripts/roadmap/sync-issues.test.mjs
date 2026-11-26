@@ -119,11 +119,9 @@ test('issue sync workflow bounds changed-task and backlog writes to an exact dev
   const applyBoundary = jobs.indexOf('\n  apply:\n');
   const planJob = jobs.slice(0, applyBoundary);
   const applyJob = jobs.slice(applyBoundary);
-  assert.match(workflow, /branches: \[dev\]/u);
-  assert.match(workflow, /schedule:/u);
   assert.match(workflow, /workflow_dispatch:/u);
+  assert.doesNotMatch(workflow, /^\s+schedule:/mu);
   assert.match(workflow, /default: false/u);
-  assert.match(workflow, /cron: '13 9 \* \* \*'/u);
   assert.match(workflow, /backfill_next_batch:/u);
   assert.match(workflow, /github\.event_name == 'schedule' && 'dev'/u);
   assert.match(workflow, /changed-task-ids\.mjs --base/u);

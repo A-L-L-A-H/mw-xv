@@ -1,10 +1,6 @@
 name: Self-evolving loop
 
 on:
-  schedule:
-    - cron: '33 3 * * *'
-  push:
-    branches: [main]
   workflow_dispatch: {}
 
 permissions:

@@ -1,0 +1,15 @@
+name: MoonWitness CodeQL Configuration
+
+paths-ignore:
+  - vendor
+  - vendor/**
+  - docs
+  - docs/**
+  - raw_arts
+  - raw_arts/**
+  - packages/paas-template-pack-bigbear/**
+  - packages/paas-template-pack-coolify/**
+  - packages/paas-template-pack-dokploy/**
+  - packages/paas-template-pack-moonwitness/**
+  - '**/dist/**'
+  - '**/.next/**'
