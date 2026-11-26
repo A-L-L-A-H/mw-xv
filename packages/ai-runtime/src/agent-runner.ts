@@ -671,7 +671,59 @@ export class BoundedReadOnlyAgentHarness implements AgentHarness {
               };
             }
 
-            const rawToolResult = await executeTool(call, runAttempt.signal);
+            let rawToolResult: JsonValue;
+            try {
+              rawToolResult = await executeTool(call, runAttempt.signal);
+            } catch (toolError) {
+              if (runAttempt.isCallerAborted()) {
+                return {
+                  status: 'cancelled',
+                  outputText: '',
+                  steps,
+                  totalUsage,
+                  error: { code: 'CANCELLED', message: 'Agent run cancelled during tool call' },
+                };
+              }
+              const sanitized = this.redactor.redactError(toolError);
+              const denial = (
+                toolError as Error & {
+                  toolDenied?: unknown;
+                  reasonCode?: unknown;
+                  code?: unknown;
+                }
+              );
+              if (
+                sanitized.name === 'CloudAgentToolDeniedError' &&
+                denial?.toolDenied === true &&
+                typeof denial.reasonCode === 'string'
+              ) {
+                throw Object.assign(
+                  new Error(
+                    `Tool "${this.redactor.redactString(call.name)}" denied (${this.redactor.redactString(denial.reasonCode)})`
+                  ),
+                  {
+                    name: sanitized.name,
+                    code: typeof denial.code === 'string' ? denial.code : 'TOOL_DENIED',
+                    reasonCode: this.redactor.redactString(denial.reasonCode),
+                    causeName: sanitized.name,
+                  }
+                );
+              }
+              // Tool errors can embed secrets from the tool's environment; they must
+              // pass through the same redaction pipeline as tool results before
+              // reaching the model transcript or any checkpoint.
+              const redactedMessage = `Tool "${this.redactor.redactString(call.name)}" failed: ${sanitized.message}`;
+              messages.push({
+                role: 'tool',
+                toolCallId: call.id,
+                toolName: call.name,
+                content: wrapUntrustedDataBlock(`tool:${call.name}`, {
+                  error: true,
+                  message: redactedMessage,
+                }),
+              });
+              continue;
+            }
             const redactedToolResult = this.redactor.redactObject(rawToolResult);
             messages.push({
               role: 'tool',
@@ -1051,10 +1103,18 @@ export function createAgentRunJobHandler(
         if (error instanceof StaleFencingTokenError) {
           throw error;
         }
+        // Error messages from providers/tools can carry secrets from their
+        // environments; redact before they reach job error records or logs.
         if (error instanceof ProviderError && !error.retryable) {
           throw new PermanentAgentRunError(
-            error.message,
+            redactor.redactString(error.message),
             error.reasonCode ?? error.code.toUpperCase()
+          );
+        }
+        if (error instanceof PermanentAgentRunError) {
+          throw new PermanentAgentRunError(
+            redactor.redactString(error.message),
+            error.code
           );
         }
         throw error;
@@ -1062,7 +1122,9 @@ export function createAgentRunJobHandler(
 
       if (result.status !== 'completed') {
         const errorCode = result.error?.code ?? 'RUN_INCOMPLETE';
-        const errorMessage = result.error?.message ?? `Run ended with status ${result.status}`;
+        const errorMessage = redactor.redactString(
+          result.error?.message ?? `Run ended with status ${result.status}`
+        );
         if (
           errorCode === 'MALFORMED_STRUCTURED_OUTPUT' ||
           errorCode === 'TOOL_NOT_ALLOWED' ||

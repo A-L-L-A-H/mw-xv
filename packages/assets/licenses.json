@@ -93,7 +93,7 @@
     }
   ],
   "verifiedOn": "2026-10-16",
-  "notes": "Upstream SIL Open Font License 1.1 texts are included in fonts/OFL-Anton.txt, fonts/OFL-SpaceGrotesk.txt, fonts/OFL-JetBrainsMono.txt, and fonts/OFL-RoadRage.txt. Road Rage's upstream TTF is retained under source/fonts and subsetted to WOFF2 for display use; hashes are recorded above. Unverified archival font binaries under raw_arts/fonts/ (cinzel-*, saksi-hand-*, saksi-marker-*, saksi-mono-*) are source-only and excluded from packages/assets/ distribution per ../../raw_arts/fonts/README.md and packages/assets/scripts/asset-schema.mjs.",
+  "notes": "Upstream SIL Open Font License 1.1 texts are included in fonts/OFL-Anton.txt, fonts/OFL-SpaceGrotesk.txt, fonts/OFL-JetBrainsMono.txt, and fonts/OFL-RoadRage.txt. Road Rage's upstream TTF is retained under source/fonts and subsetted to WOFF2 for display use; hashes are recorded above. Unverified archival font binaries under raw_arts/fonts/ (cinzel-*, saksi-hand-*, saksi-marker-*, saksi-mono-*) are source-only and excluded from packages/assets/ distribution per ../../raw_arts/fonts/README.md and packages/assets/scripts/asset-schema.mjs.\nProject owner approval recorded on 2026-11-25 for the existing Moon City homepage artwork and anonymous fictional crew-01 pilot/idle clip for production use. This records product-owner authorization; the upstream OpenAI Terms of Use and applicable law remain the governing terms.",
   "soundEffects": [
     {
       "path": "sounds/ambience-archive-quiet.wav",
@@ -355,8 +355,8 @@
       "source": "Original manually authored JSON",
       "license": "ISC",
       "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
-      "status": "review",
-      "distribution": "source-only pending visual acceptance"
+      "status": "approved",
+      "distribution": "production"
     },
     {
       "path": "animation/crew-01-idle/crew-01-idle-frame-01.svg",
@@ -364,8 +364,8 @@
       "source": "Original manually authored SVG",
       "license": "ISC",
       "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
-      "status": "review",
-      "distribution": "source-only pending visual acceptance"
+      "status": "approved",
+      "distribution": "production"
     },
     {
       "path": "animation/crew-01-idle/crew-01-idle-frame-02.svg",
@@ -373,8 +373,8 @@
       "source": "Original manually authored SVG",
       "license": "ISC",
       "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
-      "status": "review",
-      "distribution": "source-only pending visual acceptance"
+      "status": "approved",
+      "distribution": "production"
     },
     {
       "path": "animation/crew-01-idle/crew-01-idle-frame-03.svg",
@@ -382,8 +382,8 @@
       "source": "Original manually authored SVG",
       "license": "ISC",
       "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
-      "status": "review",
-      "distribution": "source-only pending visual acceptance"
+      "status": "approved",
+      "distribution": "production"
     },
     {
       "path": "animation/crew-01-idle/crew-01-idle-frame-04.svg",
@@ -391,8 +391,8 @@
       "source": "Original manually authored SVG",
       "license": "ISC",
       "modifications": "Redrawn four-frame anonymous back-facing crew-01 keyframe; distinct silhouette per frame, no recognisable face.",
-      "status": "review",
-      "distribution": "source-only pending visual acceptance"
+      "status": "approved",
+      "distribution": "production"
     },
     {
       "path": "animation/crew-01-turn/crew-01-turn-clip.json",
@@ -732,8 +732,8 @@
       "source": "Original manually authored JSON",
       "license": "ISC",
       "modifications": "Original canonical character registry for Moon City visual universe.",
-      "status": "review",
-      "distribution": "source-only pending visual acceptance"
+      "status": "approved",
+      "distribution": "production"
     },
     {
       "path": "source/world/characters/crew-01-layer-hood.svg",

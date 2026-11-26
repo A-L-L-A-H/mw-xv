@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
+import { Badge } from '@moonwitness/ui/components/badge';
+import { Button } from '@moonwitness/ui/components/button';
+import '@moonwitness/ui/styles/tokens.css';
 
 interface DeviceStatus {
   deviceId: string;
@@ -51,20 +54,12 @@ interface OrmMessage {
   create_date: string;
 }
 
-const STORAGE_KEY = 'mw_whatsapp_auth_header';
-
 function buildBasicHeader(username: string, password: string): string {
   return `Basic ${btoa(`${username}:${password}`)}`;
 }
 
 export function App() {
-  const [authHeader, setAuthHeader] = useState<string>(() => {
-    try {
-      return window.sessionStorage.getItem(STORAGE_KEY) ?? '';
-    } catch {
-      return '';
-    }
-  });
+  const [authHeader, setAuthHeader] = useState<string>('');
   const [authMode, setAuthMode] = useState<'basic' | 'bearer'>('basic');
   const [username, setUsername] = useState('moonwitness');
   const [password, setPassword] = useState('moonwitness');
@@ -167,11 +162,6 @@ export function App() {
     try {
       await refreshAll(header);
       setAuthHeader(header);
-      try {
-        window.sessionStorage.setItem(STORAGE_KEY, header);
-      } catch {
-        // Ignore sessionStorage failures in restricted frames.
-      }
     } catch (err) {
       setErrorBanner(err instanceof Error ? err.message : 'Authentication failed');
     } finally {
@@ -185,11 +175,6 @@ export function App() {
     setOverview(null);
     setConversations([]);
     setMessages([]);
-    try {
-      window.sessionStorage.removeItem(STORAGE_KEY);
-    } catch {
-      // Ignore storage errors.
-    }
   }
 
   async function handleConnectDevice(event: FormEvent) {
@@ -279,7 +264,7 @@ export function App() {
     <div className="mw-shell">
       <header className="mw-header">
         <div>
-          <span className="mw-badge">Standalone Gateway · Baileys Native</span>
+          <Badge className="mw-badge">Standalone Gateway · Baileys Native</Badge>
           <h1>MoonWitness WhatsApp Service</h1>
           <p className="mw-topology">
             Topology: <code>apps/board</code> ↔ <code>apps/api</code> ↔ <code>apps/whatsapp</code>{' '}
@@ -294,9 +279,9 @@ export function App() {
             Health (/healthz)
           </a>
           {unlocked && (
-            <button type="button" className="mw-btn mw-btn-ghost" onClick={handleLock}>
+            <Button type="button" variant="ghost" className="mw-btn mw-btn-ghost" onClick={handleLock}>
               Lock Session
-            </button>
+            </Button>
           )}
         </div>
       </header>

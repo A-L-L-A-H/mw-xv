@@ -1,4 +1,33 @@
 import { expect, test } from '@playwright/test';
+import { resolveSceneLayerSources } from '../src/scene-layer-sources';
+
+const baseLayer = {
+  asset: 'environments/test.svg',
+  order: 0,
+  position: { x: 0.5, y: 0.5 },
+};
+
+test('scene layer asset imports stay attached to canonical IDs when layer order changes', () => {
+  const layers = [
+    { ...baseLayer, id: 'sky', order: 0 },
+    { ...baseLayer, id: 'moon', order: 10 },
+    { ...baseLayer, id: 'prop-wires', order: 85 },
+  ];
+  const sources = { sky: '/sky.svg', moon: '/moon.svg', 'prop-wires': '/wires.svg' };
+  const result = resolveSceneLayerSources([...layers].reverse(), sources);
+  expect(result.map(({ id, src }) => [id, src])).toEqual([
+    ['prop-wires', '/wires.svg'],
+    ['moon', '/moon.svg'],
+    ['sky', '/sky.svg'],
+  ]);
+});
+
+test('scene layer source resolver rejects missing, duplicate, and unexpected mappings', () => {
+  const testLayer = { ...baseLayer, id: 'moon', order: 0 };
+  expect(() => resolveSceneLayerSources([testLayer], {})).toThrow(/missing an imported source/u);
+  expect(() => resolveSceneLayerSources([testLayer, { ...testLayer, id: 'moon' }], { moon: '/moon.svg' })).toThrow(/must be unique/u);
+  expect(() => resolveSceneLayerSources([testLayer], { moon: '/moon.svg', sky: '/sky.svg' })).toThrow(/Unexpected imported source mapping/u);
+});
 
 test('environment depth inspector toggles and reorders planes and reflows on mobile (W4-008, W1-006)', async ({
   page,
@@ -31,6 +60,22 @@ test('environment depth inspector toggles and reorders planes and reflows on mob
     () => document.documentElement.scrollWidth - window.innerWidth
   );
   expect(overflow).toBeLessThanOrEqual(2);
+});
+
+test('Signals and Archive stay catalog-only until product routes and data contracts exist (W9-004)', async ({
+  page,
+}) => {
+  await page.goto('./#scene-environment-inspector');
+  const specimens = page.getByTestId('signals-archive-specimens');
+  await expect(specimens).toBeVisible();
+  await expect(specimens.getByTestId('signals-scene-specimen')).toContainText(
+    'no route or live signal feed'
+  );
+  await expect(specimens.getByTestId('archive-scene-specimen')).toContainText(
+    'no route or archive records'
+  );
+  await expect(specimens.locator('img')).toHaveCount(2);
+  await expect(specimens.locator('a')).toHaveCount(0);
 });
 
 test('scene runtime supports static fallback, timeline controls, keyboard camera, and deterministic URL harness (W5-004..W5-010)', async ({

@@ -5,7 +5,9 @@ import { isRecord } from '@moonwitness/types';
 import { Badge } from '@moonwitness/ui/components/badge';
 import { Button } from '@moonwitness/ui/components/button';
 import { EmptyState } from '@moonwitness/ui/components/empty-state';
+import { ErrorState } from '@moonwitness/ui/components/error-state';
 import { Input } from '@moonwitness/ui/components/input';
+import { Textarea } from '@moonwitness/ui/components/textarea';
 import { Label } from '@moonwitness/ui/components/label';
 import { LogConsole, type LogConsoleEntry } from '@moonwitness/ui/components/log-console';
 import { MetricTile } from '@moonwitness/ui/components/metric-tile';
@@ -28,8 +30,11 @@ import {
   WarningIcon,
 } from '@moonwitness/ui/icons';
 import { ConfirmDialog } from '@/components/views/confirm-dialog';
+import { client } from '@/lib/client';
 import { MeshTopologyPanel } from './mesh-topology-panel';
 import { PaasTemplateCatalog } from './paas-template-catalog';
+import { InstanceDomainsPanel } from './instance-domains-panel';
+import { PaasAppDrawer } from './paas-app-drawer';
 import type { PaasTemplateDefinition } from './paas-template-data';
 
 export interface PaasStudioNodeMetrics {
@@ -155,11 +160,25 @@ export function PaasStudioPanel({
   } | null>(null);
   const [activeLogs, setActiveLogs] = useState<{ slug: string; text: string } | null>(null);
 
+  // Wave 3: instance settings + per-app management drawer
+  const [instanceDomain, setInstanceDomain] = useState<string>('');
+  const [wildcardDomain, setWildcardDomain] = useState<string>('');
+  const [publicIpv4, setPublicIpv4] = useState<string>('');
+  const [accessMode, setAccessMode] = useState<string>('');
+  const [managedSlug, setManagedSlug] = useState<string | null>(null);
+
   const [slug, setSlug] = useState<string>('');
   const [image, setImage] = useState<string>('');
   const [domain, setDomain] = useState<string>('');
   const [port, setPort] = useState<string>('3000');
   const [tenant, setTenant] = useState<string>(tenants[0] ?? 'default');
+
+  // Deploy modes: git / compose
+  const [gitRepo, setGitRepo] = useState<string>('');
+  const [gitBranch, setGitBranch] = useState<string>('main');
+  const [dockerfilePath, setDockerfilePath] = useState<string>('Dockerfile');
+  const [composeYaml, setComposeYaml] = useState<string>('');
+  const [webhookInfo, setWebhookInfo] = useState<{ url: string; secret: string } | null>(null);
 
   // Wave C.13: Live Logs & Stats state
   const [selectedLogApp, setSelectedLogApp] = useState<string>('control-plane');
@@ -192,12 +211,54 @@ export function PaasStudioPanel({
   );
 
   const normalizedBase = apiBase.replace(/\/+$/u, '');
+  const isCloudApi = normalizedBase.startsWith('/api/cloud/');
+
+  const paasFetch = useCallback(
+    async (input: string, init?: RequestInit): Promise<Response> => {
+      if (!isCloudApi) {
+        return fetch(input, init);
+      }
+      await client.ready();
+      let accessToken: string | undefined;
+      try {
+        const sessRes = await fetch('/api/session', {
+          credentials: 'same-origin',
+          cache: 'no-store',
+        });
+        if (sessRes.ok) {
+          const sessJson = (await sessRes.json()) as { token?: unknown };
+          if (typeof sessJson.token === 'string') {
+            const parsed = JSON.parse(sessJson.token) as { access_token?: unknown };
+            if (typeof parsed.access_token === 'string' && parsed.access_token.length > 0) {
+              accessToken = parsed.access_token;
+            }
+          }
+        }
+      } catch {
+        // Ignore session read error; unauthenticated request returns 401 cleanly.
+      }
+      const headers = new Headers(init?.headers);
+      if (accessToken && !headers.has('authorization')) {
+        headers.set('authorization', `Bearer ${accessToken}`);
+      }
+      const companyId = client.currentUser?.company_id;
+      if (typeof companyId === 'number' && !headers.has('x-company-id')) {
+        headers.set('x-company-id', String(companyId));
+      }
+      return fetch(input, {
+        ...init,
+        credentials: 'same-origin',
+        headers,
+      });
+    },
+    [isCloudApi]
+  );
 
   const fetchLiveLogs = useCallback(async () => {
     setLogsLoading(true);
     const target = encodeURIComponent(selectedLogApp || 'control-plane');
     try {
-      const streamRes = await fetch(`${normalizedBase}/apps/${target}/logs/stream`, {
+      const streamRes = await paasFetch(`${normalizedBase}/apps/${target}/logs/stream`, {
         cache: 'no-store',
       });
       if (streamRes.ok) {
@@ -221,7 +282,7 @@ export function PaasStudioPanel({
         }
       }
 
-      const fallbackRes = await fetch(`${normalizedBase}/apps/${target}/logs`, {
+      const fallbackRes = await paasFetch(`${normalizedBase}/apps/${target}/logs`, {
         method: 'POST',
       });
       if (fallbackRes.ok) {
@@ -268,7 +329,7 @@ export function PaasStudioPanel({
     } finally {
       setLogsLoading(false);
     }
-  }, [normalizedBase, selectedLogApp]);
+  }, [normalizedBase, paasFetch, selectedLogApp]);
 
   const vpsJoinPlan = useMemo(() => {
     const safeHost = vpsHost.trim() || '203.0.113.42';
@@ -290,15 +351,13 @@ export function PaasStudioPanel({
     setBackupFeedback(null);
     setBackupError(null);
     try {
-      const response = await fetch(`${normalizedBase}/backups/postgres`, {
+      const response = await paasFetch(`${normalizedBase}/backups/postgres`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ trigger: 'manual-studio' }),
       });
       if (!response.ok) {
-        setBackupError(
-          `Snapshot request returned HTTP ${response.status} (Desktop DX bridge required).`
-        );
+        setBackupError(`Snapshot request returned HTTP ${response.status}.`);
         return;
       }
       const payload = (await response.json().catch(() => null)) as unknown;
@@ -316,11 +375,11 @@ export function PaasStudioPanel({
       setBackupError(null);
       setBackupFeedback(`Manual PostgreSQL snapshot created: ${created.filename}`);
     } catch {
-      setBackupError('Unable to reach /paas/backups/postgres (Desktop DX bridge offline).');
+      setBackupError(`Unable to reach ${normalizedBase}/backups/postgres.`);
     } finally {
       setBackupBusy(false);
     }
-  }, [normalizedBase]);
+  }, [normalizedBase, paasFetch]);
 
   const handleVerifyRestore = useCallback(
     async (backup: PostgresBackupRecord) => {
@@ -328,7 +387,7 @@ export function PaasStudioPanel({
       setBackupFeedback(null);
       setBackupError(null);
       try {
-        const response = await fetch(`${normalizedBase}/backups/restore`, {
+        const response = await paasFetch(`${normalizedBase}/backups/restore`, {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({
@@ -364,7 +423,7 @@ export function PaasStudioPanel({
         setBackupBusy(false);
       }
     },
-    [normalizedBase]
+    [normalizedBase, paasFetch]
   );
 
   const refreshState = useCallback(async () => {
@@ -373,8 +432,8 @@ export function PaasStudioPanel({
     setStateError(null);
     try {
       const [metricsRes, appsRes] = await Promise.all([
-        fetch(`${normalizedBase}/metrics`, { cache: 'no-store' }),
-        fetch(`${normalizedBase}/apps`, { cache: 'no-store' }),
+        paasFetch(`${normalizedBase}/metrics`, { cache: 'no-store' }),
+        paasFetch(`${normalizedBase}/apps`, { cache: 'no-store' }),
       ]);
 
       if (metricsRes.status === 404 || appsRes.status === 404) {
@@ -413,6 +472,40 @@ export function PaasStudioPanel({
       setMetrics(metricsData);
       setApps(appsData);
       setDesktopModeAvailable(true);
+
+      if (isCloudApi) {
+        try {
+          const settingsRes = await paasFetch(`${normalizedBase}/settings`, { cache: 'no-store' });
+          if (settingsRes.ok) {
+            const settingsPayload = (await settingsRes.json().catch(() => null)) as unknown;
+            if (isRecord(settingsPayload) && settingsPayload.success === true && isRecord(settingsPayload.data)) {
+              const data = settingsPayload.data;
+              setInstanceDomain(typeof data.instanceDomain === 'string' ? data.instanceDomain : '');
+              setWildcardDomain(typeof data.wildcardDomain === 'string' ? data.wildcardDomain : '');
+              setPublicIpv4(typeof data.publicIpv4 === 'string' ? data.publicIpv4 : '');
+              setAccessMode(typeof data.accessMode === 'string' ? data.accessMode : '');
+            }
+          }
+        } catch {
+          // Non-fatal; instance settings remain optional.
+        }
+        try {
+          const backupsRes = await paasFetch(`${normalizedBase}/backups`, { cache: 'no-store' });
+          if (backupsRes.ok) {
+            const bPayload = (await backupsRes.json().catch(() => null)) as unknown;
+            if (isRecord(bPayload) && bPayload.success === true && Array.isArray(bPayload.data)) {
+              const parsedBackups = bPayload.data
+                .map(parsePostgresBackup)
+                .filter((item): item is PostgresBackupRecord => item !== null);
+              setBackups(parsedBackups);
+              setBackupsLoaded(true);
+              setBackupError(null);
+            }
+          }
+        } catch {
+          // Non-fatal; backup inventory remains optional.
+        }
+      }
     } catch {
       setDesktopModeAvailable(false);
       setMetrics(null);
@@ -421,7 +514,7 @@ export function PaasStudioPanel({
     } finally {
       setLoading(false);
     }
-  }, [normalizedBase]);
+  }, [isCloudApi, normalizedBase, paasFetch]);
 
   useEffect(() => {
     let cancelled = false;
@@ -439,7 +532,7 @@ export function PaasStudioPanel({
       setErrorMessage(null);
       setFeedback(null);
       try {
-        const response = await fetch(`${normalizedBase}/apps/deploy`, {
+        const response = await paasFetch(`${normalizedBase}/apps/deploy`, {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({
@@ -461,7 +554,7 @@ export function PaasStudioPanel({
         setDeployingTemplateId(null);
       }
     },
-    [normalizedBase, refreshState, tenant]
+    [normalizedBase, paasFetch, refreshState, tenant]
   );
 
   const handleDeploy = async (event: FormEvent<HTMLFormElement>) => {
@@ -477,7 +570,7 @@ export function PaasStudioPanel({
 
     try {
       const parsedPort = Number.parseInt(port, 10);
-      const response = await fetch(`${normalizedBase}/apps/deploy`, {
+      const response = await paasFetch(`${normalizedBase}/apps/deploy`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
@@ -500,7 +593,90 @@ export function PaasStudioPanel({
       setDomain('');
       await refreshState();
     } catch {
-      setErrorMessage('Unable to reach Desktop PaaS bridge.');
+      setErrorMessage(`Unable to reach ${normalizedBase} PaaS bridge.`);
+    } finally {
+      setDeploying(false);
+    }
+  };
+
+  const handleDeployGit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!slug.trim() || !gitRepo.trim()) {
+      setErrorMessage('App Slug and Git Repository are required.');
+      return;
+    }
+    setDeploying(true);
+    setErrorMessage(null);
+    setFeedback(null);
+    setWebhookInfo(null);
+    try {
+      const parsedPort = Number.parseInt(port, 10);
+      const response = await paasFetch(`${normalizedBase}/apps/deploy-git`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          slug: slug.trim(),
+          gitRepo: gitRepo.trim(),
+          branch: gitBranch.trim() || 'main',
+          dockerfilePath: dockerfilePath.trim() || 'Dockerfile',
+          domain: domain.trim() || undefined,
+          port: Number.isFinite(parsedPort) ? parsedPort : 3000,
+          tenant,
+        }),
+      });
+      if (!response.ok) {
+        setErrorMessage(`Git deploy failed (${response.status}).`);
+        return;
+      }
+      const payload = (await response.json().catch(() => null)) as {
+        data?: { webhookUrl?: string; webhookSecret?: string };
+      };
+      if (payload?.data?.webhookUrl) {
+        setWebhookInfo({
+          url: payload.data.webhookUrl,
+          secret: payload.data.webhookSecret ?? '',
+        });
+      }
+      setFeedback(`Git deployment triggered for ${slug.trim()}.`);
+      await refreshState();
+    } catch {
+      setErrorMessage(`Unable to reach ${normalizedBase} PaaS bridge.`);
+    } finally {
+      setDeploying(false);
+    }
+  };
+
+  const handleDeployCompose = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!slug.trim() || !composeYaml.trim()) {
+      setErrorMessage('App Slug and Compose YAML are required.');
+      return;
+    }
+    setDeploying(true);
+    setErrorMessage(null);
+    setFeedback(null);
+    try {
+      const response = await paasFetch(`${normalizedBase}/apps/deploy-compose`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          slug: slug.trim(),
+          domain: domain.trim() || undefined,
+          composeSpec: composeYaml,
+          env: {},
+        }),
+      });
+      if (!response.ok) {
+        setErrorMessage(`Compose deploy failed (${response.status}).`);
+        return;
+      }
+      setFeedback(`Compose deployment triggered for ${slug.trim()}.`);
+      setSlug('');
+      setDomain('');
+      setComposeYaml('');
+      await refreshState();
+    } catch {
+      setErrorMessage(`Unable to reach ${normalizedBase} PaaS bridge.`);
     } finally {
       setDeploying(false);
     }
@@ -515,7 +691,7 @@ export function PaasStudioPanel({
       const target = encodeURIComponent(app.slug || app.id);
       const url = `${normalizedBase}/apps/${target}/${action}`;
 
-      const response = await fetch(url, { method: 'POST' });
+      const response = await paasFetch(url, { method: 'POST' });
       if (!response.ok) {
         setErrorMessage(`Action "${action}" failed for ${app.slug} (${response.status}).`);
         return;
@@ -587,24 +763,35 @@ export function PaasStudioPanel({
             <Skeleton className="h-28" />
           </div>
         ) : stateError ? (
-          <EmptyState
+          <ErrorState
             role="alert"
+            headingLevel={3}
             title="Live PaaS telemetry unavailable"
             description={stateError}
-            action={
-              <Button variant="outline" onClick={() => void refreshState()}>
-                Retry
-              </Button>
-            }
+            retrying={loading}
+            onRetry={() => void refreshState()}
           />
         ) : !desktopModeAvailable ? (
           <div className="flex items-start gap-3 rounded-md border border-dashed p-4 text-sm">
             <WarningIcon className="mt-0.5 h-4 w-4 shrink-0" />
             <div className="space-y-1">
-              <p className="font-medium">Desktop DX Mode Required for Live Mesh PaaS</p>
+              <p className="font-medium">
+                {isCloudApi
+                  ? 'Mesh PaaS Control Plane Unavailable'
+                  : 'Desktop DX Mode Required for Live Mesh PaaS'}
+              </p>
               <p className="opacity-80">
-                Launch MoonWitness Desktop DX to connect directly to your private mesh control-plane
-                via <code>{normalizedBase}/*</code>.
+                {isCloudApi ? (
+                  <>
+                    Ensure your session is signed in and <code>MW_CONTROL_PLANE_URL</code> is
+                    configured for <code>{normalizedBase}/*</code>.
+                  </>
+                ) : (
+                  <>
+                    Launch MoonWitness Desktop DX to connect directly to your private mesh
+                    control-plane via <code>{normalizedBase}/*</code>.
+                  </>
+                )}
               </p>
             </div>
           </div>
@@ -646,88 +833,247 @@ export function PaasStudioPanel({
         title="Deploy Container App"
         description="Provision a new app with automatic TLS routing on your private mesh node."
       >
-        <form
-          onSubmit={(event) => void handleDeploy(event)}
-          className="grid grid-cols-1 gap-4 md:grid-cols-2"
-        >
-          <div className="space-y-1.5">
-            <Label htmlFor="paas-app-slug">App Slug</Label>
-            <Input
-              id="paas-app-slug"
-              placeholder="billing-api"
-              value={slug}
-              onChange={(event) => setSlug(event.target.value)}
-              disabled={!desktopModeAvailable || deploying}
-            />
-          </div>
+        <Tabs defaultValue="image" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="image">Docker Image</TabsTrigger>
+            <TabsTrigger value="git">Git Repository</TabsTrigger>
+            <TabsTrigger value="compose">Docker Compose</TabsTrigger>
+          </TabsList>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="paas-docker-image">Docker Image</Label>
-            <Input
-              id="paas-docker-image"
-              placeholder="ghcr.io/moonwitness/app:latest"
-              value={image}
-              onChange={(event) => setImage(event.target.value)}
-              disabled={!desktopModeAvailable || deploying}
-            />
-          </div>
+          <TabsContent value="image">
+            <form
+              onSubmit={(event) => void handleDeploy(event)}
+              className="grid grid-cols-1 gap-4 md:grid-cols-2"
+            >
+              <div className="space-y-1.5">
+                <Label htmlFor="paas-app-slug">App Slug</Label>
+                <Input
+                  id="paas-app-slug"
+                  placeholder="billing-api"
+                  value={slug}
+                  onChange={(event) => setSlug(event.target.value)}
+                  disabled={!desktopModeAvailable || deploying}
+                />
+              </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="paas-domain-tls">Domain TLS</Label>
-            <Input
-              id="paas-domain-tls"
-              placeholder="app.example.com"
-              value={domain}
-              onChange={(event) => setDomain(event.target.value)}
-              disabled={!desktopModeAvailable || deploying}
-            />
-          </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="paas-docker-image">Docker Image</Label>
+                <Input
+                  id="paas-docker-image"
+                  placeholder="ghcr.io/moonwitness/app:latest"
+                  value={image}
+                  onChange={(event) => setImage(event.target.value)}
+                  disabled={!desktopModeAvailable || deploying}
+                />
+              </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="paas-port">Port</Label>
-              <Input
-                id="paas-port"
-                type="number"
-                placeholder="3000"
-                value={port}
-                onChange={(event) => setPort(event.target.value)}
-                disabled={!desktopModeAvailable || deploying}
-              />
-            </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="paas-domain-tls">Domain TLS</Label>
+                <Input
+                  id="paas-domain-tls"
+                  placeholder={
+                    wildcardDomain
+                      ? `auto: <slug>.${wildcardDomain}`
+                      : publicIpv4
+                        ? `blank = IP preview :8001–8010 on ${publicIpv4}`
+                        : 'blank = IP preview :8001–8010'
+                  }
+                  value={domain}
+                  onChange={(event) => setDomain(event.target.value)}
+                  disabled={!desktopModeAvailable || deploying}
+                />
+              </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="paas-tenant">Tenant</Label>
-              <SelectField
-                id="paas-tenant"
-                value={tenant}
-                onChange={(event) => setTenant(event.target.value)}
-                disabled={!desktopModeAvailable || deploying}
-              >
-                {tenants.map((item) => (
-                  <option key={item} value={item}>
-                    {item}
-                  </option>
-                ))}
-              </SelectField>
-            </div>
-          </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="paas-port">Port</Label>
+                  <Input
+                    id="paas-port"
+                    type="number"
+                    placeholder="3000"
+                    value={port}
+                    onChange={(event) => setPort(event.target.value)}
+                    disabled={!desktopModeAvailable || deploying}
+                  />
+                </div>
 
-          <div className="flex items-center justify-between gap-3 md:col-span-2">
-            <div className="text-sm">
-              {errorMessage ? (
-                <span role="alert" className="text-destructive">
-                  {errorMessage}
-                </span>
+                <div className="space-y-1.5">
+                  <Label htmlFor="paas-tenant">Tenant</Label>
+                  <SelectField
+                    id="paas-tenant"
+                    value={tenant}
+                    onChange={(event) => setTenant(event.target.value)}
+                    disabled={!desktopModeAvailable || deploying}
+                  >
+                    {tenants.map((item) => (
+                      <option key={item} value={item}>
+                        {item}
+                      </option>
+                    ))}
+                  </SelectField>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between gap-3 md:col-span-2">
+                <div className="text-sm">
+                  {errorMessage ? (
+                    <ErrorState
+                      role="alert"
+                      headingLevel={3}
+                      title="Deploy failed"
+                      description={errorMessage}
+                      onRetry={() => {
+                        void handleDeploy(
+                          new Event('submit', { cancelable: true }) as unknown as FormEvent<HTMLFormElement>
+                        );
+                      }}
+                    />
+                  ) : null}
+                  {!errorMessage && feedback ? <span>{feedback}</span> : null}
+                </div>
+                <Button type="submit" disabled={!desktopModeAvailable || deploying}>
+                  <BoltIcon className="h-4 w-4" />
+                  {deploying ? 'Deploying...' : 'Deploy App'}
+                </Button>
+              </div>
+            </form>
+          </TabsContent>
+
+          <TabsContent value="git">
+            <form
+              onSubmit={(event) => void handleDeployGit(event)}
+              className="grid grid-cols-1 gap-4 md:grid-cols-2"
+            >
+              <div className="space-y-1.5">
+                <Label htmlFor="git-app-slug">App Slug</Label>
+                <Input
+                  id="git-app-slug"
+                  placeholder="my-service"
+                  value={slug}
+                  onChange={(event) => setSlug(event.target.value)}
+                  disabled={!desktopModeAvailable || deploying}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="git-repo">Git Repository (HTTPS)</Label>
+                <Input
+                  id="git-repo"
+                  placeholder="https://github.com/org/repo.git"
+                  value={gitRepo}
+                  onChange={(event) => setGitRepo(event.target.value)}
+                  disabled={!desktopModeAvailable || deploying}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="git-branch">Branch</Label>
+                <Input
+                  id="git-branch"
+                  value={gitBranch}
+                  onChange={(event) => setGitBranch(event.target.value)}
+                  disabled={!desktopModeAvailable || deploying}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="git-dockerfile">Dockerfile Path</Label>
+                <Input
+                  id="git-dockerfile"
+                  value={dockerfilePath}
+                  onChange={(event) => setDockerfilePath(event.target.value)}
+                  disabled={!desktopModeAvailable || deploying}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="git-port">Port</Label>
+                <Input
+                  id="git-port"
+                  type="number"
+                  value={port}
+                  onChange={(event) => setPort(event.target.value)}
+                  disabled={!desktopModeAvailable || deploying}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="git-domain">Domain TLS (optional)</Label>
+                <Input
+                  id="git-domain"
+                  value={domain}
+                  onChange={(event) => setDomain(event.target.value)}
+                  placeholder={wildcardDomain ? `auto: <slug>.${wildcardDomain}` : 'blank = IP preview'}
+                  disabled={!desktopModeAvailable || deploying}
+                />
+              </div>
+              <div className="flex items-center justify-between gap-3 md:col-span-2">
+                <div className="text-sm">
+                  {!errorMessage && feedback ? <span>{feedback}</span> : null}
+                </div>
+                <Button type="submit" disabled={!desktopModeAvailable || deploying}>
+                  <BoltIcon className="h-4 w-4" />
+                  {deploying ? 'Deploying...' : 'Deploy from Git'}
+                </Button>
+              </div>
+              {webhookInfo ? (
+                <div className="space-y-2 rounded-md border p-3 md:col-span-2">
+                  <p className="text-sm font-semibold">GitHub webhook configured</p>
+                  <p className="break-all text-xs">URL: {webhookInfo.url}</p>
+                  {webhookInfo.secret ? (
+                    <p className="break-all text-xs">One-time secret: {webhookInfo.secret}</p>
+                  ) : null}
+                </div>
               ) : null}
-              {!errorMessage && feedback ? <span>{feedback}</span> : null}
-            </div>
-            <Button type="submit" disabled={!desktopModeAvailable || deploying}>
-              <BoltIcon className="h-4 w-4" />
-              {deploying ? 'Deploying...' : 'Deploy App'}
-            </Button>
-          </div>
-        </form>
+            </form>
+          </TabsContent>
+
+          <TabsContent value="compose">
+            <form
+              onSubmit={(event) => void handleDeployCompose(event)}
+              className="space-y-4"
+            >
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label htmlFor="compose-app-slug">App Slug</Label>
+                  <Input
+                    id="compose-app-slug"
+                    placeholder="my-stack"
+                    value={slug}
+                    onChange={(event) => setSlug(event.target.value)}
+                    disabled={!desktopModeAvailable || deploying}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="compose-domain">Domain TLS (optional)</Label>
+                  <Input
+                    id="compose-domain"
+                    value={domain}
+                    onChange={(event) => setDomain(event.target.value)}
+                    placeholder={wildcardDomain ? `auto: <slug>.${wildcardDomain}` : 'blank = IP preview'}
+                    disabled={!desktopModeAvailable || deploying}
+                  />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="compose-yaml">Docker Compose YAML</Label>
+                <Textarea
+                  id="compose-yaml"
+                  rows={12}
+                  className="font-mono text-xs"
+                  placeholder={'services:\n  app:\n    image: nginx:alpine\n    ports:\n      - "8080:80"'}
+                  value={composeYaml}
+                  onChange={(event) => setComposeYaml(event.target.value)}
+                  disabled={!desktopModeAvailable || deploying}
+                />
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <div className="text-sm">
+                  {!errorMessage && feedback ? <span>{feedback}</span> : null}
+                </div>
+                <Button type="submit" disabled={!desktopModeAvailable || deploying}>
+                  <BoltIcon className="h-4 w-4" />
+                  {deploying ? 'Deploying...' : 'Deploy Compose'}
+                </Button>
+              </div>
+            </form>
+          </TabsContent>
+        </Tabs>
       </Panel>
 
       <Panel
@@ -744,15 +1090,13 @@ export function PaasStudioPanel({
             <Skeleton className="h-40" />
           </div>
         ) : stateError ? (
-          <EmptyState
+          <ErrorState
             role="alert"
+            headingLevel={3}
             title="Deployed apps unavailable"
-            description="The live app inventory failed to load; no previous or fixture apps are shown."
-            action={
-              <Button variant="outline" onClick={() => void refreshState()}>
-                Retry
-              </Button>
-            }
+            description="The live app inventory failed to load."
+            retrying={loading}
+            onRetry={() => void refreshState()}
           />
         ) : !desktopModeAvailable ? (
           <p className="text-sm opacity-75">
@@ -784,6 +1128,16 @@ export function PaasStudioPanel({
                   </div>
 
                   <div className="flex flex-wrap gap-2">
+                    {isCloudApi ? (
+                      <Button
+                        type="button"
+                        size="xs"
+                        variant="default"
+                        onClick={() => setManagedSlug(app.slug || app.id)}
+                      >
+                        Manage
+                      </Button>
+                    ) : null}
                     <Button
                       type="button"
                       size="xs"
@@ -837,16 +1191,35 @@ export function PaasStudioPanel({
         description="Stream container logs, generate EasyTier VPS join plans, and inspect live PostgreSQL backup metadata."
         actions={<Badge variant="primary">Wave C.13–C.15</Badge>}
       >
-        <Tabs defaultValue="logs-stats" className="space-y-4">
+        <Tabs defaultValue={isCloudApi ? 'instance-domains' : 'logs-stats'} className="space-y-4">
           <TabsList>
+            {isCloudApi ? (
+              <TabsTrigger value="instance-domains">Instance &amp; Domains</TabsTrigger>
+            ) : null}
             <TabsTrigger value="mesh-topology">Mesh Topology</TabsTrigger>
             <TabsTrigger value="logs-stats">Live Logs &amp; Stats</TabsTrigger>
             <TabsTrigger value="vps-wizard">Add VPS Node Wizard</TabsTrigger>
             <TabsTrigger value="pg-backups">PostgreSQL Backups &amp; Restore</TabsTrigger>
           </TabsList>
 
+          {isCloudApi ? (
+            <TabsContent value="instance-domains" className="space-y-3">
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="default">Access: {accessMode || 'unknown'}</Badge>
+                {instanceDomain ? (
+                  <Badge variant="cyan">Instance: {instanceDomain}</Badge>
+                ) : null}
+              </div>
+              <InstanceDomainsPanel
+                apiBase={normalizedBase}
+                fetchFn={paasFetch}
+                onSettingsApplied={refreshState}
+              />
+            </TabsContent>
+          ) : null}
+
           <TabsContent value="mesh-topology">
-            <MeshTopologyPanel apiBase={normalizedBase} />
+            <MeshTopologyPanel apiBase={normalizedBase} fetchFn={paasFetch} />
           </TabsContent>
 
           <TabsContent value="logs-stats" className="space-y-4">
@@ -869,20 +1242,16 @@ export function PaasStudioPanel({
                   />
                 </>
               ) : (
-                <EmptyState
-                  role={stateError ? 'alert' : undefined}
+                <ErrorState
+                  role="alert"
+                  headingLevel={3}
                   className="p-4 sm:col-span-2"
-                  title={loading ? 'Loading live metrics' : 'Live metrics unavailable'}
+                  title="Live metrics unavailable"
                   description={
                     stateError ?? 'Live node metrics are only shown after a successful read.'
                   }
-                  action={
-                    stateError ? (
-                      <Button variant="outline" size="sm" onClick={() => void refreshState()}>
-                        Retry
-                      </Button>
-                    ) : undefined
-                  }
+                  retrying={loading}
+                  onRetry={() => void refreshState()}
                 />
               )}
               <div className="space-y-1.5 sm:col-span-2">
@@ -1016,12 +1385,13 @@ export function PaasStudioPanel({
             </div>
 
             {backupError ? (
-              <div
+              <ErrorState
                 role="alert"
-                className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-xs text-destructive"
-              >
-                {backupError}
-              </div>
+                headingLevel={3}
+                title="Backup operation failed"
+                description={backupError}
+                onRetry={() => void handleTriggerPostgresBackup()}
+              />
             ) : null}
             {backupFeedback ? (
               <div
@@ -1087,7 +1457,26 @@ export function PaasStudioPanel({
       <PaasTemplateCatalog
         deployingTemplateId={deployingTemplateId}
         onDeployTemplate={handleDeployTemplate}
+        {...(isCloudApi
+          ? {
+              apiBase: normalizedBase,
+              fetchFn: paasFetch,
+              wildcardDomain,
+              publicIpv4,
+              onStackDeployed: refreshState,
+            }
+          : {})}
       />
+
+      {managedSlug ? (
+        <PaasAppDrawer
+          slug={managedSlug}
+          apiBase={normalizedBase}
+          fetchFn={paasFetch}
+          onClose={() => setManagedSlug(null)}
+          onUpdated={refreshState}
+        />
+      ) : null}
 
       {activeLogs ? (
         <Panel

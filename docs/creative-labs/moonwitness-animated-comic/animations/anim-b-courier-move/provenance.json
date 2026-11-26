@@ -1,0 +1,79 @@
+[
+  {
+    "assetId": "exp-anim-b-frame-01",
+    "characterId": "kuro-signal",
+    "sourceOrReference": "packages/assets/source/artwork/riot-universe/kuro-signal-model-sheet-master.png; packages/assets/source/artwork/riot-universe/kuro-signal-fullbody-standing-master.png",
+    "creatorOrGenerator": "Antigravity image-generator subagent (reference-anchored to approved MW-XV masters)",
+    "creationMethod": "Reference-locked 2x2 punk-manga comic action sheet generation + Sharp Lanczos3 auto-trimmed 960x540 WebP extraction",
+    "licenseStatus": "Original experimental candidate illustration created inside MW-XV ISC workspace; unapproved candidate",
+    "sourceDerivativeRelationship": "Original rooftop parkour action keyframe anchored to canonical kuro-signal master",
+    "reviewState": "experimental-candidate-unapproved",
+    "intendedUsage": "EP-LAB-01 ANIM-B Frame 01 — deep coil anticipation"
+  },
+  {
+    "assetId": "exp-anim-b-frame-02",
+    "characterId": "kuro-signal",
+    "sourceOrReference": "packages/assets/source/artwork/riot-universe/kuro-signal-model-sheet-master.png; packages/assets/source/artwork/riot-universe/kuro-signal-fullbody-standing-master.png",
+    "creatorOrGenerator": "Antigravity image-generator subagent (reference-anchored to approved MW-XV masters)",
+    "creationMethod": "Reference-locked 2x2 punk-manga comic action sheet generation + Sharp Lanczos3 flopped left-to-right 960x540 WebP extraction",
+    "licenseStatus": "Original experimental candidate illustration created inside MW-XV ISC workspace; unapproved candidate",
+    "sourceDerivativeRelationship": "Original rooftop launch keyframe anchored to canonical kuro-signal master",
+    "reviewState": "experimental-candidate-unapproved",
+    "intendedUsage": "EP-LAB-01 ANIM-B Frame 02 — explosive launch stretch"
+  },
+  {
+    "assetId": "exp-anim-b-frame-03",
+    "characterId": "kuro-signal",
+    "sourceOrReference": "packages/assets/source/artwork/riot-universe/kuro-signal-model-sheet-master.png; packages/assets/illustrations/riot-universe/backgrounds/bg-riot-street-alley.webp",
+    "creatorOrGenerator": "Antigravity image-generator subagent (reference-anchored to approved MW-XV masters)",
+    "creationMethod": "Reference-locked 2x2 punk-manga comic action sheet generation + Sharp Lanczos3 auto-trimmed 960x540 WebP extraction",
+    "licenseStatus": "Original experimental candidate illustration created inside MW-XV ISC workspace; unapproved candidate",
+    "sourceDerivativeRelationship": "Original mid-air rooftop vault keyframe anchored to canonical kuro-signal master and Riot Street Alley palette",
+    "reviewState": "experimental-candidate-unapproved",
+    "intendedUsage": "EP-LAB-01 ANIM-B Frame 03 — apex rooftop vault & fallback pose"
+  },
+  {
+    "assetId": "exp-anim-b-frame-04",
+    "characterId": "kuro-signal",
+    "sourceOrReference": "packages/assets/source/artwork/riot-universe/kuro-signal-model-sheet-master.png; packages/assets/source/artwork/riot-universe/kuro-signal-fullbody-standing-master.png",
+    "creatorOrGenerator": "Antigravity image-generator subagent (reference-anchored to approved MW-XV masters)",
+    "creationMethod": "Reference-locked 2x2 punk-manga comic action sheet generation + Sharp Lanczos3 auto-trimmed 960x540 WebP extraction",
+    "licenseStatus": "Original experimental candidate illustration created inside MW-XV ISC workspace; unapproved candidate",
+    "sourceDerivativeRelationship": "Original Spider-Verse-style chromatic motion-smear keyframe anchored to canonical kuro-signal silhouette",
+    "reviewState": "experimental-candidate-unapproved",
+    "intendedUsage": "EP-LAB-01 ANIM-B Frame 04 — chromatic smear dash impact frame"
+  },
+  {
+    "assetId": "exp-anim-b-frame-05",
+    "characterId": "kuro-signal",
+    "sourceOrReference": "packages/assets/source/artwork/riot-universe/kuro-signal-model-sheet-master.png; packages/assets/source/artwork/riot-universe/kuro-signal-fullbody-standing-master.png",
+    "creatorOrGenerator": "Antigravity image-generator subagent (reference-anchored to approved MW-XV masters)",
+    "creationMethod": "Reference-locked 2x2 punk-manga comic action sheet generation + Sharp Lanczos3 flopped left-to-right 960x540 WebP extraction",
+    "licenseStatus": "Original experimental candidate illustration created inside MW-XV ISC workspace; unapproved candidate",
+    "sourceDerivativeRelationship": "Original heel-plant braking skid keyframe anchored to canonical kuro-signal master",
+    "reviewState": "experimental-candidate-unapproved",
+    "intendedUsage": "EP-LAB-01 ANIM-B Frame 05 — heel-plant spark skid"
+  },
+  {
+    "assetId": "exp-anim-b-frame-06",
+    "characterId": "kuro-signal",
+    "sourceOrReference": "packages/assets/source/artwork/riot-universe/kuro-signal-model-sheet-master.png; packages/assets/source/artwork/riot-universe/kuro-signal-fullbody-standing-master.png",
+    "creatorOrGenerator": "Antigravity image-generator subagent (reference-anchored to approved MW-XV masters)",
+    "creationMethod": "Reference-locked 2x2 punk-manga comic action sheet generation + Sharp Lanczos3 auto-trimmed 960x540 WebP extraction",
+    "licenseStatus": "Original experimental candidate illustration created inside MW-XV ISC workspace; unapproved candidate",
+    "sourceDerivativeRelationship": "Original squash landing crouch keyframe anchored to canonical kuro-signal master",
+    "reviewState": "experimental-candidate-unapproved",
+    "intendedUsage": "EP-LAB-01 ANIM-B Frame 06 — squash compression landing"
+  },
+  {
+    "assetId": "exp-anim-b-frame-07",
+    "characterId": "kuro-signal",
+    "sourceOrReference": "packages/assets/source/artwork/riot-universe/kuro-signal-model-sheet-master.png; packages/assets/source/artwork/riot-universe/kuro-signal-fullbody-standing-master.png",
+    "creatorOrGenerator": "Antigravity image-generator subagent (reference-anchored to approved MW-XV masters)",
+    "creationMethod": "Reference-locked 2x2 punk-manga comic action sheet generation + Sharp Lanczos3 auto-trimmed 960x540 WebP extraction",
+    "licenseStatus": "Original experimental candidate illustration created inside MW-XV ISC workspace; unapproved candidate",
+    "sourceDerivativeRelationship": "Original arrival rebound keyframe anchored to canonical kuro-signal master",
+    "reviewState": "experimental-candidate-unapproved",
+    "intendedUsage": "EP-LAB-01 ANIM-B Frame 07 — impatient arrival knock rebound"
+  }
+]

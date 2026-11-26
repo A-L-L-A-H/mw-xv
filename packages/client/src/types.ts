@@ -31,6 +31,18 @@ export interface RegisterParams {
   email?: string;
 }
 
+export interface SetupStatus {
+  setupRequired: boolean;
+}
+
+export interface SetupClaimParams {
+  setup_token: string;
+  login: string;
+  password: string;
+  name?: string;
+  email?: string;
+}
+
 export type {
   CalendarView,
   Domain,

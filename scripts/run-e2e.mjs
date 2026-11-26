@@ -121,7 +121,6 @@ await runPreflight(
     ...packageManager.prefixArgs,
     '--filter',
     '@moonwitness/api',
-    'run',
     'reset:superadmin-password',
   ],
   {
@@ -138,9 +137,9 @@ await runPreflight(
   packageManager.command,
   [
     ...packageManager.prefixArgs,
-    '--filter',
-    '@moonwitness/api',
-    'exec',
+    'x',
+    '--cwd',
+    'apps/api',
     'tsx',
     'src/commands/seed-knowledge-e2e.ts',
   ],
@@ -156,7 +155,7 @@ const result = spawnSync(
   packageManager.command,
   [
     ...packageManager.prefixArgs,
-    'exec',
+    'x',
     'playwright',
     'test',
     '--config',

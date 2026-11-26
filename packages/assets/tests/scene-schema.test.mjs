@@ -56,6 +56,17 @@ test('validates scene layers and animation clips against canonical assets', () =
   assert.deepEqual(validateSceneBundle(validBundle(), manifest), { sceneCount: 2, clipCount: 1 });
 });
 
+test('validates actors and their canonical clip/depth order', () => {
+  const bundle = validBundle();
+  bundle.scenes[0].actors = [{ id: 'crew-01', clipId: 'cloud-idle', order: 5 }];
+  assert.deepEqual(validateSceneBundle(bundle, manifest), { sceneCount: 2, clipCount: 1 });
+  bundle.scenes[0].actors[0].clipId = 'missing';
+  assert.throws(() => validateSceneBundle(bundle, manifest), /references missing clip missing/u);
+  bundle.scenes[0].actors[0].clipId = 'cloud-idle';
+  bundle.scenes[0].actors[0].order = 1;
+  assert.throws(() => validateSceneBundle(bundle, manifest), /unique integer within the scene/u);
+});
+
 test('rejects unresolved assets and clips and cyclic scene includes', () => {
   const missingAsset = validBundle();
   missingAsset.scenes[0].layers[0].asset = 'missing.png';

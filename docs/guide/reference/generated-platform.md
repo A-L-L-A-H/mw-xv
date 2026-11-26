@@ -1,6 +1,6 @@
 # Generated platform reference
 
-Source fingerprint: `7fbde6a21aad1e77ee78aaac16875a8231494dee8eb8332be2754d9c6f9a372c`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
+Source fingerprint: `4d42f3a9756e43100fb6dccaa454a9d1d085d714fba3707a7f848cb2739f069f`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
 
 ## Workspace packages and apps
 
@@ -12,7 +12,7 @@ Source fingerprint: `7fbde6a21aad1e77ee78aaac16875a8231494dee8eb8332be2754d9c6f9
 | `@moonwitness/board`                | App     | 1.0.0-rc.1 | `build`, `dev`, `lint`, `preview`, `start`, `start:built`, `typecheck`                                                                                                                                                                                                             |
 | `@moonwitness/control-plane`        | App     | 0.1.0      | `dev`, `docker:build`, `fmt`                                                                                                                                                                                                                                                       |
 | `@moonwitness/desktop`              | App     | 1.0.0-rc.1 | `build`, `build:web`, `test`, `test:web`, `typecheck`, `typecheck:web`                                                                                                                                                                                                             |
-| `@moonwitness/docs`                 | App     | 1.0.0-rc.1 | `dev`, `portal:build`, `portal:build:built`, `preview`, `test`, `typecheck`                                                                                                                                                                                                        |
+| `@moonwitness/docs`                 | App     | 1.0.0-rc.1 | `dev`, `portal:build`, `portal:build:built`, `portal:build:cf`, `preview`, `test`, `typecheck`                                                                                                                                                                                     |
 | `@moonwitness/isp`                  | App     | 0.1.0      | `cargo:build`, `clippy`, `dev`, `fmt`, `migrate`, `start`, `test`                                                                                                                                                                                                                  |
 | `@moonwitness/ui-catalog`           | App     | 1.0.0-rc.1 | `build`, `build:built`, `dev`, `diagnostics:generate`, `preview`, `test`                                                                                                                                                                                                           |
 | `@moonwitness/whatsapp`             | App     | 1.0.0-rc.1 | `build`, `dev`, `start`, `test`                                                                                                                                                                                                                                                    |
@@ -45,6 +45,7 @@ Source fingerprint: `7fbde6a21aad1e77ee78aaac16875a8231494dee8eb8332be2754d9c6f9
 | `@moonwitness/orm-ecommerce-sync`   | Package | 1.0.0      | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-governance`       | Package | 1.0.0      | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-helpdesk`         | Package | 1.0.0      | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-identity`         | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-income-ledger`    | Package | 1.0.0      | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-integration`      | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-isp`              | Package | 1.0.0      | `build`, `test`                                                                                                                                                                                                                                                                    |
@@ -65,6 +66,11 @@ Source fingerprint: `7fbde6a21aad1e77ee78aaac16875a8231494dee8eb8332be2754d9c6f9
 | `@moonwitness/orm-subscription`     | Package | 1.0.0      | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-whatsapp`         | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-workflow`         | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `paas-template-pack-bigbear`        | Package | 1.0.0      | —                                                                                                                                                                                                                                                                                  |
+| `paas-template-pack-coolify`        | Package | 1.0.0      | —                                                                                                                                                                                                                                                                                  |
+| `paas-template-pack-dokploy`        | Package | 1.0.0      | —                                                                                                                                                                                                                                                                                  |
+| `paas-template-pack-moonwitness`    | Package | 1.0.0      | —                                                                                                                                                                                                                                                                                  |
+| `@moonwitness/plan-taskos`          | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
 | `@moonwitness/research`             | Package | 1.0.0-rc.1 | `build`, `test`, `typecheck`                                                                                                                                                                                                                                                       |
 | `@moonwitness/types`                | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/ui`                   | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
@@ -123,8 +129,10 @@ Source fingerprint: `7fbde6a21aad1e77ee78aaac16875a8231494dee8eb8332be2754d9c6f9
 | `MW_CLOUD_AGENT_BASE_COMMIT`        | string         | No                        | No                       |
 | `MW_CLOUD_AGENT_IMAGE_REF`          | string         | No                        | No                       |
 | `MW_CLOUD_AGENT_SNAPSHOT_ID`        | string         | No                        | No                       |
+| `MW_SETUP_TOKEN`                    | secret         | No                        | Yes                      |
 | `NODE_ENV`                          | string         | Yes                       | No                       |
 | `OBSERVABILITY_INGEST_TOKEN`        | secret         | Yes                       | Yes                      |
+| `OBSERVABILITY_PRUNE_ON_READ`       | string         | No                        | No                       |
 | `OTEL_EXPORTER_OTLP_ENDPOINT`       | string         | Yes                       | No                       |
 | `OTEL_EXPORTER_OTLP_HEADERS`        | string         | Yes                       | No                       |
 | `OTEL_EXPORTER_OTLP_PROTOCOL`       | string         | Yes                       | No                       |
@@ -190,6 +198,8 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm board:ui:check`
 - `pnpm board:visual:update`
 - `pnpm build`
+- `pnpm check:complexity`
+- `pnpm check:ui-consistency`
 - `pnpm ci:affected`
 - `pnpm control-plane:build`
 - `pnpm control-plane:dev`
@@ -198,6 +208,8 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm dependency:plan`
 - `pnpm desktop:build`
 - `pnpm desktop:mcp`
+- `pnpm desktop:observatory`
+- `pnpm desktop:serve`
 - `pnpm desktop:test`
 - `pnpm desktop:ui:check`
 - `pnpm desktop:web`
@@ -223,7 +235,9 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm evolution:signals`
 - `pnpm format`
 - `pnpm format:check`
+- `pnpm governance:check`
 - `pnpm hooks:install`
+- `pnpm interactive-session:boundary:check`
 - `pnpm jobs:outbox`
 - `pnpm jobs:scheduler`
 - `pnpm jobs:worker`
@@ -237,6 +251,11 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm orm:check:seeds`
 - `pnpm orm:codegen`
 - `pnpm orm:inspect`
+- `pnpm plan:lint`
+- `pnpm plan:mcp`
+- `pnpm plan:next`
+- `pnpm plan:reindex`
+- `pnpm plan:sync`
 - `pnpm platform:audit`
 - `pnpm preflight:fast`
 - `pnpm prepare`
@@ -262,6 +281,7 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm roadmap:progress`
 - `pnpm start`
 - `pnpm start:built`
+- `pnpm swarm-observability:boundary:check`
 - `pnpm tasks:sweep`
 - `pnpm tasks:sync`
 - `pnpm tasks:validate`
@@ -305,6 +325,7 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm test:release-latest-policy`
 - `pnpm test:release-orchestration`
 - `pnpm test:release-plan`
+- `pnpm test:release-preflight`
 - `pnpm test:release-prepare`
 - `pnpm test:release-prepare-workflow`
 - `pnpm test:release-provenance`

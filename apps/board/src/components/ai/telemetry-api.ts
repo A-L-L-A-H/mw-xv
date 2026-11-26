@@ -111,6 +111,8 @@ export interface TelemetryTraceDetailDto {
   readonly summary: TelemetryTraceSummaryDto;
   readonly spans: TelemetrySpanDto[];
   readonly logs: TelemetryLogDto[];
+  readonly spanNextCursor?: string | null;
+  readonly logNextCursor?: string | null;
 }
 
 export interface TelemetrySummaryDto {
@@ -139,8 +141,23 @@ export interface TelemetryLimitsDto {
   readonly retentionMs: number;
 }
 
+export type TelemetryScope = 'company' | 'all';
+
+export interface TelemetryEffectiveConfigDto {
+  readonly [key: string]: string | number | boolean | null | undefined | readonly string[];
+}
+
 export interface TelemetryConfigDto extends TelemetryLimitsDto {
   readonly protocol: 'OTLP/HTTP JSON';
+  /** Additive fields supplied by backends that expose effective runtime policy. */
+  readonly scope?: TelemetryScope | { readonly global: boolean; readonly tenantId?: number };
+  readonly status?: TelemetryEffectiveConfigDto;
+  readonly effectiveRetention?: TelemetryEffectiveConfigDto;
+  readonly readiness?: TelemetryEffectiveConfigDto;
+  readonly prune?: TelemetryEffectiveConfigDto;
+  readonly pruneIntervalMs?: number;
+  readonly pruneOnRead?: boolean;
+  readonly ready?: boolean;
   readonly endpoints: {
     readonly traces: '/v1/traces';
     readonly metrics: '/v1/metrics';
@@ -154,6 +171,15 @@ export interface TelemetryConfigDto extends TelemetryLimitsDto {
 export interface TelemetryListQuery {
   readonly limit?: number;
   readonly query?: string;
+  readonly cursor?: string;
+  readonly scope?: TelemetryScope;
+}
+
+export interface TelemetryPageDto<T> {
+  readonly traces?: readonly T[];
+  readonly logs?: readonly T[];
+  readonly metrics?: readonly T[];
+  readonly nextCursor?: string | null;
 }
 
 export interface TelemetryTraceQuery extends TelemetryListQuery {
@@ -185,6 +211,19 @@ function boundedSearch(value: string | undefined): string | undefined {
   return trimmed ? trimmed.slice(0, TELEMETRY_MAX_QUERY_LENGTH) : undefined;
 }
 
+function boundedCursor(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed.slice(0, 512) : undefined;
+}
+
+function telemetryParams(query: TelemetryListQuery) {
+  return {
+    limit: boundedLimit(query.limit),
+    query: boundedSearch(query.query),
+    cursor: boundedCursor(query.cursor),
+  };
+}
+
 function requestTelemetry<T>(path: string, query?: TelemetryRequestQuery): Promise<T> {
   return client.request<TelemetryResponse<T>>(path, { query }).then((response) => {
     if (response?.success !== true || response.data === undefined) {
@@ -194,33 +233,44 @@ function requestTelemetry<T>(path: string, query?: TelemetryRequestQuery): Promi
   });
 }
 
-export function useTelemetrySummary() {
+export function useTelemetrySummary(query: Pick<TelemetryListQuery, 'scope'> = {}) {
+  const params = { scope: query.scope ?? 'company' };
   return useQuery({
-    queryKey: scopedQueryKey(['ai', 'observability', 'summary']),
-    queryFn: () => requestTelemetry<TelemetrySummaryDto>('/api/observability/summary'),
+    queryKey: scopedQueryKey(['ai', 'observability', 'summary', params]),
+    queryFn: () => requestTelemetry<TelemetrySummaryDto>('/api/observability/summary', params),
   });
 }
 
 export function useTelemetryTraces(query: TelemetryTraceQuery = {}) {
   const params = {
-    limit: boundedLimit(query.limit),
-    query: boundedSearch(query.query),
+    ...telemetryParams(query),
     status: query.status?.toLowerCase() ?? 'all',
   };
   return useQuery({
     queryKey: scopedQueryKey(['ai', 'observability', 'traces', params]),
     queryFn: () =>
-      requestTelemetry<{ traces: TelemetryTraceSummaryDto[] }>('/api/observability/traces', params),
+      requestTelemetry<TelemetryPageDto<TelemetryTraceSummaryDto>>('/api/observability/traces', params),
   });
 }
 
-export function useTelemetryTraceDetail(traceId?: string | null) {
+export function useTelemetryTraceDetail(
+  traceId?: string | null,
+  query: Pick<TelemetryListQuery, 'cursor' | 'scope'> & { logCursor?: string } = {}
+) {
   const boundedTraceId = traceId?.slice(0, TELEMETRY_MAX_TRACE_ID_LENGTH) ?? '';
+  const params = {
+    spanCursor: boundedCursor(query.cursor),
+    logCursor: boundedCursor(query.logCursor),
+    spanLimit: TELEMETRY_DEFAULT_LIMIT,
+    logLimit: 50,
+    scope: query.scope ?? 'company',
+  };
   return useQuery({
-    queryKey: scopedQueryKey(['ai', 'observability', 'trace-detail', boundedTraceId]),
+    queryKey: scopedQueryKey(['ai', 'observability', 'trace-detail', boundedTraceId, params]),
     queryFn: () =>
       requestTelemetry<TelemetryTraceDetailDto>(
-        `/api/observability/traces/${encodeURIComponent(boundedTraceId)}`
+        `/api/observability/traces/${encodeURIComponent(boundedTraceId)}`,
+        params
       ),
     enabled: boundedTraceId.length > 0,
   });
@@ -228,34 +278,31 @@ export function useTelemetryTraceDetail(traceId?: string | null) {
 
 export function useTelemetryLogs(query: TelemetryLogQuery = {}) {
   const params = {
-    limit: boundedLimit(query.limit),
-    query: boundedSearch(query.query),
+    ...telemetryParams(query),
     severity: query.severity?.toUpperCase(),
   };
   return useQuery({
     queryKey: scopedQueryKey(['ai', 'observability', 'logs', params]),
-    queryFn: () => requestTelemetry<{ logs: TelemetryLogDto[] }>('/api/observability/logs', params),
+    queryFn: () => requestTelemetry<TelemetryPageDto<TelemetryLogDto>>('/api/observability/logs', params),
   });
 }
 
 export function useTelemetryMetrics(query: TelemetryMetricQuery = {}) {
-  const params = {
-    limit: boundedLimit(query.limit),
-    query: boundedSearch(query.query),
-  };
+  const params = telemetryParams(query);
   return useQuery({
     queryKey: scopedQueryKey(['ai', 'observability', 'metrics', params]),
     queryFn: () =>
-      requestTelemetry<{ metrics: TelemetryMetricSeriesDto[] }>(
+      requestTelemetry<TelemetryPageDto<TelemetryMetricSeriesDto>>(
         '/api/observability/metrics',
         params
       ),
   });
 }
 
-export function useTelemetryConfig() {
+export function useTelemetryConfig(query: Pick<TelemetryListQuery, 'scope'> = {}) {
+  const params = { scope: query.scope ?? 'company' };
   return useQuery({
-    queryKey: scopedQueryKey(['ai', 'observability', 'config']),
-    queryFn: () => requestTelemetry<TelemetryConfigDto>('/api/observability/config'),
+    queryKey: scopedQueryKey(['ai', 'observability', 'config', params]),
+    queryFn: () => requestTelemetry<TelemetryConfigDto>('/api/observability/config', params),
   });
 }

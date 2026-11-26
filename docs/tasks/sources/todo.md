@@ -1,6 +1,6 @@
 # MoonWitness TaskOS — Work Entry Point
 
-> **Registry status: RECOVERED / ACTIVE.** `docs/tasks/tasks.json` is tracked, schema-valid and non-empty (627 tasks: 468 done, 49 doing, 89 todo, 21 blocked at the last validation). TaskOS is the single authority for task lifecycle; legacy TODO snapshots are historical references only.
+> **Registry status: RECOVERED / ACTIVE.** `docs/tasks/tasks.json` is tracked, schema-valid and non-empty (679 tasks on `dev`: 482 done, 49 doing, 119 todo, 11 blocked, 18 backlog at the latest validation). TaskOS is the single authority for task lifecycle; legacy TODO snapshots are historical references only.
 
 ## Canonical source of truth
 

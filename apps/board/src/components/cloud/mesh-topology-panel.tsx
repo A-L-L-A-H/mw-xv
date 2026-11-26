@@ -5,6 +5,9 @@ import { Badge } from '@moonwitness/ui/components/badge';
 import { Button } from '@moonwitness/ui/components/button';
 import { MetricTile } from '@moonwitness/ui/components/metric-tile';
 import { Panel } from '@moonwitness/ui/components/panel';
+import { Skeleton } from '@moonwitness/ui/components/skeleton';
+import { EmptyState } from '@moonwitness/ui/components/empty-state';
+import { ErrorState } from '@moonwitness/ui/components/error-state';
 import {
   ActivityIcon,
   CheckIcon,
@@ -51,12 +54,23 @@ export interface MeshTopologySnapshot {
 
 export interface MeshTopologyPanelProps {
   readonly apiBase?: string;
+  readonly fetchFn?: (input: string, init?: RequestInit) => Promise<Response>;
 }
 
 interface MeshStatusApiPayload {
+  readonly mesh?: {
+    nodeId?: string;
+    meshIp?: string;
+    cpuPercent?: number;
+    memoryUsedMb?: number;
+    memoryTotalMb?: number;
+    runningApps?: number;
+  };
+  readonly containers?: readonly { name?: string; state?: string; status?: string }[];
+  readonly routes?: readonly { domain?: string; upstream?: string }[];
+  readonly previewListeners?: readonly { slug?: string; port?: number }[];
   readonly gatewayStatus?: 'active' | 'degraded' | 'offline';
   readonly gatewayVersion?: string;
-  readonly routes?: readonly MeshEdgeRoute[];
   readonly peers?: readonly MeshTopologyPeer[];
   readonly merkleRoot?: string;
   readonly merkleHeight?: number;
@@ -64,63 +78,16 @@ interface MeshStatusApiPayload {
   readonly updatedAt?: string;
 }
 
-const OFFLINE_FALLBACK_SNAPSHOT: MeshTopologySnapshot = {
+const EMPTY_SNAPSHOT: MeshTopologySnapshot = {
   bridgeOnline: false,
-  gatewayStatus: 'active',
-  gatewayVersion: 'Caddy v2.8 Auto-HTTPS',
-  routes: [
-    {
-      domain: 'a-l-l-a-h.com',
-      upstream: '10.144.0.1:443 -> moonwitness-edge',
-      tlsStatus: 'active',
-    },
-    {
-      domain: 'board.a-l-l-a-h.com',
-      upstream: '10.144.0.1:3000 -> moonwitness-board',
-      tlsStatus: 'active',
-    },
-    {
-      domain: 'mesh.a-l-l-a-h.com',
-      upstream: '10.144.0.2:8080 -> control-plane',
-      tlsStatus: 'active',
-    },
-  ],
-  peers: [
-    {
-      id: 'peer-vps-01',
-      label: 'VPS Node',
-      tier: 'VPS Node',
-      meshIp: '10.144.0.1',
-      region: 'ap-southeast-1',
-      health: 'healthy',
-      rttMs: 14,
-      role: 'primary',
-    },
-    {
-      id: 'peer-desktop-01',
-      label: 'Desktop Edge',
-      tier: 'Desktop Edge',
-      meshIp: '10.144.0.2',
-      region: 'local-dx',
-      health: 'healthy',
-      rttMs: 4,
-      role: 'standby',
-    },
-    {
-      id: 'peer-swarm-01',
-      label: 'AI Swarm Node',
-      tier: 'AI Swarm Node',
-      meshIp: '10.144.0.3',
-      region: 'ap-southeast-3',
-      health: 'healthy',
-      rttMs: 22,
-      role: 'standby',
-    },
-  ],
-  merkleRoot: '7a9f4c2e8b1d6034a5e91f2c8d4b7e10a3c6f9b2d5e8a1c4f7b0d3e6a9c2f5b8',
-  merkleHeight: 1482,
-  a2aZeroTrustStatus: 'enforced',
-  updatedAt: 'Offline snapshot',
+  gatewayStatus: 'offline',
+  gatewayVersion: '',
+  routes: [],
+  peers: [],
+  merkleRoot: '',
+  merkleHeight: 0,
+  a2aZeroTrustStatus: 'offline',
+  updatedAt: '',
 };
 
 function healthBadgeVariant(health: MeshPeerHealth): 'primary' | 'cyan' | 'destructive' {
@@ -137,54 +104,73 @@ function gatewayBadgeVariant(
   return 'destructive';
 }
 
-export function MeshTopologyPanel({ apiBase = '/api/desktop/paas' }: MeshTopologyPanelProps) {
-  const [snapshot, setSnapshot] = useState<MeshTopologySnapshot>(OFFLINE_FALLBACK_SNAPSHOT);
-  const [loading, setLoading] = useState<boolean>(false);
+export function MeshTopologyPanel({
+  apiBase = '/api/desktop/paas',
+  fetchFn,
+}: MeshTopologyPanelProps) {
+  const [snapshot, setSnapshot] = useState<MeshTopologySnapshot | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const normalizedBase = apiBase.replace(/\/+$/u, '');
 
   const refreshTopology = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
-      const response = await fetch(`${normalizedBase}/mesh/status`, {
-        cache: 'no-store',
-      });
-      if (!response.ok) {
-        setSnapshot((prev) => ({
-          ...prev,
-          bridgeOnline: false,
-        }));
-        return;
-      }
+      const doFetch = fetchFn ?? fetch;
+      const response = await doFetch(`${normalizedBase}/mesh/status`, { cache: 'no-store' });
+      if (!response.ok) throw new Error(`Mesh status failed (${response.status})`);
 
-      const payload = (await response.json().catch(() => ({}))) as MeshStatusApiPayload;
+      const raw = (await response.json().catch(() => ({}))) as
+        | MeshStatusApiPayload
+        | { success?: boolean; data?: MeshStatusApiPayload };
+      const payload =
+        'data' in raw && raw.data && typeof raw.data === 'object'
+          ? raw.data
+          : (raw as MeshStatusApiPayload);
+
+      const meshIp = payload.mesh?.meshIp ?? '';
+      const peers: readonly MeshTopologyPeer[] =
+        payload.peers && payload.peers.length > 0
+          ? payload.peers
+          : meshIp
+            ? [
+                {
+                  id: payload.mesh?.nodeId ?? 'vps-node',
+                  label: 'VPS Node',
+                  tier: 'VPS Node',
+                  meshIp,
+                  region: '',
+                  health: 'healthy',
+                  rttMs: 0,
+                  role: 'primary',
+                },
+              ]
+            : [];
+
       setSnapshot({
         bridgeOnline: true,
-        gatewayStatus: payload.gatewayStatus ?? OFFLINE_FALLBACK_SNAPSHOT.gatewayStatus,
-        gatewayVersion: payload.gatewayVersion ?? OFFLINE_FALLBACK_SNAPSHOT.gatewayVersion,
-        routes:
-          payload.routes && payload.routes.length > 0
-            ? payload.routes
-            : OFFLINE_FALLBACK_SNAPSHOT.routes,
-        peers:
-          payload.peers && payload.peers.length > 0
-            ? payload.peers
-            : OFFLINE_FALLBACK_SNAPSHOT.peers,
-        merkleRoot: payload.merkleRoot ?? OFFLINE_FALLBACK_SNAPSHOT.merkleRoot,
-        merkleHeight: payload.merkleHeight ?? OFFLINE_FALLBACK_SNAPSHOT.merkleHeight,
-        a2aZeroTrustStatus:
-          payload.a2aZeroTrustStatus ?? OFFLINE_FALLBACK_SNAPSHOT.a2aZeroTrustStatus,
+        gatewayStatus: payload.gatewayStatus ?? 'active',
+        gatewayVersion: payload.gatewayVersion ?? 'Caddy (verified)',
+        routes: (payload.routes ?? []).map((route) => ({
+          domain: route.domain ?? '',
+          upstream: route.upstream ?? '',
+          tlsStatus: route.domain?.startsWith('https') ? 'active' : 'provisioning',
+        })),
+        peers,
+        merkleRoot: payload.merkleRoot ?? '',
+        merkleHeight: payload.merkleHeight ?? 0,
+        a2aZeroTrustStatus: payload.a2aZeroTrustStatus ?? 'verifying',
         updatedAt: payload.updatedAt ?? new Date().toISOString(),
       });
-    } catch {
-      setSnapshot((prev) => ({
-        ...prev,
-        bridgeOnline: false,
-      }));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Mesh telemetry unreachable');
+      setSnapshot(EMPTY_SNAPSHOT);
     } finally {
       setLoading(false);
     }
-  }, [normalizedBase]);
+  }, [fetchFn, normalizedBase]);
 
   useEffect(() => {
     let cancelled = false;
@@ -195,6 +181,39 @@ export function MeshTopologyPanel({ apiBase = '/api/desktop/paas' }: MeshTopolog
       cancelled = true;
     };
   }, [refreshTopology]);
+
+  if (loading) {
+    return (
+      <Panel title="Mesh Topology" description="Live EasyTier mesh telemetry.">
+        <div className="space-y-3">
+          <Skeleton className="h-6 w-1/2" />
+          <Skeleton className="h-16 w-full" />
+          <Skeleton className="h-16 w-full" />
+        </div>
+      </Panel>
+    );
+  }
+
+  if (error) {
+    return (
+      <Panel title="Mesh Topology" description="Live EasyTier mesh telemetry.">
+        <ErrorState
+          title="Mesh telemetry offline"
+          description={error}
+          onRetry={() => void refreshTopology()}
+          headingLevel={3}
+        />
+      </Panel>
+    );
+  }
+
+  if (!snapshot) {
+    return (
+      <Panel title="Mesh Topology">
+        <EmptyState title="No mesh data" description="Refresh to load live telemetry." />
+      </Panel>
+    );
+  }
 
   const healthyPeersCount = snapshot.peers.filter((peer) => peer.health === 'healthy').length;
   const averageRttMs =
@@ -209,11 +228,9 @@ export function MeshTopologyPanel({ apiBase = '/api/desktop/paas' }: MeshTopolog
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-0.5">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-mono text-sm font-bold tracking-wide">
-              A-L-L-A-H.COM -&gt; MOONWITNESS
-            </span>
+            <span className="font-mono text-sm font-bold tracking-wide">MOONWITNESS MESH</span>
             <Badge variant={snapshot.bridgeOnline ? 'primary' : 'cyan'}>
-              {snapshot.bridgeOnline ? 'Live Mesh Telemetry' : 'Offline Fallback Topology'}
+              {snapshot.bridgeOnline ? 'Live Mesh Telemetry' : 'Offline'}
             </Badge>
           </div>
           <p className="text-xs opacity-75">
@@ -266,55 +283,63 @@ export function MeshTopologyPanel({ apiBase = '/api/desktop/paas' }: MeshTopolog
           </Badge>
         }
       >
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-          {snapshot.routes.map((route) => (
-            <div
-              key={route.domain}
-              className="flex flex-col justify-between gap-2 rounded-md border p-3"
-            >
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-mono text-xs font-bold">{route.domain}</span>
-                <Badge variant={route.tlsStatus === 'active' ? 'primary' : 'cyan'}>
-                  <LockIcon className="mr-1 h-3 w-3" />
-                  TLS {route.tlsStatus}
-                </Badge>
+        {snapshot.routes.length ? (
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+            {snapshot.routes.map((route) => (
+              <div
+                key={route.domain}
+                className="flex flex-col justify-between gap-2 rounded-md border p-3"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-mono text-xs font-bold">{route.domain}</span>
+                  <Badge variant={route.tlsStatus === 'active' ? 'primary' : 'cyan'}>
+                    <LockIcon className="mr-1 h-3 w-3" />
+                    TLS {route.tlsStatus}
+                  </Badge>
+                </div>
+                <p className="font-mono text-[11px] opacity-75">{route.upstream}</p>
               </div>
-              <p className="font-mono text-[11px] opacity-75">{route.upstream}</p>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <EmptyState title="No active routes" description="Configure a domain to create routes." />
+        )}
       </Panel>
 
       <Panel
         title="Tier 2 · P2P Full-Mesh Ring"
-        description="Encrypted WireGuard / EasyTier peer ring across 10.144.0.0/24 with HA failover."
+        description="Encrypted EasyTier peer ring with HA failover."
         actions={<Badge variant="primary">10.144.0.0/24 Ring</Badge>}
       >
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-          {snapshot.peers.map((peer) => (
-            <MeshNodeCard
-              key={peer.id}
-              title={peer.tier}
-              metaLines={[`Mesh IP: ${peer.meshIp}`, `Region: ${peer.region}`]}
-              statusLabel={peer.health}
-              statusVariant={healthBadgeVariant(peer.health)}
-              className="rounded-md bg-transparent p-3"
-              footerBadges={[
-                {
-                  key: 'rtt',
-                  label: `${peer.rttMs} ms RTT`,
-                  variant: 'cyan',
-                  icon: <ActivityIcon className="mr-1 h-3 w-3" />,
-                },
-                {
-                  key: 'role',
-                  label: `HA ${peer.role.toUpperCase()}`,
-                  variant: peer.role === 'primary' ? 'primary' : 'default',
-                },
-              ]}
-            />
-          ))}
-        </div>
+        {snapshot.peers.length ? (
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+            {snapshot.peers.map((peer) => (
+              <MeshNodeCard
+                key={peer.id}
+                title={peer.tier}
+                metaLines={[`Mesh IP: ${peer.meshIp}`, `Region: ${peer.region || 'local'}`]}
+                statusLabel={peer.health}
+                statusVariant={healthBadgeVariant(peer.health)}
+                className="rounded-md bg-transparent p-3"
+                footerBadges={[
+                  {
+                    key: 'rtt',
+                    label: `${peer.rttMs} ms RTT`,
+                    variant: 'cyan',
+                    icon: <ActivityIcon className="mr-1 h-3 w-3" />,
+                  },
+                  {
+                    key: 'role',
+                    label: `HA ${peer.role.toUpperCase()}`,
+                    variant: peer.role === 'primary' ? 'primary' : 'default',
+                  },
+                ]}
+              />
+            ))}
+          </div>
+        ) : (
+          <EmptyState title="No peers" description="No mesh peers are currently reachable." />
+        )}
       </Panel>
 
       <Panel
@@ -337,7 +362,9 @@ export function MeshTopologyPanel({ apiBase = '/api/desktop/paas' }: MeshTopolog
               <span className="font-mono text-xs font-bold uppercase">RFC 6962 Merkle Root</span>
               <Badge variant="primary">Height #{snapshot.merkleHeight}</Badge>
             </div>
-            <p className="break-all font-mono text-xs opacity-80">{snapshot.merkleRoot}</p>
+            <p className="break-all font-mono text-xs opacity-80">
+              {snapshot.merkleRoot || 'No audit root reported'}
+            </p>
           </div>
 
           <div className="space-y-1.5 rounded-md border p-3">
@@ -346,8 +373,7 @@ export function MeshTopologyPanel({ apiBase = '/api/desktop/paas' }: MeshTopolog
               <Badge variant="cyan">mTLS + Signed Attestation</Badge>
             </div>
             <p className="text-xs opacity-80">
-              All inter-node swarm RPCs and L7 control-plane mutations are cryptographically signed
-              and appended to the constitutional audit core.
+              Inter-node swarm RPCs and L7 control-plane mutations are cryptographically signed.
             </p>
           </div>
         </div>

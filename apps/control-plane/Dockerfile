@@ -8,6 +8,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY *.go ./
+COPY ui ./ui
 
 RUN go build -o control-plane .
 

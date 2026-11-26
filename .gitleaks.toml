@@ -27,8 +27,328 @@ regexes = [
 ]
 
 [[allowlists]]
+description = "orm-observability test fixtures: synthetic API keys used in telemetry redaction and ingestion tests"
+regexTarget = "match"
+paths = [
+  "^packages/orm-observability/tests/telemetry-store\\.test\\.ts$",
+  "^packages/orm-observability/tests/redaction\\.test\\.ts$",
+  "^packages/orm-observability/tests/http-plugin\\.test\\.ts$",
+]
+regexes = [
+  '''api_key: 'sk-test-12345678901234567890'''',
+  '''providerKey: 'sk-proj-12345678901234567890'''',
+  '''JWT_SECRET = 'observability-test-jwt-secret-1234567890'''',
+]
+
+[[allowlists]]
 description = "Pinned third-party vendor snapshots keep their upstream test fixtures, docs and patches; reviewed at import time"
 paths = ["^vendor/"]
+
+[[allowlists]]
+description = "PaaS template packs: third-party service templates with placeholder secrets (REDACTED, empty values) are not credentials"
+paths = [
+  "^packages/paas-template-pack-coolify/",
+  "^packages/paas-template-pack-dokploy/",
+  "^packages/paas-template-pack-bigbear/",
+]
+
+[[allowlists]]
+description = "Agent observatory test: curl with REDACTED placeholder in test fixture"
+paths = ["^tools/agent-observatory/server\\.test\\.mjs$"]
+
+[[allowlists]]
+description = "check-gitleaks-config: synthetic orm-observability fixtures and test expectations for secret scanning config"
+regexTarget = "match"
+paths = ["^scripts/check-gitleaks-config\\.test\\.mjs$", "^scripts/check-gitleaks-config\\.mjs$"]
+regexes = [
+  '''api_key: 'sk-test-12345678901234567890'''',
+  '''providerKey: 'sk-proj-12345678901234567890'''',
+  '''curl -s -w "\\n%\{http_code\}" -u elastic:"\$\$\{ELASTIC_PASSWORD\}" ''',
+  '''curl -f -u "admin:real-password-123" ''',
+  '''curl -s -w "\\n%\{http_code\}" -u elastic:"real-password-123" ''',
+  '''xlibrechat-dev-api:6ecd1b510faaa593ad954fb6276c18e5f12a8e53 ''',
+  '''idempotency_key: 'synthetic-resurrection-revoke-001'''',
+]
+
+[[allowlists]]
+description = "Coolify service templates: dollar-escaped runtime variables and image digests are not credentials"
+regexTarget = "match"
+paths = [
+  "^packages/paas-template-pack-coolify/compose/obsidian-livesync\\.yaml$",
+  "^packages/paas-template-pack-coolify/compose/elasticsearch-with-kibana\\.yaml$",
+  "^packages/paas-template-pack-coolify/compose/librechat\\.yaml$",
+  "^packages/paas-template-pack-coolify/service-templates(?:-latest)?\\.json$",
+]
+regexes = [
+  '''^curl -f -u "\$\$\{[A-Z0-9_]*(?:USER|PASSWORD)[A-Z0-9_]*\}:\$\$\{[A-Z0-9_]*(?:USER|PASSWORD)[A-Z0-9_]*\}" $''',
+  '''^RESPONSE=\$\(curl -s -w "\\n%\{http_code\}" -u [a-z]+:"\$\$\{[A-Z0-9_]*PASSWORD[A-Z0-9_]*\}" $''',
+  '''^librechat-dev-api:[0-9a-f]{40} $''',
+]
+
+[[allowlists]]
+description = "WhatsApp test fixtures: synthetic API keys for standalone service tests"
+regexTarget = "match"
+paths = ["^apps/whatsapp/tests/whatsapp-service\\.test\\.ts$"]
+regexes = [
+  '''WHATSAPP_API_KEY: 'test-api-key-12345'''',
+]
+
+[[allowlists]]
+description = "Control plane PaaS catalog: embedded curl commands with env var placeholders and test fixtures in generated Go code"
+regexTarget = "match"
+paths = ["^apps/control-plane/paas_catalog_gen\\.go$"]
+regexes = [
+  '''curl -fsS \\\r\n          -X POST \\\r\n          -u "elastic:\$\$ELASTIC_PASSWORD" ''',
+  '''LANGFLOW_SECRET_KEY=PP_G4Gwm1lOkyG8r8N0LrdlpWXZ7Tyq5CVyfBquuj6g=''',
+  '''keyzori:93b5d75ac8e5a4cd0740bfe1a46b5663674767fb''',
+]
+
+[[allowlists]]
+description = "AI runtime test fixtures: synthetic secrets for merkle ledger, obligation monitor, redteam arena, speculative tree, repo snapshot, evolution loop, ai-runtime tests"
+regexTarget = "match"
+paths = [
+  "^packages/ai-runtime/tests/merkle-ledger\\.test\\.ts$",
+  "^packages/ai-runtime/tests/obligation-monitor\\.test\\.ts$",
+  "^packages/ai-runtime/tests/redteam-arena\\.test\\.ts$",
+  "^packages/ai-runtime/tests/speculative-tree\\.test\\.ts$",
+  "^packages/ai-runtime/tests/repo-snapshot\\.test\\.ts$",
+  "^packages/ai-runtime/tests/evolution-loop\\.test\\.ts$",
+  "^packages/ai-runtime/tests/ai-runtime\\.test\\.ts$",
+]
+regexes = [
+  '''secret: 'raw-secret-123456'''',
+  '''secret: 'raw-secret-789012'''',
+  '''api_key=sk-proj-1234567890abcdef ''',
+  '''apiKey: 'sk-proj-leaktest1234567890abcdef'''',
+  '''API_KEY=sk-proj-1234567890abcdef\\n''',
+  '''x-api-key': 'sk-1234567890abcdef'''',
+  '''apiKey = "sk-1234567890abcdef"''',
+  '''password=mySecretPass123 ''',
+  '''curl -H "Authorization: Bearer supersecretvalue12345"''',
+]
+
+[[allowlists]]
+description = "ORM integration test fixtures: synthetic private keys for connector tests"
+regexTarget = "match"
+paths = ["^packages/orm-integration/tests/connectors\\.test\\.ts$"]
+regexes = [
+  '''-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEAqkUUtZ+D/HiNpMp08eI5mg/1Z4uDTWDS''',
+  '''-----BEGIN PRIVATE KEY-----\\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQD''',
+]
+
+[[allowlists]]
+description = "ORM ISP provisioning loop: synthetic RADIUS secrets and subscriber keys for ISP tests"
+regexTarget = "match"
+paths = ["^packages/orm-isp/src/provisioning-loop\\.ts$"]
+regexes = [
+  '''SUBSCRIBER_SECRET = 'fttx-001-radius-secret'''',
+  '''secret: 'nusantara-jakarta-radius-2026'''',
+  '''secret: 'nusantara-bandung-radius-2026'''',
+  '''key: 'isp.subscriber_nusantara_fttx_001'''',
+  '''password: 'fttx-001-radius-secret'''',
+  '''key: 'isp.subscriber_nusantara_dedicated_001'''',
+]
+
+[[allowlists]]
+description = "Auth service tokens test fixtures: synthetic primary secret key"
+regexTarget = "match"
+paths = ["^packages/auth/tests/service-tokens\\.test\\.ts$"]
+regexes = [
+  '''secret: 'primary-secret-key-000001'''',
+]
+
+[[allowlists]]
+description = "AI MCP extended tools test: synthetic GitHub personal access token"
+regexTarget = "match"
+paths = ["^packages/ai-mcp/tests/extended-tools\\.test\\.ts$"]
+regexes = [
+  '''token=ghp_1234567890abcdef'''',
+]
+
+[[allowlists]]
+description = "AI evaluation adversarial suite: synthetic leaked secret for redteam testing"
+regexTarget = "match"
+paths = ["^packages/ai-evaluation/src/adversarial-suite\\.ts$"]
+regexes = [
+  '''leakedSecret = 'sk-live-1234567890abcdef1234567890abcdef'''',
+]
+
+[[allowlists]]
+description = "ORM A2A wire compatibility test: synthetic A2A signing secret"
+regexTarget = "match"
+paths = ["^packages/orm-a2a/tests/wire-compat\\.test\\.ts$"]
+regexes = [
+  '''A2A_SECRET = 'wire-compat-test-a2a-signing-secret-2026'''',
+]
+
+[[allowlists]]
+description = "API A2A routes tests: synthetic JWT and A2A secrets for A2A protocol tests"
+regexTarget = "match"
+paths = ["^apps/api/tests/a2a\\.routes\\.test\\.ts$"]
+regexes = [
+  '''JWT_SECRET = 'test-jwt-secret-key-at-least-32-chars-long-123'''',
+  '''A2A_SECRET = 'test-moonwitness-a2a-signing-secret-2026'''',
+]
+
+[[allowlists]]
+description = "ORM Cloud billing meter test: synthetic webhook signing secret"
+regexTarget = "match"
+paths = ["^packages/orm-cloud/tests/billing-meter\\.test\\.ts$"]
+regexes = [
+  '''secret = 'whsec_test_9988776655'''',
+]
+
+[[allowlists]]
+description = "ORM Cloud HA drill test: synthetic standby API key"
+regexTarget = "match"
+paths = ["^packages/orm-cloud/tests/ha-drill\\.test\\.ts$"]
+regexes = [
+  '''dep-api': 'vps-standby-02'''',
+]
+
+[[allowlists]]
+description = "ORM Cloud node provisioner test: synthetic provisioning key"
+regexTarget = "match"
+paths = ["^packages/orm-cloud/tests/node-provisioner\\.test\\.ts$"]
+regexes = [
+  '''key=abc1234567890123 ''',
+]
+
+[[allowlists]]
+description = "API M13 proof run gates test: synthetic JWT secret"
+regexTarget = "match"
+paths = ["^apps/api/tests/m13-proof-run-gates\\.routes\\.test\\.ts$"]
+regexes = [
+  '''JWT_SECRET = 'test-jwt-secret-key-at-least-32-chars-long-123'''',
+]
+
+[[allowlists]]
+description = "Env production example: placeholder S3 credentials (empty values, not real credentials)"
+regexTarget = "match"
+paths = ["^\\.env\\.production\\.example$"]
+regexes = [
+  '''ATTACHMENT_S3_ACCESS_KEY=''',
+  '''ATTACHMENT_S3_SECRET_KEY=''',
+]
+
+[[allowlists]]
+description = "API bug case routes test: synthetic idempotency key"
+regexTarget = "match"
+paths = ["^apps/api/tests/bug-case\\.routes\\.test\\.ts$"]
+regexes = [
+  '''idempotency_key: 'api-self-verify-001'''',
+]
+
+[[allowlists]]
+description = "API AI corporation routes test: synthetic JWT secret"
+regexTarget = "match"
+paths = ["^apps/api/tests/ai-corporation\\.routes\\.test\\.ts$"]
+regexes = [
+  '''JWT_SECRET = 'test-jwt-secret-key-at-least-32-chars-long-123'''',
+]
+
+[[allowlists]]
+description = "API ORM test: synthetic witness scoped external keys"
+regexTarget = "match"
+paths = ["^apps/api/tests/orm\\.test\\.ts$"]
+regexes = [
+  '''external_key: 'synthetic-witness-scoped-001'''',
+]
+
+[[allowlists]]
+description = "API research witness routes tests: synthetic witness scoped external keys and idempotency keys"
+regexTarget = "match"
+paths = ["^apps/api/tests/research-witness\\.routes\\.test\\.ts$"]
+regexes = [
+  '''external_key: 'synthetic-witness-scoped-001'''',
+  '''externalKey = 'synthetic-witness-scoped-001'''',
+  '''idempotency_key: 'witness-withdrawal-001'''',
+]
+
+[[allowlists]]
+description = "API research privacy routes test: synthetic idempotency key"
+regexTarget = "match"
+paths = ["^apps/api/tests/research-privacy\\.routes\\.test\\.ts$"]
+regexes = [
+  '''idempotency_key: 'synthetic-api-revoke-0001'''',
+]
+
+[[allowlists]]
+description = "Desktop adversarial and harness tests: synthetic API keys and secrets"
+regexTarget = "match"
+paths = [
+  "^apps/desktop/tests/desktop-adversarial\\.test\\.ts$",
+  "^apps/desktop/tests/desktop-harness\\.test\\.ts$",
+]
+regexes = [
+  '''secret=sk-1234567890abcdef1234567890"''',
+  '''apiKey: 'sk-proj-1234567890abcdef'''',
+]
+
+[[allowlists]]
+description = "ORM Knowledge manifest: synthetic witness scoped external key"
+regexTarget = "match"
+paths = ["^packages/orm-knowledge/src/manifest\\.ts$"]
+regexes = [
+  '''external_key: 'synthetic-witness-scoped-001'''',
+]
+
+[[allowlists]]
+description = "ORM Knowledge bug outcome verification tests: synthetic idempotency keys"
+regexTarget = "match"
+paths = ["^packages/orm-knowledge/tests/bug-outcome-verification\\.test\\.ts$"]
+regexes = [
+  '''idempotencyKey: 'verify-outcome-001'''',
+  '''idempotencyKey: 'premature-verify-002'''',
+  '''idempotencyKey: 'verify-missing-003'''',
+  '''idempotencyKey: 'verify-stale-003'''',
+  '''idempotencyKey: 'verify-fail-test-003'''',
+]
+
+[[allowlists]]
+description = "ORM Knowledge knowledge tests: synthetic witness scoped external keys"
+regexTarget = "match"
+paths = ["^packages/orm-knowledge/tests/knowledge\\.test\\.ts$"]
+regexes = [
+  '''external_key: 'synthetic-witness-scoped-001'''',
+]
+
+[[allowlists]]
+description = "ORM Knowledge postgres integration tests: synthetic witness scoped external keys"
+regexTarget = "match"
+paths = ["^packages/orm-knowledge/tests/postgres\\.integration\\.test\\.ts$"]
+regexes = [
+  '''external_key: 'synthetic-witness-scoped-001'''',
+  '''externalKey: 'synthetic-witness-scoped-001'''',
+]
+
+[[allowlists]]
+description = "Scripts knowledge verify compliance scan test: synthetic JWT secret"
+regexTarget = "match"
+paths = ["^scripts/knowledge/verify-compliance-scan\\.test\\.mjs$"]
+regexes = [
+  '''JWT_SECRET=0123456789abcdef0123456789abcdef'''',
+]
+
+[[allowlists]]
+description = "Control plane gitbuilder and a2a tests: synthetic webhook and signing secrets"
+regexTarget = "match"
+paths = [
+  "^apps/control-plane/gitbuilder_test\\.go$",
+  "^apps/control-plane/a2a_test\\.go$",
+]
+regexes = [
+  '''secret := "whsec_test_moonwitness_2026"''',
+  '''signSecret: "wrong-secret-that-is-at-least-16-chars"''',
+]
+
+[[allowlists]]
+description = "AI runtime A2A protocol test: synthetic A2A mesh signing secret"
+regexTarget = "match"
+paths = ["^packages/ai-runtime/tests/a2a-protocol\\.test\\.ts$"]
+regexes = [
+  '''TEST_SIGNING_SECRET = 'mw-a2a-mesh-test-secret-0123456789abcdef'''',
+]
 
 [[rules]]
 id = "moonwitness-runtime-secret"
@@ -37,3 +357,14 @@ regex = '''(?i)^[ \t]*(?:export[ \t]+)?(?:JWT_SECRET|METRICS_TOKEN|WHATSAPP_INTE
 secretGroup = 1
 entropy = 4.2
 keywords = ["JWT_SECRET", "METRICS_TOKEN", "WHATSAPP_INTERNAL_TOKEN", "WHATSAPP_SESSION_KEY"]
+[[allowlists]]
+description = "ISP control contract test fixtures: synthetic auth tokens and NAS secrets for Go-to-Rust contract tests"
+regexTarget = "match"
+paths = ["^apps/isp/tests/fixtures/.*\\.json$"]
+regexes = [
+  '''secret-token''',
+  '''nas-secret-1234''',
+]
+[[allowlists]]
+description = "Historical gitleaks reports committed to git history - these contain REDACTED findings from prior scans, not real secrets"
+paths = ["gitleaks-report.json"]

@@ -95,3 +95,10 @@ export function assertPositiveInteger(value: unknown, label: string): asserts va
     throw new Error(`${label} must be a positive safe integer`);
   }
 }
+
+/** Removes trailing slashes from a string (typically a URL). */
+export function trimTrailingSlashes(value: string): string {
+  let i = value.length;
+  while (i > 0 && value[i - 1] === '/') i--;
+  return value.slice(0, i);
+}

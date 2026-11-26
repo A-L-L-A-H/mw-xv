@@ -112,6 +112,7 @@
   --mw-radius-sm: 0.125rem;
   --mw-radius-md: 0.25rem;
   --mw-radius-lg: 0.5rem;
+  --mw-radius-full: 9999px;
   --mw-shadow-ink: 3px 3px 0 0 var(--mw-ink);
   --mw-shadow-ink-lg: 6px 6px 0 0 var(--mw-ink);
   --mw-comic-border-width: 2px;

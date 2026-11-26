@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://moonwitness.org/schemas/plan-taskos/manifest.schema.json",
+  "title": "PlanTaskOS Manifest",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "plan_id",
+    "title",
+    "repo",
+    "execution_policy",
+    "projections",
+    "waves"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "plan_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{1,63}$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "repo": {
+      "type": "object",
+      "required": ["org", "name", "target_branch"],
+      "additionalProperties": false,
+      "properties": {
+        "org": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "target_branch": { "type": "string", "minLength": 1 }
+      }
+    },
+    "adr_file": {
+      "type": "string",
+      "minLength": 1
+    },
+    "execution_policy": {
+      "type": "object",
+      "required": [
+        "max_attempts_per_task",
+        "default_model_tier",
+        "escalation_chain",
+        "require_clean_scope",
+        "auto_commit"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "max_attempts_per_task": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "default_model_tier": {
+          "type": "string",
+          "enum": ["flash", "neon", "argon", "human"]
+        },
+        "escalation_chain": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["flash", "neon", "argon", "human"]
+          },
+          "minItems": 1
+        },
+        "require_clean_scope": {
+          "type": "boolean"
+        },
+        "auto_commit": {
+          "type": "boolean"
+        }
+      }
+    },
+    "projections": {
+      "type": "object",
+      "required": ["github_fold_mode", "taskos_project", "orm_project_code"],
+      "additionalProperties": false,
+      "properties": {
+        "github_fold_mode": {
+          "type": "string",
+          "enum": ["plan", "wave", "task"]
+        },
+        "taskos_project": {
+          "type": "string",
+          "minLength": 1
+        },
+        "orm_project_code": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "waves": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "wave_file"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+          },
+          "title": { "type": "string", "minLength": 1 },
+          "wave_file": { "type": "string", "minLength": 1 },
+          "spec_file": { "type": "string" },
+          "depends_on": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "documents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["urn", "slug", "layer", "title", "path"],
+        "additionalProperties": false,
+        "properties": {
+          "urn": {
+            "type": "string",
+            "pattern": "^urn:mw:doc:"
+          },
+          "slug": { "type": "string", "minLength": 1 },
+          "layer": {
+            "type": "string",
+            "enum": ["raw", "brain", "wiki", "blueprints", "specs"]
+          },
+          "title": { "type": "string", "minLength": 1 },
+          "path": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

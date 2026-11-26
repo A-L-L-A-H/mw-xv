@@ -16,12 +16,13 @@ import {
 } from '@moonwitness/orm-storage';
 import { createLogger, type LogLevel } from '@moonwitness/logger';
 import { isRecord, PlatformError } from '@moonwitness/types';
+import type { SqlTelemetryStore } from '@moonwitness/orm-observability';
 import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '@moonwitness/orm';
 import ormPlugin from './plugins/orm.plugin.js';
 import authPlugin, { validateJwtSecret } from './plugins/auth.plugin.js';
 import observabilityPlugin from './plugins/observability.plugin.js';
 import { createPostgresRateLimitStoreCtor } from './plugins/rate-limit-store.js';
-import { config, localAiConfig } from './config/env.js';
+import { config, localAiConfig, observabilityConfig } from './config/env.js';
 import { resolveRateLimitStore, resolveTrustProxy } from './config/runtime-security.js';
 import { createDatabase } from './database/knex.js';
 import { databaseErrorCode, databaseErrorContext } from './database/errors.js';
@@ -59,6 +60,7 @@ export interface BuildAppOptions {
   metricsToken?: string;
   /** Overrides OBSERVABILITY_INGEST_TOKEN (used by tests). */
   observabilityIngestToken?: string;
+  observabilityStoreOptions?: ConstructorParameters<typeof SqlTelemetryStore>[1];
   /** Overrides the WhatsApp gateway probe for isolated tests. */
   checkWhatsAppGateway?: () => Promise<boolean>;
   /** Overrides attachment storage for isolated tests or custom providers. */
@@ -201,7 +203,15 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
     reply.header('x-frame-options', 'DENY');
     reply.header('referrer-policy', 'no-referrer');
     reply.header('permissions-policy', 'camera=(), microphone=(), geolocation=()');
-    if (config.env === 'production') {
+    if (
+      config.env === 'production' &&
+      (request.protocol === 'https' ||
+        (() => {
+          const proto = request.headers['x-forwarded-proto'];
+          const first = Array.isArray(proto) ? proto[0] : proto;
+          return first?.split(',')[0]?.trim().toLowerCase() === 'https';
+        })())
+    ) {
       reply.header('strict-transport-security', 'max-age=31536000; includeSubDomains');
     }
     return payload;
@@ -359,6 +369,7 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
   await registerApiAddonRoutes(app, {
     db,
     observabilityIngestToken: options.observabilityIngestToken ?? config.observabilityIngestToken,
+    observabilityStoreOptions: { ...observabilityConfig, pruneOnRead: options.observabilityStoreOptions?.pruneOnRead ?? observabilityConfig.pruneOnRead, ...options.observabilityStoreOptions },
     jwtSecret,
     accessTtlSeconds: authConfig.accessTtlSeconds,
     refreshTtlSeconds: authConfig.refreshTtlSeconds,

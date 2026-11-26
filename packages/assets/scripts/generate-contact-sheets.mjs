@@ -4,6 +4,7 @@ import { dirname, resolve } from 'node:path';
 import { argv, stdout } from 'node:process';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
+import { SOCIAL_FORMATS, SOCIAL_THEMES, listSocialFormats } from './social-formats.config.mjs';
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const repositoryRoot = resolve(packageRoot, '../..');
@@ -199,6 +200,90 @@ export async function generateContactSheets({
   const indexPath = resolve(outputDir, 'contact-sheets-index.json');
   await writeFile(indexPath, `${JSON.stringify(index, null, 2)}\n`, 'utf8');
   return { index, indexPath, sheetOutputs };
+}
+
+export function buildSafeAreaOverlaySvg(spec) {
+  if (typeof spec === 'string') {
+    spec = SOCIAL_FORMATS[spec];
+  }
+  if (!spec || typeof spec.width !== 'number' || typeof spec.height !== 'number') {
+    throw new Error('A valid social format specification is required.');
+  }
+  const sa = spec.safeArea;
+  if (!sa) {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${spec.width} ${spec.height}" width="${spec.width}" height="${spec.height}" role="img" aria-label="Full canvas ${spec.id}" data-safe-area-type="full" data-safe-area-format="${spec.id}"><title>Full canvas ${spec.id}</title></svg>\n`;
+  }
+  if (sa.type === 'circle') {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${spec.width} ${spec.height}" width="${spec.width}" height="${spec.height}" role="img" aria-label="Safe area ${sa.label ?? spec.id}" data-safe-area-type="circle" data-safe-area-format="${spec.id}"><title>Safe area ${sa.label ?? spec.id}</title><circle cx="${sa.cx}" cy="${sa.cy}" r="${sa.r}" fill="none" stroke="#00b8f0" stroke-width="2" stroke-dasharray="6 4"/><rect x="${sa.cx - sa.r}" y="${sa.cy - sa.r}" width="${sa.r * 2}" height="${sa.r * 2}" fill="none" stroke="#ff2e88" stroke-width="1" stroke-dasharray="2 2"/><text x="${sa.cx}" y="${sa.cy + 4}" fill="#ff2e88" font-family="monospace" font-size="12" font-weight="700" text-anchor="middle">SAFE ${sa.label ?? spec.id}</text></svg>\n`;
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${spec.width} ${spec.height}" width="${spec.width}" height="${spec.height}" role="img" aria-label="Safe area ${sa.label ?? spec.id}" data-safe-area-type="rect" data-safe-area-format="${spec.id}"><title>Safe area ${sa.label ?? spec.id}</title><rect x="${sa.x}" y="${sa.y}" width="${sa.width}" height="${sa.height}" fill="#00b8f0" fill-opacity="0.46" stroke="#00b8f0" stroke-width="2" stroke-dasharray="6 4"/><rect x="${sa.x}" y="${sa.y}" width="${sa.width}" height="${sa.height}" fill="none" stroke="#ff2e88" stroke-width="1" stroke-dasharray="2 2"/><text x="${sa.x}" y="${sa.y + 20}" fill="#ff2e88" font-family="monospace" font-size="12" font-weight="700">SAFE ${sa.width}x${sa.height}</text></svg>\n`;
+}
+
+export function buildSocialFormatsContactSheetHtml(entries, { themes } = {}) {
+  const requestedThemes = themes ?? SOCIAL_THEMES;
+  const rows = entries
+    .map(
+      ({ id, format, label, platform, width, height, aspectRatio, safeArea }) => {
+        const themeRows = requestedThemes
+          .map(
+            (theme) => `<div class="theme-slot" data-theme="${theme}">${theme.toUpperCase()}</div>`
+          )
+          .join('');
+        return `<article data-format-id="${id}" data-dimensions="${width}x${height}" data-platform="${platform}" data-safe-spec="${safeArea ? JSON.stringify(safeArea) : 'none'}">
+          <div class="meta"><h2>${escapeHtml(label)}</h2><span>${escapeHtml(platform)} · ${width}×${height}</span></div>
+          <div class="aspect-frame" style="aspect-ratio: ${aspectRatio};"></div>
+          <div class="safe-overlay">${escapeHtml(safeArea ? `SAFE ${safeArea.label ?? `${safeArea.width}x${safeArea.height}`} ` : 'Full canvas')}</div>
+          <div class="safe-area-toggle" role="button" aria-label="Toggle safe area overlay for ${id}"></div>
+          ${themeRows}
+        </article>`;
+      }
+    )
+    .join('\n');
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><style>
+    *{box-sizing:border-box}body{margin:0;padding:24px;background:#121318;color:#f3efe4;font:13px ui-monospace,SFMono-Regular,Menlo,monospace}
+    main{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+    article{border:2px solid #2c2f3a;background:#191b22;padding:10px;display:flex;flex-direction:column;gap:8px}
+    .theme-slot{background:#2c2f3a;padding:4px;font-size:10px;text-transform:uppercase;letter-spacing:1}
+    .aspect-frame{border:1px dashed #00b8f0;height:80px}
+    .safe-overlay{font-size:10px;color:#ff2e88;padding:6px;background:#2c2f3a}
+    .safe-area-toggle{position:relative;display:inline-block;cursor:pointer}
+  </style></head><body><main>${rows}</main></body></html>`;
+}
+
+export async function generateSocialFormatContactSheet({
+  outputDir,
+  renderPng = false,
+  rootDir = packageRoot,
+} = {}) {
+  const manifest = JSON.parse(await readFile(resolve(rootDir, 'manifest.json'), 'utf8'));
+  const formats = listSocialFormats().map((spec) => ({
+    id: spec.id,
+    label: spec.label,
+    platform: spec.platform,
+    width: spec.width,
+    height: spec.height,
+    aspectRatio: spec.aspectRatio,
+    safeArea: spec.safeArea,
+    sources: spec.sourceSvg
+      ? { light: !!spec.sourceSvg.light, dark: !!spec.sourceSvg.dark }
+      : { light: true, dark: true },
+    sourceTypes: spec.sourceSvg
+      ? { light: spec.sourceSvg.light ? 'svg' : null, dark: spec.sourceSvg.dark ? 'svg' : null }
+      : { light: 'template', dark: 'template' },
+  }));
+  const index = {
+    schemaVersion: 1,
+    totalFormats: formats.length,
+    themes: [...SOCIAL_THEMES],
+    formats,
+    renderedSheets: [],
+    contactSheetPng: null,
+    sheets: { overview: null },
+  };
+  await mkdir(outputDir, { recursive: true });
+  const indexPath = resolve(outputDir, 'index.json');
+  await writeFile(indexPath, `${JSON.stringify(index, null, 2)}\n`, 'utf8');
+  return { index, indexPath, sheetOutputs: [] };
 }
 
 if (argv[1] && resolve(argv[1]) === fileURLToPath(import.meta.url)) {

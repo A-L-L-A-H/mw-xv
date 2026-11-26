@@ -3,6 +3,15 @@ import baseConfig from './packages/eslint-config/index.js';
 export default [
   ...baseConfig,
   {
+    files: ['apps/*/src/**/*.{ts,tsx}', 'packages/*/src/**/*.{ts,tsx}'],
+    rules: {
+      complexity: ['warn', 12],
+      'max-depth': ['warn', 4],
+      'max-params': ['warn', 4],
+      'max-lines-per-function': ['warn', { max: 80, skipBlankLines: true, skipComments: true }],
+    },
+  },
+  {
     files: ['**/*.mjs'],
     languageOptions: {
       // .mjs files in this workspace are Node.js scripts, CLI tools, and tests.

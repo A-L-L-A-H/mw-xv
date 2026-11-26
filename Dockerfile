@@ -48,6 +48,7 @@ COPY packages/orm-governance/package.json ./packages/orm-governance/package.json
 COPY packages/orm-helpdesk/package.json ./packages/orm-helpdesk/package.json
 COPY packages/orm-income-ledger/package.json ./packages/orm-income-ledger/package.json
 COPY packages/orm-integration/package.json ./packages/orm-integration/package.json
+COPY packages/orm-identity/package.json ./packages/orm-identity/package.json
 COPY packages/orm-isp/package.json ./packages/orm-isp/package.json
 COPY packages/orm-knowledge/package.json ./packages/orm-knowledge/package.json
 COPY packages/orm-notification/package.json ./packages/orm-notification/package.json
@@ -66,10 +67,15 @@ COPY packages/orm-sim/package.json ./packages/orm-sim/package.json
 COPY packages/orm-storage/package.json ./packages/orm-storage/package.json
 COPY packages/orm-subscription/package.json ./packages/orm-subscription/package.json
 COPY packages/orm-whatsapp/package.json ./packages/orm-whatsapp/package.json
+COPY packages/paas-template-pack-coolify/package.json ./packages/paas-template-pack-coolify/package.json
+COPY packages/paas-template-pack-moonwitness/package.json ./packages/paas-template-pack-moonwitness/package.json
 COPY packages/research/package.json ./packages/research/package.json
 COPY packages/types/package.json ./packages/types/package.json
 COPY packages/ui/package.json ./packages/ui/package.json
 COPY packages/orm-workflow/package.json ./packages/orm-workflow/package.json
+COPY packages/paas-template-pack-bigbear/package.json ./packages/paas-template-pack-bigbear/package.json
+COPY packages/paas-template-pack-dokploy/package.json ./packages/paas-template-pack-dokploy/package.json
+COPY packages/plan-taskos/package.json ./packages/plan-taskos/package.json
 RUN --mount=type=cache,id=moonwitness-bun-cache,target=/root/.bun/install/cache \
     bun install --frozen-lockfile
 COPY . .

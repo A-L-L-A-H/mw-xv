@@ -16,10 +16,10 @@ Generated for MoonWitness on 2026-11-23 with OpenAI ChatGPT image_gen.
 - Generator: OpenAI ChatGPT image_gen
 - Terms: OpenAI Terms of Use and applicable law; this is not a legal determination of commercial clearance.
 
-## Approval boundary
+## Approval boundary and current decision
 
-Both candidates remain review-only. They are not wired into the production board, are not approved for production distribution, and must receive human project-owner/legal review before promotion. The production home hero and scene fallback references remain unchanged.
+The statements above describe the review state when this package was created on 2026-11-23. On 2026-11-25, the project owner approved the existing desktop/mobile homepage artwork for production use and distribution together with the anonymous fictional `crew-01` pilot. The approval scope and limits are recorded in [Moon City production approval](../decisions/moon-city-production-approval.md). Provenance remains governed by the source terms and applicable law; the owner approval does not make an independent legal determination.
 
 ## Repository wiring
 
-SceneLab is being aligned with the canonical scene JSON; it should not duplicate the canonical layer list, responsive breakpoint definitions, or clip frame timing. The generated artwork files remain in the separately delivered review archive rather than being represented by phantom repository paths.
+The production homepage now uses the canonical scene JSON for layer order, responsive breakpoints, and clip timing. SceneLab also consumes the canonical scene contract and presents Signals/Archive concepts only as explicitly labeled catalog specimens until product routes and data contracts exist. The original full-size generated masters remain in the separately delivered review archive; repository provenance points to that source and the checked-in production derivatives.

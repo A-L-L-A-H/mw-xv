@@ -81,8 +81,12 @@ var controlPlaneRouteMatrix = []controlPlaneRoute{
 	{pattern: "/api/deployments/", family: "api-deployments", access: accessAuthenticated},
 	{pattern: "/api/containers/", family: "container-logs", access: accessPrivileged},
 	{pattern: "/paas/node/metrics", family: "paas-ops", access: accessAuthenticated},
+	{pattern: "/paas/metrics", family: "paas-ops", access: accessAuthenticated, methods: []string{http.MethodGet}},
+	{pattern: "/paas/host/services", family: "paas-ops", access: accessAuthenticated, methods: []string{http.MethodGet}},
+	{pattern: "/paas/templates", family: "paas-coolify", access: accessAuthenticated, methods: []string{http.MethodGet}},
 	{pattern: "/paas/apps", family: "paas-apps", access: accessAuthenticated},
 	{pattern: "/paas/apps/deploy", family: "paas-apps", access: accessPrivileged, methods: []string{http.MethodPost}},
+	{pattern: "/paas/apps/deploy-compose", family: "paas-coolify", access: accessPrivileged, methods: []string{http.MethodPost}},
 	{pattern: "/paas/apps/", family: "paas-apps", access: accessPrivileged},
 	{pattern: "/paas/backups/postgres", family: "paas-backups", access: accessPrivileged, methods: []string{http.MethodPost}},
 	{pattern: "/paas/backups", family: "paas-backups", access: accessAuthenticated},
@@ -93,6 +97,14 @@ var controlPlaneRouteMatrix = []controlPlaneRoute{
 	{pattern: "/paas/apps/deploy-git", family: "git-builder", access: accessPrivileged, methods: []string{http.MethodPost}},
 	{pattern: "/paas/apps/preview", family: "git-builder", access: accessPrivileged, methods: []string{http.MethodPost}},
 	{pattern: "/paas/webhooks/github/", family: "git-webhook", access: accessWebhookSignature, methods: []string{http.MethodPost}},
+	{pattern: "/agent/caddy/reconcile", family: "agent-stateless", access: accessPrivileged, methods: []string{http.MethodPost}},
+	{pattern: "/agent/metrics", family: "agent-stateless", access: accessAuthenticated, methods: []string{http.MethodGet}},
+	{pattern: "/agent/containers", family: "agent-stateless", access: accessAuthenticated, methods: []string{http.MethodGet}},
+	{pattern: "/agent/containers/", family: "agent-stateless", access: accessAuthenticated},
+	{pattern: "/agent/containers/run", family: "agent-stateless", access: accessPrivileged, methods: []string{http.MethodPost}},
+	{pattern: "/agent/compose/up", family: "agent-stateless", access: accessPrivileged, methods: []string{http.MethodPost}},
+	{pattern: "/agent/git/deploy", family: "agent-stateless", access: accessPrivileged, methods: []string{http.MethodPost}},
+	{pattern: "/agent/dns/verify", family: "agent-stateless", access: accessAuthenticated, methods: []string{http.MethodPost}},
 	{pattern: "/a2a/delegate", family: "a2a-federation", access: accessA2APeer, methods: []string{http.MethodPost}},
 }
 
@@ -152,8 +164,12 @@ var registry = map[string]containerMeta{
 	},
 }
 
-// DB is the global SQLite handle for control-plane metadata.
+// DB is the global SQLite handle for control-plane metadata (nil in stateless agent mode).
 var DB *sql.DB
+
+func isStatelessAgentMode() bool {
+	return strings.EqualFold(strings.TrimSpace(os.Getenv("MW_CONTROL_PLANE_STATELESS")), "true")
+}
 
 func main() {
 	cfg := config{
@@ -162,19 +178,30 @@ func main() {
 		dbPath:     env("MW_CONTROL_PLANE_DB_PATH", defaultDbPath),
 	}
 
-	var err error
-	DB, err = sql.Open("sqlite", cfg.dbPath)
-	if err != nil {
-		log.Fatalf("failed to open sqlite: %v", err)
-	}
-	defer DB.Close()
+	stateless := isStatelessAgentMode()
+	if stateless {
+		DB = nil
+		if strings.TrimSpace(os.Getenv("MW_CONTROL_PLANE_TOKEN")) == "" &&
+			strings.TrimSpace(os.Getenv("MW_INTERNAL_SECRET")) == "" &&
+			strings.TrimSpace(os.Getenv("JWT_SECRET")) == "" {
+			log.Fatalf("stateless agent mode requires MW_CONTROL_PLANE_TOKEN, MW_INTERNAL_SECRET, or JWT_SECRET")
+		}
+		log.Printf("control-plane running in stateless agent mode (zero local database)")
+	} else {
+		var err error
+		DB, err = sql.Open("sqlite", cfg.dbPath)
+		if err != nil {
+			log.Fatalf("failed to open sqlite: %v", err)
+		}
+		defer DB.Close()
 
-	if err := DB.Ping(); err != nil {
-		log.Fatalf("failed to ping sqlite: %v", err)
-	}
+		if err := DB.Ping(); err != nil {
+			log.Fatalf("failed to ping sqlite: %v", err)
+		}
 
-	if err := initSchema(); err != nil {
-		log.Fatalf("failed to init schema: %v", err)
+		if err := initSchema(); err != nil {
+			log.Fatalf("failed to init schema: %v", err)
+		}
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
@@ -209,6 +236,28 @@ func main() {
 		log.Printf("legacy registry auto-start disabled (set MW_CONTROL_PLANE_AUTOSTART_LEGACY=true to enable)")
 	}
 
+	paasMgr := NewPaasManager(DB, cfg.dockerBin, meshMgr, nil, nil)
+	paasMgr.SetAdminToken(adminToken)
+	if !stateless {
+		if err := paasMgr.SyncCaddyRoutesOnStartup(ctx); err != nil {
+			log.Printf("warning: initial caddy route sync failed: %v", err)
+		}
+	}
+
+	var uiSrv *http.Server
+	if uiAddr := strings.TrimSpace(os.Getenv("MW_PAAS_UI_ADDR")); uiAddr != "" {
+		uiSrv = &http.Server{
+			Addr:    uiAddr,
+			Handler: NewPaasUIHandler(paasMgr, adminToken),
+		}
+		go func() {
+			log.Printf("paas web console listening on %s", uiAddr)
+			if uiErr := uiSrv.ListenAndServe(); uiErr != nil && uiErr != http.ErrServerClosed {
+				log.Printf("warning: paas web console error: %v", uiErr)
+			}
+		}()
+	}
+
 	srv := &http.Server{
 		Addr:    cfg.listenAddr,
 		Handler: buildMux(DB, cfg.dockerBin, adminToken),
@@ -234,6 +283,9 @@ func main() {
 	<-ctx.Done()
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+	if uiSrv != nil {
+		_ = uiSrv.Shutdown(shutdownCtx)
+	}
 	_ = srv.Shutdown(shutdownCtx)
 	log.Println("control-plane stopped")
 }
@@ -283,6 +335,7 @@ func configureA2AMTLS(srv *http.Server) (string, string, error) {
 func buildMux(db *sql.DB, dockerBin, adminToken string) http.Handler {
 	mux := http.NewServeMux()
 	paasMgr := NewPaasManager(db, dockerBin, NewMeshManagerFromEnv(dockerBin), nil, nil)
+	paasMgr.SetAdminToken(adminToken)
 	a2aMgr := NewA2AManagerFromEnv()
 
 	raw := map[string]http.HandlerFunc{
@@ -298,8 +351,12 @@ func buildMux(db *sql.DB, dockerBin, adminToken string) http.Handler {
 		"/api/deployments/":           handleApiDeployment(db),
 		"/api/containers/":            handleContainerSubroutes(dockerBin),
 		"/paas/node/metrics":          paasMgr.handleNodeMetrics(),
+		"/paas/metrics":               paasMgr.handleNodeMetrics(),
+		"/paas/host/services":         paasMgr.handleHostServices(),
+		"/paas/templates":             paasMgr.handleTemplates(),
 		"/paas/apps":                  paasMgr.handleApps(),
 		"/paas/apps/deploy":           paasMgr.handleDeploy(),
+		"/paas/apps/deploy-compose":   paasMgr.handleComposeDeploy(),
 		"/paas/apps/":                 paasMgr.handleAppSubroutes(),
 		"/paas/backups/postgres":      paasMgr.handleBackupPostgres(),
 		"/paas/backups":               paasMgr.handleListBackups(),
@@ -310,6 +367,14 @@ func buildMux(db *sql.DB, dockerBin, adminToken string) http.Handler {
 		"/paas/apps/deploy-git":       paasMgr.handleGitDeploy(),
 		"/paas/apps/preview":          paasMgr.handlePreviewDeploy(),
 		"/paas/webhooks/github/":      paasMgr.handleGitHubWebhook(),
+		"/agent/caddy/reconcile":      paasMgr.handleAgentCaddyReconcile(),
+		"/agent/metrics":              paasMgr.handleAgentMetrics(),
+		"/agent/containers":           paasMgr.handleAgentContainers(),
+		"/agent/containers/":          paasMgr.handleAgentContainerSubroutes(),
+		"/agent/containers/run":       paasMgr.handleAgentContainerRun(),
+		"/agent/compose/up":           paasMgr.handleAgentComposeUp(),
+		"/agent/git/deploy":           paasMgr.handleAgentGitDeploy(),
+		"/agent/dns/verify":           paasMgr.handleAgentDnsVerify(),
 		"/a2a/delegate":               a2aMgr.HandleDelegate(),
 	}
 
@@ -323,13 +388,13 @@ func buildMux(db *sql.DB, dockerBin, adminToken string) http.Handler {
 			// Public liveness, provider HMAC and A2A peer identity are enforced
 			// by their own handlers, never by a service bearer token.
 		case accessAuthenticated:
-			if strings.HasPrefix(route.pattern, "/paas/") {
+			if strings.HasPrefix(route.pattern, "/paas/") || strings.HasPrefix(route.pattern, "/agent/") {
 				handler = requirePaasAuth(adminToken, handler)
 			} else {
 				handler = requireBearerAuth(adminToken, handler)
 			}
 		case accessPrivileged:
-			if strings.HasPrefix(route.pattern, "/paas/") {
+			if strings.HasPrefix(route.pattern, "/paas/") || strings.HasPrefix(route.pattern, "/agent/") {
 				handler = requirePrivilegedPaasAuth(adminToken, handler)
 			} else {
 				handler = requireAccessBearerAuth(adminToken, accessPrivileged, handler)
@@ -615,7 +680,7 @@ func handleHealth(db *sql.DB, dockerBin string) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		dbStatus := "ok"
-		if db.Ping() != nil {
+		if db != nil && db.Ping() != nil {
 			dbStatus = "error"
 		}
 		dockerStatus := "unknown"

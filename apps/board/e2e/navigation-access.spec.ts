@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { E2E_SUPERADMIN_PASSWORD, loginPageUrl } from './constants.js';
+import { E2E_SUPERADMIN_PASSWORD, loginPageUrl, readSession } from './constants.js';
 
 test('development mode reveals technical navigation without changing API access', async ({
   page,
@@ -10,12 +10,7 @@ test('development mode reveals technical navigation without changing API access'
   await page.getByRole('button', { name: 'Enter the Shadow' }).click();
   await expect(page).toHaveURL(/\/board$/u);
 
-  const session = await page.evaluate(
-    () =>
-      JSON.parse(localStorage.getItem('mw-board-session') ?? 'null') as {
-        access_token: string;
-      } | null
-  );
+  const session = await readSession<{ access_token: string }>(page);
   expect(session).not.toBeNull();
 
   const modelResponse = await page.request.get('/api/models', {
@@ -92,12 +87,7 @@ test('development mode reveals technical navigation without changing API access'
   await expect(page.getByRole('button', { name: 'Development Mode: On' }).first()).toBeVisible();
   await expect(page.getByRole('link', { name: 'Knowledge explorer' })).toHaveCount(0);
 
-  const ordinarySession = await page.evaluate(
-    () =>
-      JSON.parse(localStorage.getItem('mw-board-session') ?? 'null') as {
-        access_token: string;
-      } | null
-  );
+  const ordinarySession = await readSession<{ access_token: string }>(page);
   expect(ordinarySession).not.toBeNull();
   const ordinaryModels = await page.request.get('/api/models', {
     headers: { authorization: `Bearer ${ordinarySession!.access_token}` },

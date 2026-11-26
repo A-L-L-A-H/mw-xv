@@ -1,6 +1,6 @@
 # Generated model and addon reference
 
-Source fingerprint: `7fbde6a21aad1e77ee78aaac16875a8231494dee8eb8332be2754d9c6f9a372c`. Seed values and field defaults are intentionally omitted.
+Source fingerprint: `4d42f3a9756e43100fb6dccaa454a9d1d085d714fba3707a7f848cb2739f069f`. Seed values and field defaults are intentionally omitted.
 
 ## Addon `auth`
 
@@ -576,47 +576,76 @@ Models: 3; declared views: 3; menu entries: 3; seed rows: 9.
 
 ## Addon `observability`
 
-Version: `1.0.0`; dependencies: none.
+Version: `1.1.0`; dependencies: none.
 
-Models: 5; declared views: 0; menu entries: 0; seed rows: 1.
+Models: 8; declared views: 0; menu entries: 0; seed rows: 1.
 
-| Model                                   | Table                         | Field            | Kind    | Required | Optional | Default    | Relation |
-| --------------------------------------- | ----------------------------- | ---------------- | ------- | -------- | -------- | ---------- | -------- |
-| `observability.telemetry_log`           | `observability_logs`          | `agent_name`     | text    | No       | Yes      | No         | —        |
-| `observability.telemetry_log`           | `observability_logs`          | `log_id`         | text    | Yes      | No       | No         | —        |
-| `observability.telemetry_log`           | `observability_logs`          | `payload_json`   | text    | Yes      | No       | No         | —        |
-| `observability.telemetry_log`           | `observability_logs`          | `run_id`         | text    | No       | Yes      | No         | —        |
-| `observability.telemetry_log`           | `observability_logs`          | `service_name`   | text    | Yes      | No       | No         | —        |
-| `observability.telemetry_log`           | `observability_logs`          | `severity`       | enum    | Yes      | No       | No         | —        |
-| `observability.telemetry_log`           | `observability_logs`          | `span_id`        | text    | No       | Yes      | No         | —        |
-| `observability.telemetry_log`           | `observability_logs`          | `timestamp_ms`   | float   | Yes      | No       | No         | —        |
-| `observability.telemetry_log`           | `observability_logs`          | `trace_id`       | text    | No       | Yes      | No         | —        |
-| `observability.telemetry_metric_point`  | `observability_metric_points` | `payload_json`   | text    | Yes      | No       | No         | —        |
-| `observability.telemetry_metric_point`  | `observability_metric_points` | `series_id`      | text    | Yes      | No       | No         | —        |
-| `observability.telemetry_metric_point`  | `observability_metric_points` | `timestamp_ms`   | float   | Yes      | No       | No         | —        |
-| `observability.telemetry_metric_series` | `observability_metric_series` | `description`    | text    | No       | Yes      | No         | —        |
-| `observability.telemetry_metric_series` | `observability_metric_series` | `latest_time_ms` | float   | Yes      | No       | No         | —        |
-| `observability.telemetry_metric_series` | `observability_metric_series` | `metric_type`    | enum    | Yes      | No       | No         | —        |
-| `observability.telemetry_metric_series` | `observability_metric_series` | `name`           | text    | Yes      | No       | No         | —        |
-| `observability.telemetry_metric_series` | `observability_metric_series` | `payload_json`   | text    | Yes      | No       | No         | —        |
-| `observability.telemetry_metric_series` | `observability_metric_series` | `scope_name`     | text    | No       | Yes      | No         | —        |
-| `observability.telemetry_metric_series` | `observability_metric_series` | `series_id`      | text    | Yes      | No       | No         | —        |
-| `observability.telemetry_metric_series` | `observability_metric_series` | `service_name`   | text    | Yes      | No       | No         | —        |
-| `observability.telemetry_metric_series` | `observability_metric_series` | `unit`           | text    | No       | Yes      | No         | —        |
-| `observability.telemetry_span`          | `observability_spans`         | `agent_name`     | text    | No       | Yes      | No         | —        |
-| `observability.telemetry_span`          | `observability_spans`         | `duration_ms`    | float   | Yes      | No       | No         | —        |
-| `observability.telemetry_span`          | `observability_spans`         | `end_time_ms`    | float   | Yes      | No       | No         | —        |
-| `observability.telemetry_span`          | `observability_spans`         | `name`           | text    | Yes      | No       | No         | —        |
-| `observability.telemetry_span`          | `observability_spans`         | `parent_span_id` | text    | No       | Yes      | No         | —        |
-| `observability.telemetry_span`          | `observability_spans`         | `payload_json`   | text    | Yes      | No       | No         | —        |
-| `observability.telemetry_span`          | `observability_spans`         | `run_id`         | text    | Yes      | No       | No         | —        |
-| `observability.telemetry_span`          | `observability_spans`         | `service_name`   | text    | Yes      | No       | No         | —        |
-| `observability.telemetry_span`          | `observability_spans`         | `span_id`        | text    | Yes      | No       | No         | —        |
-| `observability.telemetry_span`          | `observability_spans`         | `start_time_ms`  | float   | Yes      | No       | No         | —        |
-| `observability.telemetry_span`          | `observability_spans`         | `status`         | enum    | Yes      | No       | No         | —        |
-| `observability.telemetry_span`          | `observability_spans`         | `trace_id`       | text    | Yes      | No       | No         | —        |
-| `observability.telemetry_state`         | `observability_state`         | `key`            | string  | Yes      | No       | No         | —        |
-| `observability.telemetry_state`         | `observability_state`         | `value`          | integer | No       | Yes      | [redacted] | —        |
+| Model                                   | Table                              | Field            | Kind    | Required | Optional | Default    | Relation |
+| --------------------------------------- | ---------------------------------- | ---------------- | ------- | -------- | -------- | ---------- | -------- |
+| `observability.ingest_credential`       | `observability_ingest_credentials` | `company_id`     | integer | No       | Yes      | No         | —        |
+| `observability.ingest_credential`       | `observability_ingest_credentials` | `created_at`     | string  | Yes      | No       | No         | —        |
+| `observability.ingest_credential`       | `observability_ingest_credentials` | `credential_id`  | string  | Yes      | No       | No         | —        |
+| `observability.ingest_credential`       | `observability_ingest_credentials` | `expires_at`     | string  | No       | Yes      | No         | —        |
+| `observability.ingest_credential`       | `observability_ingest_credentials` | `name`           | string  | Yes      | No       | No         | —        |
+| `observability.ingest_credential`       | `observability_ingest_credentials` | `revoked_at`     | string  | No       | Yes      | No         | —        |
+| `observability.ingest_credential`       | `observability_ingest_credentials` | `token_hash`     | string  | Yes      | No       | No         | —        |
+| `observability.ingest_credential`       | `observability_ingest_credentials` | `user_id`        | integer | No       | Yes      | No         | —        |
+| `observability.qoder_correlation`       | `observability_qoder_correlation`  | `expires_at`     | float   | Yes      | No       | No         | —        |
+| `observability.qoder_correlation`       | `observability_qoder_correlation`  | `kind`           | string  | Yes      | No       | No         | —        |
+| `observability.qoder_correlation`       | `observability_qoder_correlation`  | `payload_json`   | text    | Yes      | No       | No         | —        |
+| `observability.qoder_correlation`       | `observability_qoder_correlation`  | `state_key`      | string  | Yes      | No       | No         | —        |
+| `observability.qoder_correlation`       | `observability_qoder_correlation`  | `tenant_id`      | integer | No       | Yes      | No         | —        |
+| `observability.telemetry_log`           | `observability_logs`               | `agent_name`     | text    | No       | Yes      | No         | —        |
+| `observability.telemetry_log`           | `observability_logs`               | `log_id`         | text    | Yes      | No       | No         | —        |
+| `observability.telemetry_log`           | `observability_logs`               | `payload_json`   | text    | Yes      | No       | No         | —        |
+| `observability.telemetry_log`           | `observability_logs`               | `run_id`         | text    | No       | Yes      | No         | —        |
+| `observability.telemetry_log`           | `observability_logs`               | `service_name`   | text    | Yes      | No       | No         | —        |
+| `observability.telemetry_log`           | `observability_logs`               | `severity`       | enum    | Yes      | No       | No         | —        |
+| `observability.telemetry_log`           | `observability_logs`               | `span_id`        | text    | No       | Yes      | No         | —        |
+| `observability.telemetry_log`           | `observability_logs`               | `tenant_id`      | integer | No       | Yes      | No         | —        |
+| `observability.telemetry_log`           | `observability_logs`               | `tenant_key`     | string  | No       | Yes      | [redacted] | —        |
+| `observability.telemetry_log`           | `observability_logs`               | `timestamp_ms`   | float   | Yes      | No       | No         | —        |
+| `observability.telemetry_log`           | `observability_logs`               | `trace_id`       | text    | No       | Yes      | No         | —        |
+| `observability.telemetry_metric_point`  | `observability_metric_points`      | `payload_json`   | text    | Yes      | No       | No         | —        |
+| `observability.telemetry_metric_point`  | `observability_metric_points`      | `series_id`      | text    | Yes      | No       | No         | —        |
+| `observability.telemetry_metric_point`  | `observability_metric_points`      | `series_key`     | string  | Yes      | No       | No         | —        |
+| `observability.telemetry_metric_point`  | `observability_metric_points`      | `tenant_id`      | integer | No       | Yes      | No         | —        |
+| `observability.telemetry_metric_point`  | `observability_metric_points`      | `timestamp_ms`   | float   | Yes      | No       | No         | —        |
+| `observability.telemetry_metric_series` | `observability_metric_series`      | `description`    | text    | No       | Yes      | No         | —        |
+| `observability.telemetry_metric_series` | `observability_metric_series`      | `latest_time_ms` | float   | Yes      | No       | No         | —        |
+| `observability.telemetry_metric_series` | `observability_metric_series`      | `metric_type`    | enum    | Yes      | No       | No         | —        |
+| `observability.telemetry_metric_series` | `observability_metric_series`      | `name`           | text    | Yes      | No       | No         | —        |
+| `observability.telemetry_metric_series` | `observability_metric_series`      | `payload_json`   | text    | Yes      | No       | No         | —        |
+| `observability.telemetry_metric_series` | `observability_metric_series`      | `scope_name`     | text    | No       | Yes      | No         | —        |
+| `observability.telemetry_metric_series` | `observability_metric_series`      | `series_id`      | text    | Yes      | No       | No         | —        |
+| `observability.telemetry_metric_series` | `observability_metric_series`      | `service_name`   | text    | Yes      | No       | No         | —        |
+| `observability.telemetry_metric_series` | `observability_metric_series`      | `tenant_id`      | integer | No       | Yes      | No         | —        |
+| `observability.telemetry_metric_series` | `observability_metric_series`      | `tenant_key`     | string  | No       | Yes      | [redacted] | —        |
+| `observability.telemetry_metric_series` | `observability_metric_series`      | `unit`           | text    | No       | Yes      | No         | —        |
+| `observability.telemetry_span`          | `observability_spans`              | `agent_name`     | text    | No       | Yes      | No         | —        |
+| `observability.telemetry_span`          | `observability_spans`              | `duration_ms`    | float   | Yes      | No       | No         | —        |
+| `observability.telemetry_span`          | `observability_spans`              | `end_time_ms`    | float   | Yes      | No       | No         | —        |
+| `observability.telemetry_span`          | `observability_spans`              | `name`           | text    | Yes      | No       | No         | —        |
+| `observability.telemetry_span`          | `observability_spans`              | `parent_span_id` | text    | No       | Yes      | No         | —        |
+| `observability.telemetry_span`          | `observability_spans`              | `payload_json`   | text    | Yes      | No       | No         | —        |
+| `observability.telemetry_span`          | `observability_spans`              | `run_id`         | text    | Yes      | No       | No         | —        |
+| `observability.telemetry_span`          | `observability_spans`              | `service_name`   | text    | Yes      | No       | No         | —        |
+| `observability.telemetry_span`          | `observability_spans`              | `span_id`        | text    | Yes      | No       | No         | —        |
+| `observability.telemetry_span`          | `observability_spans`              | `start_time_ms`  | float   | Yes      | No       | No         | —        |
+| `observability.telemetry_span`          | `observability_spans`              | `status`         | enum    | Yes      | No       | No         | —        |
+| `observability.telemetry_span`          | `observability_spans`              | `tenant_id`      | integer | No       | Yes      | No         | —        |
+| `observability.telemetry_span`          | `observability_spans`              | `tenant_key`     | string  | No       | Yes      | [redacted] | —        |
+| `observability.telemetry_span`          | `observability_spans`              | `trace_id`       | text    | Yes      | No       | No         | —        |
+| `observability.telemetry_state`         | `observability_state`              | `key`            | string  | Yes      | No       | No         | —        |
+| `observability.telemetry_state`         | `observability_state`              | `value`          | integer | No       | Yes      | [redacted] | —        |
+| `observability.telemetry_trace`         | `observability_traces`             | `error_count`    | integer | Yes      | No       | No         | —        |
+| `observability.telemetry_trace`         | `observability_traces`             | `latency_sum_ms` | float   | No       | Yes      | [redacted] | —        |
+| `observability.telemetry_trace`         | `observability_traces`             | `payload_json`   | text    | Yes      | No       | No         | —        |
+| `observability.telemetry_trace`         | `observability_traces`             | `span_count`     | integer | Yes      | No       | No         | —        |
+| `observability.telemetry_trace`         | `observability_traces`             | `started_at`     | float   | Yes      | No       | No         | —        |
+| `observability.telemetry_trace`         | `observability_traces`             | `tenant_id`      | integer | No       | Yes      | No         | —        |
+| `observability.telemetry_trace`         | `observability_traces`             | `tenant_key`     | string  | No       | Yes      | [redacted] | —        |
+| `observability.telemetry_trace`         | `observability_traces`             | `trace_id`       | text    | Yes      | No       | No         | —        |
 
 ### Menus and seed coverage
 

@@ -33,6 +33,7 @@ import AiEvalLabPage from '@/app/board/ai/eval-lab/page';
 import AiProvidersPage from '@/app/board/ai/providers/page';
 import { navigate, usePathname } from './shims/next-navigation';
 import { DesktopErrorBoundary, installWebviewErrorTelemetry } from './error-telemetry';
+import { DesktopObservatoryPage } from './observatory/observatory-page';
 
 import type { DesktopBridgeSnapshot, DesktopCapabilityBridge } from '@/lib/desktop-bridge';
 
@@ -327,6 +328,9 @@ function DesktopRouteSwitch() {
   if (normalized === '/board/studio') {
     return <BoardStudioPage />;
   }
+  if (normalized === '/board/desktop/observatory' || normalized === '/observatory') {
+    return <DesktopObservatoryPage />;
+  }
   return <NotFound />;
 }
 
@@ -336,11 +340,23 @@ type BootstrapState =
   | { readonly status: 'error'; readonly message: string };
 
 function DesktopChrome() {
+  const pathname = usePathname();
+  const isObservatory = pathname === '/board/desktop/observatory' || pathname === '/observatory';
   return (
-    <div className="desktop-chrome" aria-hidden="true">
-      <span className="desktop-chrome-mark" />
+    <div className="desktop-chrome">
+      <span className="desktop-chrome-mark" aria-hidden="true" />
       <span className="desktop-chrome-title">MoonWitness Desktop</span>
-      <span className="desktop-chrome-badge">Local workspace</span>
+      <div className="desktop-chrome-actions">
+        <Button
+          type="button"
+          size="sm"
+          variant={isObservatory ? 'default' : 'ghost'}
+          onClick={() => navigate(isObservatory ? '/board' : '/board/desktop/observatory')}
+        >
+          {isObservatory ? 'Back to Board' : 'Agent Observatory'}
+        </Button>
+        <span className="desktop-chrome-badge">Local workspace</span>
+      </div>
     </div>
   );
 }

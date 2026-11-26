@@ -29,7 +29,6 @@ import {
   CloudConfigError,
   CloudDeployment,
   CloudDeploymentTarget,
-  CloudProvider,
   CloudProvider as ProviderModel,
   describeControlPlaneToken,
   executeProvisionWithCompensation,
@@ -383,7 +382,7 @@ describe('cloud auth and operations hardening', () => {
     const ownApp = await CloudApp.query().findOne({ company_id: 1, name: 'moonwitness-isp' });
     const providerCalls: string[] = [];
     const { app } = await buildApp({
-      fetchImpl: async (input, init) => {
+      fetchImpl: async (input, _init) => {
         providerCalls.push(String(input));
         await Promise.resolve();
         return new Response(JSON.stringify({ id: `ctr-${providerCalls.length}` }), { status: 201 });
@@ -869,5 +868,702 @@ describe('cloud auth and operations hardening', () => {
     } finally {
       await slashed.app.close();
     }
+  });
+
+  it('enforces auth and proxies /api/cloud/paas/* endpoints to the private control plane', async () => {
+    const customFetch: typeof fetch = async (input, init) => {
+      const url = String(input);
+      if (url.endsWith('/paas/metrics')) {
+        return new Response(
+          JSON.stringify({
+            nodeId: 'vps-node',
+            meshIp: '10.144.0.1',
+            cpuPercent: 4.5,
+            memoryUsedMb: 1024,
+            memoryTotalMb: 8192,
+            runningApps: 2,
+          }),
+          { status: 200 }
+        );
+      }
+      if (url.endsWith('/paas/apps') && (!init?.method || init.method === 'GET')) {
+        return new Response(
+          JSON.stringify({
+            apps: [{ id: 'demo', slug: 'demo', image: 'nginx:alpine', status: 'running' }],
+          }),
+          { status: 200 }
+        );
+      }
+      if (url.endsWith('/paas/apps') && init?.method === 'POST') {
+        return new Response(
+          JSON.stringify({ appId: 'demo', slug: 'demo', status: 'running', url: 'https://demo.apps.moonwitness.biz.id' }),
+          { status: 201 }
+        );
+      }
+      if (url.endsWith('/paas/backups')) {
+        return new Response(
+          JSON.stringify({
+            backups: [{ id: 'pg-1', filename: 'pg-1.dump', sizeBytes: 2_097_152, sha256: 'abc', createdAt: '2026-11-25T00:00:00Z' }],
+          }),
+          { status: 200 }
+        );
+      }
+      if (url.endsWith('/agent/containers/run') && init?.method === 'POST') {
+        return new Response(
+          JSON.stringify({
+            ok: true,
+            slug: 'demo',
+            containerName: 'mw-paas-demo',
+            containerId: 'ctr-demo',
+            status: 'running',
+          }),
+          { status: 200 }
+        );
+      }
+      if (url.endsWith('/agent/caddy/reconcile') && init?.method === 'POST') {
+        return new Response(JSON.stringify({ success: true }), { status: 200 });
+      }
+      return new Response('{}', { status: 404 });
+    };
+
+    const harness = await buildApp({ fetchImpl: customFetch });
+    try {
+      harness.setAuth(null);
+      const unauth = await harness.app.inject({ method: 'GET', url: '/api/cloud/paas/metrics' });
+      expect(unauth.statusCode).toBe(401);
+
+      harness.setAuth({ userId: 2, role: 'superadmin', companyId: 1 });
+      const metricsRes = await harness.app.inject({ method: 'GET', url: '/api/cloud/paas/metrics' });
+      expect(metricsRes.statusCode).toBe(200);
+      expect(metricsRes.json().data.nodeId).toBe('vps-node');
+
+      const appsRes = await harness.app.inject({ method: 'GET', url: '/api/cloud/paas/apps' });
+      expect(appsRes.statusCode).toBe(200);
+      expect(appsRes.json().data).toHaveLength(1);
+
+      const deployRes = await harness.app.inject({
+        method: 'POST',
+        url: '/api/cloud/paas/apps/deploy',
+        payload: { slug: 'demo', image: 'nginx:alpine', port: 80 },
+      });
+      expect(deployRes.statusCode).toBe(201);
+
+      const backupsRes = await harness.app.inject({ method: 'GET', url: '/api/cloud/paas/backups' });
+      expect(backupsRes.statusCode).toBe(200);
+      expect(backupsRes.json().data[0].sizeMb).toBe(2);
+    } finally {
+      await harness.app.close();
+    }
+  });
+
+  describe('Postgres PaaS settings & TLS lockdown', () => {
+    let harness: TestApp;
+
+    beforeAll(async () => {
+      const customFetch: typeof fetch = async (input, init) => {
+        const url = String(input);
+        if (url.endsWith('/paas/metrics')) {
+          return new Response(
+            JSON.stringify({
+              nodeId: 'vps-node',
+              meshIp: '10.144.0.1',
+              cpuPercent: 4.5,
+              memoryUsedMb: 1024,
+              memoryTotalMb: 8192,
+              runningApps: 2,
+            }),
+            { status: 200 }
+          );
+        }
+        if (url.endsWith('/agent/caddy/reconcile') && init?.method === 'POST') {
+          return new Response(JSON.stringify({ success: true }), { status: 200 });
+        }
+        if (url.endsWith('/agent/containers/run') && init?.method === 'POST') {
+          return new Response(
+            JSON.stringify({
+              ok: true,
+              slug: 'test-app',
+              containerName: 'mw-paas-test-app',
+              containerId: 'ctr-test-app',
+              status: 'running',
+            }),
+            { status: 200 }
+          );
+        }
+        if (url.endsWith('/agent/git/deploy') && init?.method === 'POST') {
+          return new Response(
+            JSON.stringify({
+              ok: true,
+              slug: 'test-app',
+              image: 'test-image',
+              branch: 'main',
+              commitSha: 'abc123',
+              containerName: 'mw-paas-test-app',
+              containerId: 'ctr-test-app',
+            }),
+            { status: 200 }
+          );
+        }
+        if (url.endsWith('/agent/containers') && (!init?.method || init.method === 'GET')) {
+          return new Response(
+            JSON.stringify({
+              containers: [
+                { name: 'test-app', containerId: 'ctr-1', image: 'nginx', state: 'running', status: 'running', slug: 'test-app', managed: true },
+              ],
+            }),
+            { status: 200 }
+          );
+        }
+        if (url.includes('/agent/containers/') && url.includes('/stats')) {
+          return new Response(
+            JSON.stringify({
+              slug: 'test-app',
+              containerName: 'mw-paas-test-app',
+              cpuPercent: 1.5,
+              memoryPercent: 25.0,
+              memoryUsed: '256MiB',
+              memoryLimit: '1GiB',
+            }),
+            { status: 200 }
+          );
+        }
+        if (url.endsWith('/agent/dns/verify') && init?.method === 'POST') {
+          return new Response(
+            JSON.stringify({
+              ok: true,
+              expectedIpv4: '1.2.3.4',
+              allMatched: true,
+              instance: { matched: true },
+              wildcard: { matched: false },
+              whatsapp: { matched: false },
+              httpsReady: { reachable: true, tlsVerified: true },
+            }),
+            { status: 200 }
+          );
+        }
+        return new Response('{}', { status: 404 });
+      };
+
+      // Ensure models are bound to the database
+      const { Model } = await import('objection');
+      Model.knex(db);
+
+      harness = await buildApp({
+        fetchImpl: customFetch,
+        controlPlaneUrl: 'http://127.0.0.1:3003',
+        adminToken: TEST_ADMIN_TOKEN,
+      });
+      harness.setAuth({ userId: 2, role: 'superadmin', companyId: 1 });
+    });
+
+    afterAll(async () => {
+      await harness.app.close();
+    });
+
+    it('GET /settings reads from base_config_parameters and builds Caddy spec', async () => {
+      const res = await harness.app.inject({ method: 'GET', url: '/api/cloud/paas/settings' });
+      expect(res.statusCode).toBe(200);
+      expect(res.json().success).toBe(true);
+      expect(res.json().data).toHaveProperty('instanceDomain');
+      expect(res.json().data).toHaveProperty('wildcardDomain');
+      expect(res.json().data).toHaveProperty('routes');
+      expect(res.json().data).toHaveProperty('previewListeners');
+    });
+
+    it('POST /settings/verify-dns proxies to agent', async () => {
+      const res = await harness.app.inject({
+        method: 'POST',
+        url: '/api/cloud/paas/settings/verify-dns',
+        payload: { instanceDomain: 'test.example.com', checkHttps: false },
+      });
+      expect(res.statusCode).toBe(200);
+      expect(res.json().success).toBe(true);
+    });
+
+    it('POST /settings/apply rejects lockdown when checkHttps fails', async () => {
+      const customFetchFailHttps: typeof fetch = async (input, init) => {
+        const url = String(input);
+        if (url.endsWith('/paas/metrics')) {
+          return new Response(
+            JSON.stringify({
+              nodeId: 'vps-node',
+              meshIp: '10.144.0.1',
+              cpuPercent: 4.5,
+              memoryUsedMb: 1024,
+              memoryTotalMb: 8192,
+              runningApps: 2,
+            }),
+            { status: 200 }
+          );
+        }
+        if (url.endsWith('/agent/dns/verify') && init?.method === 'POST') {
+          // Simulate DNS check failing HTTPS
+          return new Response(
+            JSON.stringify({
+              ok: true,
+              expectedIpv4: '1.2.3.4',
+              allMatched: false,
+              instance: { matched: true },
+              wildcard: { matched: false },
+              whatsapp: { matched: false },
+              httpsReady: { reachable: false, tlsVerified: false },
+            }),
+            { status: 200 }
+          );
+        }
+        if (url.endsWith('/agent/caddy/reconcile') && init?.method === 'POST') {
+          return new Response(JSON.stringify({ success: true }), { status: 200 });
+        }
+        return new Response('{}', { status: 404 });
+      };
+
+      const harnessFail = await buildApp({
+        fetchImpl: customFetchFailHttps,
+        controlPlaneUrl: 'http://127.0.0.1:3003',
+        adminToken: TEST_ADMIN_TOKEN,
+      });
+      harnessFail.setAuth({ userId: 2, role: 'superadmin', companyId: 1 });
+
+      const res = await harnessFail.app.inject({
+        method: 'POST',
+        url: '/api/cloud/paas/settings/apply',
+        payload: { instanceDomain: 'test.example.com', publicPortEnabled: false, checkHttps: true },
+      });
+      expect(res.statusCode).toBe(400);
+      expect(res.json().success).toBe(false);
+      await harnessFail.app.close();
+    });
+
+    it('POST /settings/apply accepts when checkHttps passes', async () => {
+      const customFetchPassHttps: typeof fetch = async (input, init) => {
+        const url = String(input);
+        if (url.endsWith('/paas/metrics')) {
+          return new Response(
+            JSON.stringify({
+              nodeId: 'vps-node',
+              meshIp: '10.144.0.1',
+              cpuPercent: 4.5,
+              memoryUsedMb: 1024,
+              memoryTotalMb: 8192,
+              runningApps: 2,
+            }),
+            { status: 200 }
+          );
+        }
+        if (url.endsWith('/agent/dns/verify') && init?.method === 'POST') {
+          return new Response(
+            JSON.stringify({
+              ok: true,
+              expectedIpv4: '1.2.3.4',
+              allMatched: true,
+              instance: { matched: true },
+              wildcard: { matched: false },
+              whatsapp: { matched: false },
+              httpsReady: { reachable: true, tlsVerified: true },
+            }),
+            { status: 200 }
+          );
+        }
+        if (url.endsWith('/agent/caddy/reconcile') && init?.method === 'POST') {
+          return new Response(JSON.stringify({ success: true }), { status: 200 });
+        }
+        return new Response('{}', { status: 404 });
+      };
+
+      const harnessPass = await buildApp({
+        fetchImpl: customFetchPassHttps,
+        controlPlaneUrl: 'http://127.0.0.1:3003',
+        adminToken: TEST_ADMIN_TOKEN,
+      });
+      harnessPass.setAuth({ userId: 2, role: 'superadmin', companyId: 1 });
+
+      const res = await harnessPass.app.inject({
+        method: 'POST',
+        url: '/api/cloud/paas/settings/apply',
+        payload: { instanceDomain: 'test.example.com', publicPortEnabled: false, checkHttps: true },
+      });
+      expect(res.statusCode).toBe(200);
+      expect(res.json().success).toBe(true);
+      await harnessPass.app.close();
+    });
+
+    it('never leaks seeded isp.moonwitness.local into Caddy routes', async () => {
+      const res = await harness.app.inject({ method: 'GET', url: '/api/cloud/paas/settings' });
+      const routes = res.json().data.routes;
+      const ispRoute = routes.find((r: { domain: string }) => r.domain.includes('isp.moonwitness.local'));
+      expect(ispRoute).toBeUndefined();
+    });
+  });
+
+  describe('POST /templates/deploy preview port allocation & promote-wildcard secret preservation', () => {
+    let harness: TestApp;
+
+    beforeAll(async () => {
+      const customFetch: typeof fetch = async (input, init) => {
+        const url = String(input);
+        if (url.endsWith('/paas/metrics')) {
+          return new Response(
+            JSON.stringify({
+              nodeId: 'vps-node',
+              meshIp: '10.144.0.1',
+              cpuPercent: 4.5,
+              memoryUsedMb: 1024,
+              memoryTotalMb: 8192,
+              runningApps: 2,
+            }),
+            { status: 200 }
+          );
+        }
+        if (url.endsWith('/agent/caddy/reconcile') && init?.method === 'POST') {
+          return new Response(JSON.stringify({ success: true }), { status: 200 });
+        }
+        if (url.endsWith('/agent/compose/up') && init?.method === 'POST') {
+          return new Response(
+            JSON.stringify({ ok: true, slug: 'uptime-kuma', containers: [] }),
+            { status: 200 }
+          );
+        }
+        if (url.endsWith('/agent/containers') && (!init?.method || init.method === 'GET')) {
+          return new Response(
+            JSON.stringify({
+              containers: [
+                { name: 'uptime-kuma', containerId: 'ctr-1', image: 'uptime-kuma', state: 'running', status: 'running', slug: 'uptime-kuma', managed: true, host_port: 8001 },
+              ],
+            }),
+            { status: 200 }
+          );
+        }
+        if (url.includes('/agent/containers/') && url.includes('/stats')) {
+          return new Response(
+            JSON.stringify({
+              slug: 'uptime-kuma',
+              containerName: 'mw-paas-uptime-kuma',
+              cpuPercent: 1.5,
+              memoryPercent: 25.0,
+              memoryUsed: '256MiB',
+              memoryLimit: '1GiB',
+            }),
+            { status: 200 }
+          );
+        }
+        return new Response('{}', { status: 404 });
+      };
+
+      harness = await buildApp({
+        fetchImpl: customFetch,
+        controlPlaneUrl: 'http://127.0.0.1:3003',
+        adminToken: TEST_ADMIN_TOKEN,
+      });
+      harness.setAuth({ userId: 2, role: 'superadmin', companyId: 1 });
+    });
+
+    afterAll(async () => {
+      await harness.app.close();
+    });
+
+    it('allocates preview port 8001 in IP mode for template deploy', async () => {
+      const res = await harness.app.inject({
+        method: 'POST',
+        url: '/api/cloud/paas/templates/deploy',
+        payload: { slug: 'uptime-kuma', tenantId: 'test-tenant' },
+      });
+      expect(res.statusCode).toBe(201);
+      expect(res.json().data).toHaveProperty('previewPort');
+      // In IP mode with no domain, should allocate preview port 8001 (first available)
+      expect([8001, 8002, 8003, 8004, 8005, 8006, 8007, 8008, 8009, 8010]).toContain(res.json().data.previewPort);
+    });
+
+    it('promote-wildcard switches to <slug>.<wildcard> preserving secrets', async () => {
+      // Ensure models are bound to the database
+      const { Model } = await import('objection');
+      Model.knex(db);
+
+      // First, apply a wildcard domain
+      const customFetchWithWildcard: typeof fetch = async (input, init) => {
+        const url = String(input);
+        if (url.endsWith('/paas/metrics')) {
+          return new Response(
+            JSON.stringify({
+              nodeId: 'vps-node',
+              meshIp: '10.144.0.1',
+              cpuPercent: 4.5,
+              memoryUsedMb: 1024,
+              memoryTotalMb: 8192,
+              runningApps: 2,
+            }),
+            { status: 200 }
+          );
+        }
+        if (url.endsWith('/agent/caddy/reconcile') && init?.method === 'POST') {
+          return new Response(JSON.stringify({ success: true }), { status: 200 });
+        }
+        if (url.endsWith('/agent/compose/up') && init?.method === 'POST') {
+          return new Response(
+            JSON.stringify({ ok: true, slug: 'uptime-kuma', containers: [] }),
+            { status: 200 }
+          );
+        }
+        if (url.endsWith('/agent/dns/verify') && init?.method === 'POST') {
+          return new Response(
+            JSON.stringify({
+              ok: true,
+              expectedIpv4: '1.2.3.4',
+              allMatched: true,
+              instance: { matched: true },
+              wildcard: { matched: false },
+              whatsapp: { matched: false },
+              httpsReady: { reachable: true, tlsVerified: true },
+            }),
+            { status: 200 }
+          );
+        }
+        return new Response('{}', { status: 404 });
+      };
+
+      const harnessPromote = await buildApp({
+        fetchImpl: customFetchWithWildcard,
+        controlPlaneUrl: 'http://127.0.0.1:3003',
+        adminToken: TEST_ADMIN_TOKEN,
+      });
+      harnessPromote.setAuth({ userId: 2, role: 'superadmin', companyId: 1 });
+
+      // Apply settings with wildcard domain
+      const applyRes = await harnessPromote.app.inject({
+        method: 'POST',
+        url: '/api/cloud/paas/settings/apply',
+        payload: { instanceDomain: 'test.example.com', wildcardDomain: 'apps.example.com', publicPortEnabled: false, checkHttps: false },
+      });
+      expect(applyRes.statusCode).toBe(200);
+
+      // Now promote preview apps
+      const promoteRes = await harnessPromote.app.inject({
+        method: 'POST',
+        url: '/api/cloud/paas/settings/promote-wildcard',
+        payload: { wildcardDomain: 'apps.example.com' },
+      });
+      expect(promoteRes.statusCode).toBe(200);
+      expect(promoteRes.json().success).toBe(true);
+      expect(promoteRes.json().data).toHaveProperty('promotedCount');
+      await harnessPromote.app.close();
+    });
+  });
+
+  describe('POST /apps/:slug/env preserves existing secrets with [REDACTED]', () => {
+    let harness: TestApp;
+
+    beforeAll(async () => {
+      // Ensure models are bound to the database
+      const { Model } = await import('objection');
+      Model.knex(db);
+
+      const customFetch: typeof fetch = async (input, init) => {
+        const url = String(input);
+        if (url.endsWith('/paas/metrics')) {
+          return new Response(
+            JSON.stringify({
+              nodeId: 'vps-node',
+              meshIp: '10.144.0.1',
+              cpuPercent: 4.5,
+              memoryUsedMb: 1024,
+              memoryTotalMb: 8192,
+              runningApps: 2,
+            }),
+            { status: 200 }
+          );
+        }
+        if (url.endsWith('/agent/caddy/reconcile') && init?.method === 'POST') {
+          return new Response(JSON.stringify({ success: true }), { status: 200 });
+        }
+        if (url.endsWith('/agent/containers/run') && init?.method === 'POST') {
+          return new Response(
+            JSON.stringify({
+              ok: true,
+              slug: 'secret-test',
+              containerName: 'mw-paas-secret-test',
+              containerId: 'ctr-secret-test',
+              status: 'running',
+            }),
+            { status: 200 }
+          );
+        }
+        if (url.endsWith('/agent/compose/up') && init?.method === 'POST') {
+          return new Response(
+            JSON.stringify({ ok: true, slug: 'secret-test', containers: [] }),
+            { status: 200 }
+          );
+        }
+        if (url.endsWith('/agent/containers') && (!init?.method || init.method === 'GET')) {
+          return new Response(
+            JSON.stringify({
+              containers: [
+                { name: 'secret-test', containerId: 'ctr-1', image: 'nginx', state: 'running', status: 'running', slug: 'secret-test', managed: true },
+              ],
+            }),
+            { status: 200 }
+          );
+        }
+        return new Response('{}', { status: 404 });
+      };
+
+      harness = await buildApp({
+        fetchImpl: customFetch,
+        controlPlaneUrl: 'http://127.0.0.1:3003',
+        adminToken: TEST_ADMIN_TOKEN,
+      });
+      harness.setAuth({ userId: 2, role: 'superadmin', companyId: 1 });
+    });
+
+    afterAll(async () => {
+      await harness.app.close();
+    });
+
+    it('preserves existing secret when [REDACTED] is sent for env var', async () => {
+      // First deploy an app with a secret
+      const deployRes = await harness.app.inject({
+        method: 'POST',
+        url: '/api/cloud/paas/apps/deploy',
+        payload: { slug: 'secret-test', image: 'nginx:alpine', port: 80, env: { MY_SECRET: 'super-secret-value', PUBLIC_VAR: 'public' } },
+      });
+      expect(deployRes.statusCode).toBe(201);
+
+      // Now update env with [REDACTED] for the secret
+      const updateRes = await harness.app.inject({
+        method: 'POST',
+        url: '/api/cloud/paas/apps/secret-test/env',
+        payload: { env: { MY_SECRET: '[REDACTED]', PUBLIC_VAR: 'updated-public', NEW_VAR: 'new-value' }, merge: true, redeploy: false },
+      });
+      expect(updateRes.statusCode).toBe(200);
+      expect(updateRes.json().success).toBe(true);
+      // The response should redact all values
+      expect(updateRes.json().data.env).toEqual({
+        MY_SECRET: '[REDACTED]',
+        PUBLIC_VAR: '[REDACTED]',
+        NEW_VAR: '[REDACTED]',
+      });
+
+      const storedApp = await CloudApp.query().findOne({
+        company_id: 1,
+        name: 'secret-test',
+        managed_by: 'paas',
+        is_active: true,
+      });
+      expect(storedApp?.env_vars).toEqual({
+        MY_SECRET: 'super-secret-value',
+        PUBLIC_VAR: 'updated-public',
+        NEW_VAR: 'new-value',
+      });
+      expect(updateRes.body).not.toContain('super-secret-value');
+      expect(updateRes.body).not.toContain('updated-public');
+      expect(updateRes.body).not.toContain('new-value');
+    });
+  });
+
+  describe('GET /metrics parses memoryUsedMB/memoryTotalMB', () => {
+    it('parses both camelCase and uppercase MB', async () => {
+      const customFetch: typeof fetch = async (input, init) => {
+        const url = String(input);
+        if (url.endsWith('/paas/metrics')) {
+          // Return both camelCase and uppercase variants
+          return new Response(
+            JSON.stringify({
+              nodeId: 'vps-node',
+              meshIp: '10.144.0.1',
+              cpuPercent: 4.5,
+              memoryUsedMB: 2048,
+              memoryTotalMB: 16384,
+              runningApps: 2,
+            }),
+            { status: 200 }
+          );
+        }
+        return new Response('{}', { status: 404 });
+      };
+
+      const harness = await buildApp({ fetchImpl: customFetch, adminToken: TEST_ADMIN_TOKEN });
+      harness.setAuth({ userId: 2, role: 'superadmin', companyId: 1 });
+
+      const res = await harness.app.inject({ method: 'GET', url: '/api/cloud/paas/metrics' });
+      expect(res.statusCode).toBe(200);
+      expect(res.json().data.memoryUsedMb).toBe(2048);
+      expect(res.json().data.memoryTotalMb).toBe(16384);
+      await harness.app.close();
+    });
+  });
+
+  describe('GET /mesh/status returns live routes', () => {
+    it('returns mesh, containers, and routes', async () => {
+      // Ensure models are bound to the database
+      const { Model } = await import('objection');
+      Model.knex(db);
+
+      const customFetch: typeof fetch = async (input, init) => {
+        const url = String(input);
+        if (url.endsWith('/agent/metrics')) {
+          return new Response(
+            JSON.stringify({
+              nodeId: 'vps-node',
+              meshIp: '10.144.0.1',
+              cpuPercent: 4.5,
+              memoryUsedMb: 1024,
+              memoryTotalMb: 8192,
+              runningApps: 2,
+            }),
+            { status: 200 }
+          );
+        }
+        if (url.endsWith('/mesh/status')) {
+          return new Response(
+            JSON.stringify({
+              nodeId: 'vps-node',
+              meshIp: '10.144.0.1',
+              cpuPercent: 4.5,
+              memoryUsedMb: 1024,
+              memoryTotalMb: 8192,
+              runningApps: 2,
+            }),
+            { status: 200 }
+          );
+        }
+        if (url.endsWith('/agent/containers') && (!init?.method || init.method === 'GET')) {
+          return new Response(
+            JSON.stringify({
+              containers: [
+                { name: 'test-app', containerId: 'ctr-1', image: 'nginx', state: 'running', status: 'running', slug: 'test-app', managed: true },
+              ],
+            }),
+            { status: 200 }
+          );
+        }
+        if (url.endsWith('/agent/caddy/reconcile') && init?.method === 'POST') {
+          return new Response(
+            JSON.stringify({
+              containers: [
+                { name: 'test-app', containerId: 'ctr-1', image: 'nginx', state: 'running', status: 'running', slug: 'test-app', managed: true },
+              ],
+            }),
+            { status: 200 }
+          );
+        }
+        if (url.endsWith('/agent/caddy/reconcile') && init?.method === 'POST') {
+          return new Response(JSON.stringify({ success: true }), { status: 200 });
+        }
+        return new Response('{}', { status: 404 });
+      };
+
+      const harness = await buildApp({ fetchImpl: customFetch, adminToken: TEST_ADMIN_TOKEN });
+      harness.setAuth({ userId: 2, role: 'superadmin', companyId: 1 });
+
+      const res = await harness.app.inject({ method: 'GET', url: '/api/cloud/paas/mesh/status' });
+      expect(res.statusCode).toBe(200);
+      expect(res.json().success).toBe(true);
+      expect(res.json().data).toHaveProperty('mesh');
+      expect(res.json().data).toHaveProperty('containers');
+      expect(res.json().data).toHaveProperty('routes');
+      expect(res.json().data).toHaveProperty('previewListeners');
+      expect(res.json().data.mesh).toHaveProperty('nodeId', 'vps-node');
+      expect(Array.isArray(res.json().data.containers)).toBe(true);
+      expect(Array.isArray(res.json().data.routes)).toBe(true);
+      await harness.app.close();
+    });
   });
 });

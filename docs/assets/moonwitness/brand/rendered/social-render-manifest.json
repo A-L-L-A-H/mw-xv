@@ -1,0 +1,286 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-25T11:18:05.225Z",
+  "outDir": "Z:/repo/mw-xv/packages/assets/brand/rendered",
+  "formats": [
+    "og",
+    "youtube-banner",
+    "youtube-thumbnail",
+    "youtube-profile",
+    "youtube-watermark",
+    "x-header",
+    "x-post",
+    "linkedin",
+    "linkedin-banner",
+    "linkedin-carousel",
+    "instagram-square",
+    "instagram-story",
+    "tiktok",
+    "bluesky",
+    "devto-cover",
+    "github"
+  ],
+  "themes": [
+    "light",
+    "dark"
+  ],
+  "totalFiles": 32,
+  "files": [
+    {
+      "format": "og",
+      "theme": "light",
+      "width": 1200,
+      "height": 630,
+      "bytes": 48586,
+      "relativePath": "og.png"
+    },
+    {
+      "format": "og",
+      "theme": "dark",
+      "width": 1200,
+      "height": 630,
+      "bytes": 50798,
+      "relativePath": "og.dark.png"
+    },
+    {
+      "format": "youtube-banner",
+      "theme": "light",
+      "width": 2560,
+      "height": 1440,
+      "bytes": 97319,
+      "relativePath": "youtube-banner.png"
+    },
+    {
+      "format": "youtube-banner",
+      "theme": "dark",
+      "width": 2560,
+      "height": 1440,
+      "bytes": 95219,
+      "relativePath": "youtube-banner.dark.png"
+    },
+    {
+      "format": "youtube-thumbnail",
+      "theme": "light",
+      "width": 1280,
+      "height": 720,
+      "bytes": 44634,
+      "relativePath": "youtube-thumbnail.png"
+    },
+    {
+      "format": "youtube-thumbnail",
+      "theme": "dark",
+      "width": 1280,
+      "height": 720,
+      "bytes": 43028,
+      "relativePath": "youtube-thumbnail.dark.png"
+    },
+    {
+      "format": "youtube-profile",
+      "theme": "light",
+      "width": 800,
+      "height": 800,
+      "bytes": 68159,
+      "relativePath": "youtube-profile.png"
+    },
+    {
+      "format": "youtube-profile",
+      "theme": "dark",
+      "width": 800,
+      "height": 800,
+      "bytes": 69066,
+      "relativePath": "youtube-profile.dark.png"
+    },
+    {
+      "format": "youtube-watermark",
+      "theme": "light",
+      "width": 150,
+      "height": 150,
+      "bytes": 4367,
+      "relativePath": "youtube-watermark.png"
+    },
+    {
+      "format": "youtube-watermark",
+      "theme": "dark",
+      "width": 150,
+      "height": 150,
+      "bytes": 4275,
+      "relativePath": "youtube-watermark.dark.png"
+    },
+    {
+      "format": "x-header",
+      "theme": "light",
+      "width": 1500,
+      "height": 500,
+      "bytes": 35681,
+      "relativePath": "x-header.png"
+    },
+    {
+      "format": "x-header",
+      "theme": "dark",
+      "width": 1500,
+      "height": 500,
+      "bytes": 35629,
+      "relativePath": "x-header.dark.png"
+    },
+    {
+      "format": "x-post",
+      "theme": "light",
+      "width": 1600,
+      "height": 900,
+      "bytes": 55296,
+      "relativePath": "x-post.png"
+    },
+    {
+      "format": "x-post",
+      "theme": "dark",
+      "width": 1600,
+      "height": 900,
+      "bytes": 55295,
+      "relativePath": "x-post.dark.png"
+    },
+    {
+      "format": "linkedin",
+      "theme": "light",
+      "width": 1200,
+      "height": 627,
+      "bytes": 35864,
+      "relativePath": "linkedin.png"
+    },
+    {
+      "format": "linkedin",
+      "theme": "dark",
+      "width": 1200,
+      "height": 627,
+      "bytes": 35693,
+      "relativePath": "linkedin.dark.png"
+    },
+    {
+      "format": "linkedin-banner",
+      "theme": "light",
+      "width": 1128,
+      "height": 191,
+      "bytes": 20948,
+      "relativePath": "linkedin-banner.png"
+    },
+    {
+      "format": "linkedin-banner",
+      "theme": "dark",
+      "width": 1128,
+      "height": 191,
+      "bytes": 20823,
+      "relativePath": "linkedin-banner.dark.png"
+    },
+    {
+      "format": "linkedin-carousel",
+      "theme": "light",
+      "width": 1080,
+      "height": 1080,
+      "bytes": 44660,
+      "relativePath": "linkedin-carousel.png"
+    },
+    {
+      "format": "linkedin-carousel",
+      "theme": "dark",
+      "width": 1080,
+      "height": 1080,
+      "bytes": 44323,
+      "relativePath": "linkedin-carousel.dark.png"
+    },
+    {
+      "format": "instagram-square",
+      "theme": "light",
+      "width": 1080,
+      "height": 1080,
+      "bytes": 44711,
+      "relativePath": "instagram-square.png"
+    },
+    {
+      "format": "instagram-square",
+      "theme": "dark",
+      "width": 1080,
+      "height": 1080,
+      "bytes": 44379,
+      "relativePath": "instagram-square.dark.png"
+    },
+    {
+      "format": "instagram-story",
+      "theme": "light",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 72927,
+      "relativePath": "instagram-story.png"
+    },
+    {
+      "format": "instagram-story",
+      "theme": "dark",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 71356,
+      "relativePath": "instagram-story.dark.png"
+    },
+    {
+      "format": "tiktok",
+      "theme": "light",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 73619,
+      "relativePath": "tiktok.png"
+    },
+    {
+      "format": "tiktok",
+      "theme": "dark",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 72045,
+      "relativePath": "tiktok.dark.png"
+    },
+    {
+      "format": "bluesky",
+      "theme": "light",
+      "width": 1600,
+      "height": 900,
+      "bytes": 55016,
+      "relativePath": "bluesky.png"
+    },
+    {
+      "format": "bluesky",
+      "theme": "dark",
+      "width": 1600,
+      "height": 900,
+      "bytes": 55015,
+      "relativePath": "bluesky.dark.png"
+    },
+    {
+      "format": "devto-cover",
+      "theme": "light",
+      "width": 1000,
+      "height": 420,
+      "bytes": 24848,
+      "relativePath": "devto-cover.png"
+    },
+    {
+      "format": "devto-cover",
+      "theme": "dark",
+      "width": 1000,
+      "height": 420,
+      "bytes": 24917,
+      "relativePath": "devto-cover.dark.png"
+    },
+    {
+      "format": "github",
+      "theme": "light",
+      "width": 1280,
+      "height": 640,
+      "bytes": 37400,
+      "relativePath": "github.png"
+    },
+    {
+      "format": "github",
+      "theme": "dark",
+      "width": 1280,
+      "height": 640,
+      "bytes": 37220,
+      "relativePath": "github.dark.png"
+    }
+  ]
+}

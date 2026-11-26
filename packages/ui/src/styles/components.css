@@ -644,6 +644,24 @@
     font-size: clamp(1.75rem, 4vw, 3rem);
     line-height: 0.95;
   }
+  .mw-ui-metric-tile-error-indicator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--mw-radius-full);
+    background: var(--mw-destructive);
+    color: var(--mw-destructive-foreground);
+  }
+  .mw-ui-metric-tile[data-size='compact'] .mw-ui-metric-tile-error-indicator {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  .mw-ui-metric-tile[data-size='hero'] .mw-ui-metric-tile-error-indicator {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
   .mw-ui-metric-tile[data-accent='magenta'] .mw-ui-metric-tile-value {
     color: var(--mw-magenta-readable);
   }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@moonwitness/ui/components/button';
 import { Checkbox } from '@moonwitness/ui/components/checkbox';
 import {
@@ -21,25 +21,44 @@ import wiresUrl from '@moonwitness/assets/environments/moon-city-prop-wires.svg'
 import fallbackHeroDesktop from '@moonwitness/assets/illustrations/home-hero-desktop.webp';
 import fallbackHeroMobile from '@moonwitness/assets/illustrations/home-hero-mobile.webp';
 import moonCitySceneBundle from '@moonwitness/assets/scenes/moon-city-scene.json';
+import manifestUrl from '@moonwitness/assets/manifest.json?url';
+import licensesUrl from '@moonwitness/assets/licenses.json?url';
+import {
+  buildProvenanceIndex,
+  resolveAssetReviewStatuses,
+  type AssetProvenanceEntry,
+  type AssetReviewStatus,
+} from './asset-review-status';
+import { resolveSceneLayerSources } from './scene-layer-sources';
+const SceneLabSpecimensLazy = lazy(() => import('./SceneLabSpecimens').then((mod) => ({ default: mod.SceneLabSpecimens })));
 import idleFrame1 from '@moonwitness/assets/animation/crew-01-idle/crew-01-idle-frame-01.svg';
 import idleFrame2 from '@moonwitness/assets/animation/crew-01-idle/crew-01-idle-frame-02.svg';
 
 const HERO_SCENE = moonCitySceneBundle.scenes.find((entry) => entry.id === 'moon-city-hero')!;
-const SCENE_LAYER_SOURCES = [
-  skyUrl,
-  moonUrl,
-  cloudsFarUrl,
-  skylineFarUrl,
-  cloudsNearUrl,
-  skylineMidUrl,
-  foregroundUrl,
-  railingUrl,
-  wiresUrl,
-];
+const SCENE_LAYER_SOURCES = {
+  sky: skyUrl,
+  moon: moonUrl,
+  'clouds-far': cloudsFarUrl,
+  'skyline-far': skylineFarUrl,
+  'clouds-near': cloudsNearUrl,
+  'skyline-mid': skylineMidUrl,
+  'rooftop-foreground': foregroundUrl,
+  'prop-railing': railingUrl,
+  'prop-wires': wiresUrl,
+} satisfies Record<string, string>;
 
-const INITIAL_LAYERS: readonly SceneLayerDescriptor[] = HERO_SCENE.layers.map((layer, index) => ({
+const CREW_ACTOR = (() => {
+  const actor = HERO_SCENE.actors.find((entry) => entry.id === 'crew-01');
+  if (!actor) throw new Error('Moon City hero scene is missing its crew-01 actor descriptor.');
+  return actor;
+})();
+
+const INITIAL_LAYERS: readonly SceneLayerDescriptor[] = resolveSceneLayerSources(
+  HERO_SCENE.layers,
+  SCENE_LAYER_SOURCES
+).map((layer) => ({
   id: layer.id,
-  src: SCENE_LAYER_SOURCES[index],
+  src: layer.src,
   mediaKind: 'vector',
   zOrder: layer.order,
   opacity: layer.opacity,
@@ -85,10 +104,13 @@ const IDLE_CLIP: SpriteClipMetadata = {
  * (70) / railing (80) and the foreground wires (85).
  */
 const SCENE_CREW_CLIP: SpriteClipMetadata = { ...IDLE_CLIP, id: 'crew-01-idle-scene' };
-const CREW_PLANE_Z_ORDER = 82;
 
 export function SceneLab() {
   const harness = getActiveSceneHarness() ?? {};
+  const [provenanceData, setProvenanceData] = useState<{
+    provenanceByPath: Map<string, AssetProvenanceEntry>;
+    assetStatuses: Map<string, AssetReviewStatus>;
+  } | null>(null);
   const [layers, setLayers] = useState<SceneLayerDescriptor[]>([...INITIAL_LAYERS]);
   const [hiddenIds, setHiddenIds] = useState<Record<string, boolean>>({});
   const [composition, setComposition] = useState<'desktop' | 'mobile'>('desktop');
@@ -104,6 +126,38 @@ export function SceneLab() {
   const [timelineStatus, setTimelineStatus] = useState<TimelineStatus>('idle');
   const [timelineTimeMs, setTimelineTimeMs] = useState(harness.fixedTimeMs ?? 0);
   const timelineRef = useRef<ReturnType<typeof createSceneTimeline> | null>(null);
+
+  // Provenance metadata (manifest.json + licenses.json, ~220 KB combined) loads after first
+  // render via URL imports so it never lands in the JavaScript bundle graph.
+  useEffect(() => {
+    let active = true;
+    Promise.all([
+      fetch(manifestUrl).then((response) => {
+        if (!response.ok) throw new Error('The canonical asset manifest could not be loaded.');
+        return response.json() as Promise<{ assets: { path: string; status?: string }[] }>;
+      }),
+      fetch(licensesUrl).then((response) => {
+        if (!response.ok) throw new Error('Asset provenance could not be loaded.');
+        return response.json() as Promise<{ sourceAssets?: AssetProvenanceEntry[] }>;
+      }),
+    ])
+      .then(([manifest, provenance]) => {
+        if (!active) return;
+        setProvenanceData({
+          provenanceByPath: buildProvenanceIndex(provenance.sourceAssets ?? []),
+          assetStatuses: resolveAssetReviewStatuses(
+            manifest.assets,
+            buildProvenanceIndex(provenance.sourceAssets ?? [])
+          ),
+        });
+      })
+      .catch(() => {
+        if (active) setProvenanceData({ provenanceByPath: new Map(), assetStatuses: new Map() });
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     const timeline = createSceneTimeline({
@@ -253,8 +307,8 @@ export function SceneLab() {
         <div
           className="scene-lab-crew-layer"
           data-layer-id="crew-01"
-          data-z-order={String(CREW_PLANE_Z_ORDER)}
-          style={{ zIndex: CREW_PLANE_Z_ORDER }}
+          data-z-order={String(CREW_ACTOR.order)}
+          style={{ zIndex: CREW_ACTOR.order }}
         >
           <SpritePlayer
             clip={SCENE_CREW_CLIP}
@@ -279,19 +333,30 @@ export function SceneLab() {
       </div>
       <div className="scene-lab-grid">
         <div className="scene-lab-inspector" data-testid="depth-inspector">
-          <h3>Depth &amp; pivot inspector</h3>
+          <h3>Depth & pivot inspector</h3>
           <ul className="scene-lab-plane-list">
             {layers.map((layer, index) => {
               const hidden = Boolean(hiddenIds[layer.id]);
+              const canonical = HERO_SCENE.layers.find((entry) => entry.id === layer.id);
+              const provenance = canonical
+                ? provenanceData?.provenanceByPath.get(canonical.asset)
+                : undefined;
+              const reviewStatus = canonical
+                ? provenanceData?.assetStatuses.get(canonical.asset) ?? 'unverified'
+                : 'unverified';
               return (
                 <li key={layer.id} data-plane-id={layer.id} data-plane-order={layer.zOrder}>
                   <label>
                     <Checkbox checked={!hidden} onChange={() => toggleLayer(layer.id)} />
                     <span>
                       {layer.id} (z={layer.zOrder} · pivot {layer.pivot?.x ?? 0.5},
-                      {layer.pivot?.y ?? 0.5} · px {layer.parallax?.x ?? 0})
+                      {layer.pivot?.y ?? 0.5} · px {layer.parallax?.x ?? 0}) · {reviewStatus}
                     </span>
                   </label>
+                  <small data-testid={`plane-provenance-${layer.id}`}>
+                    {canonical?.asset ?? 'Unmapped asset'} · {provenance?.license ?? 'provenance unavailable'}
+                    {provenance?.distribution ? ` · ${provenance.distribution}` : ''}
+                  </small>
                   <div className="scene-lab-plane-actions">
                     <Button
                       size="sm"
@@ -331,6 +396,9 @@ export function SceneLab() {
           </div>
         </div>
       </div>
+      <Suspense fallback={<div data-testid="scene-lab-specimens-loading" aria-busy="true" />}>
+        <SceneLabSpecimensLazy />
+      </Suspense>
     </div>
   );
 }

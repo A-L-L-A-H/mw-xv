@@ -15,6 +15,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -29,17 +30,22 @@ var (
 	gitBranchPattern     = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9._/-]{0,127}$`)
 	gitDockerfilePattern = regexp.MustCompile(`^[a-zA-Z0-9._/-]{1,255}$`)
 	gitShortShaPattern   = regexp.MustCompile(`^[a-fA-F0-9]{7,40}$`)
+	// gitHealthPathPattern constrains healthcheck paths used in SSRF-sensitive
+	// probe URLs: must start with '/', limited to path-safe characters.
+	gitHealthPathPattern = regexp.MustCompile(`^/[A-Za-z0-9._\-\/]*$`)
 )
 
 // GitDeployRequest is the payload for POST /paas/apps/deploy-git.
 type GitDeployRequest struct {
 	Slug           string            `json:"slug"`
 	TenantID       string            `json:"tenantId"`
+	Tenant         string            `json:"tenant,omitempty"`
 	GitRepo        string            `json:"gitRepo"`
 	Branch         string            `json:"branch,omitempty"`
 	DockerfilePath string            `json:"dockerfilePath,omitempty"`
 	Port           int               `json:"port"`
 	Domain         string            `json:"domain,omitempty"`
+	NoAutoDomain   bool              `json:"noAutoDomain,omitempty"`
 	Env            map[string]string `json:"env,omitempty"`
 }
 
@@ -219,6 +225,15 @@ func (m *PaasManager) handleGitDeploy() http.HandlerFunc {
 			writePaasJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid json payload"})
 			return
 		}
+		if req.TenantID == "" {
+			req.TenantID = strings.TrimSpace(req.Tenant)
+		}
+		if req.TenantID == "" {
+			req.TenantID = "default"
+		}
+		if req.Domain == "" && !req.NoAutoDomain && m.baseDomain != "" && req.Slug != "" {
+			req.Domain = req.Slug + "." + m.baseDomain
+		}
 		if err := ValidateGitDeployRequest(req); err != nil {
 			writePaasJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
 			return
@@ -229,11 +244,13 @@ func (m *PaasManager) handleGitDeploy() http.HandlerFunc {
 
 		resp, err := m.buildAndDeployFromGit(ctx, req)
 		if err != nil {
+			m.recordDeployment(req.Slug, "git_deploy", req.GitRepo, "failed", err.Error())
 			writePaasJSON(w, http.StatusInternalServerError, map[string]string{
 				"error": RedactPaasText(err.Error(), collectEnvSecrets(req.Env)...),
 			})
 			return
 		}
+		m.recordDeployment(req.Slug, "git_deploy", resp.Image, "success", "git deploy "+resp.Branch+"@"+resp.CommitSHA)
 		writePaasJSON(w, http.StatusOK, resp)
 	}
 }
@@ -632,15 +649,22 @@ func (m *PaasManager) deployPreviewBlueGreen(ctx context.Context, req PreviewDep
 	if healthPath == "" {
 		healthPath = "/health"
 	}
-	probeURL := fmt.Sprintf("http://%s:%d%s", candidateName, req.Port, healthPath)
-	prober := m.healthProber
-	if prober == nil {
-		prober = defaultHTTPHealthProbe
+	if !gitHealthPathPattern.MatchString(healthPath) {
+		return PreviewDeployResponse{}, fmt.Errorf("invalid healthcheckPath: %q", req.HealthcheckPath)
 	}
-	if err := prober(ctx, probeURL); err != nil {
-		// Rollback unhealthy candidate immediately without touching DB or Caddy.
-		_, _ = m.runner(ctx, m.dockerBin, "rm", "-f", candidateName)
-		return PreviewDeployResponse{}, fmt.Errorf("%w (%s): %v", errPreviewUnhealthy, probeURL, err)
+	if m.healthProber != nil {
+		probeURL := fmt.Sprintf("http://%s:%d%s", candidateName, req.Port, healthPath)
+		if err := m.healthProber(ctx, probeURL); err != nil {
+			// Rollback unhealthy candidate immediately without touching DB or Caddy.
+			_, _ = m.runner(ctx, m.dockerBin, "rm", "-f", candidateName)
+			return PreviewDeployResponse{}, fmt.Errorf("%w (%s): %v", errPreviewUnhealthy, probeURL, err)
+		}
+	} else {
+		if err := m.probeCandidateContainer(ctx, candidateName, req.Port, healthPath); err != nil {
+			// Rollback unhealthy candidate immediately without touching DB or Caddy.
+			_, _ = m.runner(ctx, m.dockerBin, "rm", "-f", candidateName)
+			return PreviewDeployResponse{}, fmt.Errorf("%w (%s): %v", errPreviewUnhealthy, candidateName, err)
+		}
 	}
 
 	envBytes, _ := json.Marshal(req.Env)
@@ -704,4 +728,71 @@ func (m *PaasManager) deployPreviewBlueGreen(ctx context.Context, req PreviewDep
 		HealthStatus:      "healthy",
 		Domain:            req.Domain,
 	}, nil
+}
+
+func (m *PaasManager) probeCandidateContainer(ctx context.Context, candidateName string, port int, healthPath string) error {
+	client := &http.Client{
+		Timeout: 2 * time.Second,
+		CheckRedirect: func(*http.Request, []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+	deadline := time.Now().Add(8 * time.Second)
+	var lastErr error
+
+	for {
+		out, err := m.runner(ctx, m.dockerBin, "inspect", "--format", "{{range .NetworkSettings.Networks}}{{.IPAddress}} {{end}}", candidateName)
+		if err != nil {
+			lastErr = fmt.Errorf("inspect candidate IP: %w", err)
+		} else {
+			var targetIP net.IP
+			for _, field := range strings.Fields(out) {
+				ip := net.ParseIP(strings.TrimSpace(field))
+				if ip == nil || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsMulticast() || ip.IsUnspecified() {
+					continue
+				}
+				if ip.IsPrivate() || ip.IsLoopback() || IsPrivateMeshIP(ip) {
+					targetIP = ip
+					break
+				}
+			}
+			if targetIP == nil {
+				lastErr = errors.New("candidate container has no private network IP")
+			} else if err := ValidatePaasPort(port); err != nil {
+				return err
+			} else if !gitHealthPathPattern.MatchString(healthPath) {
+				return fmt.Errorf("invalid healthcheck path: %q", healthPath)
+			} else {
+				targetURL := fmt.Sprintf("http://%s%s", net.JoinHostPort(targetIP.String(), strconv.Itoa(port)), healthPath)
+				req, reqErr := http.NewRequestWithContext(ctx, http.MethodGet, targetURL, nil)
+				if reqErr != nil {
+					return reqErr
+				}
+				resp, doErr := client.Do(req)
+				if doErr != nil {
+					lastErr = doErr
+				} else {
+					_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, 4096))
+					_ = resp.Body.Close()
+					if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+						return nil
+					}
+					lastErr = fmt.Errorf("candidate returned status %d", resp.StatusCode)
+				}
+			}
+		}
+
+		if time.Now().After(deadline) {
+			break
+		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(400 * time.Millisecond):
+		}
+	}
+	if lastErr == nil {
+		lastErr = errors.New("candidate healthcheck timed out")
+	}
+	return lastErr
 }

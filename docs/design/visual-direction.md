@@ -58,6 +58,8 @@ The Playwright audit (`apps/board/e2e/visual-audit.spec.ts`) covers login (`320Ã
 3. During M5.14 migration, compare the same seeded screens and viewport/theme matrix. Preserve current behavior and seeded data; fix documented visual/accessibility defects with specific regression assertions.
 4. Treat screenshot differences as review evidence, not as an automatic acceptance test. Visual regression thresholds and intentional baseline changes belong in M5.17.
 
-## Visual Universe approval
+## Visual Universe production slice
 
-The MoonWitness XV Visual Universe direction and experience-tier rules are approved in `docs/bundles/visual-universe-pack/evidence/visual-universe-bible-approved.md`. Production art extends the existing token and font system, keeps interface content live, uses original artwork, and preserves accessible reduced-motion/static states. Pilot character and final hero acceptance remain separate approvals.
+The MoonWitness XV Visual Universe direction and experience-tier rules are approved in `docs/bundles/visual-universe-pack/evidence/visual-universe-bible-approved.md`. The first production scene is the layered Moon City homepage hero. It extends the existing token and font system, keeps interface content live, uses original artwork, and preserves accessible reduced-motion/static states. Project-owner approval for the anonymous fictional `crew-01` pilot and the current desktop/mobile artwork is recorded in [Moon City production approval](../decisions/moon-city-production-approval.md); asset provenance and source terms remain recorded separately.
+
+The homepage scene has focused Playwright coverage in Chromium, Firefox, and WebKit. The broader operational Board visual matrix remains under repair; its latest 42-case run and the 14 Firefox/WebKit failures are documented in the [W9 operational report](../bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md). Signals and Archive art remain catalog-only until production routes and data contracts exist.

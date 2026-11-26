@@ -1,0 +1,830 @@
+{
+  "prodMaxLines": 400,
+  "testMaxLines": 800,
+  "files": {
+    "apps/agent-sandbox/src/executor.ts": {
+      "lines": 539,
+      "limit": 400
+    },
+    "apps/agent-sandbox/src/workspace.ts": {
+      "lines": 584,
+      "limit": 400
+    },
+    "apps/api/src/commands/restore-drill-fixture.ts": {
+      "lines": 523,
+      "limit": 400
+    },
+    "apps/api/src/http/generic-rpc.ts": {
+      "lines": 615,
+      "limit": 400
+    },
+    "apps/api/src/routes/generic-extended.routes.ts": {
+      "lines": 428,
+      "limit": 400
+    },
+    "apps/api/src/routes/generic.routes.ts": {
+      "lines": 958,
+      "limit": 400
+    },
+    "apps/api/src/whatsapp/outbox-consumer.ts": {
+      "lines": 624,
+      "limit": 400
+    },
+    "apps/api/tests/auth.test.ts": {
+      "lines": 1960,
+      "limit": 800
+    },
+    "apps/api/tests/local-ai-suggestion.routes.test.ts": {
+      "lines": 950,
+      "limit": 800
+    },
+    "apps/api/tests/orm.test.ts": {
+      "lines": 895,
+      "limit": 800
+    },
+    "apps/api/tests/postgres.integration.test.ts": {
+      "lines": 3199,
+      "limit": 800
+    },
+    "apps/api/tests/whatsapp.routes.test.ts": {
+      "lines": 6552,
+      "limit": 800
+    },
+    "apps/board/.next-cx-qa/dev/types/validator.ts": {
+      "lines": 401,
+      "limit": 400
+    },
+    "apps/board/.next-visual/dev/types/validator.ts": {
+      "lines": 401,
+      "limit": 400
+    },
+    "apps/board/e2e/visual-audit.spec.ts": {
+      "lines": 1297,
+      "limit": 800
+    },
+    "apps/board/e2e/whatsapp.spec.ts": {
+      "lines": 2755,
+      "limit": 800
+    },
+    "apps/board/src/app/board/ai/governance/page.tsx": {
+      "lines": 482,
+      "limit": 400
+    },
+    "apps/board/src/app/board/ai/hq/page.tsx": {
+      "lines": 445,
+      "limit": 400
+    },
+    "apps/board/src/app/board/ai/mission-control/page.tsx": {
+      "lines": 468,
+      "limit": 400
+    },
+    "apps/board/src/app/board/ai/operations/page.tsx": {
+      "lines": 543,
+      "limit": 400
+    },
+    "apps/board/src/board-pages/cloud-isp-page.tsx": {
+      "lines": 588,
+      "limit": 400
+    },
+    "apps/board/src/board-pages/dashboard-page.tsx": {
+      "lines": 988,
+      "limit": 400
+    },
+    "apps/board/src/board-pages/knowledge-page.tsx": {
+      "lines": 609,
+      "limit": 400
+    },
+    "apps/board/src/board-pages/projects-page.tsx": {
+      "lines": 906,
+      "limit": 400
+    },
+    "apps/board/src/board-pages/settings-page.tsx": {
+      "lines": 1425,
+      "limit": 400
+    },
+    "apps/board/src/board-pages/story-workbench-page.tsx": {
+      "lines": 496,
+      "limit": 400
+    },
+    "apps/board/src/components/ai/agi-telemetry-panel.tsx": {
+      "lines": 406,
+      "limit": 400
+    },
+    "apps/board/src/components/ai/ai-api.ts": {
+      "lines": 465,
+      "limit": 400
+    },
+    "apps/board/src/components/ai/desktop-harness-drawer.tsx": {
+      "lines": 1536,
+      "limit": 400
+    },
+    "apps/board/src/components/ai/telemetry-panels.tsx": {
+      "lines": 1164,
+      "limit": 400
+    },
+    "apps/board/src/components/ai/workspace-assistant-drawer.tsx": {
+      "lines": 582,
+      "limit": 400
+    },
+    "apps/board/src/components/cloud/paas-studio-panel.tsx": {
+      "lines": 1128,
+      "limit": 400
+    },
+    "apps/board/src/components/creative/editorial-studio-panel.tsx": {
+      "lines": 1013,
+      "limit": 400
+    },
+    "apps/board/src/components/layout/app-shell.tsx": {
+      "lines": 877,
+      "limit": 400
+    },
+    "apps/board/src/components/layout/cron-scheduler-panel.tsx": {
+      "lines": 498,
+      "limit": 400
+    },
+    "apps/board/src/components/views/chatter.tsx": {
+      "lines": 795,
+      "limit": 400
+    },
+    "apps/board/src/components/views/fields.tsx": {
+      "lines": 1443,
+      "limit": 400
+    },
+    "apps/board/src/components/views/form-view.tsx": {
+      "lines": 630,
+      "limit": 400
+    },
+    "apps/board/src/components/views/import-wizard-dialog.tsx": {
+      "lines": 549,
+      "limit": 400
+    },
+    "apps/board/src/components/views/list-view.tsx": {
+      "lines": 1437,
+      "limit": 400
+    },
+    "apps/board/src/components/whatsapp/conversation-header.tsx": {
+      "lines": 555,
+      "limit": 400
+    },
+    "apps/board/src/components/whatsapp/conversation-timeline.tsx": {
+      "lines": 435,
+      "limit": 400
+    },
+    "apps/board/src/components/whatsapp/group-actions-panel.tsx": {
+      "lines": 511,
+      "limit": 400
+    },
+    "apps/board/src/components/whatsapp/inbox-list.tsx": {
+      "lines": 458,
+      "limit": 400
+    },
+    "apps/board/src/components/whatsapp/message-action-dialogs.tsx": {
+      "lines": 423,
+      "limit": 400
+    },
+    "apps/board/src/components/whatsapp/message-composer.tsx": {
+      "lines": 490,
+      "limit": 400
+    },
+    "apps/board/src/components/whatsapp/profile-drawers.tsx": {
+      "lines": 669,
+      "limit": 400
+    },
+    "apps/board/src/components/whatsapp/use-whatsapp-inbox.ts": {
+      "lines": 417,
+      "limit": 400
+    },
+    "apps/board/src/lib/desktop-bridge.ts": {
+      "lines": 448,
+      "limit": 400
+    },
+    "apps/desktop/desktop-web/main.tsx": {
+      "lines": 460,
+      "limit": 400
+    },
+    "apps/desktop/desktop-web/observatory/cinema-flow-canvas.tsx": {
+      "lines": 1022,
+      "limit": 400
+    },
+    "apps/desktop/desktop-web/observatory/observatory-page.tsx": {
+      "lines": 2239,
+      "limit": 400
+    },
+    "apps/desktop/desktop-web/observatory/plan-dag-canvas.tsx": {
+      "lines": 501,
+      "limit": 400
+    },
+    "apps/desktop/desktop-web/observatory/telemetry-canvases.tsx": {
+      "lines": 511,
+      "limit": 400
+    },
+    "apps/desktop/desktop-web/observatory/types.ts": {
+      "lines": 421,
+      "limit": 400
+    },
+    "apps/desktop/desktop-web/tests/routes.spec.ts": {
+      "lines": 881,
+      "limit": 800
+    },
+    "apps/desktop/src/ai-assistant.ts": {
+      "lines": 639,
+      "limit": 400
+    },
+    "apps/desktop/src/bridge.ts": {
+      "lines": 474,
+      "limit": 400
+    },
+    "apps/desktop/src/importer.ts": {
+      "lines": 501,
+      "limit": 400
+    },
+    "apps/desktop/src/local-api-server.ts": {
+      "lines": 2923,
+      "limit": 400
+    },
+    "apps/desktop/src/local-sidecar.ts": {
+      "lines": 1405,
+      "limit": 400
+    },
+    "apps/desktop/src/mcp-host.ts": {
+      "lines": 453,
+      "limit": 400
+    },
+    "apps/desktop/src/mesh-client.ts": {
+      "lines": 467,
+      "limit": 400
+    },
+    "apps/desktop/src/observatory/analytics.ts": {
+      "lines": 599,
+      "limit": 400
+    },
+    "apps/desktop/src/observatory/antigravity-collector.ts": {
+      "lines": 579,
+      "limit": 400
+    },
+    "apps/desktop/src/observatory/external-agents-collector.ts": {
+      "lines": 1390,
+      "limit": 400
+    },
+    "apps/desktop/src/observatory/service.ts": {
+      "lines": 585,
+      "limit": 400
+    },
+    "apps/desktop/src/observatory/types.ts": {
+      "lines": 480,
+      "limit": 400
+    },
+    "apps/desktop/src/risk-gate.ts": {
+      "lines": 593,
+      "limit": 400
+    },
+    "apps/desktop/src/sync-client.ts": {
+      "lines": 428,
+      "limit": 400
+    },
+    "apps/desktop/src/types.ts": {
+      "lines": 588,
+      "limit": 400
+    },
+    "apps/desktop/src/worktree-sandbox.ts": {
+      "lines": 1261,
+      "limit": 400
+    },
+    "apps/desktop/tests/desktop-harness.test.ts": {
+      "lines": 1853,
+      "limit": 800
+    },
+    "apps/desktop/tests/local-api-server.test.ts": {
+      "lines": 1088,
+      "limit": 800
+    },
+    "apps/docs/src/pages/monitoring/MonitoringDashboard.tsx": {
+      "lines": 981,
+      "limit": 400
+    },
+    "apps/docs/src/portal.tsx": {
+      "lines": 573,
+      "limit": 400
+    },
+    "apps/ui-catalog/src/catalog.tsx": {
+      "lines": 1843,
+      "limit": 400
+    },
+    "apps/ui-catalog/src/ShowcaseLab.tsx": {
+      "lines": 679,
+      "limit": 400
+    },
+    "apps/ui-catalog/tests/catalog.spec.ts": {
+      "lines": 966,
+      "limit": 800
+    },
+    "apps/whatsapp/client/App.tsx": {
+      "lines": 536,
+      "limit": 400
+    },
+    "apps/whatsapp/src/orm-sync.ts": {
+      "lines": 551,
+      "limit": 400
+    },
+    "apps/whatsapp/src/routes/api-v1.ts": {
+      "lines": 446,
+      "limit": 400
+    },
+    "apps/whatsapp/src/routes/gowa-compat.ts": {
+      "lines": 766,
+      "limit": 400
+    },
+    "packages/ai-evaluation/src/index.ts": {
+      "lines": 851,
+      "limit": 400
+    },
+    "packages/ai-mcp/src/extended-tools.ts": {
+      "lines": 586,
+      "limit": 400
+    },
+    "packages/ai-mcp/src/index.ts": {
+      "lines": 1418,
+      "limit": 400
+    },
+    "packages/ai-runtime/src/agent-runner.ts": {
+      "lines": 1099,
+      "limit": 400
+    },
+    "packages/ai-runtime/src/capability-gates.ts": {
+      "lines": 495,
+      "limit": 400
+    },
+    "packages/ai-runtime/src/capability-gateway.ts": {
+      "lines": 1016,
+      "limit": 400
+    },
+    "packages/ai-runtime/src/classification-router.ts": {
+      "lines": 578,
+      "limit": 400
+    },
+    "packages/ai-runtime/src/domain-services.ts": {
+      "lines": 1166,
+      "limit": 400
+    },
+    "packages/ai-runtime/src/mcp-server.ts": {
+      "lines": 563,
+      "limit": 400
+    },
+    "packages/ai-runtime/src/memory-evaluator.ts": {
+      "lines": 439,
+      "limit": 400
+    },
+    "packages/ai-runtime/src/overlap-detector.ts": {
+      "lines": 405,
+      "limit": 400
+    },
+    "packages/ai-runtime/src/pcw-verifier.ts": {
+      "lines": 898,
+      "limit": 400
+    },
+    "packages/ai-runtime/src/providers/anthropic-adapter.ts": {
+      "lines": 614,
+      "limit": 400
+    },
+    "packages/ai-runtime/src/providers/ollama-adapter.ts": {
+      "lines": 818,
+      "limit": 400
+    },
+    "packages/ai-runtime/src/providers/openai-adapter.ts": {
+      "lines": 618,
+      "limit": 400
+    },
+    "packages/ai-runtime/src/providers/shared.ts": {
+      "lines": 463,
+      "limit": 400
+    },
+    "packages/ai-runtime/src/repo-inspector.ts": {
+      "lines": 493,
+      "limit": 400
+    },
+    "packages/ai-runtime/src/risk-policy.ts": {
+      "lines": 648,
+      "limit": 400
+    },
+    "packages/ai-runtime/src/sleep-dream.ts": {
+      "lines": 694,
+      "limit": 400
+    },
+    "packages/ai-runtime/src/visual-dna.ts": {
+      "lines": 799,
+      "limit": 400
+    },
+    "packages/ai-runtime/src/workforce-planner.ts": {
+      "lines": 609,
+      "limit": 400
+    },
+    "packages/ai-runtime/src/workspace-contract.ts": {
+      "lines": 480,
+      "limit": 400
+    },
+    "packages/ai-runtime/src/workspace-tools.ts": {
+      "lines": 445,
+      "limit": 400
+    },
+    "packages/ai-runtime/tests/ai-runtime.test.ts": {
+      "lines": 1877,
+      "limit": 800
+    },
+    "packages/client/src/client.ts": {
+      "lines": 744,
+      "limit": 400
+    },
+    "packages/corpus/src/asmaul-husna.ts": {
+      "lines": 895,
+      "limit": 400
+    },
+    "packages/corpus/src/dataset-release.ts": {
+      "lines": 414,
+      "limit": 400
+    },
+    "packages/jobs/src/runtime.ts": {
+      "lines": 877,
+      "limit": 400
+    },
+    "packages/jobs/tests/runtime.test.ts": {
+      "lines": 1049,
+      "limit": 800
+    },
+    "packages/knowledge/src/concept-graph.ts": {
+      "lines": 583,
+      "limit": 400
+    },
+    "packages/knowledge/src/schema-version.ts": {
+      "lines": 863,
+      "limit": 400
+    },
+    "packages/local-ai/src/retrieval.ts": {
+      "lines": 573,
+      "limit": 400
+    },
+    "packages/orm-a2a/src/capability-registry.ts": {
+      "lines": 404,
+      "limit": 400
+    },
+    "packages/orm-a2a/src/http-plugin.ts": {
+      "lines": 868,
+      "limit": 400
+    },
+    "packages/orm-a2a/src/seed.ts": {
+      "lines": 432,
+      "limit": 400
+    },
+    "packages/orm-ai/src/agent-run-executor.ts": {
+      "lines": 474,
+      "limit": 400
+    },
+    "packages/orm-ai/src/ai-corporation-http.ts": {
+      "lines": 1876,
+      "limit": 400
+    },
+    "packages/orm-ai/src/ai-desktop-sync-http.ts": {
+      "lines": 793,
+      "limit": 400
+    },
+    "packages/orm-ai/src/cognitive-trace-store.ts": {
+      "lines": 475,
+      "limit": 400
+    },
+    "packages/orm-ai/src/data.ts": {
+      "lines": 506,
+      "limit": 400
+    },
+    "packages/orm-ai/src/evolution-jobs.ts": {
+      "lines": 496,
+      "limit": 400
+    },
+    "packages/orm-ai/src/seed.ts": {
+      "lines": 448,
+      "limit": 400
+    },
+    "packages/orm-ai/src/validation.ts": {
+      "lines": 988,
+      "limit": 400
+    },
+    "packages/orm-ai/src/views.ts": {
+      "lines": 621,
+      "limit": 400
+    },
+    "packages/orm-ai/tests/orm-ai.test.ts": {
+      "lines": 1140,
+      "limit": 800
+    },
+    "packages/orm-base/src/states.ts": {
+      "lines": 499,
+      "limit": 400
+    },
+    "packages/orm-cloud/src/auth.ts": {
+      "lines": 583,
+      "limit": 400
+    },
+    "packages/orm-cloud/src/billing-meter.ts": {
+      "lines": 462,
+      "limit": 400
+    },
+    "packages/orm-cloud/src/coolify-compose-compiler.ts": {
+      "lines": 530,
+      "limit": 400
+    },
+    "packages/orm-cloud/src/ha-drill.ts": {
+      "lines": 582,
+      "limit": 400
+    },
+    "packages/orm-cloud/src/http.ts": {
+      "lines": 2108,
+      "limit": 400
+    },
+    "packages/orm-cloud/src/node-provisioner.ts": {
+      "lines": 575,
+      "limit": 400
+    },
+    "packages/orm-cloud/src/providers/moonwitness-mesh.ts": {
+      "lines": 790,
+      "limit": 400
+    },
+    "packages/orm-cloud/src/quota.ts": {
+      "lines": 460,
+      "limit": 400
+    },
+    "packages/orm-cloud/tests/cloud-auth-ops.test.ts": {
+      "lines": 900,
+      "limit": 800
+    },
+    "packages/orm-compliance/src/compliance-engine.ts": {
+      "lines": 600,
+      "limit": 400
+    },
+    "packages/orm-compliance/src/manifest.ts": {
+      "lines": 741,
+      "limit": 400
+    },
+    "packages/orm-compliance/src/views.ts": {
+      "lines": 578,
+      "limit": 400
+    },
+    "packages/orm-crm/src/seed.ts": {
+      "lines": 558,
+      "limit": 400
+    },
+    "packages/orm-integration/src/connectors/erp-ledger.ts": {
+      "lines": 436,
+      "limit": 400
+    },
+    "packages/orm-integration/src/connectors/payment-gateways.ts": {
+      "lines": 471,
+      "limit": 400
+    },
+    "packages/orm-isp/src/http.ts": {
+      "lines": 488,
+      "limit": 400
+    },
+    "packages/orm-isp/src/provisioning-loop.ts": {
+      "lines": 632,
+      "limit": 400
+    },
+    "packages/orm-isp/src/reconcile.ts": {
+      "lines": 401,
+      "limit": 400
+    },
+    "packages/orm-isp/tests/isp.test.ts": {
+      "lines": 908,
+      "limit": 800
+    },
+    "packages/orm-knowledge/src/bug-case-workflow.ts": {
+      "lines": 609,
+      "limit": 400
+    },
+    "packages/orm-knowledge/src/http-plugins/bug-case.plugin.ts": {
+      "lines": 493,
+      "limit": 400
+    },
+    "packages/orm-knowledge/src/http-plugins/local-ai-suggestion.plugin.ts": {
+      "lines": 682,
+      "limit": 400
+    },
+    "packages/orm-knowledge/src/http-plugins/publication.plugin.ts": {
+      "lines": 410,
+      "limit": 400
+    },
+    "packages/orm-knowledge/src/http-plugins/research-explanation.plugin.ts": {
+      "lines": 754,
+      "limit": 400
+    },
+    "packages/orm-knowledge/src/http-plugins/research-review.plugin.ts": {
+      "lines": 429,
+      "limit": 400
+    },
+    "packages/orm-knowledge/src/publication-store.ts": {
+      "lines": 530,
+      "limit": 400
+    },
+    "packages/orm-knowledge/src/research-release.ts": {
+      "lines": 427,
+      "limit": 400
+    },
+    "packages/orm-knowledge/src/research-review.ts": {
+      "lines": 1029,
+      "limit": 400
+    },
+    "packages/orm-knowledge/src/sharia-mizan-ledger.ts": {
+      "lines": 567,
+      "limit": 400
+    },
+    "packages/orm-knowledge/src/witness-access.ts": {
+      "lines": 404,
+      "limit": 400
+    },
+    "packages/orm-knowledge/tests/postgres.integration.test.ts": {
+      "lines": 1085,
+      "limit": 800
+    },
+    "packages/orm-knowledge/tests/research-review.test.ts": {
+      "lines": 956,
+      "limit": 800
+    },
+    "packages/orm-observability/src/otlp.ts": {
+      "lines": 547,
+      "limit": 400
+    },
+    "packages/orm-observability/src/qoder.ts": {
+      "lines": 567,
+      "limit": 400
+    },
+    "packages/orm-observability/src/sql-store.ts": {
+      "lines": 461,
+      "limit": 400
+    },
+    "packages/orm-organization/src/seed.ts": {
+      "lines": 674,
+      "limit": 400
+    },
+    "packages/orm-project/src/http-plugin.ts": {
+      "lines": 682,
+      "limit": 400
+    },
+    "packages/orm-project/src/seed.ts": {
+      "lines": 561,
+      "limit": 400
+    },
+    "packages/orm-request/src/seed.ts": {
+      "lines": 531,
+      "limit": 400
+    },
+    "packages/orm-sales/src/seed.ts": {
+      "lines": 471,
+      "limit": 400
+    },
+    "packages/orm-sharia/src/manifest.ts": {
+      "lines": 458,
+      "limit": 400
+    },
+    "packages/orm-storage/src/index.ts": {
+      "lines": 500,
+      "limit": 400
+    },
+    "packages/orm-subscription/src/seed.ts": {
+      "lines": 529,
+      "limit": 400
+    },
+    "packages/orm-whatsapp/src/helpdesk-routing.ts": {
+      "lines": 494,
+      "limit": 400
+    },
+    "packages/orm-whatsapp/src/http-plugins/accounts.routes.ts": {
+      "lines": 459,
+      "limit": 400
+    },
+    "packages/orm-whatsapp/src/http-plugins/conversations.routes.ts": {
+      "lines": 1064,
+      "limit": 400
+    },
+    "packages/orm-whatsapp/src/http-plugins/group-management.routes.ts": {
+      "lines": 556,
+      "limit": 400
+    },
+    "packages/orm-whatsapp/src/http-plugins/groups.routes.ts": {
+      "lines": 1004,
+      "limit": 400
+    },
+    "packages/orm-whatsapp/src/http-plugins/media.routes.ts": {
+      "lines": 441,
+      "limit": 400
+    },
+    "packages/orm-whatsapp/src/http-plugins/message-actions.routes.ts": {
+      "lines": 564,
+      "limit": 400
+    },
+    "packages/orm-whatsapp/src/http-plugins/messages.routes.ts": {
+      "lines": 858,
+      "limit": 400
+    },
+    "packages/orm-whatsapp/src/http-plugins/webhooks.routes.ts": {
+      "lines": 527,
+      "limit": 400
+    },
+    "packages/orm-whatsapp/src/runtime/baileys-client.ts": {
+      "lines": 1292,
+      "limit": 400
+    },
+    "packages/orm-whatsapp/src/runtime/gateway.ts": {
+      "lines": 492,
+      "limit": 400
+    },
+    "packages/orm-whatsapp/src/runtime/route-helpers.ts": {
+      "lines": 801,
+      "limit": 400
+    },
+    "packages/orm-whatsapp/src/seed.ts": {
+      "lines": 511,
+      "limit": 400
+    },
+    "packages/orm-whatsapp/src/state-machine.ts": {
+      "lines": 469,
+      "limit": 400
+    },
+    "packages/orm-workflow/src/http-plugin.ts": {
+      "lines": 486,
+      "limit": 400
+    },
+    "packages/orm-workflow/src/runtime.ts": {
+      "lines": 794,
+      "limit": 400
+    },
+    "packages/orm-workflow/src/saga-engine.ts": {
+      "lines": 566,
+      "limit": 400
+    },
+    "packages/orm-workflow/tests/runtime.test.ts": {
+      "lines": 896,
+      "limit": 800
+    },
+    "packages/orm/src/addon.ts": {
+      "lines": 1005,
+      "limit": 400
+    },
+    "packages/orm/src/base.model.ts": {
+      "lines": 922,
+      "limit": 400
+    },
+    "packages/orm/src/model-definition.ts": {
+      "lines": 504,
+      "limit": 400
+    },
+    "packages/orm/src/schema-sync.ts": {
+      "lines": 798,
+      "limit": 400
+    },
+    "packages/orm/src/view.ts": {
+      "lines": 720,
+      "limit": 400
+    },
+    "packages/orm/tests/platform-e2e-laws.test.ts": {
+      "lines": 859,
+      "limit": 800
+    },
+    "packages/plan-taskos/src/core/loader.ts": {
+      "lines": 414,
+      "limit": 400
+    },
+    "packages/research/src/bug-registry.ts": {
+      "lines": 541,
+      "limit": 400
+    },
+    "packages/research/src/concept-profile.ts": {
+      "lines": 432,
+      "limit": 400
+    },
+    "packages/research/src/relation.ts": {
+      "lines": 846,
+      "limit": 400
+    },
+    "packages/research/src/semantics-benchmark.ts": {
+      "lines": 1216,
+      "limit": 400
+    },
+    "packages/types/src/domain.ts": {
+      "lines": 435,
+      "limit": 400
+    },
+    "packages/ui/src/components/effects.tsx": {
+      "lines": 797,
+      "limit": 400
+    },
+    "packages/ui/src/components/layered-scene.tsx": {
+      "lines": 431,
+      "limit": 400
+    },
+    "packages/ui/src/lib/scene-camera.ts": {
+      "lines": 417,
+      "limit": 400
+    },
+    "packages/ui/src/lib/scene-playback.ts": {
+      "lines": 510,
+      "limit": 400
+    }
+  }
+}

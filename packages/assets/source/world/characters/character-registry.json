@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "pack": "moon-city",
   "domain": "visual-universe",
-  "description": "Canonical recurring character registry. Crew-01 remains anonymous back-facing for ambient parallax scenes; kuro-signal and vesper-ink are identified Signal Riot universe characters with strict original IP continuity.",
+  "description": "Canonical recurring character registry. Crew-01 is approved as the anonymous, featureless Moon City pilot example; kuro-signal and vesper-ink remain identified Signal Riot universe characters.",
   "characters": [
     {
       "characterId": "crew-01",
@@ -24,7 +24,7 @@
         "animation/crew-01-turn/crew-01-turn-clip.json"
       ],
       "license": "ISC",
-      "status": "review"
+      "status": "approved"
     },
     {
       "characterId": "kuro-signal",

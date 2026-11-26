@@ -71,6 +71,45 @@ test('reads inline aggregate results and per-job environment results', () => {
   });
 });
 
+test('normalizes GitHub Actions aggregate objects and fails closed on malformed entries', () => {
+  const aggregate = {
+    'secret-scan': { result: 'success', outputs: {} },
+    'static-analysis': 'success',
+    'dependency-audit': { result: 'failure', outputs: {} },
+    'quality-and-build': { outputs: {} },
+    'unit-tests': null,
+    'knowledge-gate': { result: 1 },
+    'postgres-integration': ['success'],
+  };
+  const results = readJobResults({ CI_GATE_RESULTS: JSON.stringify(aggregate) });
+  assert.deepEqual(results, {
+    'secret-scan': 'success',
+    'static-analysis': 'success',
+    'dependency-audit': 'failure',
+    'quality-and-build': undefined,
+    'unit-tests': undefined,
+    'knowledge-gate': undefined,
+    'postgres-integration': undefined,
+  });
+  assert.equal(isCiGatePassing(results, ['secret-scan', 'static-analysis']), true);
+  assert.equal(isCiGatePassing(results, ['secret-scan', 'dependency-audit']), false);
+  assert.equal(isCiGatePassing(results, ['secret-scan', 'quality-and-build']), false);
+  assert.equal(isCiGatePassing(results, ['secret-scan', 'unknown']), false);
+});
+
+test('rejects every non-success aggregate object conclusion', () => {
+  for (const result of ['failure', 'cancelled', 'skipped', 'timed_out', 'neutral', 'stale', '']) {
+    const results = readJobResults(
+      {
+        CI_GATE_RESULTS: JSON.stringify({ 'secret-scan': { result, outputs: {} } }),
+      },
+      ['secret-scan']
+    );
+    assert.deepEqual(results, { 'secret-scan': result });
+    assert.equal(isCiGatePassing(results, ['secret-scan']), false);
+  }
+});
+
 test('summarizes without leaking environment data and never reports a weak pass', () => {
   const summary = renderCiJobSummary({
     ...successfulResults,

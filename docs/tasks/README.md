@@ -1,17 +1,17 @@
 # MoonWitness TaskOS — Centralized Work Registry (`docs/tasks/`)
 
-> **Live canonical status (2026-11-23):** `docs/tasks/tasks.json` is the canonical `moonwitness-tasks/v2` registry with **637 unique records**. The original 1,358-record registry remains preserved byte-for-byte at `docs/tasks/archives/tasks-legacy-1358-2026-11-23.json`.
+> **Live canonical status (2026-11-25):** `docs/tasks/tasks.json` is the canonical `moonwitness-tasks/v2` registry with **679 unique records**. The original 1,358-record registry remains preserved byte-for-byte at `docs/tasks/archives/tasks-legacy-1358-2026-11-23.json`.
 
 ## Current registry
 
-- Canonical registry: **637 unique task codes**; schema version `2.0.0`.
-- Current lifecycle distribution at the audited `dev` blob: **468 `done`**, **49 `doing`**, **96 `todo`**, **24 `blocked`**.
-- Source groups: roadmap 239; WhatsApp 112; Desktop 128; archived open MW 7; AI Corporation PR lifecycle 14; Evolution 4; audit 24; Visual Universe 109.
-- Current audited `dev` task registry blob: `4d677b63b825f7d4da0bbd83ad5c08a5d51b167f`, generated at `2026-11-23T09:19:56.410Z`.
+- Canonical registry: **679 unique task codes**; schema version `2.0.0`.
+- Current lifecycle distribution: **482 `done`**, **49 `doing`**, **119 `todo`**, **11 `blocked`**, **18 `backlog`**.
+- Source groups: roadmap 239; WhatsApp 112; Desktop 128; YouTube 13; social media 29; archived open MW 7; AI Corporation PR lifecycle 14; Evolution 4; audit 24; Visual Universe 109.
+- Current working `dev` task registry blob: `ce1b1b03c039e040e2d85011cd83e585937f283f` (published on `dev` in `bfdf082d`); generated at `2026-11-25T07:46:02.000Z`.
 - Current `main` still carries the original **627-record** TaskOS snapshot at blob `8216b6503d154d635112be96c41939a9efd38390`. The ten additional `AUD-015`–`AUD-024` records are on `dev`; do not describe the main snapshot as the current dev registry.
 - The original 1,358-record source registry is retained at `docs/tasks/archives/tasks-legacy-1358-2026-11-23.json`, blob `d56499936761dcc062704d06588ee2679fd1aae2`.
 
-The initial owner-approved migration reconciled **1,358 → 627** task identities. That migration checkpoint remains historically valid; the live `dev` registry subsequently grew to 637 when ten audit follow-ups (`AUD-015`–`AUD-024`) were added. The complete distinction and exact identity comparison are recorded in `RECOVERY-INVENTORY.md`. The 854 completed legacy rows remain in the preserved registry snapshot and archived checklist; the seven still-open legacy rows remain as `blocked` pending re-triage. No legacy record was silently discarded.
+The initial owner-approved migration reconciled **1,358 → 627** task identities. That migration checkpoint remains historically valid; ten audit follow-ups and 42 YouTube/social-media tasks later grew the live `dev` registry to 679. The complete distinction and exact identity comparison are recorded in `RECOVERY-INVENTORY.md`. The 854 completed legacy rows remain in the preserved registry snapshot and archived checklist; the seven still-open legacy rows remain as `blocked` pending re-triage. No legacy record was silently discarded.
 
 ## Authority rules
 
@@ -24,7 +24,7 @@ The initial owner-approved migration reconciled **1,358 → 627** task identitie
 ## Core files
 
 - `docs/tasks/tasks.schema.json`: JSON Schema Draft-07 for `moonwitness-tasks/v2`.
-- `docs/tasks/tasks.json`: current 637-record `dev` registry; `main` is currently at the 627-record snapshot.
+- `docs/tasks/tasks.json`: current 679-record `dev` registry; `main` is currently at the 627-record snapshot.
 - `docs/tasks/archives/tasks-legacy-1358-2026-11-23.json`: immutable pre-migration 1,358-record snapshot; retain it for rollback and audit.
 - `docs/tasks/RECOVERY-INVENTORY.md`: source inventory, complete identity reconciliation, migration evidence and live follow-up comparison.
 
@@ -32,14 +32,14 @@ The initial owner-approved migration reconciled **1,358 → 627** task identitie
 
 ```bash
 # Run focused registry, provenance, import and projection tests
-pnpm test:taskos
+bun run test:taskos
 
 # Validate the canonical registry and roadmap parity
-pnpm tasks:validate
-pnpm automation:check:roadmap
+bun run tasks:validate
+bun run automation:check:roadmap
 
 # Confirm the registry exactly matches its deterministic source projection
-pnpm tasks:sweep -- --check
+bun run tasks:sweep -- --check
 
 # Confirm the Visual Universe views are generated from canonical TaskOS
 node docs/bundles/visual-universe-pack/tools/sync-task-state.mjs --check
@@ -57,5 +57,5 @@ The `--candidate` mode remains non-mutating and writes only outside the reposito
 - Pre-migration registry blob: `d56499936761dcc062704d06588ee2679fd1aae2` (1,358 records).
 - Original post-migration candidate: 627 records, blob `8216b6503d154d635112be96c41939a9efd38390`.
 - Ten subsequent audit follow-ups: `AUD-015`–`AUD-024`; source: `scripts/tasks/sources/audit-tasks.mjs`.
-- The candidate JSON SHA-256 `13bc0b8ce445af5eff0b9e2057921c0ca73e1acc51dca02d25c848dd2b6a8776` refers to the original 627-record migration candidate, **not** the current 637-record live file.
+- The candidate JSON SHA-256 `13bc0b8ce445af5eff0b9e2057921c0ca73e1acc51dca02d25c848dd2b6a8776` refers to the original 627-record migration candidate, **not** the current 679-record live file.
 - CI must continue to run TaskOS safety tests, canonical validation, deterministic source comparison, roadmap parity and Visual Universe projection validation on every candidate SHA.

@@ -1,43 +1,33 @@
-# W9-005 and W9-006 — Existing visual coverage and Board gate
+# W9-005 and W9-006 — Crew boundary and operational Board gate
 
-Date: 2026-11-24 (final green run)
-Source branch: `dev`; commits `d18fa54`, `d1949d6`, `c8ac4d7`, `ad683ff` and following Board gate fixes.
+Date: 2026-11-25 (Asia/Jakarta)
 
 ## W9-005 — Crew and Story composition
 
-The only production narrative surface is `/board/stories/workbench`. It uses the decorative, provenance-listed `story-workbench-masthead.webp` and continues to load story state through the existing API client. No production `/crew` route exists, so no fictional crew member or map was added to production UI. The dynamic user model remains API-backed. The catalog's `crew-01` specimen is explicitly marked as a fictional, catalog-only example with no backend record or real crew identity.
+Acceptance is complete. Production story state remains API-backed. No real user is represented by fictional artwork, and no fictional crew metrics or maps are added to production. `crew-01` is explicitly fictional in the catalog and is an approved decorative Moon City pilot in the public hero. Catalog reduced-motion checks confirm its example remains static where expected.
 
-Verification (all green):
+Verification:
 
-- `pnpm test:ui-catalog` — exit 0; 41/41 tests pass, including the character specimen, story workbench responsive layout, theme matrix, and Axe checks.
-- `pnpm test:e2e:visual:matrix` — exit 0; 42/42 tests pass across Chromium/Firefox/WebKit, including story workbench readability, homepage composition, and the empty/unavailable workbench states.
-- `pnpm --filter @moonwitness/board typecheck` — exit 0.
+- `bun --filter @moonwitness/ui-catalog test` — exit 0; 96 passed, including all SceneLab/provenance tests.
+- `bunx --cwd apps/ui-catalog playwright test tests/scene-harness.spec.ts tests/asset-review-status.spec.ts` — exit 0; 29 passed (18 asset-review-status cases + 11 SceneLab/scene-harness cases).
+- Homepage scene targeted Playwright check — exit 0; 3 passed across Chromium, Firefox and WebKit.
 
-## W9-006 — Operational Board tier
+## W9-006 — Operational Board tier (complete — 42/42 across Chromium, Firefox, and WebKit)
 
-Board boundary, typecheck, lint, UI budget, bundle budget, and the full three-browser visual matrix all pass. Baselines were refreshed to the intentional grunge aesthetic rollout and made deterministic:
+The official 42-case cross-browser visual audit (`MW_VISUAL_BROWSER_MATRIX=true bun run test:e2e:visual`) passes **42/42** across Chromium (14/14), Firefox (14/14), and WebKit (14/14). Operational Board light/dark themes, skins, compact density, restrained motion, focus boundaries, and layout stability remain intact with zero immersive runtime leakage into operational tables, forms, or admin data flows.
 
-- Dashboard KPI baseline is clipped to the stable masthead/tab/KPI-card region; volatile metric values are masked (live counts mutate between runs).
-- Catalog documentation artifacts are written by the chromium project only, with a short retry against Windows transient file-write errors.
-- The model-navigation sheet Escape check moves focus into the Radix layer before dismissing.
-- The ordinary-user fixture login is scoped per browser project and tolerates 409 on re-runs.
-- The ordinary-user test allows 90 s for first-run dev-server JIT compilation.
+Root causes resolved to bring the matrix from 33/42 to 42/42:
 
-Verification (all green):
+1. **Visual test server canonical origin (`apps/board/playwright.visual.config.ts`)**: Added `NEXT_PUBLIC_SITE_URL: baseURL` (`http://127.0.0.1:5177`) to the `webServer.env` configuration so `<link rel="canonical">` and OpenGraph image URLs match the visual test server origin across all browser projects.
+2. **Firefox 159 WebIDL `[Cached]` `FrozenArray` ARIA element cross-compartment crash (`apps/board/e2e/visual-audit.spec.ts`, `public-home.spec.ts`, `responsive-protected-axe.spec.ts`, `knowledge-explorer.spec.ts`)**: Playwright `1.65.1`'s bundled Firefox `159.0` (`firefox-1572`) populates `Element.prototype.ariaLabelledByElements` in Playwright's isolated Juggler utility compartment during locator evaluation (`getByLabel`, `getByRole`). When `axe-core` subsequently reads `ariaLabelledByElements` (and related reflected ARIA element-reference getters) from the main world, Gecko crashes the content process across compartments. Neutralizing those reflected element-reference getters on `Element.prototype` in the main world before `AxeBuilder.analyze()` keeps `axe-core` on its standard `getAttribute('aria-labelledby')` / ID-reference traversal path and completes every Firefox WCAG 2.1 A/AA scan with zero crashes and zero violations.
+3. **Stale pre-Stage-6 Firefox and WebKit dashboard baselines (`apps/board/e2e/visual-audit.spec.ts-snapshots/board-dashboard-{admin,user}-desktop-1440-{firefox,webkit}-win32.png`)**: Commit `f9b87218` refreshed the Chromium dashboard baselines after the Stage 6 masthead and sidebar typography update, leaving the four Firefox/WebKit dashboard snapshot files at the earlier November 24 layout. After visual inspection confirmed pixel-level composition, typography, masthead artwork, and theme parity between Firefox/WebKit actual renders and the approved Chromium baselines, the four Firefox/WebKit snapshot files were aligned.
 
-- `pnpm board:ui:check` — exit 0; 6/6 boundary tests pass.
-- `pnpm --filter @moonwitness/board typecheck` — exit 0.
-- `pnpm test:ui-budget` — exit 0; within budget.
-- `pnpm board:budget` — exit 0; 27,012 bytes of interface audio.
-- `pnpm test:e2e:visual:matrix` — exit 0; **42 passed (8.5m)** — 14 tests × Chromium/Firefox/WebKit, including light/dark theme coverage, responsive protected screens, mobile overlays keyboard dismissal, and Axe accessibility assertions.
+Verification:
 
-## Matrix stabilization history (for reviewers)
-
-| Issue                   | Root cause                                                                                      | Fix                                                                    |
-| ----------------------- | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| 16 initial failures     | stale baselines vs intentional grunge rollout + broken API boot (`erp-ledger` camelCase fields) | ORM fields converted to snake_case; baselines regenerated after review |
-| Screenshot write errors | three browsers writing identical catalog artifact paths on Windows                              | chromium-only writes via `writeCatalogScreenshot` + retry              |
-| 409 on user creation    | shared API server, fixed `visual-user` login across projects                                    | per-project login suffix + 409 tolerance                               |
-| WebKit dialog Escape    | focus left on trigger for a tick after keyboard open                                            | focus a link inside the sheet before Escape                            |
-| Dashboard KPI flake     | live counters, audit ledger, and model-registry grid mutate                                     | clip to stable region, mask metric values                              |
-| Ordinary-user timeout   | cold dev-server JIT compile on first run                                                        | 90 s test timeout                                                      |
+- `bun run board:ui:check` — exit 0; 6 passed (60 UI module imports, 52 imported components, 29 routes, 0 native control violations).
+- `bun --filter @moonwitness/board lint` — exit 0.
+- `bun --filter @moonwitness/board typecheck` — exit 0.
+- `bun --filter @moonwitness/board build` — exit 0; 27 static/dynamic routes built cleanly, no fake `/signals` or `/archive` routes.
+- `bun run board:budget` — exit 0; all measured JS/CSS route budgets pass (`homepage` JS 39,343 B gzip / CSS 35,836 B gzip; `board` JS 152,793 B gzip / CSS 37,995 B gzip; `login` JS 63,654 B gzip; `model` JS 183,459 B gzip); interface audio 27,012 B loaded on demand.
+- `MW_VISUAL_BROWSER_MATRIX=true bun run test:e2e:visual` — exit 0; **42 passed, 0 failed** (14 Chromium, 14 Firefox, 14 WebKit), 8.2 minutes.
+- `MW_VISUAL_BROWSER_MATRIX=true bunx --cwd apps/board playwright test -c playwright.visual.config.ts e2e/public-home.spec.ts` — exit 0; **27 passed, 0 failed** (9 Chromium, 9 Firefox, 9 WebKit), 1.1 minutes.

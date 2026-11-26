@@ -18,6 +18,7 @@ coverage/
 .codex-worktrees/
 apps/board/next-env.d.ts
 playwright-report/
+.playwright-mcp/
 .qoder-tmp/
 apps/desktop/src-tauri/resources/
 apps/desktop/src-tauri/target/
@@ -28,3 +29,6 @@ eslint-output.txt
 eslint-output.json
 depcruise-report.txt
 *.tsbuildinfo
+.plan/.brain/
+.plan/*/.leases.local.json
+gitleaks-report.json

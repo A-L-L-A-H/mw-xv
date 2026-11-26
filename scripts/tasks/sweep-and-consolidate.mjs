@@ -25,6 +25,7 @@ export async function sweepAndConsolidate({
   generatedAt = process.env.SOURCE_DATE_EPOCH
     ? new Date(Number(process.env.SOURCE_DATE_EPOCH) * 1000).toISOString()
     : new Date().toISOString(),
+  lifecycleRegistry,
 } = {}) {
   const tasks = [];
   const tasksByCode = new Map();
@@ -709,6 +710,37 @@ export async function sweepAndConsolidate({
       }
     }
   }
+
+  if (lifecycleRegistry?.tasks) {
+    const currentByCode = new Map(lifecycleRegistry.tasks.map((task) => [task.code, task]));
+    for (const task of tasks) {
+      if (task.project !== 'visual-universe') continue;
+      const current = currentByCode.get(task.code);
+      if (!current) continue;
+      task.status = current.status;
+      task.blockedReason = current.blockedReason;
+      task.evidence = current.evidence;
+      task.url = current.url;
+      task.comments = current.comments;
+      const doneByText = new Map(current.acceptanceCriteria.map((criterion) => [criterion.text, criterion.done]));
+      task.acceptanceCriteria = task.acceptanceCriteria.map((criterion) => ({
+        ...criterion,
+        done: doneByText.get(criterion.text) ?? criterion.done,
+      }));
+      task.metadata = {
+        ...task.metadata,
+        status: current.metadata.status,
+        acceptance_criteria:
+          current.metadata.acceptance_criteria?.length === task.metadata.acceptance_criteria?.length &&
+          current.metadata.acceptance_criteria.every((value) => typeof value === 'boolean')
+            ? current.metadata.acceptance_criteria
+            : task.metadata.acceptance_criteria,
+        notes: current.metadata.notes,
+        evidence: current.metadata.evidence,
+        commit: current.metadata.commit,
+      };
+    }
+  }
   for (const t of tasks) {
     if (blocksMap.has(t.code)) {
       const merged = new Set([...t.blocks, ...blocksMap.get(t.code)]);
@@ -796,7 +828,9 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.a
       }
     }
 
-    const result = await sweepAndConsolidate(checkOnly ? { generatedAt } : {});
+    let lifecycleRegistry;
+    if (checkOnly) lifecycleRegistry = JSON.parse(await fs.readFile(targetFile, 'utf8'));
+    const result = await sweepAndConsolidate(checkOnly ? { generatedAt, lifecycleRegistry } : {});
     const validation = await validateTaskRegistryData(result);
     if (!validation.valid) {
       throw new Error(

@@ -1,144 +1,102 @@
 'use client';
 
-import { useEffect, useState, useSyncExternalStore } from 'react';
-import {
-  LayeredScene,
-  type SceneBreakpointDescriptor,
-  type SceneLayerDescriptor,
+import { useState, useSyncExternalStore } from 'react';
+import dynamic from 'next/dynamic';
+import type {
+  SceneBreakpointDescriptor,
+  SceneLayerDescriptor,
 } from '@moonwitness/ui/components/layered-scene';
+import moonCitySceneBundle from '@moonwitness/assets/scenes/moon-city-scene.json';
+import type { SpriteClipMetadata } from '@moonwitness/ui/components/sprite-player';
 
-const MOON_CITY_LAYERS: readonly SceneLayerDescriptor[] = [
-  {
-    id: 'sky',
-    mediaKind: 'image',
-    src: '/environments/moon-city-sky.svg',
-    zOrder: 0,
-    opacity: 1,
-    pivot: { x: 0.5, y: 0.5 },
-    parallax: { x: 0, y: 0 },
-  },
-  {
-    id: 'moon',
-    mediaKind: 'image',
-    src: '/environments/moon-city-moon.svg',
-    zOrder: 10,
-    opacity: 1,
-    pivot: { x: 0.72, y: 0.24 },
-    parallax: { x: 0.04, y: 0.03 },
-  },
-  {
-    id: 'clouds-far',
-    mediaKind: 'image',
-    src: '/environments/moon-city-clouds-far.svg',
-    zOrder: 20,
-    opacity: 0.85,
-    pivot: { x: 0.5, y: 0.28 },
-    parallax: { x: 0.08, y: 0.04 },
-  },
-  {
-    id: 'skyline-far',
-    mediaKind: 'image',
-    src: '/environments/moon-city-skyline-far.svg',
-    zOrder: 30,
-    opacity: 1,
-    pivot: { x: 0.5, y: 0.75 },
-    parallax: { x: 0.14, y: 0.06 },
-  },
-  {
-    id: 'clouds-near',
-    mediaKind: 'image',
-    src: '/environments/moon-city-clouds-near.svg',
-    zOrder: 40,
-    opacity: 0.9,
-    pivot: { x: 0.5, y: 0.34 },
-    parallax: { x: 0.22, y: 0.08 },
-  },
-  {
-    id: 'skyline-mid',
-    mediaKind: 'image',
-    src: '/environments/moon-city-skyline-mid.svg',
-    zOrder: 50,
-    opacity: 1,
-    pivot: { x: 0.5, y: 0.8 },
-    parallax: { x: 0.32, y: 0.12 },
-  },
-  {
-    id: 'rooftop-foreground',
-    mediaKind: 'image',
-    src: '/environments/moon-city-foreground.svg',
-    zOrder: 70,
-    opacity: 1,
-    pivot: { x: 0.5, y: 0.92 },
-    parallax: { x: 0.55, y: 0.18 },
-  },
-  {
-    id: 'prop-railing',
-    mediaKind: 'image',
-    src: '/environments/moon-city-prop-railing.svg',
-    zOrder: 80,
-    opacity: 1,
-    pivot: { x: 0.5, y: 0.95 },
-    parallax: { x: 0.65, y: 0.22 },
-  },
-  {
-    id: 'prop-wires',
-    mediaKind: 'image',
-    src: '/environments/moon-city-prop-wires.svg',
-    zOrder: 85,
-    opacity: 0.92,
-    pivot: { x: 0.5, y: 0.12 },
-    parallax: { x: 0.72, y: 0.24 },
-  },
-];
+const LayeredScene = dynamic(
+  () => import('@moonwitness/ui/components/layered-scene').then((module) => module.LayeredScene),
+  { ssr: false, loading: () => null }
+);
+const SpritePlayer = dynamic(
+  () => import('@moonwitness/ui/components/sprite-player').then((module) => module.SpritePlayer),
+  { ssr: false, loading: () => null }
+);
 
-const MOON_CITY_BREAKPOINTS: readonly SceneBreakpointDescriptor[] = [
-  {
-    name: 'mobile',
-    minWidth: 0,
-    maxWidth: 767,
-    layerOverrides: [
-      {
-        layerId: 'moon',
-        pivot: { x: 0.52, y: 0.2 },
-        parallax: { x: 0.02, y: 0.02 },
-      },
-      {
-        layerId: 'prop-wires',
-        opacity: 0.45,
-        parallax: { x: 0.18, y: 0.08 },
-      },
-    ],
-  },
-  {
-    name: 'desktop',
-    minWidth: 768,
-  },
-];
+const HERO_SCENE = moonCitySceneBundle.scenes.find((scene) => scene.id === 'moon-city-hero');
+const MOON_CITY_LAYERS: readonly SceneLayerDescriptor[] = (HERO_SCENE?.layers ?? []).map(
+  (layer) => ({
+    id: layer.id,
+    mediaKind: 'image',
+    src: `/${layer.asset}`,
+    zOrder: layer.order,
+    opacity: layer.opacity,
+    pivot: layer.pivot ?? layer.position,
+    parallax: layer.parallax,
+  })
+);
+
+const MOON_CITY_BREAKPOINTS: readonly SceneBreakpointDescriptor[] = (
+  HERO_SCENE?.breakpoints ?? []
+).map((breakpoint) => ({
+  name: breakpoint.name,
+  minWidth: breakpoint.minWidth,
+  maxWidth: breakpoint.maxWidth,
+  layerOverrides: breakpoint.layerOverrides?.map((override) => ({
+    layerId: override.layerId,
+    opacity: override.opacity,
+    pivot: override.position,
+    parallax: override.parallax,
+  })),
+}));
+
+const PILOT_IDLE_CLIP = moonCitySceneBundle.clips.find((clip) => clip.id === 'crew-01-idle');
+const PILOT_IDLE_FRAMES = PILOT_IDLE_CLIP?.frames.map((frame) => `/${frame.asset}`) ?? [];
+const PILOT_CLIP: SpriteClipMetadata = {
+  id: PILOT_IDLE_CLIP?.id ?? 'crew-01-idle',
+  frames: PILOT_IDLE_FRAMES,
+  durationMs: PILOT_IDLE_CLIP?.frames.reduce((total, frame) => total + frame.durationMs, 0) ?? 2880,
+  loop: PILOT_IDLE_CLIP?.loop ?? true,
+  pingPong: PILOT_IDLE_CLIP?.direction === 'ping-pong',
+  fallbackAsset: PILOT_IDLE_FRAMES[0] ?? '/animation/crew-01-idle/crew-01-idle-frame-01.svg',
+  width: 1024,
+  height: 1024,
+};
 
 const subscribeNoop = () => () => {};
 const getClientMounted = () => true;
 const getServerMounted = () => false;
+const getReducedMotionSnapshot = () =>
+  typeof window === 'undefined' ||
+  typeof window.matchMedia !== 'function' ||
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const getStaticMotionSnapshot = () => true;
+const subscribeToReducedMotion = (onChange: () => void) => {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return () => {};
+  const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+  media.addEventListener('change', onChange);
+  return () => media.removeEventListener('change', onChange);
+};
+const getSaveDataSnapshot = () => {
+  if (typeof navigator === 'undefined') return true;
+  const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+  return connection?.saveData === true;
+};
 
 function usePrefersReducedMotion(): boolean {
-  const [reduced, setReduced] = useState(true);
+  return useSyncExternalStore(
+    subscribeToReducedMotion,
+    getReducedMotionSnapshot,
+    getStaticMotionSnapshot
+  );
+}
 
-  useEffect(() => {
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
-    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const sync = () => setReduced(media.matches);
-    sync();
-    media.addEventListener('change', sync);
-    return () => media.removeEventListener('change', sync);
-  }, []);
-
-  return reduced;
+function useSaveDataPreference(): boolean {
+  return useSyncExternalStore(subscribeNoop, getSaveDataSnapshot, getStaticMotionSnapshot);
 }
 
 export function HomeHeroArt() {
   const [failed, setFailed] = useState(false);
   const mounted = useSyncExternalStore(subscribeNoop, getClientMounted, getServerMounted);
   const reducedMotion = usePrefersReducedMotion();
-  const showInteractiveScene = mounted && !reducedMotion && !failed;
+  const saveData = useSaveDataPreference();
+  const staticScene = reducedMotion || saveData;
+  const showInteractiveScene = mounted && !staticScene && !failed && MOON_CITY_LAYERS.length > 0;
 
   return (
     <div className="home-hero-art" aria-hidden="true">
@@ -153,7 +111,9 @@ export function HomeHeroArt() {
               src="/illustrations/home-hero-desktop.webp"
               alt=""
               fetchPriority="high"
-              onError={() => setFailed(true)}
+              onError={(event) => {
+                if (event.currentTarget.naturalWidth === 0) setFailed(true);
+              }}
             />
           </picture>
           {showInteractiveScene ? (
@@ -162,8 +122,8 @@ export function HomeHeroArt() {
               label="Moon City night rooftop parallax scene"
               layers={MOON_CITY_LAYERS}
               breakpoints={MOON_CITY_BREAKPOINTS}
-              staticFallback="/illustrations/home-hero-desktop.webp"
-              accessibilityFallback="/illustrations/home-hero-mobile.webp"
+              staticFallback={`/${HERO_SCENE?.staticFallback ?? 'illustrations/home-hero-desktop.webp'}`}
+              accessibilityFallback={`/${HERO_SCENE?.accessibilityFallback ?? 'illustrations/home-hero-mobile.webp'}`}
               autoPlay
               enablePointerParallax
               style={{
@@ -175,6 +135,25 @@ export function HomeHeroArt() {
               }}
             />
           ) : null}
+          <div className="home-hero-crew" data-testid="home-hero-crew" aria-hidden="true">
+            {staticScene ? (
+              <div
+                className="home-hero-crew-still"
+                data-sprite-clip={PILOT_CLIP.id}
+                data-sprite-state="static"
+              >
+                <img src={PILOT_CLIP.fallbackAsset} alt="" />
+              </div>
+            ) : (
+              <SpritePlayer
+                clip={PILOT_CLIP}
+                label="Anonymous Moon City pilot example"
+                playing
+                reducedMotion={false}
+                frameStyle={{ filter: 'var(--home-crew-key)' }}
+              />
+            )}
+          </div>
         </>
       )}
     </div>

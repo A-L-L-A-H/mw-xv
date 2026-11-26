@@ -47,6 +47,17 @@ function readPositiveInt(name: string, fallback: number): number {
   return value;
 }
 
+function readObservabilityConfig() {
+  const maxSpans = readPositiveInt('OBSERVABILITY_MAX_SPANS', 5_000);
+  const maxLogs = readPositiveInt('OBSERVABILITY_MAX_LOGS', 5_000);
+  const maxMetricSeries = readPositiveInt('OBSERVABILITY_MAX_METRIC_SERIES', 1_000);
+  const maxMetricPoints = readPositiveInt('OBSERVABILITY_MAX_METRIC_POINTS', 120);
+  const retentionMs = readPositiveInt('OBSERVABILITY_RETENTION_MS', 3_600_000);
+  const pruneIntervalMs = readPositiveInt('OBSERVABILITY_PRUNE_INTERVAL_MS', 3_600_000);
+  if (pruneIntervalMs < 60_000) throw new Error('OBSERVABILITY_PRUNE_INTERVAL_MS must be at least 60000');
+  return Object.freeze({ maxSpans, maxLogs, maxMetricSeries, maxMetricPoints, retentionMs, pruneIntervalMs, pruneOnRead: optionalBoolean(process.env.OBSERVABILITY_PRUNE_ON_READ, true, 'OBSERVABILITY_PRUNE_ON_READ') });
+}
+
 function readDatabaseUrl(value: string): string {
   let parsed: URL;
   try {
@@ -185,10 +196,13 @@ const databaseUrl = readDatabaseUrl(
 );
 const databaseRuntime = readDatabaseRuntimeLimits(process.env);
 
-export const config: EnvConfig & { observabilityIngestToken?: string } = {
+export const observabilityConfig = readObservabilityConfig();
+
+export const config: EnvConfig & { observabilityIngestToken?: string; observability: typeof observabilityConfig } = {
   superadminPassword: process.env.SUPERADMIN_PASSWORD || undefined,
   metricsToken,
   observabilityIngestToken,
+  observability: observabilityConfig,
   attachmentStorageDirectory: path.resolve(
     repositoryRoot,
     process.env.ATTACHMENT_STORAGE_DIR || 'storage/attachments'

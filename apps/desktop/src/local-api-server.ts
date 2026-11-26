@@ -1,8 +1,9 @@
 import { randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import Fastify, { type FastifyInstance, type FastifyRequest } from 'fastify';
 import cors from '@fastify/cors';
+import rateLimit from '@fastify/rate-limit';
 import type { Knex } from 'knex';
 import {
   Environment,
@@ -83,6 +84,15 @@ import {
   type VpsComposeAction,
   type VpsOnboardingAuthContext,
 } from './vps-onboarding.js';
+import {
+  exportSubgraph,
+  hybridRecall,
+  openBrainStore,
+  queryBlastRadiusImpact,
+  type BrainStorageDriver,
+} from '@moonwitness/plan-taskos';
+import { DesktopObservatoryService } from './observatory/service.js';
+import type { ObservatoryRuntime } from './observatory/types.js';
 import type { DesktopCapabilityBridge } from './types.js';
 
 export interface LocalAuthContext {
@@ -118,6 +128,11 @@ export interface LocalApiServerOptions {
   readonly port?: number;
   readonly rpcToken?: string;
   readonly desktopHomeDir?: string;
+  readonly repoRoot?: string;
+  readonly observatoryHomeDir?: string;
+  readonly enableObservatoryProbes?: boolean;
+  readonly enableObservatoryAntigravityApi?: boolean;
+  readonly serveWebDistDir?: string;
   readonly initialMode?: DesktopExperienceMode;
   readonly ispApiUrl?: string;
 }
@@ -324,6 +339,10 @@ function loadInitialDesktopMode(
 }
 
 function persistDesktopMode(desktopHomeDir: string | null, mode: DesktopExperienceMode): void {
+  // Allowlist: only known mode strings may ever be written to mode.json.
+  if (!isDesktopExperienceMode(mode)) {
+    return;
+  }
   if (!desktopHomeDir || desktopHomeDir === ':memory:') {
     return;
   }
@@ -366,8 +385,9 @@ function safeTokenEquals(expected: string, actual: string): boolean {
 function extractBearerToken(req: FastifyRequest): string | null {
   const header = req.headers.authorization;
   if (typeof header !== 'string') return null;
-  const match = /^Bearer\s+(.+)$/iu.exec(header.trim());
-  return match?.[1]?.trim() ?? null;
+  const trimmed = header.trim();
+  if (!trimmed.startsWith('Bearer ')) return null;
+  return trimmed.slice(7).trim() || null;
 }
 
 async function insertAndGetId(
@@ -716,6 +736,22 @@ export async function startLocalApiServer(
       'x-request-id',
     ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  });
+
+  // @fastify/rate-limit is compiled against a different fastify patch release
+  // than this workspace, so its plugin signature is structurally incompatible
+  // with the app instance. Adapt the instance parameter without changing
+  // runtime behaviour (same pattern as the cors plugin adaptation above).
+  const rateLimitPlugin = rateLimit as unknown as (
+    instance: FastifyInstance,
+    options: Parameters<typeof rateLimit>[1],
+    done: Parameters<typeof rateLimit>[2]
+  ) => void;
+
+  await app.register(rateLimitPlugin, {
+    global: true,
+    max: 300,
+    timeWindow: '1 minute',
   });
 
   app.setErrorHandler((error, request, reply) => {
@@ -1431,6 +1467,20 @@ export async function startLocalApiServer(
       return reply.code(404).send({
         success: false,
         error: 'TaskOS source file docs/tasks/tasks.json not found.',
+      });
+    }
+
+    // Containment check: the chosen source must resolve inside this repository
+    // (cwd) so that a request-supplied sourcePath cannot escape it.
+    const repoRoot = path.resolve(process.cwd());
+    const resolvedSourceNormalized = path.resolve(resolvedSource);
+    if (
+      resolvedSourceNormalized !== repoRoot &&
+      !resolvedSourceNormalized.startsWith(repoRoot + path.sep)
+    ) {
+      return reply.code(403).send({
+        success: false,
+        error: 'Import source path must stay inside the repository.',
       });
     }
 
@@ -2845,9 +2895,375 @@ export async function startLocalApiServer(
     return reply.code(status).send(response);
   });
 
+  // Multi-Agent Real-Time Observatory (active in BOTH Workspace & DX modes, read-only R0)
+  const isTestEnv = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true';
+  const observatory = new DesktopObservatoryService({
+    repoRoot: options.repoRoot ?? process.cwd(),
+    ...(options.observatoryHomeDir ? { homeDir: options.observatoryHomeDir } : {}),
+    bridge: options.bridge,
+    knownSecrets: [rpcToken],
+    enableNetworkProbes: options.enableObservatoryProbes ?? !isTestEnv,
+    enableAntigravityApi: options.enableObservatoryAntigravityApi ?? !isTestEnv,
+  });
+
+  const VALID_OBSERVATORY_RUNTIMES: ReadonlySet<ObservatoryRuntime> = new Set([
+    'antigravity',
+    'claude',
+    'codex',
+    'opencode',
+    'magpie',
+    'qoder',
+    'gemini-cli',
+    'desktop-worktree',
+    'visual-swarm',
+  ]);
+
+  // T39: read-only Cognitive Brain endpoints. The SQLite handle is opened
+  // lazily on first request and closed in stop() (zero dangling handles).
+  const repoRoot = options.repoRoot ?? process.cwd();
+  const brainPath = path.join(repoRoot, '.plan', '.brain', 'taskos.sqlite');
+  let brainStorePromise: Promise<BrainStorageDriver | null> | null = null;
+  const getBrainStore = (): Promise<BrainStorageDriver | null> => {
+    if (!existsSync(brainPath)) return Promise.resolve(null);
+    brainStorePromise ??= openBrainStore({ dbPath: brainPath, mode: 'sqlite' }).catch(() => null);
+    return brainStorePromise;
+  };
+
+  app.get('/api/desktop/observatory/brain/search', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const query = isRecord(req.query) ? req.query : {};
+    const text = typeof query.q === 'string' ? query.q.trim() : '';
+    if (!text) {
+      return reply.code(400).send({ success: false, error: 'Missing search query' });
+    }
+    const limit = typeof query.limit === 'string' ? Number(query.limit) : 15;
+    const store = await getBrainStore();
+    if (!store) return { success: true, data: { mode: 'unavailable', results: [] } };
+    const data = await hybridRecall(store, {
+      query: text,
+      limit: Number.isSafeInteger(limit) && limit > 0 ? Math.min(limit, 100) : 15,
+    });
+    reply.header('Cache-Control', 'no-store');
+    return { success: true, data };
+  });
+
+  app.get('/api/desktop/observatory/brain/impact', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const query = isRecord(req.query) ? req.query : {};
+    const target = typeof query.target === 'string' ? query.target.trim() : '';
+    if (!target) {
+      return reply.code(400).send({ success: false, error: 'Missing impact target' });
+    }
+    const store = await getBrainStore();
+    if (!store) return { success: true, data: { root: target, tasks: [], depth: 0 } };
+    reply.header('Cache-Control', 'no-store');
+    return { success: true, data: queryBlastRadiusImpact(store, target) };
+  });
+
+  app.get('/api/desktop/observatory/brain/graph', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const query = isRecord(req.query) ? req.query : {};
+    const planId = typeof query.planId === 'string' ? query.planId.trim() : undefined;
+    const store = await getBrainStore();
+    if (!store) return { success: true, data: { nodes: [], edges: [] } };
+    reply.header('Cache-Control', 'no-store');
+    return { success: true, data: exportSubgraph(store, { ...(planId ? { planId } : {}) }) };
+  });
+
+  app.get('/api/desktop/observatory/state', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const query = isRecord(req.query) ? req.query : {};
+    const fresh = query.fresh === '1' || query.fresh === 'true';
+    const data = await observatory.getSnapshot({ fresh });
+    reply.header('Cache-Control', 'no-store');
+    return { success: true, data };
+  });
+
+  app.get('/api/desktop/observatory/git/commit', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const query = isRecord(req.query) ? req.query : {};
+    const sha = typeof query.sha === 'string' ? query.sha.trim() : '';
+    if (!/^[0-9a-f]{6,40}$/iu.test(sha)) {
+      return reply.code(400).send({
+        success: false,
+        error: 'Valid hexadecimal commit sha query parameter is required',
+      });
+    }
+    const detail = await observatory.getCommitDetail(sha);
+    if (!detail) {
+      return reply.code(404).send({ success: false, error: 'Git commit not found' });
+    }
+    reply.header('Cache-Control', 'no-store');
+    return { success: true, data: detail };
+  });
+
+  app.get('/api/desktop/observatory/probe', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const query = isRecord(req.query) ? req.query : {};
+    const rawUrl = typeof query.url === 'string' ? query.url.trim() : '';
+    if (!rawUrl) {
+      return reply.code(400).send({
+        success: false,
+        error: 'url query parameter is required',
+      });
+    }
+    const result = await observatory.probeCustomUrl(rawUrl);
+    reply.header('Cache-Control', 'no-store');
+    if (result.status === 'blocked') {
+      return reply.code(400).send({
+        success: false,
+        error: result.detail,
+        data: result,
+      });
+    }
+    return { success: true, data: result };
+  });
+
+  app.get('/api/desktop/observatory/export', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const query = isRecord(req.query) ? req.query : {};
+    const format = typeof query.format === 'string' ? query.format.toLowerCase().trim() : 'json';
+    reply.header('Cache-Control', 'no-store');
+    if (format === 'markdown' || format === 'md') {
+      const markdown = await observatory.exportReportMarkdown();
+      reply.header('Content-Type', 'text/markdown; charset=utf-8');
+      reply.header(
+        'Content-Disposition',
+        'attachment; filename="moonwitness-observatory-report.md"'
+      );
+      return reply.code(200).send(markdown);
+    }
+    const snapshot = await observatory.getSnapshot();
+    reply.header('Content-Type', 'application/json; charset=utf-8');
+    reply.header(
+      'Content-Disposition',
+      'attachment; filename="moonwitness-observatory-snapshot.json"'
+    );
+    return reply.code(200).send(JSON.stringify(snapshot, null, 2));
+  });
+
+  app.get('/api/desktop/observatory/session', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const query = isRecord(req.query) ? req.query : {};
+    const rawRuntime = typeof query.runtime === 'string' ? query.runtime.trim() : '';
+    const sessionId = typeof query.id === 'string' ? query.id.trim() : '';
+    if (!VALID_OBSERVATORY_RUNTIMES.has(rawRuntime as ObservatoryRuntime) || !sessionId) {
+      return reply.code(400).send({
+        success: false,
+        error: 'Valid runtime and id query parameters are required',
+      });
+    }
+    const detail = await observatory.getSessionDetail(rawRuntime as ObservatoryRuntime, sessionId);
+    if (!detail) {
+      return reply.code(404).send({ success: false, error: 'Observatory session not found' });
+    }
+    reply.header('Cache-Control', 'no-store');
+    return { success: true, data: detail };
+  });
+
+  app.get('/api/desktop/observatory/stream', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const originHeader = req.headers.origin;
+    const rawOrigin = Array.isArray(originHeader) ? originHeader[0] : originHeader;
+    const headers: Record<string, string> = {
+      'Content-Type': 'text/event-stream; charset=utf-8',
+      'Cache-Control': 'no-store',
+      Connection: 'keep-alive',
+      'X-Accel-Buffering': 'no',
+      'X-Content-Type-Options': 'nosniff',
+    };
+    if (rawOrigin && isAllowedCorsOrigin(rawOrigin)) {
+      headers['Access-Control-Allow-Origin'] = rawOrigin;
+      headers['Access-Control-Allow-Credentials'] = 'true';
+      headers.Vary = 'Origin';
+    }
+
+    reply.hijack();
+    reply.raw.writeHead(200, headers);
+    reply.raw.write('retry: 2000\n\n');
+
+    let closed = false;
+    let unsubscribe = () => {};
+    let keepalive: ReturnType<typeof setInterval> | null = null;
+
+    const closeStream = () => {
+      if (closed) return;
+      closed = true;
+      if (keepalive) {
+        clearInterval(keepalive);
+        keepalive = null;
+      }
+      unsubscribe();
+      if (!reply.raw.writableEnded) {
+        reply.raw.end();
+      }
+    };
+
+    req.raw.once('close', closeStream);
+    reply.raw.once('close', closeStream);
+
+    try {
+      const initial = await observatory.getSnapshot();
+      if (!closed && !reply.raw.writableEnded) {
+        reply.raw.write(`event: snapshot\ndata: ${JSON.stringify(initial)}\n\n`);
+      }
+    } catch {
+      closeStream();
+      return;
+    }
+
+    if (closed) return;
+
+    unsubscribe = observatory.subscribe((_snapshot, json) => {
+      if (closed || reply.raw.writableEnded) {
+        closeStream();
+        return;
+      }
+      try {
+        reply.raw.write(`event: snapshot\ndata: ${json}\n\n`);
+      } catch {
+        closeStream();
+      }
+    });
+
+    keepalive = setInterval(() => {
+      if (closed || reply.raw.writableEnded) {
+        closeStream();
+        return;
+      }
+      try {
+        reply.raw.write(': keepalive\n\n');
+      } catch {
+        closeStream();
+      }
+    }, 15_000);
+    keepalive.unref();
+  });
+
+  // Optional headless static serving of dist-board when launched with --serve-web
+  const STATIC_MIME_TYPES: Readonly<Record<string, string>> = Object.freeze({
+    '.html': 'text/html; charset=utf-8',
+    '.js': 'application/javascript; charset=utf-8',
+    '.mjs': 'application/javascript; charset=utf-8',
+    '.css': 'text/css; charset=utf-8',
+    '.json': 'application/json; charset=utf-8',
+    '.svg': 'image/svg+xml',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.webp': 'image/webp',
+    '.avif': 'image/avif',
+    '.woff2': 'font/woff2',
+    '.ico': 'image/x-icon',
+    '.txt': 'text/plain; charset=utf-8',
+  });
+
+  const distWebRoot = options.serveWebDistDir ? path.resolve(options.serveWebDistDir) : null;
+  if (distWebRoot && existsSync(distWebRoot)) {
+    const distPrefix = `${distWebRoot}${path.sep}`;
+    const apiReservedPrefixes = [
+      '/api/',
+      '/auth/',
+      '/_desktop/',
+      '/mcp',
+      '/healthz',
+      '/livez',
+      '/readyz',
+      '/notifications/',
+    ];
+
+    app.setNotFoundHandler((req, reply) => {
+      const rawUrl = req.raw.url ?? '/';
+      const rawPath = rawUrl.split('?')[0] ?? '/';
+      if (req.method !== 'GET' || apiReservedPrefixes.some((prefix) => rawPath.startsWith(prefix))) {
+        return reply.code(404).send({ success: false, error: 'Not Found' });
+      }
+      if (rawPath.includes('..') || rawPath.includes('\0')) {
+        return reply.code(403).send({ success: false, error: 'Forbidden path' });
+      }
+
+      let decodedPath: string;
+      try {
+        decodedPath = decodeURIComponent(rawPath);
+      } catch {
+        return reply.code(400).send({ success: false, error: 'Malformed URL path' });
+      }
+      if (decodedPath.includes('..') || decodedPath.includes('\0')) {
+        return reply.code(403).send({ success: false, error: 'Forbidden path' });
+      }
+
+      const relPath = decodedPath.replace(/^\/+/u, '');
+      if (relPath.length > 0) {
+        const candidate = path.resolve(distWebRoot, relPath);
+        if (candidate !== distWebRoot && !candidate.startsWith(distPrefix)) {
+          return reply.code(403).send({ success: false, error: 'Forbidden path' });
+        }
+        // Read the file directly and let the read decide existence/type, so the
+        // check and the use cannot race on the file system.
+        let content: Buffer;
+        try {
+          content = readFileSync(candidate);
+        } catch {
+          content = Buffer.alloc(0);
+        }
+        if (content.byteLength > 0) {
+          const ext = path.extname(candidate).toLowerCase();
+          const mime = STATIC_MIME_TYPES[ext] ?? 'application/octet-stream';
+          reply.header('X-Content-Type-Options', 'nosniff');
+          reply.header('Content-Type', mime);
+          if (ext === '.html') {
+            reply.header('Cache-Control', 'no-store');
+            const html = content.toString('utf8').replace(
+              '</head>',
+              '<script>window.__MW_DESKTOP_API_URL__=window.location.origin;</script></head>'
+            );
+            return reply.code(200).send(html);
+          }
+          return reply.code(200).send(content);
+        }
+        // Requests targeting a file extension that does not exist must return 404, never SPA HTML
+        if (path.extname(relPath).length > 0) {
+          return reply.code(404).send({ success: false, error: 'Asset not found' });
+        }
+      }
+
+      const spaIndex = path.join(distWebRoot, 'index.html');
+      if (!existsSync(spaIndex)) {
+        return reply.code(404).send({ success: false, error: 'Desktop web bundle not built' });
+      }
+      const html = readFileSync(spaIndex, 'utf8').replace(
+        '</head>',
+        '<script>window.__MW_DESKTOP_API_URL__=window.location.origin;</script></head>'
+      );
+      reply.header('X-Content-Type-Options', 'nosniff');
+      reply.header('Cache-Control', 'no-store');
+      reply.header('Content-Type', 'text/html; charset=utf-8');
+      return reply.code(200).send(html);
+    });
+  }
+
   await app.listen({ host, port });
   const address = app.server.address();
   if (!address || typeof address === 'string') {
+    observatory.stop();
     await app.close();
     throw new Error('Failed to resolve LocalApiServer listening address');
   }
@@ -2859,6 +3275,12 @@ export async function startLocalApiServer(
   const stop = async (): Promise<void> => {
     if (stopped) return;
     stopped = true;
+    if (brainStorePromise) {
+      const opened = await brainStorePromise;
+      opened?.close();
+      brainStorePromise = null;
+    }
+    observatory.stop();
     meshClientController.stop();
     await app.close();
   };

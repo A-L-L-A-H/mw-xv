@@ -36,6 +36,7 @@
   },
   "dependencies": {
     "@fastify/cors": "11.3.1",
+    "@fastify/rate-limit": "^11.2.0",
     "@moonwitness/ai-mcp": "workspace:*",
     "@moonwitness/ai-runtime": "workspace:*",
     "@moonwitness/client": "workspace:*",
@@ -51,6 +52,7 @@
     "@moonwitness/orm-project": "workspace:*",
     "@moonwitness/orm-storage": "workspace:*",
     "@moonwitness/orm-workflow": "workspace:*",
+    "@moonwitness/plan-taskos": "workspace:*",
     "@moonwitness/types": "workspace:*",
     "better-sqlite3": "^13.0.3",
     "fastify": "^5.12.8",

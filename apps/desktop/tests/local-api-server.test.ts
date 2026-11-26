@@ -1,15 +1,17 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { request as httpRequest } from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { startDesktopSidecarDaemon, type DesktopSidecarDaemonHandle } from '../src/cli.js';
+import { createDesktopHarnessBridge } from '../src/bridge.js';
+import { startDesktopSidecarDaemon } from '../src/cli.js';
 import { importDesktopTasks } from '../src/importer.js';
 import { LocalSidecarController, DESKTOP_ADDONS } from '../src/local-sidecar.js';
-import { ensureLocalWorkspaceBootstrap } from '../src/local-api-server.js';
+import { ensureLocalWorkspaceBootstrap, startLocalApiServer } from '../src/local-api-server.js';
 
 describe('LocalApiServer & Desktop Importer', () => {
   const tempDirs: string[] = [];
-  const handles: DesktopSidecarDaemonHandle[] = [];
+  const handles: Array<{ stop(): Promise<void> }> = [];
 
   function makeTempDir(prefix: string): string {
     const dir = mkdtempSync(path.join(os.tmpdir(), prefix));
@@ -1076,5 +1078,183 @@ describe('LocalApiServer & Desktop Importer', () => {
     };
     expect(afterClear.total).toBe(0);
     expect(afterClear.entries).toHaveLength(0);
+  });
+
+  it('serves authenticated Observatory state, SSE stream, and path-confined headless --serve-web', async () => {
+    const tempHome = makeTempDir('mw-desktop-obs-api-');
+    const tempRepo = makeTempDir('mw-desktop-obs-repo-');
+    const tempWebDist = makeTempDir('mw-desktop-obs-web-');
+    const sqlitePath = path.join(tempHome, 'local.db');
+    writeFileSync(path.join(tempHome, 'mode.json'), JSON.stringify({ mode: 'workspace' }), 'utf8');
+    mkdirSync(path.join(tempRepo, '.plan'), { recursive: true });
+    writeFileSync(
+      path.join(tempRepo, '.plan', 'sample.md'),
+      '# Sample Plan\n\n### Wave 1\n- [x] **D01** — Done task\n- [ ] **D02** — Pending task\n',
+      'utf8'
+    );
+    writeFileSync(
+      path.join(tempWebDist, 'index.html'),
+      '<!doctype html><html><head><title>Desktop</title></head><body><div id="root"></div></body></html>',
+      'utf8'
+    );
+
+    const bridge = createDesktopHarnessBridge(
+      {
+        repoRoot: tempRepo,
+        desktopHomeDir: tempHome,
+        sqlitePath,
+        boardOrigin: 'http://127.0.0.1:5173',
+        apiBaseUrl: 'http://127.0.0.1:4242',
+        offlineMode: true,
+      },
+      { autoAttach: false }
+    );
+    const server = await startLocalApiServer({
+      bridge,
+      host: '127.0.0.1',
+      port: 0,
+      repoRoot: tempRepo,
+      observatoryHomeDir: tempHome,
+      enableObservatoryProbes: false,
+      enableObservatoryAntigravityApi: false,
+      serveWebDistDir: tempWebDist,
+    });
+    handles.push({
+      stop: async () => {
+        await server.stop();
+        bridge.dispose();
+      },
+    });
+
+    // Unauthenticated observatory request fails closed
+    const unauthState = await fetch(`${server.apiUrl}/api/desktop/observatory/state`);
+    expect(unauthState.status).toBe(401);
+
+    const loginRes = await fetch(`${server.apiUrl}/auth/login`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ login: 'local', password: 'local-offline-session' }),
+    });
+    const loginBody = (await loginRes.json()) as { data: { access_token: string } };
+    const authHeaders = { authorization: `Bearer ${loginBody.data.access_token}` };
+
+    // T39: Cognitive Brain endpoints fail closed and return structured data when indexed.
+    for (const route of ['search?q=plan', 'impact?target=src%2Fconfig.ts', 'graph?planId=sample']) {
+      const unauthBrain = await fetch(`${server.apiUrl}/api/desktop/observatory/brain/${route}`);
+      expect(unauthBrain.status).toBe(401);
+    }
+    // Authenticated state works in workspace mode
+    const stateRes = await fetch(`${server.apiUrl}/api/desktop/observatory/state`, {
+      headers: authHeaders,
+    });
+    expect(stateRes.status).toBe(200);
+    const stateBody = (await stateRes.json()) as {
+      success: boolean;
+      data: { defaultPlanId: string; plans: Array<{ done: number; total: number }> };
+    };
+    expect(stateBody.success).toBe(true);
+    expect(stateBody.data.defaultPlanId).toBe('sample');
+    expect(stateBody.data.plans[0]?.done).toBe(1);
+    expect(stateBody.data.plans[0]?.total).toBe(2);
+
+    const brainSearch = await fetch(`${server.apiUrl}/api/desktop/observatory/brain/search?q=plan&limit=5`, {
+      headers: authHeaders,
+    });
+    expect(brainSearch.status).toBe(200);
+    expect(((await brainSearch.json()) as { success: boolean }).success).toBe(true);
+    const brainImpact = await fetch(
+      `${server.apiUrl}/api/desktop/observatory/brain/impact?target=${encodeURIComponent('src/config.ts')}`,
+      { headers: authHeaders }
+    );
+    expect(brainImpact.status).toBe(200);
+    const brainGraph = await fetch(`${server.apiUrl}/api/desktop/observatory/brain/graph?planId=sample`, {
+      headers: authHeaders,
+    });
+    expect(brainGraph.status).toBe(200);
+    expect(((await brainGraph.json()) as { data: { nodes: unknown[]; edges: unknown[] } }).data).toMatchObject({
+      nodes: [],
+      edges: [],
+    });
+
+    // Authenticated SSE stream pushes initial snapshot frame and cleans up on abort
+    const sseAbort = new AbortController();
+    const streamRes = await fetch(`${server.apiUrl}/api/desktop/observatory/stream`, {
+      headers: authHeaders,
+      signal: sseAbort.signal,
+    });
+    expect(streamRes.status).toBe(200);
+    expect(streamRes.headers.get('content-type')).toContain('text/event-stream');
+    const reader = streamRes.body?.getReader();
+    expect(reader).toBeDefined();
+    let sseChunk = '';
+    if (reader) {
+      for (let i = 0; i < 4 && !sseChunk.includes('event: snapshot'); i += 1) {
+        const readRes = await reader.read();
+        if (readRes.value) sseChunk += new TextDecoder().decode(readRes.value);
+        if (readRes.done) break;
+      }
+    }
+    sseAbort.abort();
+    expect(sseChunk).toContain('event: snapshot');
+    expect(sseChunk).toContain('"defaultPlanId":"sample"');
+
+    // Authenticated v3 export (markdown + json), SSRF-guarded probe, and commit validation
+    const mdExportRes = await fetch(
+      `${server.apiUrl}/api/desktop/observatory/export?format=markdown`,
+      { headers: authHeaders }
+    );
+    expect(mdExportRes.status).toBe(200);
+    expect(mdExportRes.headers.get('content-type')).toContain('text/markdown');
+    const mdText = await mdExportRes.text();
+    expect(mdText).toContain('# MoonWitness Desktop Agent Observatory Report');
+    expect(mdText).toContain('sample');
+
+    const jsonExportRes = await fetch(
+      `${server.apiUrl}/api/desktop/observatory/export?format=json`,
+      { headers: authHeaders }
+    );
+    expect(jsonExportRes.status).toBe(200);
+    const jsonExportBody = (await jsonExportRes.json()) as { version: number; defaultPlanId: string };
+    expect(jsonExportBody.version).toBe(3);
+    expect(jsonExportBody.defaultPlanId).toBe('sample');
+
+    const ssrfProbeRes = await fetch(
+      `${server.apiUrl}/api/desktop/observatory/probe?url=${encodeURIComponent('http://169.254.169.254/latest/meta-data')}`,
+      { headers: authHeaders }
+    );
+    expect(ssrfProbeRes.status).toBe(400);
+
+    const badShaRes = await fetch(
+      `${server.apiUrl}/api/desktop/observatory/git/commit?sha=not-a-sha`,
+      { headers: authHeaders }
+    );
+    expect(badShaRes.status).toBe(400);
+
+    // Headless --serve-web serves SPA with injected API URL and blocks path traversal & unknown files
+    const spaRes = await fetch(`${server.apiUrl}/board/desktop/observatory`);
+    expect(spaRes.status).toBe(200);
+    const spaHtml = await spaRes.text();
+    expect(spaHtml).toContain('window.__MW_DESKTOP_API_URL__=window.location.origin;');
+
+    const missingAssetRes = await fetch(`${server.apiUrl}/package.json`);
+    expect(missingAssetRes.status).toBe(404);
+
+    const traversalStatus = await new Promise<number>((resolve, reject) => {
+      const req = httpRequest(
+        {
+          host: '127.0.0.1',
+          port: server.port,
+          path: '/%2e%2e/package.json',
+          method: 'GET',
+        },
+        (res) => {
+          res.resume();
+          resolve(res.statusCode ?? 0);
+        }
+      );
+      req.on('error', reject);
+      req.end();
+    });
+    expect(traversalStatus).toBe(403);
   });
 });

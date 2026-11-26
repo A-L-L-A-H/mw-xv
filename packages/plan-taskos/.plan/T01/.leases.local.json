@@ -1,0 +1,14 @@
+{
+  "leases": [
+    {
+      "taskUrn": "urn:mw:work:test-plan:T01",
+      "agentRuntime": "claude-code",
+      "sessionId": "session-new",
+      "modelTier": "flash",
+      "acquiredAt": "2026-11-25T21:32:45.830Z",
+      "expiresAt": "2026-11-25T21:47:45.000Z",
+      "renewedAt": "2026-11-25T21:32:45.830Z"
+    }
+  ],
+  "updatedAt": "2026-11-25T21:32:46.603Z"
+}

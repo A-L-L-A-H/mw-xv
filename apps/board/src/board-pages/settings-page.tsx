@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   CheckIcon,
@@ -1111,6 +1112,18 @@ function SettingsPageContent({
           </Button>
         </div>
       </form>
+
+      {isAdmin && !isDesktop && (
+        <Panel
+          title="Server Instance & Domains"
+          description="Manage public domains, TLS, and port 8000 hardening for this server."
+          density="compact"
+        >
+          <Button asChild variant="outline" size="sm">
+            <Link href="/board/cloud">Manage Instance &amp; Domains</Link>
+          </Button>
+        </Panel>
+      )}
 
       {isAdmin && (
         <>

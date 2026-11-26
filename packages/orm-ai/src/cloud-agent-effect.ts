@@ -108,6 +108,8 @@ export interface CloudAgentEffectDeps {
 export class CloudAgentToolDeniedError extends Error {
   readonly code = 'TOOL_DENIED' as const;
   readonly reasonCode: string;
+  /** Harness sentinel: denials are fatal and must never become model tool output. */
+  readonly toolDenied = true as const;
 
   constructor(reasonCode: string, toolName: string, detail = '') {
     super(`Tool "${toolName}" denied (${reasonCode})${detail ? `: ${detail.slice(0, 256)}` : ''}`);

@@ -65,6 +65,19 @@ const SENSITIVE_PATTERNS: readonly RegExp[] = [
   /(?:api[_-]?key|token|secret|password|passwd|authorization)\s*[:=]\s*["']?([^\s"',;}{]+)["']?/giu,
 ];
 
+// Logs ingest untrusted text (stderr tails, HTTP bodies, webhook payloads).
+// Strip control characters so a remote message cannot forge log lines or
+// smuggle ANSI escapes into the persisted JSONL, and cap oversized payloads.
+const MAX_PERSISTED_TEXT_LENGTH = 16_384;
+
+export function sanitizeLogText(input: string): string {
+  // eslint-disable-next-line no-control-regex
+  const withoutControlChars = input.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/gu, '');
+  return withoutControlChars.length > MAX_PERSISTED_TEXT_LENGTH
+    ? `${withoutControlChars.slice(0, MAX_PERSISTED_TEXT_LENGTH)}…[truncated]`
+    : withoutControlChars;
+}
+
 export function redactSensitiveText(input: string, knownSecrets: readonly string[] = []): string {
   let result = input;
   for (const secret of knownSecrets) {
@@ -180,9 +193,9 @@ export class DesktopLogHub {
       timestamp,
       level: input.level,
       source: input.source,
-      message: redactSensitiveText(input.message, this.knownSecrets),
+      message: sanitizeLogText(redactSensitiveText(input.message, this.knownSecrets)),
       ...(input.detail !== undefined
-        ? { detail: redactSensitiveText(input.detail, this.knownSecrets) }
+        ? { detail: sanitizeLogText(redactSensitiveText(input.detail, this.knownSecrets)) }
         : {}),
     };
 

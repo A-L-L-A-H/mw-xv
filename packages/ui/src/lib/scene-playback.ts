@@ -505,6 +505,7 @@ export function useScenePlayback(options: UseScenePlaybackOptions = {}): UseScen
       : Boolean(options.autoPlay);
 
   const controllerRef = useRef<ScenePlaybackController | null>(null);
+  const disposeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   if (controllerRef.current === null) {
     controllerRef.current = createScenePlaybackController({
       durationMs: options.durationMs,
@@ -548,8 +549,18 @@ export function useScenePlayback(options: UseScenePlaybackOptions = {}): UseScen
   }, [controller, observedElement, options.targetRef]);
 
   useEffect(() => {
+    if (disposeTimerRef.current !== null) {
+      clearTimeout(disposeTimerRef.current);
+      disposeTimerRef.current = null;
+    }
     return () => {
-      controller.dispose();
+      // React Strict Mode runs an effect cleanup/setup pair on mount in development.
+      // Defer disposal one task so that replay can reattach observers to this controller;
+      // a real unmount still disposes promptly and releases the animation frame.
+      disposeTimerRef.current = setTimeout(() => {
+        if (controllerRef.current === controller) controller.dispose();
+        disposeTimerRef.current = null;
+      }, 0);
     };
   }, [controller]);
 

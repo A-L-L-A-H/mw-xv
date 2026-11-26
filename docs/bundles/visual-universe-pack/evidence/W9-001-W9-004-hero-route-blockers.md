@@ -1,25 +1,48 @@
-# W9-001 through W9-004 — Scene and route blockers
+# W9-001 through W9-004 — Moon City production slice and route gap
 
-Date: 2026-11-23
-Source branch: `dev` at `a3fa6da`
+Date: 2026-11-25 (Asia/Jakarta)
 
-## W9-001 — Moon City scene definition
+## W9-001 — Moon City scene definition and approval
 
-The canonical environment scene and source assets validate, but the scene is not ready for production assembly. The current `crew-01` registry entry remains `status: review`; its face and pilot identity are explicitly pending separate approval. The Magpie-generated Moon City masters and derivatives are recorded as non-distributable because provider/model terms have not been verified. The project charter also requires human approval of the pilot identity and final hero visual. No generic approval message identifies a specific pilot or resolves the asset terms.
+Project-owner approval is recorded in `docs/decisions/moon-city-production-approval.md`. It selects the anonymous fictional `crew-01` as pilot and approves the existing authored idle clip and desktop/mobile homepage artwork for production distribution, subject to their already recorded provenance and applicable source terms. No real person or user identity is attached. The approval does not claim an independent legal review.
 
-Evidence:
+The homepage consumes `packages/assets/scenes/moon-city-scene.json` as its canonical layer, breakpoint and clip definition. Desktop/mobile responsive rules resolve against the manifest. Art contains no product copy or metrics. The registry labels crew-01 as the anonymous example.
 
-- `packages/assets/source/world/characters/character-registry.json` — `crew-01` is back-facing, anonymous, and in review; the registry says faces remain unspecified pending pilot approval.
-- `packages/assets/licenses.json` — generated Moon City sources remain unverified/non-distributable.
-- `evidence/moon-city-asset-tool-blocker.md` — contact review and unresolved licensing/character gaps.
-- `pnpm test:assets` — exit 0; scene and asset references validate, 56 tests pass. This validates structure, not identity or rights acceptance.
+Verification:
 
-W9-001 remains blocked until the pilot identity and asset distribution terms are explicitly resolved. No production character was bound to a real user or crew member.
+- `bun --filter @moonwitness/assets qa` — exit 0; 401 runtime assets, 54 source masters, 0 errors, 0 warnings.
+- `node --test packages/assets/tests/moon-city-scene.test.mjs packages/assets/tests/character-registry.test.mjs` — exit 0; 8 passed.
+- `docs/decisions/moon-city-production-approval.md` — recorded project-owner approval and boundaries.
 
-## W9-002 and W9-003 — Homepage scene and transitions
+## W9-002 — Homepage hero vertical slice
 
-The current homepage has editorial hero artwork, but it does not satisfy the requested production vertical slice with approved layered scene assets, one approved recurring character, a loopable idle clip, bounded camera/parallax, FX, responsive crops, and a static/reduced-motion fallback. Those tasks depend on W9-001 and remain blocked rather than being credited to the existing static homepage.
+`apps/board/src/components/home/home-hero-art.tsx` renders the canonical scene layers and responsive variants with the four-frame `crew-01-idle` loop, keeping real HTML headline, navigation, copy and calls to action in the page. Desktop/mobile static artwork remains the fallback; reduced-motion uses a static frame. React Strict Mode lifecycle replay is handled without disposing the active playback controller, and the fallback only activates when the actual selected image cannot load.
+
+Verification:
+
+- `bun --filter @moonwitness/board typecheck` — exit 0.
+- `bun --filter @moonwitness/board build` — exit 0.
+- `bunx --cwd apps/board playwright test e2e/visual-audit.spec.ts --config playwright.visual.reuse.config.mjs --grep "homepage spelling"` — exit 0; 3 passed in Chromium, Firefox and WebKit.
+- Updated deterministic approved-reference snapshots: `apps/board/e2e/visual-audit.spec.ts-snapshots/home-mobile-390-chromium-win32.png` and `home-reference-1672-chromium-win32.png`.
+
+## W9-003 — Cinematic scroll transitions
+
+Editorial reveals are progressive enhancement, do not intercept scrolling, and retain direct document order and visibility when reduced motion is requested. Native scrolling and reduced-motion/static scene fallback were checked in the three-browser homepage test above.
 
 ## W9-004 — Signals and Archive
 
-`rg --files apps/board/src/app` found no `/signals` or `/archive` production routes. No route, archive record, signal, map, or metric was invented. The task remains blocked on W9-001 and the absent route contract; a catalog specimen can be added only after its scope is approved in the existing catalog.
+Production route inventory and the Next build contain neither `/signals` nor `/archive`. No fake route, record, metric, signal, map or feed was introduced. Two explicitly labeled catalog-only visual specimens explain the route/data-contract gap and contain no navigable links or live records.
+
+Verification:
+
+- `bun --filter @moonwitness/ui-catalog test` — exit 0; 96 passed.
+- `bunx --cwd apps/ui-catalog playwright test tests/scene-harness.spec.ts --config playwright.config.ts` — exit 0; 11 passed, including route-gap safeguards.
+
+## W9-005 — Crew and Story boundary
+
+Story remains backed by the existing API state. Fictional crew-01 is visibly an example in the catalog and only appears as approved decorative pilot illustration in the homepage; no crew metrics, maps, or fictional user records were added. The UI catalog verifies the specimen under reduced motion.
+
+Verification:
+
+- `bun --filter @moonwitness/ui-catalog test` — exit 0; 96 passed.
+- `bunx --cwd apps/ui-catalog playwright test tests/scene-harness.spec.ts --config playwright.config.ts` — exit 0; 11 passed.

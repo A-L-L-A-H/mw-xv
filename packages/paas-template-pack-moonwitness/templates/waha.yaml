@@ -1,0 +1,15 @@
+# WAHA — WhatsApp HTTP API multi-engine (WEBJS/NOWEB/GOWS).
+# Opsi self-host tenant di samping apps/whatsapp (Baileys native MW):
+# API HTTP web-native yang bisa di-proxy Caddy, integrates dengan n8n.
+services:
+  waha:
+    image: devlikeapro/waha:latest
+    expose:
+      - '3000'
+    environment:
+      - WHATSAPP_API_KEY=${SERVICE_PASSWORD_WAHA}
+      - WAHA_HEALTH_CHECK=true
+    volumes:
+      - waha-sessions:/app/.sessions
+volumes:
+  waha-sessions:

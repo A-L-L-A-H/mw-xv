@@ -1,4 +1,5 @@
 import { isRecord } from '@moonwitness/types';
+import { isLoopbackEndpointUrl } from '@moonwitness/types';
 
 export type LocalAiMode = 'disabled' | 'local';
 export type LocalAiProvider = 'simple-v1' | 'ollama' | 'openai-compat';
@@ -72,27 +73,11 @@ import type { LocalAiRequest, LocalAiRuntime } from './runtime.types.js';
 
 export type LocalAiFetch = typeof fetch;
 
-const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '::1']);
 const ALLOWED_PROVIDERS = new Set<LocalAiProvider>(['simple-v1', 'ollama', 'openai-compat']);
 const DEFAULT_TIMEOUT_MS = 15_000;
 const MAX_TIMEOUT_MS = 120_000;
 const MAX_PROMPT_LENGTH = 20_000;
 const MAX_RESPONSE_LENGTH = 100_000;
-
-function isLoopbackHost(hostname: string): boolean {
-  return LOOPBACK_HOSTS.has(hostname.replace(/^\[|\]$/gu, '').toLowerCase());
-}
-
-function isAllowedEndpoint(endpoint: URL): boolean {
-  return (
-    endpoint.protocol === 'http:' &&
-    isLoopbackHost(endpoint.hostname) &&
-    endpoint.username.length === 0 &&
-    endpoint.password.length === 0 &&
-    endpoint.search.length === 0 &&
-    endpoint.hash.length === 0
-  );
-}
 
 export function readLocalAiConfig(
   environment: Readonly<Record<string, string | undefined>>
@@ -136,7 +121,7 @@ export function readLocalAiConfig(
   } catch (error) {
     throw new TypeError('LOCAL_AI_ENDPOINT must be a valid loopback URL', { cause: error });
   }
-  if (!isAllowedEndpoint(endpoint)) {
+  if (!isLoopbackEndpointUrl(endpoint.toString())) {
     throw new TypeError('LOCAL_AI_ENDPOINT must use HTTP on localhost, 127.0.0.1, or ::1 only');
   }
   return {
@@ -225,7 +210,7 @@ export function createLocalAiRuntime(
   ) {
     throw new TypeError(`timeoutMs must be an integer from 100 to ${MAX_TIMEOUT_MS}`);
   }
-  if (config.mode === 'local' && (!config.endpoint || !isAllowedEndpoint(config.endpoint))) {
+  if (config.mode === 'local' && (!config.endpoint || !isLoopbackEndpointUrl(config.endpoint.toString()))) {
     throw new TypeError('local AI runtime accepts loopback endpoints only');
   }
   if (config.mode !== 'disabled' && config.mode !== 'local') {

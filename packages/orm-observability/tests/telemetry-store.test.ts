@@ -1,10 +1,11 @@
+import { randomUUID } from 'node:crypto';
 import { afterEach, describe, expect, it } from 'vitest';
 import knexFactory from 'knex';
 import { installAddons } from '@moonwitness/orm';
 import { MemoryTelemetryStore } from '../src/memory-store.js';
 import { observabilityAddon } from '../src/manifest.js';
 import { SqlTelemetryStore } from '../src/sql-store.js';
-import type { TelemetryStore, TelemetryStoreOptions } from '../src/types.js';
+import type { Page, TelemetryStore, TelemetryStoreOptions } from '../src/types.js';
 import { makeLog, makePoint, makeSeries, makeSpan, NOW_MS } from './fixtures.js';
 
 const implementations: Array<{
@@ -34,6 +35,35 @@ const implementations: Array<{
     },
   },
 ];
+
+const postgresUrl = process.env.TELEMETRY_POSTGRES_TEST_URL;
+if (postgresUrl) {
+  implementations.push({
+    name: 'postgresql',
+    create: async (options = {}) => {
+      const schema = `obs_${randomUUID().replaceAll('-', '')}`;
+      const db = knexFactory({
+        client: 'pg',
+        connection: { connectionString: postgresUrl },
+        pool: {
+          min: 1,
+          max: 4,
+          afterCreate(connection: { query(sql: string, callback: (error: Error | null) => void): void }, done: (error: Error | null, connection: unknown) => void) {
+            connection.query(`SET search_path TO "${schema}"`, (error) => done(error, connection));
+          },
+        },
+      });
+      try {
+        await db.raw('CREATE SCHEMA ??', [schema]);
+        await installAddons(db, [observabilityAddon]);
+        return new SqlTelemetryStore(db, options);
+      } catch (error) {
+        await db.destroy();
+        throw error;
+      }
+    },
+  });
+}
 
 describe.each(implementations)('$name telemetry store', ({ create }) => {
   const stores: TelemetryStore[] = [];
@@ -222,6 +252,69 @@ describe.each(implementations)('$name telemetry store', ({ create }) => {
     now += 1;
     await store.ingestMetrics([]);
     expect((await store.listLogs()).length).toBe(0);
+  });
+
+  it('derives tenant attribution from ingest context and isolates every read path', async () => {
+    const store = await makeStore({ now: () => NOW_MS });
+    const forged = makeSpan({ tenantId: 999 });
+    await store.ingestSpans([forged], { tenantId: 7 });
+    await store.ingestSpans([forged], { tenantId: 8 });
+    await store.ingestLogs([makeLog({ tenantId: 999 })], { tenantId: 7 });
+    await store.ingestMetrics([makeSeries({ tenantId: 999 })], { tenantId: 7 });
+    const scope = { global: false, tenantId: 7 };
+    expect((await store.listTraces({ scope })).map((trace) => trace.tenantId)).toEqual([7]);
+    expect((await store.getTrace(forged.traceId, { scope }))?.spans[0]?.tenantId).toBe(7);
+    expect((await store.listLogs({ scope }))[0]?.tenantId).toBe(7);
+    expect((await store.listMetrics({ scope }))[0]?.tenantId).toBe(7);
+    expect(await store.summary(scope)).toMatchObject({ traceCount: 1, spanCount: 1, logCount: 1, metricSeriesCount: 1 });
+    expect(await store.summary({ global: false, tenantId: 9 })).toMatchObject({ traceCount: 0, spanCount: 0, logCount: 0, metricSeriesCount: 0 });
+    expect(await store.getTrace(forged.traceId, { scope: { global: false, tenantId: 9 } })).toBeUndefined();
+    expect(await store.summary({ global: true })).toMatchObject({ traceCount: 2, spanCount: 2 });
+    const first = await store.listTraces({ limit: 1 });
+    const second = await store.listTraces({ limit: 1, cursor: first.nextCursor });
+    expect(first.items).toHaveLength(1);
+    expect(second.items).toHaveLength(1);
+    expect(new Set([...first.items, ...second.items].map((trace) => trace.tenantId))).toEqual(new Set([7, 8]));
+  });
+
+  it('paginates descending lists and ascending trace details without duplicates', async () => {
+    const store = await makeStore({ now: () => NOW_MS });
+    await store.ingestSpans(['c', 'a', 'b'].map((spanId) => makeSpan({ spanId, traceId: `trace-${spanId}` })));
+    await store.ingestLogs(['c', 'a', 'b'].map((id) => makeLog({ id, traceId: `trace-${id}` })));
+    await store.ingestMetrics(['c', 'a', 'b'].map((id) => makeSeries({ id })));
+    async function collect<T>(read: (cursor?: string) => Promise<Page<T>>) {
+      const first = await read();
+      expect(first.items).toHaveLength(2);
+      expect(first.nextCursor).toBeTruthy();
+      const second = await read(first.nextCursor);
+      expect(second.items).toHaveLength(1);
+      expect(second.nextCursor).toBeUndefined();
+      expect(new Set([...first.items, ...second.items]).size).toBe(3);
+    }
+    await collect((cursor) => store.listTraces({ limit: 2, cursor }));
+    await collect((cursor) => store.listLogs({ limit: 2, cursor }));
+    await collect((cursor) => store.listMetrics({ limit: 2, cursor }));
+    await store.ingestSpans(['c', 'a', 'b'].map((spanId) => makeSpan({ traceId: 'detail', spanId })));
+    await store.ingestLogs(['c', 'a', 'b'].map((id) => makeLog({ id: `detail-${id}`, traceId: 'detail' })));
+    const first = await store.getTrace('detail', { spanLimit: 2, logLimit: 2 });
+    expect(first?.spans.items.map((span) => span.spanId)).toEqual(['a', 'b']);
+    expect(first?.logs.items.map((log) => log.id)).toEqual(['detail-a', 'detail-b']);
+    const second = await store.getTrace('detail', { spanCursor: first?.spans.nextCursor, logCursor: first?.logs.nextCursor });
+    expect(second?.spans.items.map((span) => span.spanId)).toEqual(['c']);
+    expect(second?.logs.items.map((log) => log.id)).toEqual(['detail-c']);
+  });
+
+  it('retains trace projections when only an old child span expires', async () => {
+    let now = NOW_MS;
+    const store = await makeStore({ retentionMs: 1_000, now: () => now });
+    await store.ingestSpans([
+      makeSpan({ spanId: 'old-child', parentSpanId: 'root', startTimeMs: NOW_MS - 2_000, endTimeMs: NOW_MS - 1_500, durationMs: 500 }),
+      makeSpan({ spanId: 'root', startTimeMs: NOW_MS, endTimeMs: NOW_MS + 100, durationMs: 100 }),
+    ]);
+    now += 1_001;
+    await store.pruneExpired?.();
+    expect(await store.getTrace('trace-1')).toMatchObject({ summary: { spanCount: 1 }, spans: { items: [{ spanId: 'root' }] } });
+    expect(await store.summary()).toMatchObject({ traceCount: 1, spanCount: 1 });
   });
 
   it('enforces item, series, and latest-point limits with current eviction accounting', async () => {

@@ -8,6 +8,7 @@ import {
 } from '@moonwitness/orm';
 import {
   Company,
+  ConfigParameter,
   Partner,
   User,
   assignDefaultCompanyMembership,
@@ -40,6 +41,8 @@ export interface RegisterInput {
   name?: string;
   email?: string;
 }
+
+export type SetupClaimInput = RegisterInput;
 
 export interface RequestMeta {
   userAgent?: string;
@@ -167,6 +170,103 @@ export function createAuthService(options: AuthServiceOptions) {
         throw error;
       }
       return issue({ ...user, token_version: user.token_version ?? 1 }, randomUUID(), meta);
+    },
+
+    async claimSuperadminSetup(
+      input: SetupClaimInput,
+      meta: RequestMeta = {}
+    ): Promise<AuthSession> {
+      const login = input.login.trim();
+      const name = input.name?.trim();
+      const email = input.email?.trim();
+      if (login.length < 3 || login.length > 255) {
+        throw new RangeError('Login must be between 3 and 255 characters');
+      }
+      if (input.password.length < MIN_PASSWORD_LENGTH || input.password.length > MAX_PASSWORD_LENGTH) {
+        throw new RangeError(
+          `Password must be between ${MIN_PASSWORD_LENGTH} and ${MAX_PASSWORD_LENGTH} characters`
+        );
+      }
+      if (name !== undefined && (name.length < 1 || name.length > 255)) {
+        throw new RangeError('Name must be between 1 and 255 characters');
+      }
+      if (email !== undefined && (email.length < 3 || email.length > 255)) {
+        throw new RangeError('Email must be between 3 and 255 characters');
+      }
+
+      try {
+        return await User.transaction(async (trx) => {
+          const setup = await ConfigParameter.query(trx)
+            .where({ key: 'instance.setup_completed', active: true })
+            .whereNull('company_id')
+            .orderBy('id', 'desc')
+            .first();
+          if (setup?.value === 'true') throw new ConflictError('Instance setup is already complete');
+
+          const identity = trx('_orm_data')
+            .select('record_id')
+            .where({ id: 'base.user_superadmin', model: User.modelName });
+          const user = await User.query(trx)
+            .whereIn('id', identity)
+            .where({ role: 'superadmin', active: true, password: null })
+            .first();
+          if (!user) throw new ConflictError('Superadmin setup is not available');
+
+          const duplicate = await User.query(trx)
+            .findOne({ login })
+            .whereNot({ id: user.id });
+          if (duplicate) throw new ConflictError('Login already exists');
+
+          const claimed = await User.query(trx)
+            .where({ id: user.id, password: null, token_version: user.token_version })
+            .patch({
+              login,
+              password: input.password,
+              token_version: user.token_version + 1,
+            });
+          if (claimed !== 1) throw new ConflictError('Superadmin setup is already complete');
+
+          await Partner.query(trx)
+            .findById(user.partner_id)
+            .patch({
+              ...(name ? { name } : {}),
+              ...(email ? { email } : {}),
+            });
+          await RefreshToken.query(trx)
+            .patch({ revoked: true, rotated_at: null, rotation_lease_until: null })
+            .where({ user_id: user.id });
+
+          if (setup) {
+            await ConfigParameter.query(trx)
+              .findById(setup.id)
+              .where({ value: setup.value })
+              .patch({ value: 'true', value_type: 'boolean' });
+          } else {
+            await ConfigParameter.query(trx).insert({
+              key: 'instance.setup_completed',
+              value: 'true',
+              value_type: 'boolean',
+              company_id: null,
+            });
+          }
+
+          return issue(
+            {
+              id: user.id,
+              login,
+              role: 'superadmin',
+              partner_id: user.partner_id,
+              token_version: user.token_version + 1,
+            },
+            randomUUID(),
+            meta,
+            trx
+          );
+        });
+      } catch (error) {
+        if (isUniqueViolation(error)) throw new ConflictError('Login or email already registered');
+        throw error;
+      }
     },
 
     async login(login: string, password: string, meta: RequestMeta = {}): Promise<AuthSession> {

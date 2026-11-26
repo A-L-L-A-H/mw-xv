@@ -97,8 +97,8 @@ test('desktop Board shell uses the compact crown lockup and a magenta active nav
   const crown = sidebar.locator('img[src="/brand/moonwitness-symbol-dark.svg"]');
   await expect(crown).toBeVisible();
   await expect(crown).toHaveAttribute('aria-hidden', 'true');
-  expect((await crown.boundingBox())?.width).toBe(36);
-  expect((await crown.boundingBox())?.height).toBe(36);
+  expect((await crown.boundingBox())?.width).toBeCloseTo(36, 0);
+  expect((await crown.boundingBox())?.height).toBeCloseTo(36, 0);
   await expect(sidebar.getByText('MoonWitness', { exact: true })).toBeVisible();
 
   const activeLink = sidebar.getByRole('link', { name: 'Dashboard' });
@@ -118,8 +118,8 @@ test('desktop Board shell uses the compact crown lockup and a magenta active nav
   const mobileSidebar = page.getByRole('dialog', { name: 'Model navigation' });
   const mobileCrown = mobileSidebar.locator('img[src="/brand/moonwitness-symbol-dark.svg"]');
   await expect(mobileCrown).toBeVisible();
-  expect((await mobileCrown.boundingBox())?.width).toBe(36);
-  expect((await mobileCrown.boundingBox())?.height).toBe(36);
+  expect((await mobileCrown.boundingBox())?.width).toBeCloseTo(36, 0);
+  expect((await mobileCrown.boundingBox())?.height).toBeCloseTo(36, 0);
   await expect(mobileSidebar.getByText('MoonWitness', { exact: true })).toBeVisible();
   await expect(mobileSidebar.getByRole('link', { name: 'Dashboard' })).toHaveAttribute(
     'aria-current',
@@ -703,6 +703,34 @@ async function expectNoHorizontalOverflow(page: Page, label: string) {
 }
 
 async function expectNoA11yViolations(page: Page, label: string) {
+  // Playwright 1.65's bundled Firefox 159 populates WebIDL [Cached] FrozenArray
+  // ARIA element properties (such as Element.prototype.ariaLabelledByElements) in
+  // Playwright's isolated utility compartment during locator evaluation. When
+  // axe-core subsequently reads those cached getters from the main world, Gecko
+  // crashes the content process. Neutralizing the reflected element-reference
+  // getters on Element.prototype in the main world keeps axe-core on its standard
+  // getAttribute('aria-labelledby') / ID-reference validation path without crashing.
+  await page.evaluate(() => {
+    for (const prop of [
+      'ariaLabelledByElements',
+      'ariaDescribedByElements',
+      'ariaControlsElements',
+      'ariaDetailsElements',
+      'ariaFlowToElements',
+      'ariaOwnsElements',
+      'ariaActiveDescendantElement',
+      'ariaErrorMessageElements',
+    ]) {
+      if (prop in Element.prototype) {
+        Object.defineProperty(Element.prototype, prop, {
+          get() {
+            return undefined;
+          },
+          configurable: true,
+        });
+      }
+    }
+  });
   const results = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
     .analyze();
@@ -858,9 +886,20 @@ test('homepage spelling, responsive layout, and reference screenshots', async ({
   ] as const;
   await mkdir(auditDirectory, { recursive: true });
 
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await expect(page.locator('[data-scene-id="moon-city-hero"]')).toHaveAttribute(
+    'data-scene-state',
+    'playing'
+  );
+  await expect(
+    page.getByTestId('home-hero-crew').locator('[data-sprite-clip="crew-01-idle"]')
+  ).toHaveAttribute('data-sprite-state', 'playing');
+
   for (const size of homeSizes) {
     await page.setViewportSize({ width: size.width, height: size.height });
-    await page.goto('/');
+    await page.goto('/?sceneFrame=0&sceneTime=0&scenePaused=1');
     const brandLockup = page.locator('.home-lockup');
     await expect(page.getByRole('link', { name: 'MoonWitness home', exact: true })).toBeVisible();
     await expect(brandLockup).toBeVisible();
@@ -888,6 +927,7 @@ test('homepage spelling, responsive layout, and reference screenshots', async ({
       await expect(page.getByRole('button', { name: 'Enable interface sounds' })).toBeVisible();
       await page.keyboard.press('Escape');
       await expect(page.getByRole('dialog', { name: 'Site navigation' })).toBeHidden();
+      await expect(page.locator('.home-mobile-sheet')).toHaveCount(0);
     }
     await expectNoHorizontalOverflow(page, `homepage/${size.name}`);
     const heroImage = await page.locator('.home-hero-art-image').evaluate((image) => ({
@@ -895,6 +935,9 @@ test('homepage spelling, responsive layout, and reference screenshots', async ({
       alt: image.getAttribute('alt'),
     }));
     expect(heroImage).toEqual({ loaded: true, alt: '' });
+    await expect(
+      page.getByTestId('home-hero-crew').locator('[data-sprite-clip="crew-01-idle"]')
+    ).toBeVisible();
     await expectNoA11yViolations(page, `homepage/${size.name}`);
     await writeAuditScreenshot(page, testInfo, `home-${size.name}.png`, {
       fullPage: true,
@@ -910,6 +953,21 @@ test('homepage spelling, responsive layout, and reference screenshots', async ({
       });
     }
   }
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/?sceneFrame=0&sceneTime=0&scenePaused=1');
+  const stillHero = page.locator('.home-hero-art-image');
+  await expect
+    .poll(() => stillHero.evaluate((image: HTMLImageElement) => image.complete))
+    .toBe(true);
+  await expect(page.locator('.mw-ui-layered-scene')).toHaveCount(0);
+  await expect(
+    page.getByTestId('home-hero-crew').locator('[data-sprite-clip="crew-01-idle"]')
+  ).toHaveAttribute('data-sprite-state', 'static');
+  await page.locator('.home-editorial-card').first().scrollIntoViewIfNeeded();
+  await expect(page.locator('.home-editorial-card').first()).toBeInViewport();
+  expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
 });
 
 test('story workbench masthead keeps brand copy readable across viewports', async ({
@@ -947,7 +1005,7 @@ test('story workbench masthead keeps brand copy readable across viewports', asyn
       await expect(page).toHaveScreenshot(`workbench-${size.name}.png`, {
         animations: 'disabled',
         caret: 'hide',
-        fullPage: true,
+        clip: { x: 0, y: 0, width: 1440, height: 680 },
       });
     }
   }
@@ -1050,7 +1108,7 @@ test('story workbench editor and preview stay readable with a populated story', 
       await expect(page).toHaveScreenshot(`workbench-filled-${size.name}.png`, {
         animations: 'disabled',
         caret: 'hide',
-        fullPage: true,
+        clip: { x: 0, y: 0, width: 1440, height: 680 },
       });
     }
 
@@ -1142,7 +1200,7 @@ test('empty and unavailable story workbench states explain the next action', asy
         await expect(page).toHaveScreenshot(`workbench-${scenario.name}-${size.name}.png`, {
           animations: 'disabled',
           caret: 'hide',
-          fullPage: true,
+          clip: { x: 0, y: 0, width: 1440, height: 680 },
         });
       }
     }

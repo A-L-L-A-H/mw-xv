@@ -4,9 +4,9 @@
   "generatedFrom": "packages/assets/manifest.json and packages/ui/src/styles/tokens.css",
   "sources": {
     "assetManifest": "manifest.json",
-    "assetManifestSha256": "2251d5aee4519f4d5cb0a1c09e82bc2f7770236df1fb9ea31daa41598d428f20",
+    "assetManifestSha256": "3c8b6556f0cf5d7fdbf338c307141e00010c5a2108041b50e3c885ea7a359549",
     "tokens": "packages/ui/src/styles/tokens.css",
-    "tokensSha256": "24bb0f75d8c8042709f427d7fdc5c5bd735cbe6d930ab00c6938ab5d2557e723"
+    "tokensSha256": "42872eed742d9542837547c7d01d287e7859d6cc0cba13eca12d003a78f0465d"
   },
   "assets": [
     {
@@ -561,6 +561,78 @@
       "sha256": "12ae6b97604ccb2759ca718832918939afe92fcf8fee11538b8990f4ff3fe724"
     },
     {
+      "source": "packages/assets/brand/moonwitness-youtube-banner.dark.svg",
+      "output": "docs/assets/moonwitness/brand/moonwitness-youtube-banner.dark.svg",
+      "kind": "youtube",
+      "format": "svg",
+      "width": 2560,
+      "height": 1440,
+      "sha256": "b01cf52cf0a4adad4a68073aa23c7079e160cdff3bb7a40e1ae40a796495fbb2"
+    },
+    {
+      "source": "packages/assets/brand/moonwitness-youtube-banner.svg",
+      "output": "docs/assets/moonwitness/brand/moonwitness-youtube-banner.svg",
+      "kind": "youtube",
+      "format": "svg",
+      "width": 2560,
+      "height": 1440,
+      "sha256": "715692dae3f7464bbfd12b4917417c008bb35806d190770384304c67a33df014"
+    },
+    {
+      "source": "packages/assets/brand/moonwitness-youtube-logo.dark.svg",
+      "output": "docs/assets/moonwitness/brand/moonwitness-youtube-logo.dark.svg",
+      "kind": "youtube",
+      "format": "svg",
+      "width": 800,
+      "height": 800,
+      "sha256": "7790c8b1b9766f94ad1c234bbad5da021dcdf5f0c6e2e28da0de643500473989"
+    },
+    {
+      "source": "packages/assets/brand/moonwitness-youtube-logo.svg",
+      "output": "docs/assets/moonwitness/brand/moonwitness-youtube-logo.svg",
+      "kind": "youtube",
+      "format": "svg",
+      "width": 800,
+      "height": 800,
+      "sha256": "c6556791774e530512c04ba67cac02ea684d9e112150284daadff7bf62be5784"
+    },
+    {
+      "source": "packages/assets/brand/moonwitness-youtube-thumbnail-template.dark.svg",
+      "output": "docs/assets/moonwitness/brand/moonwitness-youtube-thumbnail-template.dark.svg",
+      "kind": "youtube",
+      "format": "svg",
+      "width": 1280,
+      "height": 720,
+      "sha256": "582978a8377be6513dac24fc9036f5f137f128232eaa18bd1c0001ad9c36dafa"
+    },
+    {
+      "source": "packages/assets/brand/moonwitness-youtube-thumbnail-template.svg",
+      "output": "docs/assets/moonwitness/brand/moonwitness-youtube-thumbnail-template.svg",
+      "kind": "youtube",
+      "format": "svg",
+      "width": 1280,
+      "height": 720,
+      "sha256": "3b0f5294b5dd818bfac5c2d501867b4a54a72469b25d8658d19992185927fb57"
+    },
+    {
+      "source": "packages/assets/brand/moonwitness-youtube-watermark.dark.svg",
+      "output": "docs/assets/moonwitness/brand/moonwitness-youtube-watermark.dark.svg",
+      "kind": "youtube",
+      "format": "svg",
+      "width": 150,
+      "height": 150,
+      "sha256": "9118c4f4690dad4d8df37806bdcfbbc8b4c61f23fc515702c0eb6002722e2a86"
+    },
+    {
+      "source": "packages/assets/brand/moonwitness-youtube-watermark.svg",
+      "output": "docs/assets/moonwitness/brand/moonwitness-youtube-watermark.svg",
+      "kind": "youtube",
+      "format": "svg",
+      "width": 150,
+      "height": 150,
+      "sha256": "5433465e5317041c10cf0edef98d78068e4dc8a794d2b08e1d3364c143fdc3d3"
+    },
+    {
       "source": "packages/assets/brand/readme-banner.svg",
       "output": "docs/assets/moonwitness/brand/readme-banner.svg",
       "kind": "readme-banner",
@@ -568,6 +640,24 @@
       "width": 1280,
       "height": 320,
       "sha256": "149d84c0c6c3024a9c247281312d20f9a4671c621f0d57ea35b37fb77cadde66"
+    },
+    {
+      "source": "packages/assets/brand/social-card.dark.png",
+      "output": "docs/assets/moonwitness/brand/social-card.dark.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 1200,
+      "height": 630,
+      "sha256": "d417fe2cb54c13dbc6f2e1b9f12f8d0f0864998d22b431f011451a187e13855a"
+    },
+    {
+      "source": "packages/assets/brand/social-card.dark.svg",
+      "output": "docs/assets/moonwitness/brand/social-card.dark.svg",
+      "kind": "social-card",
+      "format": "svg",
+      "width": 1200,
+      "height": 630,
+      "sha256": "8cbe2f0cc283121b9207479eae38cfe519f565c6bec17db6ccc7a26d9220c570"
     },
     {
       "source": "packages/assets/brand/social-card.png",
@@ -3330,7 +3420,7 @@
       "output": "docs/assets/moonwitness/scenes/moon-city-scene.json",
       "kind": "scene",
       "format": "json",
-      "sha256": "73ab064262c98030df6a672a154e47614a8e65408404204b7ed0e20be79df44c"
+      "sha256": "d327e60e7f4f68729cd0cd0fc21110249113837fc1d11a6f3ab311c3f3322dc9"
     },
     {
       "source": "packages/assets/scenes/riot-alley-scene.json",
@@ -3387,13 +3477,459 @@
       "kind": "sound",
       "format": "wav",
       "sha256": "6edb5208a434097e659daa2ffc76b269853aa3a655609e48ea8545d0df4aaea6"
+    },
+    {
+      "source": "packages/assets/brand/rendered/og.png",
+      "output": "docs/assets/moonwitness/brand/rendered/og.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 1200,
+      "height": 630,
+      "sha256": "256196b51cd6339173a3411ed0ca283d879b827893d1dd1656f31ccc33b79346"
+    },
+    {
+      "source": "packages/assets/brand/rendered/og.dark.png",
+      "output": "docs/assets/moonwitness/brand/rendered/og.dark.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 1200,
+      "height": 630,
+      "sha256": "81e60fb047deb11ca7f4671b77512546dc5885d15181ea11a1a35d21a5c52f03"
+    },
+    {
+      "source": "packages/assets/brand/rendered/youtube-banner.png",
+      "output": "docs/assets/moonwitness/brand/rendered/youtube-banner.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 2560,
+      "height": 1440,
+      "sha256": "d4d507f33a263c5f0703a1277453af607ea60504a635d0a244f66e4100751cf1"
+    },
+    {
+      "source": "packages/assets/brand/rendered/youtube-banner.dark.png",
+      "output": "docs/assets/moonwitness/brand/rendered/youtube-banner.dark.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 2560,
+      "height": 1440,
+      "sha256": "71a0870fbd51f1ce96e5337e9c792ee8684e260f24520b43b180803b3cdc6b87"
+    },
+    {
+      "source": "packages/assets/brand/rendered/youtube-thumbnail.png",
+      "output": "docs/assets/moonwitness/brand/rendered/youtube-thumbnail.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "818c560d799107d0534f8c6257d8a560918a7325d566954caf903d2929962121"
+    },
+    {
+      "source": "packages/assets/brand/rendered/youtube-thumbnail.dark.png",
+      "output": "docs/assets/moonwitness/brand/rendered/youtube-thumbnail.dark.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "9c20d7b418925101af6c354fa3204c858ba0fd7ee653ab71efe6039c4da72a9f"
+    },
+    {
+      "source": "packages/assets/brand/rendered/youtube-profile.png",
+      "output": "docs/assets/moonwitness/brand/rendered/youtube-profile.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 800,
+      "height": 800,
+      "sha256": "7a315ee6d6fd978b6d2970d45ed0de7fdb8a4a40d67005eb52a0bf5c261d5434"
+    },
+    {
+      "source": "packages/assets/brand/rendered/youtube-profile.dark.png",
+      "output": "docs/assets/moonwitness/brand/rendered/youtube-profile.dark.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 800,
+      "height": 800,
+      "sha256": "4c15aae4c2705659420008349f5b4bf678b8a73d473677ffedb9081457de4e51"
+    },
+    {
+      "source": "packages/assets/brand/rendered/youtube-watermark.png",
+      "output": "docs/assets/moonwitness/brand/rendered/youtube-watermark.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 150,
+      "height": 150,
+      "sha256": "716bf3422acd1bb49f31db258bdea6de10921e8bec4957c3f5f56679e23b05c5"
+    },
+    {
+      "source": "packages/assets/brand/rendered/youtube-watermark.dark.png",
+      "output": "docs/assets/moonwitness/brand/rendered/youtube-watermark.dark.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 150,
+      "height": 150,
+      "sha256": "31de8602fcbb08b96639b246c1dbe58ab4c804e7545d990a12aac7856ff37081"
+    },
+    {
+      "source": "packages/assets/brand/rendered/x-header.png",
+      "output": "docs/assets/moonwitness/brand/rendered/x-header.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 1500,
+      "height": 500,
+      "sha256": "e9f79d401b91121b3095b722d25090d2ce94809d98bb1d18719b07cfe08f375b"
+    },
+    {
+      "source": "packages/assets/brand/rendered/x-header.dark.png",
+      "output": "docs/assets/moonwitness/brand/rendered/x-header.dark.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 1500,
+      "height": 500,
+      "sha256": "320e60ccffd482f584e9bb7717c9c549f0d10fa65ad6a39792f49ba4c656171e"
+    },
+    {
+      "source": "packages/assets/brand/rendered/x-post.png",
+      "output": "docs/assets/moonwitness/brand/rendered/x-post.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 1600,
+      "height": 900,
+      "sha256": "79859037b077747deaff95a6beb8e7b525baeec65061912b4becdf6244649bdb"
+    },
+    {
+      "source": "packages/assets/brand/rendered/x-post.dark.png",
+      "output": "docs/assets/moonwitness/brand/rendered/x-post.dark.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 1600,
+      "height": 900,
+      "sha256": "a4f58ee24acd5c40304b9c292f76892b3ece549a94617988e428890e63336f6c"
+    },
+    {
+      "source": "packages/assets/brand/rendered/linkedin.png",
+      "output": "docs/assets/moonwitness/brand/rendered/linkedin.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 1200,
+      "height": 627,
+      "sha256": "9b225bcccbd25584da60f1c007984137233fb7d3ecc8d98c87f2bc255978053f"
+    },
+    {
+      "source": "packages/assets/brand/rendered/linkedin.dark.png",
+      "output": "docs/assets/moonwitness/brand/rendered/linkedin.dark.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 1200,
+      "height": 627,
+      "sha256": "425008a8bebde46efabf1dd2abd6a03c31f8c03fac60ae5e898187313bce828d"
+    },
+    {
+      "source": "packages/assets/brand/rendered/linkedin-banner.png",
+      "output": "docs/assets/moonwitness/brand/rendered/linkedin-banner.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 1128,
+      "height": 191,
+      "sha256": "2df3390dd383e62d8df2ad2e13dc5397e79328992eda5466dedc1e214bd1fb98"
+    },
+    {
+      "source": "packages/assets/brand/rendered/linkedin-banner.dark.png",
+      "output": "docs/assets/moonwitness/brand/rendered/linkedin-banner.dark.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 1128,
+      "height": 191,
+      "sha256": "1bb5884a819785c2282def397bf9d0a0224dd39fd986155b9bcd5494de470d77"
+    },
+    {
+      "source": "packages/assets/brand/rendered/linkedin-carousel.png",
+      "output": "docs/assets/moonwitness/brand/rendered/linkedin-carousel.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 1080,
+      "height": 1080,
+      "sha256": "f42e4c57ec14c079f2be03ff0f26b6030ced2828f3413b8778765f791f431ef7"
+    },
+    {
+      "source": "packages/assets/brand/rendered/linkedin-carousel.dark.png",
+      "output": "docs/assets/moonwitness/brand/rendered/linkedin-carousel.dark.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 1080,
+      "height": 1080,
+      "sha256": "94465804834899454c88896a671c6ceef01b379c3ca041aea6532ad9f4dca3ea"
+    },
+    {
+      "source": "packages/assets/brand/rendered/instagram-square.png",
+      "output": "docs/assets/moonwitness/brand/rendered/instagram-square.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 1080,
+      "height": 1080,
+      "sha256": "e98a68b89d8d75d4276734881ec6963e942b4db28b7e5db7cf1dc03fb80347fb"
+    },
+    {
+      "source": "packages/assets/brand/rendered/instagram-square.dark.png",
+      "output": "docs/assets/moonwitness/brand/rendered/instagram-square.dark.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 1080,
+      "height": 1080,
+      "sha256": "7e88ec6d3af85ea733f856224cec4342c996661d8d70f89288b070e3aa3f3f1b"
+    },
+    {
+      "source": "packages/assets/brand/rendered/instagram-story.png",
+      "output": "docs/assets/moonwitness/brand/rendered/instagram-story.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 1080,
+      "height": 1920,
+      "sha256": "d85415859d847b76236e89aca457485730e5cd7972d31b444b4bb2b5e36fcd27"
+    },
+    {
+      "source": "packages/assets/brand/rendered/instagram-story.dark.png",
+      "output": "docs/assets/moonwitness/brand/rendered/instagram-story.dark.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 1080,
+      "height": 1920,
+      "sha256": "b26a44b915c7975c9697a6705a7d755f0605fd3daf762e6eabac592b6ec1a939"
+    },
+    {
+      "source": "packages/assets/brand/rendered/tiktok.png",
+      "output": "docs/assets/moonwitness/brand/rendered/tiktok.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 1080,
+      "height": 1920,
+      "sha256": "77f2da028f6605e279b4b44abeef569dd4360c3b91369d70e2cf3ad8f4671b2f"
+    },
+    {
+      "source": "packages/assets/brand/rendered/tiktok.dark.png",
+      "output": "docs/assets/moonwitness/brand/rendered/tiktok.dark.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 1080,
+      "height": 1920,
+      "sha256": "3d593e9975fe20d0b7297a1c1f00f110ab5804d81ff97ef403f6b88df9a75326"
+    },
+    {
+      "source": "packages/assets/brand/rendered/bluesky.png",
+      "output": "docs/assets/moonwitness/brand/rendered/bluesky.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 1600,
+      "height": 900,
+      "sha256": "f5033fddec2ca8b3196a03b216fca8f7e074b275c88edaa5abe4c0505004d1dd"
+    },
+    {
+      "source": "packages/assets/brand/rendered/bluesky.dark.png",
+      "output": "docs/assets/moonwitness/brand/rendered/bluesky.dark.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 1600,
+      "height": 900,
+      "sha256": "709d46cb638a2ede88823a90507721f73ae1bb4ad01bfbe56c372cc60ff74e00"
+    },
+    {
+      "source": "packages/assets/brand/rendered/devto-cover.png",
+      "output": "docs/assets/moonwitness/brand/rendered/devto-cover.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 1000,
+      "height": 420,
+      "sha256": "a5f06381eddebaba3813f8e4e5152582aa37378a1841ff109bf89e8be5c0fc7a"
+    },
+    {
+      "source": "packages/assets/brand/rendered/devto-cover.dark.png",
+      "output": "docs/assets/moonwitness/brand/rendered/devto-cover.dark.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 1000,
+      "height": 420,
+      "sha256": "ff10f85283e4da8e2b1016d1025ca3f6ac473662c5cd31723f87f62ebb3e8408"
+    },
+    {
+      "source": "packages/assets/brand/rendered/github.png",
+      "output": "docs/assets/moonwitness/brand/rendered/github.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 1280,
+      "height": 640,
+      "sha256": "2d358dc7ca1d439925532b5be50bff30c8c0d7371cb2f9b3f202ec08637f0294"
+    },
+    {
+      "source": "packages/assets/brand/rendered/github.dark.png",
+      "output": "docs/assets/moonwitness/brand/rendered/github.dark.png",
+      "kind": "social-card",
+      "format": "png",
+      "width": 1280,
+      "height": 640,
+      "sha256": "a9a00c84744aef9c8668e82c8666f037cf9c5f8d5a7a7ae2743b09e530c1b9dc"
+    },
+    {
+      "source": "packages/assets/brand/rendered/youtube-thumbnails/ep-00-channel-trailer.png",
+      "output": "docs/assets/moonwitness/brand/rendered/youtube-thumbnails/ep-00-channel-trailer.png",
+      "kind": "youtube-thumbnail",
+      "format": "png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "217fe995886b5c77d238be1d20b5c3f7753778f3918df31be931ff49336bf9ca"
+    },
+    {
+      "source": "packages/assets/brand/rendered/youtube-thumbnails/ep-00-channel-trailer.dark.png",
+      "output": "docs/assets/moonwitness/brand/rendered/youtube-thumbnails/ep-00-channel-trailer.dark.png",
+      "kind": "youtube-thumbnail",
+      "format": "png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "bc872d4f159399bc5229b160cff91857d7f3a96beab35389ed4dc1844507011e"
+    },
+    {
+      "source": "packages/assets/brand/rendered/youtube-thumbnails/ep-01-declarative-models-in-5-minutes.png",
+      "output": "docs/assets/moonwitness/brand/rendered/youtube-thumbnails/ep-01-declarative-models-in-5-minutes.png",
+      "kind": "youtube-thumbnail",
+      "format": "png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "d3398fa26a7131bcfc0656d06d40d1506304c0becb3ab090d949823070bddffb"
+    },
+    {
+      "source": "packages/assets/brand/rendered/youtube-thumbnails/ep-01-declarative-models-in-5-minutes.dark.png",
+      "output": "docs/assets/moonwitness/brand/rendered/youtube-thumbnails/ep-01-declarative-models-in-5-minutes.dark.png",
+      "kind": "youtube-thumbnail",
+      "format": "png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "30554912e719940c5b4040980ba2cf108d497b2ce2df1de41d4a2c0378209d91"
+    },
+    {
+      "source": "packages/assets/brand/rendered/youtube-thumbnails/ep-02-addons-install-features-not-sql.png",
+      "output": "docs/assets/moonwitness/brand/rendered/youtube-thumbnails/ep-02-addons-install-features-not-sql.png",
+      "kind": "youtube-thumbnail",
+      "format": "png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "d9bf63cb15040e6b106d6f95600d0110b7ffe08a8c913d030591744b1c4dd52d"
+    },
+    {
+      "source": "packages/assets/brand/rendered/youtube-thumbnails/ep-02-addons-install-features-not-sql.dark.png",
+      "output": "docs/assets/moonwitness/brand/rendered/youtube-thumbnails/ep-02-addons-install-features-not-sql.dark.png",
+      "kind": "youtube-thumbnail",
+      "format": "png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "28077e0f200a11c35498b781012e294dd7cce1019e363e6521ac5b1043a786b3"
+    },
+    {
+      "source": "packages/assets/brand/rendered/youtube-thumbnails/ep-03-the-board-your-data-your-way.png",
+      "output": "docs/assets/moonwitness/brand/rendered/youtube-thumbnails/ep-03-the-board-your-data-your-way.png",
+      "kind": "youtube-thumbnail",
+      "format": "png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "6b41b615b515d3ed79088e5ef30ffa17621252c9df9b88eeba4b746e1e86b397"
+    },
+    {
+      "source": "packages/assets/brand/rendered/youtube-thumbnails/ep-03-the-board-your-data-your-way.dark.png",
+      "output": "docs/assets/moonwitness/brand/rendered/youtube-thumbnails/ep-03-the-board-your-data-your-way.dark.png",
+      "kind": "youtube-thumbnail",
+      "format": "png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "7ee217e8965cd68409ccbd8857a600718d2d3a504587cd30e2a4b8b816e71a69"
+    },
+    {
+      "source": "packages/assets/brand/rendered/youtube-thumbnails/ep-04-model-api-live-coding.png",
+      "output": "docs/assets/moonwitness/brand/rendered/youtube-thumbnails/ep-04-model-api-live-coding.png",
+      "kind": "youtube-thumbnail",
+      "format": "png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "25f429697a2aca9c93099a5c67a4cdabcfdbb55aaf87a12e60995357ea02c7fb"
+    },
+    {
+      "source": "packages/assets/brand/rendered/youtube-thumbnails/ep-04-model-api-live-coding.dark.png",
+      "output": "docs/assets/moonwitness/brand/rendered/youtube-thumbnails/ep-04-model-api-live-coding.dark.png",
+      "kind": "youtube-thumbnail",
+      "format": "png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "b89608125c0e11dd4cdb2624801c7d0fe532b069642940a6c97e18f4acd38387"
+    },
+    {
+      "source": "packages/assets/brand/rendered/youtube-thumbnails/ep-05-transactional-addons-deep-dive.png",
+      "output": "docs/assets/moonwitness/brand/rendered/youtube-thumbnails/ep-05-transactional-addons-deep-dive.png",
+      "kind": "youtube-thumbnail",
+      "format": "png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "f85a3703798ee8c3df19424669895527a571d09993dce0dba2d8d0d7c97f4e5b"
+    },
+    {
+      "source": "packages/assets/brand/rendered/youtube-thumbnails/ep-05-transactional-addons-deep-dive.dark.png",
+      "output": "docs/assets/moonwitness/brand/rendered/youtube-thumbnails/ep-05-transactional-addons-deep-dive.dark.png",
+      "kind": "youtube-thumbnail",
+      "format": "png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "04b75cf22c3db6f466382eb60ad7a83644441c51860f44c9b5054a43cbdb6346"
+    },
+    {
+      "source": "packages/assets/brand/rendered/youtube-thumbnails/ep-06-multi-tenancy-rls.png",
+      "output": "docs/assets/moonwitness/brand/rendered/youtube-thumbnails/ep-06-multi-tenancy-rls.png",
+      "kind": "youtube-thumbnail",
+      "format": "png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "970f486e76a151548a7aa7ab7bbe716cd3f5d3c7fd7727cd50934be9faf337be"
+    },
+    {
+      "source": "packages/assets/brand/rendered/youtube-thumbnails/ep-06-multi-tenancy-rls.dark.png",
+      "output": "docs/assets/moonwitness/brand/rendered/youtube-thumbnails/ep-06-multi-tenancy-rls.dark.png",
+      "kind": "youtube-thumbnail",
+      "format": "png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "5715af101725272d8a0b0824f6185f335f2cbdb0ed352f8202fdff474ccfe6f8"
+    },
+    {
+      "source": "packages/assets/brand/rendered/youtube-thumbnails/ep-07-saas-starter-in-30-minutes.png",
+      "output": "docs/assets/moonwitness/brand/rendered/youtube-thumbnails/ep-07-saas-starter-in-30-minutes.png",
+      "kind": "youtube-thumbnail",
+      "format": "png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "8509e6a35c664f0c41251e25fcb4fcf90b727559ab42e12838e3d4041d255d08"
+    },
+    {
+      "source": "packages/assets/brand/rendered/youtube-thumbnails/ep-07-saas-starter-in-30-minutes.dark.png",
+      "output": "docs/assets/moonwitness/brand/rendered/youtube-thumbnails/ep-07-saas-starter-in-30-minutes.dark.png",
+      "kind": "youtube-thumbnail",
+      "format": "png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "26359d28db402ee860cd49e4b6bc09505a554ef58cf8b85db8dfa9ce88ac47ef"
+    },
+    {
+      "source": "packages/assets/brand/rendered/social-render-manifest.json",
+      "output": "docs/assets/moonwitness/brand/rendered/social-render-manifest.json",
+      "kind": "manifest",
+      "format": "json",
+      "sha256": "a15e35bbc19e510e1f5f882c379397439ee3a428624203aa1883277656952558"
+    },
+    {
+      "source": "packages/assets/brand/rendered/youtube-thumbnails/thumbnails-manifest.json",
+      "output": "docs/assets/moonwitness/brand/rendered/youtube-thumbnails/thumbnails-manifest.json",
+      "kind": "manifest",
+      "format": "json",
+      "sha256": "4895260e06bb3cf33326a7c16de4dce3dc48027d50e71c4165698b9f0ff87c1c"
     }
   ],
   "stylesheets": [
     {
       "source": "packages/ui/src/styles/tokens.css",
       "output": "docs/assets/moonwitness/styles/tokens.css",
-      "sha256": "24bb0f75d8c8042709f427d7fdc5c5bd735cbe6d930ab00c6938ab5d2557e723"
+      "sha256": "42872eed742d9542837547c7d01d287e7859d6cc0cba13eca12d003a78f0465d"
     }
   ]
 }

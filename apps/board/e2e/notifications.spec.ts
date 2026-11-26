@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { createE2eSuffix, E2E_SUPERADMIN_PASSWORD } from './constants.js';
+import { createE2eSuffix, E2E_SUPERADMIN_PASSWORD, readSession } from './constants.js';
 
 test('notification inbox displays a delivered message, marks it read, and exposes channel preferences', async ({
   page,
@@ -13,12 +13,7 @@ test('notification inbox displays a delivered message, marks it read, and expose
   await page.getByRole('button', { name: 'Enter the Shadow' }).click();
   await expect(page).toHaveURL(/\/board$/u);
 
-  const session = await page.evaluate(
-    () =>
-      JSON.parse(localStorage.getItem('mw-board-session') ?? 'null') as {
-        access_token: string;
-      } | null
-  );
+  const session = await readSession<{ access_token: string }>(page);
   expect(session).not.toBeNull();
   const headers = { authorization: `Bearer ${session!.access_token}` };
   const profileResponse = await page.request.get('/auth/me', { headers });

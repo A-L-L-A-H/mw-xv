@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
-import { readFile, stat } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { argv, stdout } from 'node:process';
 import { fileURLToPath } from 'node:url';
@@ -101,11 +101,14 @@ const INVENTORY_DIRECTORIES = [
   'scenes',
 ];
 
+const INVENTORY_EXCLUDE_DIRS = [];
+
 export async function runAssetQa(rootDir = packageRoot, options = {}) {
   const manifest =
     options.manifest ?? JSON.parse(await readFile(resolve(rootDir, 'manifest.json'), 'utf8'));
   const existingDirs = INVENTORY_DIRECTORIES.filter((dir) => existsSync(resolve(rootDir, dir)));
-  const trackedFiles = options.trackedFiles ?? (await listInventoryMedia(rootDir, existingDirs));
+  const allTrackedFiles = options.trackedFiles ?? (await listInventoryMedia(rootDir, existingDirs));
+  const trackedFiles = allTrackedFiles.filter((f) => !INVENTORY_EXCLUDE_DIRS.some((excl) => f.startsWith(excl + '/')));
   const inventoryDiff = compareAssetInventory(
     manifest.assets.map((asset) => asset.path),
     trackedFiles
@@ -175,33 +178,34 @@ export async function runAssetQa(rootDir = packageRoot, options = {}) {
     }
 
     const fullPath = resolve(rootDir, asset.path);
-    let fileStat;
+
+    let bytes;
     try {
-      fileStat = await stat(fullPath);
+      bytes = await readFile(fullPath);
     } catch {
       continue;
     }
+    const fileBytes = bytes.length;
 
     if (isSourceKind || isSourcePath) {
       if (isSourcePath) {
         sourceMasters.push({
           path: asset.path,
           format: asset.format,
-          bytes: fileStat.size,
+          bytes: fileBytes,
         });
-        if (fileStat.size > 10 * 1024 * 1024) {
+        if (fileBytes > 10 * 1024 * 1024) {
           warnings.push({
             code: 'large_source_master',
             path: asset.path,
-            bytes: fileStat.size,
-            message: `Source master exceeds 10 MB repository tracking review threshold (${fileStat.size} bytes)`,
+            bytes: fileBytes,
+            message: `Source master exceeds 10 MB repository tracking review threshold (${fileBytes} bytes)`,
           });
         }
         continue;
       }
     }
 
-    const bytes = await readFile(fullPath);
     const digest = createHash('sha256').update(bytes).digest('hex');
     const bucket = hashesByDigest.get(digest) ?? [];
     bucket.push(asset.path);
@@ -214,14 +218,14 @@ export async function runAssetQa(rootDir = packageRoot, options = {}) {
         : asset.kind;
     const budget =
       SPECIFIC_PATH_BUDGETS[asset.path] ?? RUNTIME_BUDGET_BYTES[effectiveKind] ?? 250 * 1024;
-    runtimeSizes.push({ path: asset.path, kind: asset.kind, bytes: fileStat.size, budget });
-    if (fileStat.size > budget) {
+    runtimeSizes.push({ path: asset.path, kind: asset.kind, bytes: fileBytes, budget });
+    if (fileBytes > budget) {
       errors.push({
         code: 'oversized_runtime_asset',
         path: asset.path,
-        bytes: fileStat.size,
+        bytes: fileBytes,
         budget,
-        message: `Runtime asset ${asset.path} (${fileStat.size} bytes) exceeds budget (${budget} bytes)`,
+        message: `Runtime asset ${asset.path} (${fileBytes} bytes) exceeds budget (${budget} bytes)`,
       });
     }
   }

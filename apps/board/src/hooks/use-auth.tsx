@@ -24,6 +24,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [queryClient]
   );
 
+  useEffect(() => {
+    let active = true;
+    void client.ready().then(() => {
+      if (!active) return;
+      const restoredUser = client.currentUser;
+      const restoredUserId = restoredUser?.id ?? null;
+      if (userId.current !== restoredUserId) queryClient.clear();
+      userId.current = restoredUserId;
+      setUser(restoredUser);
+    });
+    return () => {
+      active = false;
+    };
+  }, [queryClient]);
+
   const value: AuthValue = {
     user,
     login: async (params) => void (await client.login(params)),

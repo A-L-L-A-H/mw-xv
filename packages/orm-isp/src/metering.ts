@@ -43,15 +43,17 @@ export async function meterSessionsToSubscriptionInvoices(
     if (!subscription) continue;
 
     const lineName = `ISP Usage · ${session.session_id}`;
-    const existing = await SubscriptionInvoiceLine.query().findOne({
+
+    const totalOctets = (session.acct_input_octets ?? 0) + (session.acct_output_octets ?? 0);
+    const billableGb = totalOctets > 0 ? Math.ceil(totalOctets / BYTES_PER_GB) : 0;
+    const subtotalMinor = billableGb * pricePerGbMinor;
+
+    // Check if invoice line already exists to maintain idempotency
+    const existingLine = await SubscriptionInvoiceLine.query().findOne({
       subscription_id: subscription.id,
       name: lineName,
     });
-    if (existing) continue;
-
-    const totalOctets = (session.acct_input_octets ?? 0) + (session.acct_output_octets ?? 0);
-    const billableGb = Math.max(1, Math.ceil(totalOctets / BYTES_PER_GB));
-    const subtotalMinor = billableGb * pricePerGbMinor;
+    if (existingLine) continue;
 
     await SubscriptionInvoiceLine.query().insert({
       subscription_id: subscription.id,

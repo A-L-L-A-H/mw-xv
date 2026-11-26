@@ -1,6 +1,6 @@
 # Visual Universe Task Graph
 
-**Current state: migration-gated.** The repository-wide `docs/tasks/tasks.json` contains 1,358 legacy records, including 861 records that still reference root `docs/tasks/sources/todo.md`, now only a pointer. A source-backed 627-record migration candidate is defined and covered by importer tests, but its export and 1,358-to-627 reconciliation review are not yet complete. The 109-task Visual Universe project is therefore not an approved canonical execution queue. Keep autonomous execution stopped until exact-SHA CI is green, the candidate is reviewed, the legacy snapshot is preserved, and canonical migration is explicitly approved.
+**Current state: canonical TaskOS active.** The owner-approved migration is complete. `docs/tasks/tasks.json` is the validated lifecycle authority with 679 records, including 109 Visual Universe tasks. The 1,358-record historical snapshot and immutable Visual Universe source remain preserved for audit. W9-001 through W9-005 and W10-001 through W10-003 are complete; W9-006 and dependent W10-004 remain blocked by the official Firefox/WebKit Board matrix (33/42 passed). Continue ready tasks in canonical dependency order and record blockers with evidence.
 
 ## Source preservation
 
@@ -9,7 +9,7 @@
 - Pack configuration: `pack-manifest.json`.
 - Local `task.json`, `TASKS.md`, dependency graph and task cards are generated views only. Do not read them as a live queue or update lifecycle state directly.
 
-After TaskOS recovery and validation, regenerate this graph from the global `visual-universe` records. Execution must follow topological order of TaskOS `dependsOn` relationships. The renderer validates unique IDs, known dependencies, acyclic ordering and per-criterion status consistency before writing.
+Regenerate this graph from the global `visual-universe` records after canonical TaskOS validates. Execution follows topological order of TaskOS `dependsOn` relationships. The renderer validates unique IDs, known dependencies, acyclic ordering and per-criterion status consistency before writing.
 
 ## Phase gates
 

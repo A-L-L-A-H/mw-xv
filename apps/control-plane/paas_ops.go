@@ -494,6 +494,13 @@ func ValidateBackupID(id string) error {
 }
 
 func writeFileAtomic(path string, data []byte, perm os.FileMode) error {
+	// Guard against path injection: the resolved path must be absolute and
+	// must not escape its directory via ".." segments.
+	clean := filepath.Clean(path)
+	if !filepath.IsAbs(clean) || strings.Contains(clean, "..") {
+		return fmt.Errorf("refusing to write outside resolved path: %s", path)
+	}
+	path = clean
 	dir := filepath.Dir(path)
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return fmt.Errorf("create dir: %w", err)

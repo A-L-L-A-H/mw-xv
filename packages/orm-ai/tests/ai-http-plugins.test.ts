@@ -6,6 +6,8 @@ import {
   AI_DESKTOP_SYNC_ROUTE_PREFIXES,
   aiCorporationHttpPlugin,
   aiDesktopSyncHttpPlugin,
+  interactiveSessionsHttpPlugin,
+  INTERACTIVE_SESSION_ROUTE_PREFIXES,
   evaluateProofGateV2,
   manifest,
 } from '../src/index.js';
@@ -71,9 +73,10 @@ function createFakeReply() {
 describe('orm-ai manifest HTTP plugins (INV-014)', () => {
   it('registers evolution, corporation, and desktop-sync plugins on manifest.httpPlugins', () => {
     assert.ok(Array.isArray(manifest.httpPlugins));
-    assert.equal(manifest.httpPlugins.length, 3);
+    assert.equal(manifest.httpPlugins.length, 4);
     assert.ok(manifest.httpPlugins.includes(aiCorporationHttpPlugin));
     assert.ok(manifest.httpPlugins.includes(aiDesktopSyncHttpPlugin));
+    assert.ok(manifest.httpPlugins.includes(interactiveSessionsHttpPlugin));
   });
 
   it('mounts all aiCorporationHttpPlugin routes on /api/ai and /ai prefixes and enforces auth', async () => {
@@ -156,6 +159,32 @@ describe('orm-ai manifest HTTP plugins (INV-014)', () => {
     const res = createFakeReply();
     await pcwSync.handler({ params: {}, query: {}, body: {} }, res.reply);
     assert.equal(res.statusCode, 401);
+  });
+
+  it('registers the stable interactive lane and rejects unauthenticated ownership', async () => {
+    const { app, routes } = createFakeHttpApp();
+    await interactiveSessionsHttpPlugin(app, {});
+    for (const prefix of INTERACTIVE_SESSION_ROUTE_PREFIXES) {
+      for (const route of [
+        `POST ${prefix}/interactive-sessions`,
+        `GET ${prefix}/interactive-sessions`,
+        `GET ${prefix}/interactive-sessions/:id`,
+        `POST ${prefix}/interactive-sessions/:id/commands`,
+        `GET ${prefix}/interactive-sessions/:id/events`,
+      ])
+        assert.ok(
+          routes.some((entry) => `${entry.method} ${entry.path}` === route),
+          route
+        );
+    }
+    for (const route of routes.filter(
+      (entry) => entry.path === '/api/ai/interactive-sessions' || entry.path.includes(':id')
+    )) {
+      const response = createFakeReply();
+      await route.handler({ params: { id: '1' }, query: {}, body: {} }, response.reply);
+      assert.equal(response.statusCode, 401);
+      assert.equal(response.headers['Cache-Control'], 'private, no-store');
+    }
   });
 
   it('evaluateProofGateV2 enforces check matrix and diff-scope drift guard', () => {

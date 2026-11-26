@@ -618,6 +618,36 @@ generated.push({
   svg: socialCard,
 });
 
+const dark = palettes.dark;
+const socialCardDark = svgDocument(
+  '0 0 1200 630',
+  'MoonWitness — one board for every model (dark)',
+  `<rect width="1200" height="630" fill="${dark.paper}"/>
+  <circle id="mw-brand-social-card-dark-orbit-outer" cx="1040" cy="312" r="228" fill="none" stroke="${dark.ink}" stroke-width="2" opacity=".16"/>
+  <circle cx="1040" cy="312" r="176" fill="none" stroke="${dark.ink}" stroke-width="1.5" opacity=".12"/>
+  <path d="M800 455c96-134 219-203 361-213M824 500c115-66 242-84 343-47" fill="none" stroke="${dark.ink}" stroke-width="2" opacity=".12"/>
+  <g transform="translate(72 58) scale(.72)">${mark(dark)}</g>
+  <g transform="translate(132 68) scale(.58)">${wordmark(dark, 'translate(-68 0)')}</g>
+  <rect x="74" y="194" width="580" height="104" rx="4" fill="${dark.accent}" transform="rotate(-1.2 74 194)"/>
+  <text x="92" y="270" fill="#0d0d0d" font-family="Arial Black, Arial, sans-serif" font-size="76" font-weight="900" letter-spacing="-2">ONE BOARD.</text>
+  <text x="78" y="375" fill="${dark.ink}" font-family="Arial Black, Arial, sans-serif" font-size="75" font-weight="900" letter-spacing="-2">EVERY MODEL.</text>
+  <path d="M82 407h520" stroke="#ff2e88" stroke-width="6" stroke-linecap="round"/>
+  <text x="82" y="464" fill="#c4c0b4" font-family="Arial, Helvetica, sans-serif" font-size="27">A clear view of the records behind your work.</text>
+  <text x="82" y="555" fill="#9c988c" font-family="Arial, Helvetica, sans-serif" font-size="19" letter-spacing="2">OPEN-SOURCE · EXTENSIBLE · SELF-HOSTED</text>
+  <circle cx="1070" cy="118" r="8" fill="${dark.accent}" stroke="${dark.ink}" stroke-width="2"/>
+  <path d="M976 524l10 10m0-10-10 10m50-42v16m-8-8h16" fill="none" stroke="${dark.ink}" stroke-width="2" stroke-linecap="round"/>`,
+  1200,
+  630
+);
+generated.push({
+  path: 'brand/social-card.dark.svg',
+  kind: 'social-card',
+  variant: 'dark',
+  width: 1200,
+  height: 630,
+  svg: socialCardDark,
+});
+
 const readmeBanner = svgDocument(
   '0 0 1280 320',
   'MoonWitness — every model, every record, one board',
@@ -644,6 +674,66 @@ generated.push({
   height: 320,
   svg: readmeBanner,
 });
+
+// YouTube channel assets
+const youtubeAssets = [
+  {
+    name: 'moonwitness-youtube-banner',
+    title: 'MoonWitness YouTube channel banner',
+    width: 2560,
+    height: 1440,
+    variants: [
+      { variant: 'light', path: 'moonwitness-youtube-banner.svg' },
+      { variant: 'dark', path: 'moonwitness-youtube-banner.dark.svg' },
+    ],
+  },
+  {
+    name: 'moonwitness-youtube-logo',
+    title: 'MoonWitness YouTube channel logo',
+    width: 800,
+    height: 800,
+    variants: [
+      { variant: 'light', path: 'moonwitness-youtube-logo.svg' },
+      { variant: 'dark', path: 'moonwitness-youtube-logo.dark.svg' },
+    ],
+  },
+  {
+    name: 'moonwitness-youtube-thumbnail-template',
+    title: 'MoonWitness YouTube video thumbnail template',
+    width: 1280,
+    height: 720,
+    variants: [
+      { variant: 'light', path: 'moonwitness-youtube-thumbnail-template.svg' },
+      { variant: 'dark', path: 'moonwitness-youtube-thumbnail-template.dark.svg' },
+    ],
+  },
+  {
+    name: 'moonwitness-youtube-watermark',
+    title: 'MoonWitness YouTube channel watermark',
+    width: 150,
+    height: 150,
+    variants: [
+      { variant: 'light', path: 'moonwitness-youtube-watermark.svg' },
+      { variant: 'dark', path: 'moonwitness-youtube-watermark.dark.svg' },
+    ],
+  },
+];
+
+for (const asset of youtubeAssets) {
+  for (const { variant, path } of asset.variants) {
+    const existingSvg = await readFile(resolve(brandDirectory, path), 'utf8').catch(() => null);
+    if (existingSvg) {
+      generated.push({
+        path: `brand/${path}`,
+        kind: 'youtube',
+        variant,
+        width: asset.width,
+        height: asset.height,
+        svg: existingSvg,
+      });
+    }
+  }
+}
 
 for (const icon of icons) {
   generated.push({
@@ -694,6 +784,15 @@ const generatedAssetEntries = [
     source: 'brand/social-card.svg',
     kind: 'social-card',
     variant: 'light',
+    format: 'png',
+    width: 1200,
+    height: 630,
+  },
+  {
+    path: 'brand/social-card.dark.png',
+    source: 'brand/social-card.dark.svg',
+    kind: 'social-card',
+    variant: 'dark',
     format: 'png',
     width: 1200,
     height: 630,

@@ -221,6 +221,15 @@ export class WorktreeSandbox {
     if (!RUN_ID_REGEX.test(options.runId)) {
       throw new ValidationError(`Invalid runId '${options.runId}'`);
     }
+    // runId is combined into file-system paths; reject any character that could
+    // alter where those paths land even if the regex above is ever loosened.
+    if (
+      options.runId.includes('/') ||
+      options.runId.includes('\\') ||
+      options.runId.includes('..')
+    ) {
+      throw new ValidationError(`Invalid runId '${options.runId}'`);
+    }
     const existing = this.leases.get(options.runId);
     if (existing && existing.status === 'active') {
       throw new ConcurrencyConflictError(
@@ -236,6 +245,15 @@ export class WorktreeSandbox {
       'branchName'
     );
     const worktreePath = path.resolve(this.worktreeRootDir, `run-${options.runId}`);
+    // Containment check against the resolved worktree root, guarding against
+    // any path-separator or traversal component that slipped past validation.
+    const resolvedWorktreeRoot = path.resolve(this.worktreeRootDir);
+    if (
+      worktreePath !== resolvedWorktreeRoot &&
+      !worktreePath.startsWith(resolvedWorktreeRoot + path.sep)
+    ) {
+      throw new AccessDeniedError('Computed worktree path escapes worktree root');
+    }
     if (!isWithinRealRoot(this.worktreeRootDir, worktreePath)) {
       throw new AccessDeniedError('Computed worktree path escapes worktree root');
     }

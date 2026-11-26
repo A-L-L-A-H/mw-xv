@@ -1,0 +1,38 @@
+{
+  "name": "@moonwitness/plan-taskos",
+  "version": "1.0.0-rc.1",
+  "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "plan-taskos": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "schemas",
+    "skill"
+  ],
+  "exports": {
+    ".": "./dist/index.js",
+    "./cli": "./dist/cli.js",
+    "./schemas/*": "./schemas/*"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.check.json",
+    "test": "tsc --noEmit -p tsconfig.check.json && vitest run"
+  },
+  "dependencies": {
+    "@moonwitness/types": "workspace:*",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "typescript": "~5.7.3",
+    "vitest": "^5.0.3"
+  }
+}

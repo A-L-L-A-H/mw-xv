@@ -1,0 +1,33 @@
+# Langfuse — LLM observability: tracing, eval, prompt management.
+# Pasangan natural untuk packages/ai-runtime dan agent observability MW.
+services:
+  langfuse:
+    image: langfuse/langfuse:2
+    expose:
+      - '3000'
+    environment:
+      - DATABASE_URL=postgresql://postgres:${SERVICE_PASSWORD_POSTGRES}@langfuse-db:5432/langfuse
+      - NEXTAUTH_SECRET=${SERVICE_PASSWORD_NEXTAUTH}
+      - SALT=${SERVICE_PASSWORD_SALT}
+      - NEXTAUTH_URL=${SERVICE_FQDN_LANGFUSE}
+      - TELEMETRY_ENABLED=false
+    depends_on:
+      langfuse-db:
+        condition: service_healthy
+  langfuse-db:
+    image: postgres:16-alpine
+    expose:
+      - '5432'
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${SERVICE_PASSWORD_POSTGRES}
+      - POSTGRES_DB=langfuse
+    volumes:
+      - langfuse-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  langfuse-db:

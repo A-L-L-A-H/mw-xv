@@ -21,12 +21,13 @@ const REPO_ROOT = findRepoRoot(path.resolve(path.dirname(fileURLToPath(import.me
 function findRepoRoot(startDir: string): string {
   let current = startDir;
   for (let depth = 0; depth < 10; depth += 1) {
-    if (existsSync(path.join(current, 'pnpm-workspace.yaml'))) return current;
+    const marker = path.join(current, 'docs', 'tasks', 'tasks.json');
+    if (existsSync(marker)) return current;
     const parent = path.dirname(current);
     if (parent === current) break;
     current = parent;
   }
-  return path.resolve(startDir, '../../../..');
+  return path.resolve(startDir, '../../..');
 }
 
 interface RawTask {

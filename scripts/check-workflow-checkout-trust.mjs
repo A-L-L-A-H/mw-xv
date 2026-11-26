@@ -37,6 +37,8 @@ const requiredWriteConcurrencyGroups = new Map([
   ['deep-regression.yml:resolve-failure', 'maintenance-incident-deep-regression'],
   ['platform-audit.yml:report-failure', 'maintenance-incident-platform-audit'],
   ['platform-audit.yml:resolve-failure', 'maintenance-incident-platform-audit'],
+  ['ci.yml:gate-failure-triage', 'gate-failure-triage'],
+  ['cloudflare-pages.yml:build-and-deploy', 'cloudflare-pages-deployment'],
 ]);
 
 function workflowJobBlocks(source) {

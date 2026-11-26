@@ -23,6 +23,8 @@ import type {
   RegisterParams,
   ResearchGraphSearchResult,
   ResearchRelationExplanation,
+  SetupClaimParams,
+  SetupStatus,
   SourceCitation,
   StoredStoryVersion,
   StoryVersionDocument,
@@ -195,6 +197,20 @@ export class MoonWitnessClient implements HttpClient {
 
   async login(params: LoginParams): Promise<AuthTokens> {
     return this.authenticate('/auth/login', params);
+  }
+
+  /** Checks whether first-boot setup is required (no auth needed). */
+  async getSetupStatus(): Promise<SetupStatus> {
+    const res = await this.request<{ data: SetupStatus }>('/auth/setup-status', { skipAuth: true });
+    return res.data;
+  }
+
+  /**
+   * Claims the seeded superadmin account (first-boot onboarding).
+   * Persists tokens via CookieTokenStorage and fires onSessionChange listeners.
+   */
+  async claimSetup(params: SetupClaimParams): Promise<AuthTokens> {
+    return this.authenticate('/auth/setup-claim', params);
   }
 
   private async authenticate(path: string, body: unknown): Promise<AuthTokens> {

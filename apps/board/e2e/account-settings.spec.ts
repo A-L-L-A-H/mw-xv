@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { createE2eSuffix, E2E_SUPERADMIN_PASSWORD, loginPageUrl } from './constants.js';
+import { createE2eSuffix, E2E_SUPERADMIN_PASSWORD, loginPageUrl, readSession } from './constants.js';
 
 test('users can edit only their profile, persist preferences, and change password safely', async ({
   page,
@@ -14,12 +14,7 @@ test('users can edit only their profile, persist preferences, and change passwor
   await page.getByLabel('Password', { exact: true }).fill(E2E_SUPERADMIN_PASSWORD);
   await page.getByRole('button', { name: 'Enter the Shadow' }).click();
   await expect(page).toHaveURL(/\/board$/u);
-  const adminSession = await page.evaluate(
-    () =>
-      JSON.parse(localStorage.getItem('mw-board-session') ?? 'null') as {
-        access_token: string;
-      } | null
-  );
+  const adminSession = await readSession<{ access_token: string }>(page);
   expect(adminSession).not.toBeNull();
   const adminProfileResponse = await page.request.get('/auth/me', {
     headers: { authorization: `Bearer ${adminSession!.access_token}` },
@@ -58,12 +53,7 @@ test('users can edit only their profile, persist preferences, and change passwor
   await page.getByLabel('Password', { exact: true }).fill(initialPassword);
   await page.getByRole('button', { name: 'Enter the Shadow' }).click();
   await expect(page).toHaveURL(/\/board$/u);
-  const ordinarySession = await page.evaluate(
-    () =>
-      JSON.parse(localStorage.getItem('mw-board-session') ?? 'null') as {
-        access_token: string;
-      } | null
-  );
+  const ordinarySession = await readSession<{ access_token: string }>(page);
   expect(ordinarySession).not.toBeNull();
   const ordinaryHeaders = { authorization: `Bearer ${ordinarySession!.access_token}` };
   const accountUser = await page.request.get('/auth/me', { headers: ordinaryHeaders });

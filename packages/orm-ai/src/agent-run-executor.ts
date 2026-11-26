@@ -17,7 +17,7 @@ import {
   ProviderProfile,
   WorkContract,
 } from './models.js';
-import { AgentRunEffect } from './models/runs.js';
+import { AgentRunEffect, ArtifactManifest } from './models/runs.js';
 import { isAgentOperational, isActiveCapabilityGrant } from './validation.js';
 import {
   sha256Canonical,
@@ -184,12 +184,15 @@ export async function assertCurrentFencing(params: {
   readonly jobId: number | undefined;
   readonly companyId: number;
   readonly expectedFencingToken?: number;
+  readonly db?: Knex;
 }): Promise<number> {
   const runJobId = Number(params.run.job_id ?? 0);
   if (!Number.isSafeInteger(runJobId) || runJobId < 1 || runJobId !== params.jobId) {
     throw new StaleFencingError('Job identifier does not match the run lease');
   }
-  const job = await Job.query().findById(runJobId);
+  const jobQuery = Job.query(params.db);
+  if (params.db) jobQuery.forUpdate();
+  const job = await jobQuery.findById(runJobId);
   if (!job || job.company_id !== params.companyId) {
     throw new StaleFencingError('Job lease is missing or belongs to another company');
   }
@@ -351,6 +354,29 @@ export async function runDurableAgentRun(
         : reportedStatus === 'failed' || reportedStatus === 'budget_exhausted'
           ? 'failed'
           : 'completed';
+    if (terminalStatus === 'completed') {
+      if (
+        typeof effectResult.evidenceSha256 !== 'string' ||
+        !FINGERPRINT_PATTERN.test(effectResult.evidenceSha256)
+      ) {
+        throw new Error('Completion requires a valid persisted evidence SHA-256');
+      }
+      const evidence = await ArtifactManifest.query().findOne({
+        company_id: payload.companyId,
+        work_contract_id: claimedSnapshot.run.work_contract_id,
+        agent_run_id: snapshot.runId,
+        sha256: effectResult.evidenceSha256,
+        artifact_kind: 'evidence_bundle',
+      });
+      if (
+        evidence === undefined ||
+        (evidence.verification_status !== 'checked' &&
+          evidence.verification_status !== 'accepted') ||
+        evidence.stale_at !== null
+      ) {
+        throw new Error('Completion requires matching checked persisted evidence');
+      }
+    }
     const effectError =
       typeof effectResult?.error === 'object' && effectResult.error !== null
         ? (effectResult.error as Record<string, unknown>)
@@ -434,36 +460,63 @@ export async function acknowledgeToolEffect(params: {
     output_json: JSON.stringify(params.output ?? null),
     fencing_token: params.fencingToken,
   };
-  const existing = await AgentRunEffect.query().findOne({
-    company_id: params.companyId,
-    agent_run_id: params.agentRunId,
-    effect_key: params.effectKey,
-  });
-  if (existing) {
-    if (existing.args_sha256 !== params.argsDigest) {
-      throw new StaleFencingError('Effect idempotency key was reused with different arguments');
+  return AgentRun.transaction(async (trx) => {
+    const runQuery = AgentRun.query(trx).forUpdate();
+    const run = await runQuery.findOne({
+      id: params.agentRunId,
+      company_id: params.companyId,
+    });
+    if (!run || TERMINAL_STATUSES.has(String(run.status))) {
+      throw new StaleFencingError('Run is missing or terminal; effects cannot be acknowledged');
     }
-    return {
-      replayed: true,
-      output: existing.output_json ? JSON.parse(existing.output_json) : null,
-    };
-  }
-  try {
-    await AgentRunEffect.query().insert(values);
-  } catch {
-    const raced = await AgentRunEffect.query().findOne({
+    const currentToken = Number(run.fencing_token ?? -1);
+    if (
+      !Number.isSafeInteger(params.fencingToken) ||
+      params.fencingToken < 1 ||
+      currentToken !== params.fencingToken ||
+      Number(run.job_id ?? 0) < 1
+    ) {
+      throw new StaleFencingError('Effect fencing token is stale');
+    }
+    await assertCurrentFencing({
+      run: run as unknown as Record<string, unknown>,
+      jobId: Number(run.job_id),
+      companyId: params.companyId,
+      expectedFencingToken: params.fencingToken,
+      db: trx,
+    });
+    const existing = await AgentRunEffect.query(trx).findOne({
       company_id: params.companyId,
       agent_run_id: params.agentRunId,
       effect_key: params.effectKey,
     });
-    if (!raced || raced.args_sha256 !== params.argsDigest)
-      throw new StaleFencingError('Effect conflict');
-    return {
-      replayed: true,
-      output: raced.output_json ? JSON.parse(raced.output_json) : null,
-    };
-  }
-  return { replayed: false, output: params.output };
+    if (existing) {
+      if (existing.args_sha256 !== params.argsDigest) {
+        throw new StaleFencingError('Effect idempotency key was reused with different arguments');
+      }
+      return {
+        replayed: true,
+        output: existing.output_json ? JSON.parse(existing.output_json) : null,
+      };
+    }
+    try {
+      await AgentRunEffect.query(trx).insert(values);
+    } catch {
+      const raced = await AgentRunEffect.query(trx).findOne({
+        company_id: params.companyId,
+        agent_run_id: params.agentRunId,
+        effect_key: params.effectKey,
+      });
+      if (!raced || raced.args_sha256 !== params.argsDigest) {
+        throw new StaleFencingError('Effect conflict');
+      }
+      return {
+        replayed: true,
+        output: raced.output_json ? JSON.parse(raced.output_json) : null,
+      };
+    }
+    return { replayed: false, output: params.output };
+  });
 }
 
 /** Atomically gate enqueueing on a durable, single-use R3 workflow approval. */

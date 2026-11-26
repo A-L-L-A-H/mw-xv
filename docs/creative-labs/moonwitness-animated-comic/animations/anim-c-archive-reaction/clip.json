@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "clipId": "anim-c-archive-reaction",
+  "beatId": "ANIM-C",
+  "title": "Archive Reaction — Measured Restraint",
+  "status": "experimental-candidate",
+  "characterIds": ["vesper-ink", "kuro-signal"],
+  "loop": false,
+  "playbackMode": "one-shot-or-loop-preview",
+  "totalDurationMs": 4200,
+  "pivot": { "x": 0.5, "y": 0.86 },
+  "motionDescription": "Vesper Ink receives Kuro Signal's incomplete fragment slip across the lamp-lit archive workbench, lifts and inspects the waveform voids, calmly raises one steady hand to halt Kuro's impatient rush, annotates the blank slots with her brass stylus, and holds composed eye contact.",
+  "principlesApplied": [
+    "contrast-in-acting",
+    "anticipation",
+    "pose-to-pose-keyframing",
+    "staging-and-lighting-contrast",
+    "follow-through-and-settle"
+  ],
+  "fallbackPose": "animations/anim-c-archive-reaction/frame-06.webp",
+  "reducedMotionAlternative": {
+    "asset": "animations/anim-c-archive-reaction/frame-06.webp",
+    "description": "Balanced warm two-shot of Vesper Ink waist-up framing the incomplete transmission slip while Kuro Signal leans back listening thoughtfully."
+  },
+  "frames": [
+    {
+      "frameId": "ANIM-C-F01",
+      "asset": "animations/anim-c-archive-reaction/frame-01.webp",
+      "durationMs": 520,
+      "poseLabel": "Over-the-Shoulder Reception",
+      "actingNote": "Framed past Kuro's magenta-lined hood onto the zine workbench; Vesper Ink waist-up calmly studies the arriving waveform strip.",
+      "principles": ["staging-and-lighting-contrast", "pose-to-pose-keyframing"],
+      "camera": { "scale": 1.0, "x": 0, "y": 0, "rotate": 0, "fx": "none" }
+    },
+    {
+      "frameId": "ANIM-C-F02",
+      "asset": "animations/anim-c-archive-reaction/frame-02.webp",
+      "durationMs": 480,
+      "poseLabel": "Deliberate Pick-Up",
+      "actingNote": "Vesper lifts the printed strip cleanly beside the glowing cyan CRT oscilloscope, brass stylus poised in right hand.",
+      "principles": ["anticipation", "contrast-in-acting"],
+      "camera": { "scale": 1.03, "x": 6, "y": -2, "rotate": 0, "fx": "none" }
+    },
+    {
+      "frameId": "ANIM-C-F03",
+      "asset": "animations/anim-c-archive-reaction/frame-03.webp",
+      "durationMs": 1100,
+      "poseLabel": "Analytical Inspection Close-Up",
+      "actingNote": "Medium close-up on Vesper waist-up; brass violet-and-cyan forehead goggles catch studio glow while eyes pause sharply on the missing waveform gaps.",
+      "principles": ["staging-and-lighting-contrast", "pose-to-pose-keyframing"],
+      "camera": { "scale": 1.055, "x": 0, "y": -4, "rotate": 0, "fx": "none" }
+    },
+    {
+      "frameId": "ANIM-C-F04",
+      "asset": "animations/anim-c-archive-reaction/frame-04.webp",
+      "durationMs": 1000,
+      "poseLabel": "Impatient Kuro vs Calm Vesper",
+      "actingNote": "Peak asymmetric acting contrast: Kuro gestures enthusiastically urging immediate broadcast while Vesper calmly raises one steady hand to halt the rush.",
+      "principles": ["contrast-in-acting", "pose-to-pose-keyframing"],
+      "camera": { "scale": 1.04, "x": -8, "y": 0, "rotate": -0.5, "fx": "impact-jolt" }
+    },
+    {
+      "frameId": "ANIM-C-F05",
+      "asset": "animations/anim-c-archive-reaction/frame-05.webp",
+      "durationMs": 420,
+      "poseLabel": "Stylus Gap Annotation",
+      "actingNote": "Vesper lowers the brass stylus cleanly beside the two empty dashed void slots on the blotter with a knowing half-smile.",
+      "principles": ["anticipation", "contrast-in-acting"],
+      "camera": { "scale": 1.02, "x": 4, "y": 2, "rotate": 0, "fx": "none" }
+    },
+    {
+      "frameId": "ANIM-C-F06",
+      "asset": "animations/anim-c-archive-reaction/frame-06.webp",
+      "durationMs": 680,
+      "poseLabel": "Measured Restraint Hold",
+      "actingNote": "Vesper frames the incomplete sheet cleanly with both hands beside a yellow binder clip; Kuro relaxes thoughtfully in profile.",
+      "principles": ["follow-through-and-settle", "pose-to-pose-keyframing"],
+      "camera": { "scale": 1.0, "x": 0, "y": 0, "rotate": 0, "fx": "none" }
+    }
+  ]
+}

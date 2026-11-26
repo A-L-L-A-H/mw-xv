@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import ReactMarkdown from 'react-markdown';
 import rehypeSlug from 'rehype-slug';
 import remarkGfm from 'remark-gfm';
+import { Badge } from '@moonwitness/ui/components/badge';
 
 export type SearchPage = {
   title: string;
@@ -23,7 +24,7 @@ export function MarkdownContent({
   return (
     <article className="document-content">
       <div className="document-meta">
-        <span>{page.kind.replaceAll('-', ' ')}</span>
+        <Badge>{page.kind.replaceAll('-', ' ')}</Badge>
         <span aria-hidden="true">/</span>
         <code>{page.path}</code>
       </div>

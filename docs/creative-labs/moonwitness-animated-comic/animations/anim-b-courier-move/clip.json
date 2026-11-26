@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "clipId": "anim-b-courier-move",
+  "beatId": "ANIM-B",
+  "title": "Courier Move — Rooftop Vault to Archive Loft",
+  "status": "experimental-candidate",
+  "characterIds": ["kuro-signal"],
+  "loop": false,
+  "playbackMode": "one-shot-or-loop-preview",
+  "totalDurationMs": 1900,
+  "pivot": { "x": 0.5, "y": 0.88 },
+  "motionDescription": "Kuro Signal coils tightly on the concrete parapet, launches left-to-right across the moonlit canyon, vaults mid-air over neon alleys, streaks across utility wires in a cyan-magenta smear dash, brakes with a sparking heel-plant skid, absorbs impact in a deep squash crouch, and rebounds eagerly at the archive loft door.",
+  "principlesApplied": [
+    "anticipation",
+    "squash-and-stretch",
+    "arcs",
+    "smear-frame",
+    "overlapping-action",
+    "follow-through"
+  ],
+  "fallbackPose": "animations/anim-b-courier-move/frame-03.webp",
+  "reducedMotionAlternative": {
+    "asset": "animations/anim-b-courier-move/frame-03.webp",
+    "description": "Hero mid-air parkour vault of Kuro Signal crossing the moonlit neon alley with portable receiver secured."
+  },
+  "frames": [
+    {
+      "frameId": "ANIM-B-F01",
+      "asset": "animations/anim-b-courier-move/frame-01.webp",
+      "durationMs": 220,
+      "poseLabel": "Deep Coil Anticipation",
+      "actingNote": "Tightly compressed sprinter coil at rooftop ledge; yellow lug boots poised, receiver tucked tight to chest.",
+      "principles": ["anticipation", "squash-and-stretch"],
+      "camera": { "scale": 1.02, "x": -10, "y": 6, "rotate": -1.0, "fx": "none" }
+    },
+    {
+      "frameId": "ANIM-B-F02",
+      "asset": "animations/anim-b-courier-move/frame-02.webp",
+      "durationMs": 170,
+      "poseLabel": "Explosive Launch Stretch",
+      "actingNote": "Full diagonal extension pushing left-to-right off the concrete parapet; magenta hip strap whips behind.",
+      "principles": ["squash-and-stretch", "line-of-action"],
+      "camera": { "scale": 1.05, "x": 12, "y": -6, "rotate": 1.5, "fx": "speed-lines" }
+    },
+    {
+      "frameId": "ANIM-B-F03",
+      "asset": "animations/anim-b-courier-move/frame-03.webp",
+      "durationMs": 260,
+      "poseLabel": "Apex Rooftop Vault",
+      "actingNote": "Mid-air parkour tuck framed against the crescent moon above neon magenta-cyan alley walls.",
+      "principles": ["arcs", "overlapping-action"],
+      "camera": { "scale": 1.07, "x": 0, "y": -8, "rotate": -1.2, "fx": "speed-lines" }
+    },
+    {
+      "frameId": "ANIM-B-F04",
+      "asset": "animations/anim-b-courier-move/frame-04.webp",
+      "durationMs": 160,
+      "poseLabel": "Chromatic Smear Dash",
+      "actingNote": "High-impact punk-anime horizontal smear silhouette trailing vivid cyan and hot-magenta afterimages across rooftop cables.",
+      "principles": ["smear-frame", "exaggeration"],
+      "camera": { "scale": 1.09, "x": 18, "y": 0, "rotate": 1.8, "fx": "chromatic-smear" }
+    },
+    {
+      "frameId": "ANIM-B-F05",
+      "asset": "animations/anim-b-courier-move/frame-05.webp",
+      "durationMs": 220,
+      "poseLabel": "Heel-Plant Spark Skid",
+      "actingNote": "Yellow lug-boot sole slams down onto the archive roof, kicking up graphic ink-dust clouds and electric impact sparks.",
+      "principles": ["follow-through", "weight"],
+      "camera": { "scale": 1.06, "x": -10, "y": 4, "rotate": -1.4, "fx": "impact-jolt" }
+    },
+    {
+      "frameId": "ANIM-B-F06",
+      "asset": "animations/anim-b-courier-move/frame-06.webp",
+      "durationMs": 240,
+      "poseLabel": "Squash Landing Crouch",
+      "actingNote": "Deep shock-absorbing crouch outside the amber-lit archive studio doorway; warm doorway light rims Kuro's silhouette.",
+      "principles": ["squash-and-stretch", "overlapping-action"],
+      "camera": { "scale": 1.03, "x": 0, "y": 8, "rotate": 0, "fx": "none" }
+    },
+    {
+      "frameId": "ANIM-B-F07",
+      "asset": "animations/anim-b-courier-move/frame-07.webp",
+      "durationMs": 630,
+      "poseLabel": "Impatient Knock Rebound",
+      "actingNote": "Springs upright outside the golden studio hatch, excited grin wide, glowing cyan receiver pulsing as fist rises to knock.",
+      "principles": ["staging-and-silhouette", "appeal"],
+      "camera": { "scale": 1.05, "x": 6, "y": -4, "rotate": 0.6, "fx": "none" }
+    }
+  ]
+}

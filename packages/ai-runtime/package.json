@@ -27,7 +27,6 @@
     "test": "tsc -p tsconfig.check.json && vitest run"
   },
   "dependencies": {
-    "@moonwitness/logger": "workspace:*",
     "@moonwitness/orm-integration": "workspace:*",
     "@moonwitness/types": "workspace:*"
   },

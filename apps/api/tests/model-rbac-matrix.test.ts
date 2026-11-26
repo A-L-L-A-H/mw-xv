@@ -174,7 +174,9 @@ describe('MW-QA-003: Full Model × 3 Role Authorization Matrix', () => {
     expect(modelNames.length).toBeGreaterThanOrEqual(88);
 
     for (const modelName of modelNames) {
-      const isInternal = INTERNAL_PREFIXES.some((prefix) => modelName.startsWith(prefix));
+      const isInternal =
+        INTERNAL_PREFIXES.some((prefix) => modelName.startsWith(prefix)) ||
+        getModelAccessPolicy(modelName) === 'internal';
       const isWhatsApp = modelName.startsWith('whatsapp.');
       const isAuditLog = modelName === 'base.audit_log';
       const isAdminOnly = ADMIN_ONLY_MODEL_NAMES.has(modelName);

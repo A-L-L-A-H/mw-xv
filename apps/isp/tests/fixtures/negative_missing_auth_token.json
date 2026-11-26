@@ -1,0 +1,20 @@
+{
+  "name": "missing auth token",
+  "request": {
+    "schema_version": 1,
+    "correlation_id": "corr-noauth-001",
+    "operation_id": "op-noauth-001",
+    "idempotency_key": "idem-noauth-001",
+    "config_generation": 5,
+    "deadline": "2026-12-01T00:00:00Z",
+    "operation_type": "config_push",
+    "payload": { "service": "radius", "clients": [] }
+  },
+  "context": {
+    "current_generation": 5,
+    "expected_auth_token": "secret-token",
+    "applied_operations": [],
+    "deadline_expired": false
+  },
+  "expected": { "outcome": "rejected", "error_code": "auth_failure" }
+}

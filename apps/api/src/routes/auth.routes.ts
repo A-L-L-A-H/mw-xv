@@ -1,5 +1,6 @@
 import type { FastifyPluginAsync } from 'fastify';
-import { AuthError, ConflictError, type AuthService, type AuthSession } from '@moonwitness/auth';
+import { createHash, timingSafeEqual } from 'node:crypto';
+import { AuthError, ConflictError, type AuthService, type AuthSession, type SetupClaimInput } from '@moonwitness/auth';
 import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '@moonwitness/orm';
 import type { Partner, User } from '@moonwitness/orm-base';
 import { invalidateAuthCache } from '../plugins/auth.plugin.js';
@@ -327,6 +328,108 @@ export const authRoutes: FastifyPluginAsync<AuthRoutesOptions> = async (fastify,
         return reply.code(404).send({ success: false, error: 'Profile is unavailable' });
       await PartnerModel.query().findById(user.partner_id).patch(req.body);
       return { success: true };
+    }
+  );
+
+  fastify.get(
+    '/auth/setup-status',
+    {
+      config: { rateLimit: { max: loginRateMax * 3, timeWindow: '1 minute' } },
+      schema: {
+        tags: ['Auth'],
+        summary: 'Check whether first-boot setup is required',
+      },
+    },
+    async (req, reply) => {
+      const expectedToken = process.env.MW_SETUP_TOKEN?.trim();
+      if (!expectedToken) {
+        return reply
+          .header('Cache-Control', 'no-store')
+          .send({ success: true, data: { setupRequired: false } });
+      }
+
+      const ConfigParameter = req.env.get('base.config_parameter');
+      const row = await ConfigParameter.query()
+        .where({ key: 'instance.setup_completed', active: true })
+        .whereNull('company_id')
+        .orderBy('id', 'desc')
+        .first();
+
+      const setupRequired = (row as { value?: string } | undefined)?.value !== 'true';
+      return reply
+        .header('Cache-Control', 'no-store')
+        .send({ success: true, data: { setupRequired } });
+    }
+  );
+
+  fastify.post<{ Body: { setup_token: string; login: string; password: string; name?: string; email?: string } }>(
+    '/auth/setup-claim',
+    {
+      config: { rateLimit: { max: loginRateMax, timeWindow: '1 minute' } },
+      schema: {
+        tags: ['Auth'],
+        summary: 'Claim the seeded superadmin account (first-boot onboarding)',
+        body: {
+          type: 'object',
+          required: ['setup_token', 'login', 'password'],
+          additionalProperties: false,
+          properties: {
+            setup_token: { type: 'string', minLength: 1 },
+            login: { type: 'string', minLength: 3, maxLength: 255 },
+            password: {
+              type: 'string',
+              minLength: MIN_PASSWORD_LENGTH,
+              maxLength: MAX_PASSWORD_LENGTH,
+            },
+            name: { type: 'string', minLength: 1, maxLength: 255 },
+            email: { type: 'string', format: 'email', maxLength: 255 },
+          },
+        },
+      },
+    },
+    async (req, reply) => {
+      const expectedToken = process.env.MW_SETUP_TOKEN?.trim();
+      if (!expectedToken) {
+        req.log.warn({ ip: req.ip }, 'setup-claim attempted without MW_SETUP_TOKEN');
+        return reply.code(401).send({ success: false, error: 'Invalid setup token' });
+      }
+
+      // Constant-time SHA256 comparison
+      const providedHash = createHash('sha256').update(req.body.setup_token).digest();
+      const expectedHash = createHash('sha256').update(expectedToken).digest();
+      if (
+        providedHash.length !== expectedHash.length ||
+        !timingSafeEqual(providedHash, expectedHash)
+      ) {
+        req.log.warn({ ip: req.ip }, 'setup-claim token mismatch');
+        return reply.code(401).send({ success: false, error: 'Invalid setup token' });
+      }
+
+      const input: SetupClaimInput = {
+        login: req.body.login,
+        password: req.body.password,
+        name: req.body.name?.trim(),
+        email: req.body.email?.trim(),
+      };
+
+      try {
+        const session = await authService.claimSuperadminSetup(input, {
+          userAgent: req.headers['user-agent'],
+        });
+        invalidateAuthCache(session.userId);
+        req.log.info({ userId: session.userId, ip: req.ip }, 'setup claim succeeded');
+        return reply.code(201).header('Cache-Control', 'no-store').send(tokenResponse(session));
+      } catch (error) {
+        if (error instanceof ConflictError) {
+          req.log.warn({ ip: req.ip }, 'setup claim conflict');
+          return reply.code(409).send({ success: false, error: error.message });
+        }
+        if (error instanceof RangeError) {
+          req.log.warn({ ip: req.ip }, 'setup claim range error');
+          return reply.code(400).send({ success: false, error: error.message });
+        }
+        throw error;
+      }
     }
   );
 };

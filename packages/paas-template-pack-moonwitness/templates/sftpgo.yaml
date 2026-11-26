@@ -1,0 +1,16 @@
+# SFTPGo — SFTP/FTP/WebDAV/HTTP file server dengan backend S3-compatible,
+# auth OIDC, dan quota per user. File transfer sovereign untuk tenant.
+services:
+  sftpgo:
+    image: drakkan/sftpgo:latest
+    expose:
+      - '8080'
+      - '2022'
+    environment:
+      - SFTPGO_DEFAULT_ADMIN_USERNAME=admin
+      - SFTPGO_DEFAULT_ADMIN_PASSWORD=${SERVICE_PASSWORD_ADMIN}
+    volumes:
+      - sftpgo-data:/var/lib/sftpgo
+      - sftpgo-data:/srv/sftpgo
+volumes:
+  sftpgo-data:

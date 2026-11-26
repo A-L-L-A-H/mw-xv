@@ -56,3 +56,16 @@ test('line chart includes series legend, locale formatter hook, and time label t
   assert.match(html, /<th scope="col">10\.00<\/th>/);
   assert.match(html, /—/);
 });
+
+test('line chart places a single reading at a finite x coordinate', () => {
+  const html = renderToStaticMarkup(
+    React.createElement(LineChart, {
+      title: 'Current latency',
+      labels: ['09.00'],
+      series: [{ label: 'API', values: [4] }],
+    })
+  );
+  assert.doesNotMatch(html, /NaN|Infinity/u);
+  assert.match(html, /points="32,40"/u);
+  assert.match(html, /x="32" y="194"/u);
+});

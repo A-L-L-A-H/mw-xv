@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540" role="img" aria-label="Torn-paper and brush-ink diagonal transition frame accent">
+  <!-- Transparent background; diagonal torn-paper & ink brush corner accents -->
+  <path d="M0 0 L264 0 L228 24 L182 14 L144 46 L96 34 L58 76 L24 94 L0 148 Z" fill="#0d0d0d" opacity="0.88"/>
+  <path d="M0 14 L236 0 L196 18 L152 12 L118 40 L74 30 L40 68 L0 116 Z" fill="#ff2e88" opacity="0.34"/>
+
+  <path d="M960 540 L696 540 L734 514 L780 524 L820 492 L866 504 L904 462 L936 444 L960 392 Z" fill="#0d0d0d" opacity="0.88"/>
+  <path d="M960 526 L724 540 L764 520 L808 528 L842 498 L888 508 L920 470 L960 424 Z" fill="#00b8f0" opacity="0.34"/>
+
+  <!-- Diagonal Ink Brush Flicks -->
+  <g fill="#0d0d0d" opacity="0.72">
+    <polygon points="274,8 326,0 318,10 270,16"/>
+    <polygon points="634,532 686,524 690,534 642,540"/>
+  </g>
+</svg>

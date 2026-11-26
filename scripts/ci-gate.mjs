@@ -53,8 +53,9 @@ export function resolveRequiredJobs(environment = env) {
 
 /**
  * Read the aggregate job conclusions. Prefer a single JSON map (the exact-SHA
- * aggregate job passes `needs.<id>.result` values through it); fall back to
- * per-job `<JOB>_RESULT` variables for direct invocations.
+ * aggregate job passes `needs.<id>.result` values through it, either as strings
+ * or GitHub Actions `{ result, outputs }` objects); fall back to per-job
+ * `<JOB>_RESULT` variables for direct invocations.
  * @param {NodeJS.ProcessEnv} environment
  * @param {string[]} jobs
  */
@@ -63,7 +64,21 @@ export function readJobResults(environment = env, jobs = requiredJobs) {
   if (inline) {
     try {
       const parsed = JSON.parse(inline);
-      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed;
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        return Object.fromEntries(
+          Object.entries(parsed).map(([job, value]) => {
+            if (typeof value === 'string') return [job, value];
+            if (
+              value &&
+              typeof value === 'object' &&
+              !Array.isArray(value) &&
+              typeof value.result === 'string'
+            )
+              return [job, value.result];
+            return [job, undefined];
+          })
+        );
+      }
     } catch {
       // An unparseable payload is treated as no results and fails closed below.
     }

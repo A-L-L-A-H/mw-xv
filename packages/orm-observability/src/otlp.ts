@@ -21,6 +21,11 @@ const MAX_STRING_LENGTH = 2_048;
 const MAX_ID_LENGTH = 128;
 const MAX_BODY_LENGTH = 8_192;
 
+// OTLP attribute keys are dotted lowercase identifiers (http.method, service.name,
+// k8s.pod.uid). Restrict writes to that character set so a hostile telemetry payload
+// cannot inject arbitrary object property names.
+const SAFE_KEY_PATTERN = /^[A-Za-z0-9][A-Za-z0-9 ._:\/\-]{0,255}$/u;
+
 function asRecord(value: unknown): UnknownRecord | undefined {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
     ? (value as UnknownRecord)
@@ -122,6 +127,7 @@ function parseAttributes(value: unknown): Record<string, unknown> {
     const entry = asRecord(item);
     const key = readString(entry?.key, 256);
     if (!key || key === '__proto__' || key === 'prototype' || key === 'constructor') continue;
+    if (!SAFE_KEY_PATTERN.test(key)) continue;
     const parsed = parseAnyValue(entry?.value);
     if (parsed !== undefined) attributes[key] = parsed;
   }

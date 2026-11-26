@@ -1,4 +1,5 @@
 mod radius_protocol;
+mod control_contract;
 
 use anyhow::Result;
 use axum::{
@@ -16,6 +17,7 @@ use radius_protocol::{
     encode_disconnect_request, encode_response, verify_accounting_authenticator,
     verify_chap_password, verify_response_authenticator, RadiusAttribute,
 };
+use radius_protocol::attr_type as at;
 use sha2::Sha256;
 use sqlx::Row;
 use std::net::{Ipv4Addr, SocketAddr};
@@ -102,6 +104,38 @@ struct Config {
 
 const ADMIN_TOKEN_MESSAGE: &[u8] = b"moonwitness-isp-admin-v1";
 
+/// M19.06: combine a 32-bit octet counter with its Gigawords attribute (RFC
+/// 2869 attributes 52/53, counting 2^32-octet wraps) into the normalized
+/// 64-bit total `gigawords * 2^32 + low32`. Both attributes are optional; a
+/// missing Gigawords value means the counter never wrapped.
+fn combine_gigawords(low32: u32, gigawords: Option<u32>) -> i64 {
+    let wraps = gigawords.unwrap_or(0) as i64;
+    (wraps << 32) + low32 as i64
+}
+
+/// Extract a normalized 64-bit input/output octet pair from an accounting
+/// packet, preferring the Gigawords-extended counters when present.
+fn extract_octet_counters(packet: &radius_protocol::RadiusPacket) -> (i64, i64) {
+    let input_low = packet
+        .attribute(at::ACCT_INPUT_OCTETS)
+        .and_then(RadiusAttribute::as_u32)
+        .unwrap_or(0);
+    let output_low = packet
+        .attribute(at::ACCT_OUTPUT_OCTETS)
+        .and_then(RadiusAttribute::as_u32)
+        .unwrap_or(0);
+    let input_giga = packet
+        .attribute(at::ACCT_INPUT_GIGAWORDS)
+        .and_then(RadiusAttribute::as_u32);
+    let output_giga = packet
+        .attribute(at::ACCT_OUTPUT_GIGAWORDS)
+        .and_then(RadiusAttribute::as_u32);
+    (
+        combine_gigawords(input_low, input_giga),
+        combine_gigawords(output_low, output_giga),
+    )
+}
+
 /// Resolve the runtime admin bearer token:
 /// 1. explicit `MW_ISP_ADMIN_TOKEN` (config/env) when non-empty after trim;
 /// 2. HMAC-SHA256(key = secret, msg = "moonwitness-isp-admin-v1") over
@@ -183,6 +217,9 @@ struct Database {
     quota_exceeded_rejects: Arc<AtomicU64>,
     /// Count of duplicate quota accumulations skipped (idempotent replay)
     quota_duplicate_accumulations: Arc<AtomicU64>,
+    /// Count of Accounting-Requests for which the Accounting-Response was withheld
+    /// because the durable write failed (M19.05 durable ACK contract).
+    accounting_acks_withheld: Arc<AtomicU64>,
 }
 
 impl Database {
@@ -197,6 +234,7 @@ impl Database {
             pool,
             quota_exceeded_rejects: Arc::new(AtomicU64::new(0)),
             quota_duplicate_accumulations: Arc::new(AtomicU64::new(0)),
+            accounting_acks_withheld: Arc::new(AtomicU64::new(0)),
         })
     }
 
@@ -398,14 +436,21 @@ impl Database {
                 .execute(&self.pool)
                 .await?;
             }
+            // M19.06: accept only forward progress. A duplicate or out-of-order
+            // interim brings older totals; with MAX() those packets are durably
+            // recorded as a no-op instead of regressing counters that quota and
+            // billing already consumed. A NAS reboot or session restart uses a
+            // new Acct-Session-Id and therefore inserts a fresh row.
             acct_status::INTERIM_UPDATE => {
                 sqlx::query(
-                    "INSERT INTO radius_sessions (session_id, username, nas_ip, nas_port, framed_ip, calling_station_id, acct_input_octets, acct_output_octets, acct_session_time, status)
-                     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, 'active')
+                    "INSERT INTO radius_sessions (session_id, username, nas_ip, nas_port, framed_ip, calling_station_id, acct_input_octets, acct_output_octets, acct_input_octets64, acct_output_octets64, acct_session_time, status)
+                     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?7, ?8, ?9, 'active')
                      ON CONFLICT(session_id) DO UPDATE SET
-                       acct_input_octets = excluded.acct_input_octets,
-                       acct_output_octets = excluded.acct_output_octets,
-                       acct_session_time = excluded.acct_session_time,
+                       acct_input_octets = MAX(radius_sessions.acct_input_octets, excluded.acct_input_octets),
+                       acct_output_octets = MAX(radius_sessions.acct_output_octets, excluded.acct_output_octets),
+                       acct_input_octets64 = MAX(radius_sessions.acct_input_octets64, excluded.acct_input_octets64),
+                       acct_output_octets64 = MAX(radius_sessions.acct_output_octets64, excluded.acct_output_octets64),
+                       acct_session_time = MAX(radius_sessions.acct_session_time, excluded.acct_session_time),
                        framed_ip = COALESCE(excluded.framed_ip, radius_sessions.framed_ip),
                        updated_at = datetime('now')",
                 )
@@ -423,14 +468,16 @@ impl Database {
             }
             acct_status::STOP => {
                 sqlx::query(
-                    "INSERT INTO radius_sessions (session_id, username, nas_ip, nas_port, framed_ip, calling_station_id, acct_input_octets, acct_output_octets, acct_session_time, status, terminate_cause, stopped_at)
-                     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, 'closed', ?10, datetime('now'))
+                    "INSERT INTO radius_sessions (session_id, username, nas_ip, nas_port, framed_ip, calling_station_id, acct_input_octets, acct_output_octets, acct_input_octets64, acct_output_octets64, acct_session_time, status, terminate_cause, stopped_at)
+                     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?7, ?8, ?9, 'closed', ?10, datetime('now'))
                      ON CONFLICT(session_id) DO UPDATE SET
-                       acct_input_octets = excluded.acct_input_octets,
-                       acct_output_octets = excluded.acct_output_octets,
-                       acct_session_time = excluded.acct_session_time,
+                       acct_input_octets = MAX(radius_sessions.acct_input_octets, excluded.acct_input_octets),
+                       acct_output_octets = MAX(radius_sessions.acct_output_octets, excluded.acct_output_octets),
+                       acct_input_octets64 = MAX(radius_sessions.acct_input_octets64, excluded.acct_input_octets64),
+                       acct_output_octets64 = MAX(radius_sessions.acct_output_octets64, excluded.acct_output_octets64),
+                       acct_session_time = MAX(radius_sessions.acct_session_time, excluded.acct_session_time),
                        status = 'closed',
-                       terminate_cause = excluded.terminate_cause,
+                       terminate_cause = COALESCE(excluded.terminate_cause, radius_sessions.terminate_cause),
                        stopped_at = datetime('now'),
                        updated_at = datetime('now')",
                 )
@@ -455,7 +502,8 @@ impl Database {
     async fn list_sessions(&self) -> Result<Vec<RadiusSessionRow>> {
         let rows = sqlx::query_as(
             "SELECT id, session_id, username, nas_ip, nas_port, framed_ip, calling_station_id,
-                    acct_input_octets, acct_output_octets, acct_session_time, status, terminate_cause,
+                    acct_input_octets, acct_output_octets, acct_input_octets64, acct_output_octets64,
+                    acct_session_time, status, terminate_cause,
                     started_at, updated_at, stopped_at
              FROM radius_sessions ORDER BY id DESC LIMIT 100",
         )
@@ -478,7 +526,8 @@ impl Database {
     ) -> Result<Option<RadiusSessionRow>> {
         let row = sqlx::query_as(
             "SELECT id, session_id, username, nas_ip, nas_port, framed_ip, calling_station_id,
-                    acct_input_octets, acct_output_octets, acct_session_time, status, terminate_cause,
+                    acct_input_octets, acct_output_octets, acct_input_octets64, acct_output_octets64,
+                    acct_session_time, status, terminate_cause,
                     started_at, updated_at, stopped_at
              FROM radius_sessions
              WHERE username = ?1 AND status = 'active'
@@ -554,11 +603,13 @@ impl Database {
     /// inflate the subscriber's usage (AUD/TAUD-08).
     async fn accumulate_quota_usage(&self, username: &str) -> Result<()> {
         // 1. Add each active session's growth since its high-water mark.
+        //    M19.06: consumption uses the normalized 64-bit totals so
+        //    Gigawords-extended counters are not truncated at 2^32.
         let rows = sqlx::query(
-            "SELECT (acct_input_octets + acct_output_octets) - quota_accumulated_octets AS delta
+            "SELECT (acct_input_octets64 + acct_output_octets64) - quota_accumulated_octets AS delta
              FROM radius_sessions
              WHERE username = ?1 AND status = 'active'
-               AND (acct_input_octets + acct_output_octets) > quota_accumulated_octets",
+               AND (acct_input_octets64 + acct_output_octets64) > quota_accumulated_octets",
         )
         .bind(username)
         .fetch_all(&self.pool)
@@ -583,9 +634,9 @@ impl Database {
         // 2. Raise the high-water mark to the counters just accounted for.
         sqlx::query(
             "UPDATE radius_sessions
-             SET quota_accumulated_octets = acct_input_octets + acct_output_octets
+             SET quota_accumulated_octets = acct_input_octets64 + acct_output_octets64
              WHERE username = ?1 AND status = 'active'
-               AND (acct_input_octets + acct_output_octets) > quota_accumulated_octets",
+               AND (acct_input_octets64 + acct_output_octets64) > quota_accumulated_octets",
         )
         .bind(username)
         .execute(&self.pool)
@@ -673,6 +724,10 @@ struct RadiusSessionRow {
     calling_station_id: Option<String>,
     acct_input_octets: i64,
     acct_output_octets: i64,
+    #[serde(rename = "acct_input_octets64")]
+    acct_input_octets64: i64,
+    #[serde(rename = "acct_output_octets64")]
+    acct_output_octets64: i64,
     acct_session_time: i64,
     status: String,
     terminate_cause: Option<i64>,
@@ -919,7 +974,17 @@ async fn process_accounting_request(db: &Database, raw: &[u8], src_ip: &str) -> 
 
     let nas = match db.find_client_with_secret(src_ip).await {
         Ok(Some(c)) => c,
-        _ => return None,
+        Ok(None) => return None,
+        // M19.05: a lookup failure means we cannot durably resolve the event's
+        // identity, so withhold the Accounting-Response and let the NAS retry.
+        Err(err) => {
+            warn!(
+                "NAS lookup failed; withholding Accounting-Response for {} from {}: {}",
+                packet.identifier, src_ip, err
+            );
+            db.accounting_acks_withheld.fetch_add(1, Ordering::Relaxed);
+            return None;
+        }
     };
 
     let secret = nas.secret.as_bytes();
@@ -951,14 +1016,8 @@ async fn process_accounting_request(db: &Database, raw: &[u8], src_ip: &str) -> 
     let calling_station_id = packet
         .attribute(attr_type::CALLING_STATION_ID)
         .map(RadiusAttribute::as_str);
-    let input_octets = packet
-        .attribute(attr_type::ACCT_INPUT_OCTETS)
-        .and_then(RadiusAttribute::as_u32)
-        .unwrap_or(0) as i64;
-    let output_octets = packet
-        .attribute(attr_type::ACCT_OUTPUT_OCTETS)
-        .and_then(RadiusAttribute::as_u32)
-        .unwrap_or(0) as i64;
+    // M19.06: normalized 64-bit counters, Gigawords-aware.
+    let (input_octets, output_octets) = extract_octet_counters(&packet);
     let session_time = packet
         .attribute(attr_type::ACCT_SESSION_TIME)
         .and_then(RadiusAttribute::as_u32)
@@ -968,6 +1027,10 @@ async fn process_accounting_request(db: &Database, raw: &[u8], src_ip: &str) -> 
         .and_then(RadiusAttribute::as_u32)
         .map(|v| v as i64);
 
+    // M19.05 durable ACK contract: the Accounting-Response is sent only after the
+    // accounting event has been durably persisted. On write failure we deliberately
+    // send no response so the NAS retransmits and we do not acknowledge an event we
+    // may lose. A bounded counter tracks withheld ACKs for diagnostics.
     if let Err(err) = db
         .record_accounting(
             &session_id,
@@ -984,7 +1047,13 @@ async fn process_accounting_request(db: &Database, raw: &[u8], src_ip: &str) -> 
         )
         .await
     {
-        warn!("Failed to record RADIUS accounting session {}: {}", session_id, err);
+        warn!(
+            "Accounting write failed; withholding Accounting-Response for session {} from {}: {}",
+            session_id, src_ip, err
+        );
+        db.accounting_acks_withheld
+            .fetch_add(1, Ordering::Relaxed);
+        return None;
     }
 
     Some(encode_response(
@@ -1349,6 +1418,7 @@ async fn get_metrics(State(state): State<AppState>) -> String {
     let db = &state.db;
     let quota_exceeded = db.quota_exceeded_rejects.load(Ordering::Relaxed);
     let quota_duplicates = db.quota_duplicate_accumulations.load(Ordering::Relaxed);
+    let acks_withheld = db.accounting_acks_withheld.load(Ordering::Relaxed);
 
     format!(
         r#"# HELP moonwitness_isp_quota_exceeded_rejects_total Total number of Access-Requests rejected due to quota exceeded
@@ -1357,6 +1427,9 @@ moonwitness_isp_quota_exceeded_rejects_total {quota_exceeded}
 # HELP moonwitness_isp_quota_duplicate_accumulations_total Total number of duplicate quota accumulation attempts skipped (idempotent replay)
 # TYPE moonwitness_isp_quota_duplicate_accumulations_total counter
 moonwitness_isp_quota_duplicate_accumulations_total {quota_duplicates}
+# HELP moonwitness_isp_accounting_acks_withheld_total Number of Accounting-Responses withheld because the durable write failed
+# TYPE moonwitness_isp_accounting_acks_withheld_total counter
+moonwitness_isp_accounting_acks_withheld_total {acks_withheld}
 "#
     )
 }
@@ -1374,6 +1447,33 @@ mod tests {
         let db = Database::new(db_path.to_str().unwrap()).await.unwrap();
         db.migrate().await.unwrap();
         (dir, db)
+    }
+
+    fn build_accounting_request(
+        id: u8,
+        username: &str,
+        session_id: &str,
+        status_type: u32,
+        input_octets: u32,
+        output_octets: u32,
+        session_time: u32,
+        secret: &[u8],
+    ) -> Vec<u8> {
+        let mut pkt = BytesMut::new();
+        pkt.put_u8(codes::ACCOUNTING_REQUEST);
+        pkt.put_u8(id);
+        pkt.put_u16(0);
+        pkt.extend_from_slice(&[0u8; 16]);
+        RadiusAttribute::string(attr_type::USER_NAME, username).encode(&mut pkt);
+        RadiusAttribute::string(attr_type::ACCT_SESSION_ID, session_id).encode(&mut pkt);
+        RadiusAttribute::u32(attr_type::ACCT_STATUS_TYPE, status_type).encode(&mut pkt);
+        RadiusAttribute::u32(attr_type::ACCT_INPUT_OCTETS, input_octets).encode(&mut pkt);
+        RadiusAttribute::u32(attr_type::ACCT_OUTPUT_OCTETS, output_octets).encode(&mut pkt);
+        RadiusAttribute::u32(attr_type::ACCT_SESSION_TIME, session_time).encode(&mut pkt);
+        let total = pkt.len() as u16;
+        pkt[2..4].copy_from_slice(&total.to_be_bytes());
+        sign_accounting_request(&mut pkt, secret);
+        pkt.to_vec()
     }
 
     fn build_pap_access_request(
@@ -2104,5 +2204,345 @@ mod tests {
         )
         .unwrap();
         assert_eq!(resp_new.code, codes::ACCESS_ACCEPT);
+    }
+
+    #[tokio::test]
+    async fn accounting_request_with_db_failure_does_not_ack() {
+        let (_dir, db) = test_db().await;
+        db.upsert_client("test-nas", "127.0.0.1", "secret").await.unwrap();
+
+        // Simulate a durable-write failure by closing the underlying pool so
+        // every write path errors at the connection layer.
+        db.pool.close().await;
+
+        let req = build_accounting_request(
+            1,
+            "user1",
+            "sess-dbfail-001",
+            acct_status::START,
+            0,
+            0,
+            0,
+            b"secret",
+        );
+
+        let resp = process_accounting_request(&db, &req, "127.0.0.1").await;
+        assert!(
+            resp.is_none(),
+            "No Accounting-Response may be sent when the durable write fails"
+        );
+        assert_eq!(
+            db.accounting_acks_withheld.load(Ordering::Relaxed),
+            1,
+            "Withheld ACK counter must record the failure"
+        );
+    }
+
+    #[tokio::test]
+    async fn accounting_retransmission_persists_once_after_recovery() {
+        let dir = tempfile::tempdir().unwrap();
+        let db_path = dir.path().join("isp_retrans.db");
+        let db = Database::new(db_path.to_str().unwrap()).await.unwrap();
+        db.migrate().await.unwrap();
+        db.upsert_client("test-nas", "127.0.0.1", "secret").await.unwrap();
+
+        // 1. DB unavailable: NAS sends Accounting-Request, server must not ACK.
+        db.pool.close().await;
+        let req = build_accounting_request(
+            2,
+            "user2",
+            "sess-retrans-001",
+            acct_status::START,
+            0,
+            0,
+            0,
+            b"secret",
+        );
+        let resp = process_accounting_request(&db, &req, "127.0.0.1").await;
+        assert!(resp.is_none(), "Withheld ACK while DB is unavailable");
+
+        // 2. Recovery: reopen the database at the same path.
+        let recovered = Database::new(db_path.to_str().unwrap()).await.unwrap();
+        assert!(
+            recovered.migrate().await.is_ok(),
+            "Recovered database must be usable"
+        );
+
+        // 3. NAS retransmits the identical request (same id/session identity).
+        let resp2 = process_accounting_request(&recovered, &req, "127.0.0.1").await;
+        assert!(
+            resp2.is_some(),
+            "Retransmitted request must be ACKed after durable write succeeds"
+        );
+
+        // 4. Idempotent replay: retransmitting the identical request again must
+        //    not create a duplicate session row.
+        let resp3 = process_accounting_request(&recovered, &req, "127.0.0.1").await;
+        assert!(resp3.is_some());
+
+        let sessions = recovered.list_sessions().await.unwrap();
+        assert_eq!(
+            sessions.iter().filter(|s| s.session_id == "sess-retrans-001").count(),
+            1,
+            "Retransmission must persist exactly one session row"
+        );
+        assert_eq!(
+            recovered.accounting_acks_withheld.load(Ordering::Relaxed),
+            0,
+            "Recovered server must not carry over withheld counters"
+        );
+    }
+
+    // ---- M19.06: 64-bit counters and Gigawords ----
+
+    #[test]
+    fn combine_gigawords_normalizes_64_bit_totals() {
+        // No Gigawords attribute: plain 32-bit value.
+        assert_eq!(combine_gigawords(102_400, None), 102_400);
+        // One wrap: 1 * 2^32 + low bits.
+        assert_eq!(combine_gigawords(0, Some(1)), 1i64 << 32);
+        assert_eq!(combine_gigawords(7, Some(1)), (1i64 << 32) + 7);
+        // Multi-GiB session: 3 wraps + 1_500_000_000 low octets.
+        assert_eq!(
+            combine_gigawords(1_500_000_000, Some(3)),
+            3i64 * (1i64 << 32) + 1_500_000_000
+        );
+    }
+
+    #[test]
+    fn gigawords_attributes_decode_to_64_bit_counters() {
+        let mut pkt = BytesMut::new();
+        pkt.put_u8(codes::ACCOUNTING_REQUEST);
+        pkt.put_u8(9);
+        pkt.put_u16(0);
+        pkt.extend_from_slice(&[0u8; 16]);
+        RadiusAttribute::string(at::ACCT_SESSION_ID, "sess-giga").encode(&mut pkt);
+        RadiusAttribute::u32(at::ACCT_STATUS_TYPE, acct_status::INTERIM_UPDATE).encode(&mut pkt);
+        RadiusAttribute::u32(at::ACCT_INPUT_OCTETS, 2_000_000_000).encode(&mut pkt);
+        RadiusAttribute::u32(at::ACCT_OUTPUT_OCTETS, 3_000_000_000).encode(&mut pkt);
+        RadiusAttribute::u32(at::ACCT_INPUT_GIGAWORDS, 2).encode(&mut pkt);
+        RadiusAttribute::u32(at::ACCT_OUTPUT_GIGAWORDS, 5).encode(&mut pkt);
+        let total = pkt.len() as u16;
+        pkt[2..4].copy_from_slice(&total.to_be_bytes());
+
+        let decoded = decode_packet(&pkt).unwrap();
+        let (input64, output64) = extract_octet_counters(&decoded);
+        assert_eq!(input64, 2i64 * (1i64 << 32) + 2_000_000_000);
+        assert_eq!(output64, 5i64 * (1i64 << 32) + 3_000_000_000);
+    }
+
+    #[tokio::test]
+    async fn gigaword_extended_accounting_persists_64_bit_totals() {
+        let (_dir, db) = test_db().await;
+        db.upsert_client("giga-nas", "127.0.0.1", "giga-secret-12")
+            .await
+            .unwrap();
+        db.upsert_subscriber(&UpsertSubscriberRequest {
+            username: "giga-user".to_string(),
+            password: "giga-pass".to_string(),
+            connection_type: Some("pppoe".to_string()),
+            framed_ip: Some("100.64.7.1".to_string()),
+            download_kbps: Some(1024),
+            upload_kbps: Some(1024),
+            status: Some("active".to_string()),
+        })
+        .await
+        .unwrap();
+
+        // START
+        let req = build_accounting_request(21, "giga-user", "sess-giga-001", acct_status::START, 0, 0, 0, b"giga-secret-12");
+        assert!(process_accounting_request(&db, &req, "127.0.0.1").await.is_some());
+
+        // INTERIM: input wrapped twice (2 GiGa + 2e9 low), output 5 GiGa + 3e9.
+        let mut pkt = BytesMut::new();
+        pkt.put_u8(codes::ACCOUNTING_REQUEST);
+        pkt.put_u8(22);
+        pkt.put_u16(0);
+        pkt.extend_from_slice(&[0u8; 16]);
+        RadiusAttribute::string(attr_type::USER_NAME, "giga-user").encode(&mut pkt);
+        RadiusAttribute::string(attr_type::ACCT_SESSION_ID, "sess-giga-001").encode(&mut pkt);
+        RadiusAttribute::u32(attr_type::ACCT_STATUS_TYPE, acct_status::INTERIM_UPDATE).encode(&mut pkt);
+        RadiusAttribute::u32(attr_type::ACCT_INPUT_OCTETS, 2_000_000_000).encode(&mut pkt);
+        RadiusAttribute::u32(attr_type::ACCT_OUTPUT_OCTETS, 3_000_000_000).encode(&mut pkt);
+        RadiusAttribute::u32(attr_type::ACCT_INPUT_GIGAWORDS, 2).encode(&mut pkt);
+        RadiusAttribute::u32(attr_type::ACCT_OUTPUT_GIGAWORDS, 5).encode(&mut pkt);
+        RadiusAttribute::u32(attr_type::ACCT_SESSION_TIME, 7200).encode(&mut pkt);
+        let total = pkt.len() as u16;
+        pkt[2..4].copy_from_slice(&total.to_be_bytes());
+        sign_accounting_request(&mut pkt, b"giga-secret-12");
+        assert!(process_accounting_request(&db, &pkt, "127.0.0.1").await.is_some());
+
+        // STOP at >2^32 total each direction, advancing past the interim totals:
+        // input 6 GiGa + 5e9 low, output 5 GiGa + 3e9 low. Low 32-bit values are
+        // reduced modulo 2^32 because RADIUS carries 32-bit counters.
+        let mut stop = BytesMut::new();
+        stop.put_u8(codes::ACCOUNTING_REQUEST);
+        stop.put_u8(23);
+        stop.put_u16(0);
+        stop.extend_from_slice(&[0u8; 16]);
+        RadiusAttribute::string(attr_type::USER_NAME, "giga-user").encode(&mut stop);
+        RadiusAttribute::string(attr_type::ACCT_SESSION_ID, "sess-giga-001").encode(&mut stop);
+        RadiusAttribute::u32(attr_type::ACCT_STATUS_TYPE, acct_status::STOP).encode(&mut stop);
+        // Low 32 bits of the input counter: 5_000_000_000 mod 2^32 = 705_032_704.
+        RadiusAttribute::u32(attr_type::ACCT_INPUT_OCTETS, 705_032_704).encode(&mut stop);
+        RadiusAttribute::u32(attr_type::ACCT_OUTPUT_OCTETS, 3_000_000_000).encode(&mut stop);
+        RadiusAttribute::u32(attr_type::ACCT_INPUT_GIGAWORDS, 6).encode(&mut stop);
+        RadiusAttribute::u32(attr_type::ACCT_OUTPUT_GIGAWORDS, 5).encode(&mut stop);
+        RadiusAttribute::u32(attr_type::ACCT_SESSION_TIME, 9000).encode(&mut stop);
+        let total = stop.len() as u16;
+        stop[2..4].copy_from_slice(&total.to_be_bytes());
+        sign_accounting_request(&mut stop, b"giga-secret-12");
+        assert!(process_accounting_request(&db, &stop, "127.0.0.1").await.is_some());
+
+        let sessions = db.list_sessions().await.unwrap();
+        assert_eq!(sessions.len(), 1);
+        let sess = &sessions[0];
+        // 6 * 2^32 + 5e9 low bits (the low u32 is 5_000_000_000 mod 2^32 = 705_032_704).
+        let expected_input = 6i64 * (1i64 << 32) + 705_032_704i64;
+        assert_eq!(sess.acct_input_octets64, expected_input);
+        assert_eq!(sess.acct_output_octets64, 5i64 * (1i64 << 32) + 3_000_000_000i64);
+        assert_eq!(sess.status, "closed");
+    }
+
+    #[tokio::test]
+    async fn quota_consumes_gigaword_normalized_counters() {
+        let (_dir, db) = test_db().await;
+        db.upsert_subscriber(&UpsertSubscriberRequest {
+            username: "giga-quota".to_string(),
+            password: "pass".to_string(),
+            connection_type: Some("pppoe".to_string()),
+            framed_ip: Some("100.64.7.2".to_string()),
+            download_kbps: Some(1024),
+            upload_kbps: Some(1024),
+            status: Some("active".to_string()),
+        })
+        .await
+        .unwrap();
+        sqlx::query("UPDATE subscribers SET quota_bytes = 10000000000 WHERE username = 'giga-quota'")
+            .execute(db.pool())
+            .await
+            .unwrap();
+
+        // Interim with 1 GiGa wrap in each direction + 100MB low bits each.
+        db.record_accounting(
+            "sess-giga-quota",
+            "giga-quota",
+            "127.0.0.1",
+            None,
+            Some("100.64.7.2".to_string()),
+            None,
+            acct_status::INTERIM_UPDATE,
+            combine_gigawords(100_000_000, Some(1)),
+            combine_gigawords(100_000_000, Some(1)),
+            600,
+            None,
+        )
+        .await
+        .unwrap();
+        db.accumulate_quota_usage("giga-quota").await.unwrap();
+
+        let usage: i64 =
+            sqlx::query_scalar("SELECT quota_used_bytes FROM subscribers WHERE username = 'giga-quota'")
+                .fetch_one(db.pool())
+                .await
+                .unwrap();
+        // Must include the wrapped high bits: (2^32 + 1e8) * 2, not 2e8.
+        assert_eq!(usage, 2i64 * ((1i64 << 32) + 100_000_000));
+    }
+
+    #[tokio::test]
+    async fn stale_and_duplicate_interim_do_not_regress_counters() {
+        let (_dir, db) = test_db().await;
+        let session = "sess-ordering-001";
+        let user = "ordering-user";
+
+        // A newer interim advances both directions and session time.
+        db.record_accounting(
+            session,
+            user,
+            "127.0.0.1",
+            None,
+            None,
+            None,
+            acct_status::INTERIM_UPDATE,
+            5_000_000_000,
+            3_000_000_000,
+            3600,
+            None,
+        )
+        .await
+        .unwrap();
+
+        // A replayed older interim, then an exact duplicate, must be no-ops.
+        for (input, output, time) in [(1_000_000_000i64, 500_000_000i64, 1200i64), (5_000_000_000, 3_000_000_000, 3600)] {
+            db.record_accounting(
+                session,
+                user,
+                "127.0.0.1",
+                None,
+                None,
+                None,
+                acct_status::INTERIM_UPDATE,
+                input,
+                output,
+                time,
+                None,
+            )
+            .await
+            .unwrap();
+        }
+
+        let rows = db.list_sessions().await.unwrap();
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0].acct_input_octets64, 5_000_000_000);
+        assert_eq!(rows[0].acct_output_octets64, 3_000_000_000);
+        assert_eq!(rows[0].acct_session_time, 3600);
+    }
+
+    #[tokio::test]
+    async fn nas_reboot_with_new_session_id_keeps_separate_counter_history() {
+        let (_dir, db) = test_db().await;
+        let user = "reboot-user";
+        db.record_accounting(
+            "sess-before-reboot",
+            user,
+            "127.0.0.1",
+            None,
+            None,
+            None,
+            acct_status::INTERIM_UPDATE,
+            9_000_000_000,
+            9_000_000_000,
+            5000,
+            None,
+        )
+        .await
+        .unwrap();
+        // Counters restart near zero after a NAS reboot; a new Acct-Session-Id
+        // represents a new session and must not be clamped to the old totals.
+        db.record_accounting(
+            "sess-after-reboot",
+            user,
+            "127.0.0.1",
+            None,
+            None,
+            None,
+            acct_status::INTERIM_UPDATE,
+            100,
+            200,
+            10,
+            None,
+        )
+        .await
+        .unwrap();
+
+        let rows = db.list_sessions().await.unwrap();
+        assert_eq!(rows.len(), 2);
+        let fresh = rows
+            .iter()
+            .find(|row| row.session_id == "sess-after-reboot")
+            .expect("new session row exists");
+        assert_eq!(fresh.acct_input_octets64, 100);
+        assert_eq!(fresh.acct_output_octets64, 200);
     }
 }

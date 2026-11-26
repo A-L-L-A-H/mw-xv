@@ -12,7 +12,8 @@ import {
   TelemetrySpan,
   TelemetryState,
 } from '../src/models.js';
-import { SqlTelemetryStore } from '../src/sql-store.js';
+import { QoderTelemetryBridge } from '../src/qoder.js';
+import { SqlIngestCredentialRegistry, SqlTelemetryStore } from '../src/sql-store.js';
 import { createSqliteTelemetryStore } from '../src/sqlite.js';
 import type { MetricSeries, SpanRecord } from '../src/types.js';
 import { makeLog, makePoint, makeSeries, makeSpan, NOW_MS } from './fixtures.js';
@@ -74,7 +75,7 @@ describe('SQLite telemetry persistence', () => {
     const db = await createDatabase();
     const store = new SqlTelemetryStore(db, { now: () => NOW_MS });
     try {
-      expect(observabilityAddon).toMatchObject({ name: 'observability', version: '1.0.0' });
+      expect(observabilityAddon).toMatchObject({ name: 'observability', version: '1.1.0' });
       expect(observabilityAddon.depends).toEqual([]);
       for (const table of [
         TelemetrySpan.tableName,
@@ -95,10 +96,10 @@ describe('SQLite telemetry persistence', () => {
         TelemetryState.tableName,
       ]);
       const expectedUniques = new Map([
-        [TelemetrySpan.tableName, ['trace_id', 'span_id']],
-        [TelemetryLog.tableName, ['log_id']],
-        [TelemetryMetricSeries.tableName, ['series_id']],
-        [TelemetryMetricPoint.tableName, ['series_id', 'timestamp_ms']],
+        [TelemetrySpan.tableName, ['tenant_key', 'trace_id', 'span_id']],
+        [TelemetryLog.tableName, ['tenant_key', 'log_id']],
+        [TelemetryMetricSeries.tableName, ['tenant_key', 'series_id']],
+        [TelemetryMetricPoint.tableName, ['series_key', 'timestamp_ms']],
         [TelemetryState.tableName, ['key']],
       ]);
       for (const [table, columns] of expectedUniques) {
@@ -126,7 +127,7 @@ describe('SQLite telemetry persistence', () => {
         value: 0,
       });
       expect(await db('_orm_addons').where({ name: 'observability' }).first()).toMatchObject({
-        version: '1.0.0',
+        version: '1.1.0',
         status: 'installed',
       });
     } finally {
@@ -220,6 +221,56 @@ describe('SQLite telemetry persistence', () => {
     await Promise.all([store.close(), store.close()]);
     await store.close();
     expect(destroy).toHaveBeenCalledTimes(1);
+  });
+
+  it('correlates Qoder hooks across store restart without retaining private content', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'mw-observability-correlation-'));
+    temporaryDirectories.push(directory);
+    const filename = join(directory, 'telemetry.sqlite');
+    let now = NOW_MS;
+    let store = await createSqliteTelemetryStore({ filename, now: () => now });
+    try {
+      await new QoderTelemetryBridge({ store, now: () => now }).handle({
+        hook_event_name: 'UserPromptSubmit', session_id: 'cross-replica', prompt: 'private prompt', agent_type: 'researcher',
+      }, { tenantId: 7 });
+      await store.close();
+      now += 50;
+      store = await createSqliteTelemetryStore({ filename, now: () => now });
+      await new QoderTelemetryBridge({ store, now: () => now }).handle({
+        hook_event_name: 'Stop', session_id: 'cross-replica', last_assistant_message: 'private response',
+      }, { tenantId: 7 });
+      const page = await store.listTraces({ scope: { global: false, tenantId: 7 } });
+      expect(page.items).toHaveLength(1);
+      expect(page.items[0]).toMatchObject({ rootName: 'qoder.prompt', spanCount: 1, durationMs: 50, tenantId: 7 });
+      expect(JSON.stringify(page)).not.toContain('private prompt');
+      expect(JSON.stringify(page)).not.toContain('private response');
+      expect((await store.listTraces({ scope: { global: false, tenantId: 8 } })).items).toHaveLength(0);
+      expect(await store.status()).toMatchObject({ storage: 'ok', correlation: 'ok', pendingCorrelations: 0 });
+    } finally {
+      await store.close();
+    }
+  });
+
+  it('provisions hashed tenant credentials and rejects expired or revoked tokens', async () => {
+    let now = NOW_MS;
+    const db = await createDatabase();
+    const registry = new SqlIngestCredentialRegistry(db, () => now);
+    try {
+      const created = await registry.create({ name: 'tenant-seven', companyId: 7, userId: 70, expiresAt: new Date(now + 1_000).toISOString() });
+      expect(created.token).toMatch(/^mwobs_/u);
+      expect(await registry.lookup(created.token)).toEqual({ id: created.credential.id, companyId: 7, userId: 70 });
+      expect(await registry.lookup('mwobs_invalid')).toBeUndefined();
+      const row = await db('observability_ingest_credentials').first('token_hash');
+      expect(row.token_hash).not.toBe(created.token);
+      expect(JSON.stringify(await registry.list())).not.toContain(created.token);
+      expect(await registry.revoke(created.credential.id)).toBe(true);
+      expect(await registry.lookup(created.token)).toBeUndefined();
+      const expiring = await registry.create({ name: 'expiring', companyId: 8, expiresAt: new Date(now + 1_000).toISOString() });
+      now += 1_001;
+      expect(await registry.lookup(expiring.token)).toBeUndefined();
+    } finally {
+      await db.destroy();
+    }
   });
 
   it('supports the in-memory SQLite factory', async () => {

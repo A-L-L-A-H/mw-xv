@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "generatedFrom": "apps/*/package.json and packages/*/package.json",
-  "sourceSha256": "99edf4004ce5be8bb48f7ab73a4da00795fb553c42f5951692add7c13ef4fbfb",
+  "sourceSha256": "7b794268908bc76bcffb47eaab89344ac08f5971258635cc8d66d4380af9b764",
   "packages": [
     {
       "name": "@moonwitness/agent-observability",
@@ -226,6 +226,12 @@
       "manifest": "packages/orm-helpdesk"
     },
     {
+      "name": "@moonwitness/orm-identity",
+      "kind": "package",
+      "version": "1.0.0-rc.1",
+      "manifest": "packages/orm-identity"
+    },
+    {
       "name": "@moonwitness/orm-income-ledger",
       "kind": "package",
       "version": "1.0.0",
@@ -346,6 +352,12 @@
       "manifest": "packages/orm-workflow"
     },
     {
+      "name": "@moonwitness/plan-taskos",
+      "kind": "package",
+      "version": "1.0.0-rc.1",
+      "manifest": "packages/plan-taskos"
+    },
+    {
       "name": "@moonwitness/research",
       "kind": "package",
       "version": "1.0.0-rc.1",
@@ -374,12 +386,42 @@
       "kind": "app",
       "version": "1.0.0-rc.1",
       "manifest": "apps/whatsapp"
+    },
+    {
+      "name": "paas-template-pack-bigbear",
+      "kind": "package",
+      "version": "1.0.0",
+      "manifest": "packages/paas-template-pack-bigbear"
+    },
+    {
+      "name": "paas-template-pack-coolify",
+      "kind": "package",
+      "version": "1.0.0",
+      "manifest": "packages/paas-template-pack-coolify"
+    },
+    {
+      "name": "paas-template-pack-dokploy",
+      "kind": "package",
+      "version": "1.0.0",
+      "manifest": "packages/paas-template-pack-dokploy"
+    },
+    {
+      "name": "paas-template-pack-moonwitness",
+      "kind": "package",
+      "version": "1.0.0",
+      "manifest": "packages/paas-template-pack-moonwitness"
     }
   ],
   "dependencies": [
     {
       "from": "@moonwitness/agent-observability",
       "to": "@moonwitness/orm-observability",
+      "kind": "runtime",
+      "manifest": "apps/agent-observability"
+    },
+    {
+      "from": "@moonwitness/agent-observability",
+      "to": "@moonwitness/plan-taskos",
       "kind": "runtime",
       "manifest": "apps/agent-observability"
     },
@@ -442,12 +484,6 @@
       "to": "@moonwitness/types",
       "kind": "runtime",
       "manifest": "packages/ai-mcp"
-    },
-    {
-      "from": "@moonwitness/ai-runtime",
-      "to": "@moonwitness/logger",
-      "kind": "runtime",
-      "manifest": "packages/ai-runtime"
     },
     {
       "from": "@moonwitness/ai-runtime",
@@ -793,6 +829,12 @@
     },
     {
       "from": "@moonwitness/desktop",
+      "to": "@moonwitness/plan-taskos",
+      "kind": "runtime",
+      "manifest": "apps/desktop"
+    },
+    {
+      "from": "@moonwitness/desktop",
       "to": "@moonwitness/types",
       "kind": "runtime",
       "manifest": "apps/desktop"
@@ -836,6 +878,12 @@
     {
       "from": "@moonwitness/mcp-moonwitness",
       "to": "@moonwitness/orm",
+      "kind": "runtime",
+      "manifest": "packages/mcp-moonwitness"
+    },
+    {
+      "from": "@moonwitness/mcp-moonwitness",
+      "to": "@moonwitness/plan-taskos",
       "kind": "runtime",
       "manifest": "packages/mcp-moonwitness"
     },
@@ -1104,6 +1152,12 @@
       "manifest": "packages/orm-cloud"
     },
     {
+      "from": "@moonwitness/orm-cloud",
+      "to": "paas-template-pack-coolify",
+      "kind": "runtime",
+      "manifest": "packages/orm-cloud"
+    },
+    {
       "from": "@moonwitness/orm-compliance",
       "to": "@moonwitness/orm",
       "kind": "runtime",
@@ -1210,6 +1264,18 @@
       "to": "@moonwitness/types",
       "kind": "runtime",
       "manifest": "packages/orm-helpdesk"
+    },
+    {
+      "from": "@moonwitness/orm-identity",
+      "to": "@moonwitness/orm",
+      "kind": "runtime",
+      "manifest": "packages/orm-identity"
+    },
+    {
+      "from": "@moonwitness/orm-identity",
+      "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "packages/orm-identity"
     },
     {
       "from": "@moonwitness/orm-income-ledger",
@@ -1448,6 +1514,12 @@
     {
       "from": "@moonwitness/orm-project",
       "to": "@moonwitness/orm-workflow",
+      "kind": "runtime",
+      "manifest": "packages/orm-project"
+    },
+    {
+      "from": "@moonwitness/orm-project",
+      "to": "@moonwitness/plan-taskos",
       "kind": "runtime",
       "manifest": "packages/orm-project"
     },
@@ -1716,6 +1788,12 @@
       "manifest": "packages/orm-workflow"
     },
     {
+      "from": "@moonwitness/plan-taskos",
+      "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "packages/plan-taskos"
+    },
+    {
       "from": "@moonwitness/research",
       "to": "@moonwitness/knowledge",
       "kind": "runtime",
@@ -1747,6 +1825,12 @@
     },
     {
       "from": "@moonwitness/whatsapp",
+      "to": "@moonwitness/assets",
+      "kind": "runtime",
+      "manifest": "apps/whatsapp"
+    },
+    {
+      "from": "@moonwitness/whatsapp",
       "to": "@moonwitness/logger",
       "kind": "runtime",
       "manifest": "apps/whatsapp"
@@ -1772,6 +1856,12 @@
     {
       "from": "@moonwitness/whatsapp",
       "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "apps/whatsapp"
+    },
+    {
+      "from": "@moonwitness/whatsapp",
+      "to": "@moonwitness/ui",
       "kind": "runtime",
       "manifest": "apps/whatsapp"
     }

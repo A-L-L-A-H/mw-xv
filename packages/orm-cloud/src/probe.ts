@@ -1,4 +1,5 @@
 import { DEFAULT_CONTROL_PLANE_URL, MILLISECONDS_PER_MINUTE } from '@moonwitness/types';
+import { isLoopbackHostname, isPrivateMeshIp, type PrivateMeshIpOptions } from '@moonwitness/types';
 import { controlPlaneAuthHeaders, recordCloudOperation, resolveControlPlaneToken } from './auth.js';
 import { CloudDeploymentTarget } from './models/index.js';
 
@@ -73,34 +74,20 @@ function inCidr(host: string, cidr: string): boolean {
   return (hostValue & mask) === (networkValue & mask);
 }
 
-function isPrivateIp(host: string): boolean {
-  const value = ipv4ToInt(host);
-  if (value !== undefined) {
-    const [a, b] = host.split('.').map(Number);
-    if (a === 10 || a === 127) return true;
-    if (a === 172 && b !== undefined && b >= 16 && b <= 31) return true;
-    if (a === 192 && b === 168) return true;
-    if (a === 100 && b !== undefined && b >= 64 && b <= 127) return true;
-    return false;
-  }
-  // IPv6 unique-local (fc00::/7) and loopback.
-  return host === '::1' || /^f[cd][0-9a-f:]+$/iu.test(host);
-}
-
 /** SSRF boundary used by every outbound probe, including redirects. */
 export function isAllowedProbeHost(rawHost: string, policy: ProbeTargetPolicy = {}): boolean {
   const host = normalizeHost(rawHost);
   if (!host) return false;
   const allowed = (policy.allowedHosts ?? []).map(normalizeHost);
   if (allowed.includes(host)) return true;
-  if (
-    (policy.allowLoopback ?? true) &&
-    (host === 'localhost' || (isPrivateIp(host) && host.startsWith('127.')))
-  ) {
-    return true;
-  }
-  if (host === '::1' && (policy.allowLoopback ?? true)) return true;
-  if ((policy.allowPrivateRanges ?? false) && isPrivateIp(host)) return true;
+
+  const privateMeshOptions: PrivateMeshIpOptions = {
+    allowLoopback: policy.allowLoopback ?? true,
+  };
+
+  if (isLoopbackHostname(host, { allowIpv4LoopbackSubnet: privateMeshOptions.allowLoopback })) return true;
+  if (policy.allowPrivateRanges && isPrivateMeshIp(host, privateMeshOptions)) return true;
+
   return (policy.allowedCidrs ?? []).some((cidr) => inCidr(host, cidr));
 }
 

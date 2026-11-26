@@ -32,6 +32,7 @@ export interface DesktopCliOptions {
   readonly apiPort?: number;
   readonly offlineMode: boolean;
   readonly installAddonsOnStart: boolean;
+  readonly serveWeb?: boolean;
 }
 
 export interface DesktopSidecarDaemonHandle {
@@ -39,6 +40,7 @@ export interface DesktopSidecarDaemonHandle {
   readonly apiUrl: string;
   readonly mcpUrl: string;
   readonly healthUrl: string;
+  readonly observatoryUrl?: string;
   readonly healthPort: number;
   readonly rpcToken: string;
   readonly sqlitePath: string;
@@ -63,9 +65,13 @@ export function parseDesktopCliArgs(
       : undefined;
   let offlineMode = env.MW_DESKTOP_OFFLINE === 'true';
   let installAddonsOnStart = env.MW_DESKTOP_SKIP_ADDONS !== 'true';
+  let serveWeb = env.MW_DESKTOP_SERVE_WEB === 'true';
 
   let startIndex = 0;
-  if (argv[0] === 'mcp') {
+  if (argv[0] === 'serve') {
+    subcommand = 'serve';
+    startIndex = 1;
+  } else if (argv[0] === 'mcp') {
     subcommand = 'mcp';
     startIndex = 1;
   } else if (argv[0] === 'import') {
@@ -106,6 +112,8 @@ export function parseDesktopCliArgs(
       offlineMode = true;
     } else if (arg === '--skip-addons') {
       installAddonsOnStart = false;
+    } else if (arg === '--serve-web') {
+      serveWeb = true;
     } else if (subcommand === 'import' && !importPath && arg && !arg.startsWith('--')) {
       importPath = arg;
     }
@@ -123,6 +131,7 @@ export function parseDesktopCliArgs(
     ...(apiPort !== undefined ? { apiPort } : {}),
     offlineMode,
     installAddonsOnStart,
+    serveWeb,
   };
 }
 
@@ -148,10 +157,16 @@ export async function startDesktopSidecarDaemon(
       await bridge.sidecar.initializeOrmAddons();
     }
 
+    const serveWebDistDir = options.serveWeb
+      ? path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../dist-board')
+      : undefined;
+
     apiServer = await startLocalApiServer({
       bridge,
       host: '127.0.0.1',
       port: effectivePort,
+      repoRoot: options.repoRoot,
+      ...(serveWebDistDir ? { serveWebDistDir } : {}),
     });
 
     let stopped = false;
@@ -169,6 +184,9 @@ export async function startDesktopSidecarDaemon(
       apiUrl: apiServer.apiUrl,
       mcpUrl: apiServer.mcpUrl,
       healthUrl: apiServer.healthUrl,
+      ...(options.serveWeb
+        ? { observatoryUrl: `${apiServer.apiUrl}/board/desktop/observatory` }
+        : {}),
       healthPort: apiServer.port,
       rpcToken: apiServer.rpcToken,
       sqlitePath: options.sqlitePath,
@@ -282,6 +300,7 @@ async function runCliMain(): Promise<void> {
       apiUrl: daemon.apiUrl,
       mcpUrl: daemon.mcpUrl,
       healthUrl: daemon.healthUrl,
+      ...(daemon.observatoryUrl ? { observatoryUrl: daemon.observatoryUrl } : {}),
       sqlitePath: daemon.sqlitePath,
       rpcToken: daemon.rpcToken,
     })}\n`

@@ -1,0 +1,13 @@
+{
+  "name": "paas-template-pack-bigbear",
+  "version": "1.0.0",
+  "description": "BigBearCasaOS app templates (docker compose + x-casaos metadata) pack untuk PaaS control plane MoonWitness.",
+  "source": {
+    "repository": "https://github.com/toricorn/big-bear-casaos",
+    "path": "Apps",
+    "license": "MIT"
+  },
+  "files": [
+    "apps/"
+  ]
+}

@@ -1,0 +1,45 @@
+# Lago — open-source meter-to-cash & subscription billing platform.
+# B2B billing + API usage metering: pelengkap orm-subscription & orm-income-ledger.
+services:
+  lago-api:
+    image: getlago/lago-api:v1
+    expose:
+      - '3000'
+    environment:
+      - DATABASE_URL=postgresql://lago:${SERVICE_PASSWORD_DB}@lago-db:5432/lago
+      - REDIS_URL=redis://:${SERVICE_PASSWORD_REDIS}@lago-redis:6379
+      - SECRET_KEY_BASE=${SERVICE_PASSWORD_SECRET}
+      - LAGO_API_URL=${SERVICE_FQDN_API}
+    depends_on:
+      lago-db:
+        condition: service_healthy
+      lago-redis:
+        condition: service_started
+  lago-front:
+    image: getlago/lago-front:v1
+    expose:
+      - '80'
+    environment:
+      - API_URL=${SERVICE_FQDN_API}
+  lago-db:
+    image: postgres:16-alpine
+    expose:
+      - '5432'
+    environment:
+      - POSTGRES_USER=lago
+      - POSTGRES_PASSWORD=${SERVICE_PASSWORD_DB}
+      - POSTGRES_DB=lago
+    volumes:
+      - lago-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U lago']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  lago-redis:
+    image: redis:7-alpine
+    command: ['redis-server', '--requirepass', '${SERVICE_PASSWORD_REDIS}']
+    expose:
+      - '6379'
+volumes:
+  lago-db:

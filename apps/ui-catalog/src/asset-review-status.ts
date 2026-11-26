@@ -23,6 +23,8 @@ export type AssetProvenanceEntry = {
   path: string;
   status?: string;
   license?: string;
+  termsVerified?: boolean;
+  distribution?: string;
   [key: string]: unknown;
 };
 
@@ -54,7 +56,16 @@ export function resolveAssetReviewStatus(
   if (provenanceStatus && BLOCKED_PROVENANCE_STATUSES.has(provenanceStatus)) {
     return 'blocked';
   }
-  if (provenance && (!license || UNVERIFIED_LICENSES.has(license))) {
+  if (provenance && provenanceStatus !== 'approved' && provenanceStatus !== 'review') {
+    return 'unverified';
+  }
+  if (
+    provenance &&
+    (!license ||
+      UNVERIFIED_LICENSES.has(license) ||
+      (license !== 'isc' &&
+        (provenance.termsVerified !== true || !provenance.distribution?.trim())))
+  ) {
     return 'unverified';
   }
   if (provenanceStatus === 'review') {
@@ -68,7 +79,12 @@ export function resolveAssetReviewStatus(
   if (manifestStatus === 'review') {
     return 'review';
   }
-  if (manifestStatus === 'approved' && license === 'isc') {
+  if (
+    manifestStatus === 'approved' &&
+    provenanceStatus === 'approved' &&
+    license &&
+    !UNVERIFIED_LICENSES.has(license)
+  ) {
     return 'approved';
   }
   return 'unverified';
@@ -95,5 +111,15 @@ export function resolveAssetReviewStatuses(
 export function buildProvenanceIndex(
   sourceAssets: AssetProvenanceEntry[]
 ): Map<string, AssetProvenanceEntry> {
-  return new Map(sourceAssets.map((entry) => [entry.path, entry]));
+  const resolved = new Map<string, AssetProvenanceEntry>();
+  const ambiguous = new Set<string>();
+  for (const entry of sourceAssets) {
+    if (resolved.has(entry.path)) {
+      resolved.delete(entry.path);
+      ambiguous.add(entry.path);
+    } else if (!ambiguous.has(entry.path)) {
+      resolved.set(entry.path, entry);
+    }
+  }
+  return resolved;
 }
