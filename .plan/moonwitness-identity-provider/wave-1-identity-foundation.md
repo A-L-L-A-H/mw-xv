@@ -201,7 +201,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
     - Manual verification: identity schema `account` table uses UUID primary key, opaque unique subject, status/timestamps and status index; no password, CRM or permission fields; model lifecycle tests verify immutable subject
     - Commit: 8d95e2a5 feat(identity): add identity account model and migration for I14
 
-#### - [ ] I15 — Add identity.identifier model and uniqueness constraints
+#### - [x] I15 — Add identity.identifier model and uniqueness constraints
 
 - **Owner File(s):** packages/orm-identity/src/models/identifier.ts; packages/orm-identity/src/models/identifier.test.ts; apps/id/src/database/migrations/*identifier*
 - **Depends On:** I14
@@ -213,12 +213,18 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - Represent verification state and primary identifier status without exposing enumeration details through public endpoints.
 - **DO NOT:** Do not use business Partner.email as the source of truth or auto-link records by email.
 - **Acceptance Criteria:**
-  - [ ] Duplicate normalized identifiers are rejected by DB constraints.
-  - [ ] Normalization behavior has tests for case and whitespace.
-  - [ ] Identifier records reference exactly one identity.account.
+  - [x] Duplicate normalized identifiers are rejected by DB constraints.
+  - [x] Normalization behavior has tests for case and whitespace.
+  - [x] Identifier records reference exactly one identity.account.
 - **Verify:** bun --filter @moonwitness/orm-identity test; bun --filter @moonwitness/id test.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
+  - **Evidence:**
+    - Command: bun --filter @moonwitness/orm-identity test — passed (3 files, 12 tests)
+    - Command: bun --filter @moonwitness/id test — passed (5 files, 20 tests)
+    - Command: bun --filter @moonwitness/orm-identity build — passed (tsc exited 0)
+    - Command: bun --filter @moonwitness/id build — passed (tsc exited 0)
+    - Manual verification: email/username normalization, unique (type, value) DB constraint, account FK, verification/primary flags, no Partner reference or email auto-link
+    - Commit: PENDING_I15_COMMIT
 
 #### - [ ] I16 — Add identity.credential and password-hash adapter
 
