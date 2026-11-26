@@ -12,7 +12,7 @@ jobs:
   sync:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 45
     permissions:
       contents: write
       actions: write
@@ -53,3 +53,4 @@ jobs:
           gh workflow run ci.yml --repo "$GH_REPO" --ref dev
           node scripts/release-await-ci.mjs --sha "$after" --repo "$GH_REPO" \
             --checks '["ci-gate"]' --timeout-seconds 1800 --interval-seconds 30
+          gh workflow run promote.yml --repo "$GH_REPO" --ref dev -f expected_sha="$after"
