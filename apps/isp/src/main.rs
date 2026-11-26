@@ -2286,4 +2286,159 @@ mod tests {
             "Recovered server must not carry over withheld counters"
         );
     }
+
+    // ---- M19.06: 64-bit counters and Gigawords ----
+
+    #[test]
+    fn combine_gigawords_normalizes_64_bit_totals() {
+        // No Gigawords attribute: plain 32-bit value.
+        assert_eq!(combine_gigawords(102_400, None), 102_400);
+        // One wrap: 1 * 2^32 + low bits.
+        assert_eq!(combine_gigawords(0, Some(1)), 1i64 << 32);
+        assert_eq!(combine_gigawords(7, Some(1)), (1i64 << 32) + 7);
+        // Multi-GiB session: 3 wraps + 1_500_000_000 low octets.
+        assert_eq!(
+            combine_gigawords(1_500_000_000, Some(3)),
+            3i64 * (1i64 << 32) + 1_500_000_000
+        );
+    }
+
+    #[test]
+    fn gigawords_attributes_decode_to_64_bit_counters() {
+        let mut pkt = BytesMut::new();
+        pkt.put_u8(codes::ACCOUNTING_REQUEST);
+        pkt.put_u8(9);
+        pkt.put_u16(0);
+        pkt.extend_from_slice(&[0u8; 16]);
+        RadiusAttribute::string(at::ACCT_SESSION_ID, "sess-giga").encode(&mut pkt);
+        RadiusAttribute::u32(at::ACCT_STATUS_TYPE, acct_status::INTERIM_UPDATE).encode(&mut pkt);
+        RadiusAttribute::u32(at::ACCT_INPUT_OCTETS, 2_000_000_000).encode(&mut pkt);
+        RadiusAttribute::u32(at::ACCT_OUTPUT_OCTETS, 3_000_000_000).encode(&mut pkt);
+        RadiusAttribute::u32(at::ACCT_INPUT_GIGAWORDS, 2).encode(&mut pkt);
+        RadiusAttribute::u32(at::ACCT_OUTPUT_GIGAWORDS, 5).encode(&mut pkt);
+        let total = pkt.len() as u16;
+        pkt[2..4].copy_from_slice(&total.to_be_bytes());
+
+        let decoded = decode_packet(&pkt).unwrap();
+        let (input64, output64) = extract_octet_counters(&decoded);
+        assert_eq!(input64, 2i64 * (1i64 << 32) + 2_000_000_000);
+        assert_eq!(output64, 5i64 * (1i64 << 32) + 3_000_000_000);
+    }
+
+    #[tokio::test]
+    async fn gigaword_extended_accounting_persists_64_bit_totals() {
+        let (_dir, db) = test_db().await;
+        db.upsert_client("giga-nas", "127.0.0.1", "giga-secret-12")
+            .await
+            .unwrap();
+        db.upsert_subscriber(&UpsertSubscriberRequest {
+            username: "giga-user".to_string(),
+            password: "giga-pass".to_string(),
+            connection_type: Some("pppoe".to_string()),
+            framed_ip: Some("100.64.7.1".to_string()),
+            download_kbps: Some(1024),
+            upload_kbps: Some(1024),
+            status: Some("active".to_string()),
+        })
+        .await
+        .unwrap();
+
+        // START
+        let req = build_accounting_request(21, "giga-user", "sess-giga-001", acct_status::START, 0, 0, 0, b"giga-secret-12");
+        assert!(process_accounting_request(&db, &req, "127.0.0.1").await.is_some());
+
+        // INTERIM: input wrapped twice (2 GiGa + 2e9 low), output 5 GiGa + 3e9.
+        let mut pkt = BytesMut::new();
+        pkt.put_u8(codes::ACCOUNTING_REQUEST);
+        pkt.put_u8(22);
+        pkt.put_u16(0);
+        pkt.extend_from_slice(&[0u8; 16]);
+        RadiusAttribute::string(attr_type::USER_NAME, "giga-user").encode(&mut pkt);
+        RadiusAttribute::string(attr_type::ACCT_SESSION_ID, "sess-giga-001").encode(&mut pkt);
+        RadiusAttribute::u32(attr_type::ACCT_STATUS_TYPE, acct_status::INTERIM_UPDATE).encode(&mut pkt);
+        RadiusAttribute::u32(attr_type::ACCT_INPUT_OCTETS, 2_000_000_000).encode(&mut pkt);
+        RadiusAttribute::u32(attr_type::ACCT_OUTPUT_OCTETS, 3_000_000_000).encode(&mut pkt);
+        RadiusAttribute::u32(attr_type::ACCT_INPUT_GIGAWORDS, 2).encode(&mut pkt);
+        RadiusAttribute::u32(attr_type::ACCT_OUTPUT_GIGAWORDS, 5).encode(&mut pkt);
+        RadiusAttribute::u32(attr_type::ACCT_SESSION_TIME, 7200).encode(&mut pkt);
+        let total = pkt.len() as u16;
+        pkt[2..4].copy_from_slice(&total.to_be_bytes());
+        sign_accounting_request(&mut pkt, b"giga-secret-12");
+        assert!(process_accounting_request(&db, &pkt, "127.0.0.1").await.is_some());
+
+        // STOP at >2^32 total each direction (6 GiGa + 5e9 low / 2 GiGa + 1e9 low).
+        let mut stop = BytesMut::new();
+        stop.put_u8(codes::ACCOUNTING_REQUEST);
+        stop.put_u8(23);
+        stop.put_u16(0);
+        stop.extend_from_slice(&[0u8; 16]);
+        RadiusAttribute::string(attr_type::USER_NAME, "giga-user").encode(&mut stop);
+        RadiusAttribute::string(attr_type::ACCT_SESSION_ID, "sess-giga-001").encode(&mut stop);
+        RadiusAttribute::u32(attr_type::ACCT_STATUS_TYPE, acct_status::STOP).encode(&mut stop);
+        // Low 32 bits of the input counter: 5_000_000_000 mod 2^32 = 705_032_704.
+        RadiusAttribute::u32(attr_type::ACCT_INPUT_OCTETS, 705_032_704).encode(&mut stop);
+        RadiusAttribute::u32(attr_type::ACCT_OUTPUT_OCTETS, 1_000_000_000).encode(&mut stop);
+        RadiusAttribute::u32(attr_type::ACCT_INPUT_GIGAWORDS, 6).encode(&mut stop);
+        RadiusAttribute::u32(attr_type::ACCT_OUTPUT_GIGAWORDS, 2).encode(&mut stop);
+        RadiusAttribute::u32(attr_type::ACCT_SESSION_TIME, 9000).encode(&mut stop);
+        let total = stop.len() as u16;
+        stop[2..4].copy_from_slice(&total.to_be_bytes());
+        sign_accounting_request(&mut stop, b"giga-secret-12");
+        assert!(process_accounting_request(&db, &stop, "127.0.0.1").await.is_some());
+
+        let sessions = db.list_sessions().await.unwrap();
+        assert_eq!(sessions.len(), 1);
+        let sess = &sessions[0];
+        // 6 * 2^32 + 5e9 low bits (the low u32 is 5_000_000_000 mod 2^32 = 705_032_704).
+        let expected_input = 6i64 * (1i64 << 32) + 705_032_704i64;
+        assert_eq!(sess.acct_input_octets64, expected_input);
+        assert_eq!(sess.acct_output_octets64, 2i64 * (1i64 << 32) + 1_000_000_000i64);
+        assert_eq!(sess.status, "closed");
+    }
+
+    #[tokio::test]
+    async fn quota_consumes_gigaword_normalized_counters() {
+        let (_dir, db) = test_db().await;
+        db.upsert_subscriber(&UpsertSubscriberRequest {
+            username: "giga-quota".to_string(),
+            password: "pass".to_string(),
+            connection_type: Some("pppoe".to_string()),
+            framed_ip: Some("100.64.7.2".to_string()),
+            download_kbps: Some(1024),
+            upload_kbps: Some(1024),
+            status: Some("active".to_string()),
+        })
+        .await
+        .unwrap();
+        sqlx::query("UPDATE subscribers SET quota_bytes = 10000000000 WHERE username = 'giga-quota'")
+            .execute(db.pool())
+            .await
+            .unwrap();
+
+        // Interim with 1 GiGa wrap in each direction + 100MB low bits each.
+        db.record_accounting(
+            "sess-giga-quota",
+            "giga-quota",
+            "127.0.0.1",
+            None,
+            Some("100.64.7.2".to_string()),
+            None,
+            acct_status::INTERIM_UPDATE,
+            combine_gigawords(100_000_000, Some(1)),
+            combine_gigawords(100_000_000, Some(1)),
+            600,
+            None,
+        )
+        .await
+        .unwrap();
+        db.accumulate_quota_usage("giga-quota").await.unwrap();
+
+        let usage: i64 =
+            sqlx::query_scalar("SELECT quota_used_bytes FROM subscribers WHERE username = 'giga-quota'")
+                .fetch_one(db.pool())
+                .await
+                .unwrap();
+        // Must include the wrapped high bits: (2^32 + 1e8) * 2, not 2e8.
+        assert_eq!(usage, 2i64 * ((1i64 << 32) + 100_000_000));
+    }
 }
