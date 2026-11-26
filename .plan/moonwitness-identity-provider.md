@@ -81,7 +81,7 @@ Task dependencies are declared inside each playbook. Follow them exactly; the fi
 - [x] **I06** — Create the acceptance matrix and architecture exit gate
 
 ### Wave 1 — Identity foundation
-- [ ] **I07** — Scaffold packages/orm-identity
+- [x] **I07** — Scaffold packages/orm-identity
 - [ ] **I08** — Add ORM package exports, tests and build checks
 - [ ] **I09** — Scaffold apps/id service entry point
 - [ ] **I10** — Add strict Identity environment/config validation

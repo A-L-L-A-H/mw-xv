@@ -12,7 +12,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
 
 
 
-#### - [ ] I07 — Scaffold packages/orm-identity
+#### - [x] I07 — Scaffold packages/orm-identity
 
 - **Owner File(s):** packages/orm-identity/package.json; packages/orm-identity/tsconfig.json
 - **Depends On:** I06
@@ -24,12 +24,16 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - Keep this package data-model-only. It must not open a database connection or import apps/api.
 - **DO NOT:** Do not scaffold an API, install a second ORM, or add identity models to the business addon registry.
 - **Acceptance Criteria:**
-  - [ ] Workspace package resolves under the existing apps/* and packages/* globs.
-  - [ ] Manifest uses repository package conventions and Node 24.
-  - [ ] Package has no apps/api or UI dependency.
+  - [x] Workspace package resolves under the existing apps/* and packages/* globs.
+  - [x] Manifest uses repository package conventions and Node 24.
+  - [x] Package has no apps/api or UI dependency.
 - **Verify:** bun install --lockfile-only; bun --filter @moonwitness/orm-identity build.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
+- **Evidence:**
+  - Command: bun install --lockfile-only — passed (1060 packages resolved, lockfile saved)
+  - Command: bun --filter @moonwitness/orm-identity build — passed (tsc exited 0)
+  - Manual verification: package name, engines.node=24.x, type=module, exports, build/test scripts mirror orm-base conventions; dependencies limited to orm/types/objection + dev tooling; no apps/api or UI dependency; data-model-only
+  - Commit: <placeholder> feat(identity): scaffold orm-identity package for I07
 
 #### - [ ] I08 — Add ORM package exports, tests and build checks
 

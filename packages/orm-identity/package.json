@@ -1,0 +1,33 @@
+{
+  "name": "@moonwitness/orm-identity",
+  "version": "1.0.0-rc.1",
+  "description": "Identity-owned data models for MoonWitness Identity Provider",
+  "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "tsc -p tsconfig.check.json && vitest run"
+  },
+  "dependencies": {
+    "@moonwitness/orm": "workspace:*",
+    "@moonwitness/types": "workspace:*",
+    "objection": "^3.1.5"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "5.0.3",
+    "better-sqlite3": "^13.0.3",
+    "knex": "^3.3.0",
+    "typescript": "~5.7.3",
+    "vitest": "^5.0.3"
+  }
+}
