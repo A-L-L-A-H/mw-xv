@@ -88,7 +88,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - Manual verification: all cited source paths opened and confirmed current
   - Commit: 977e9a5c docs(identity): write legacy authentication surface inventory for I01
 
-#### - [ ] I04 — Define issuer, subject, audience, token and client contracts
+#### - [x] I04 — Define issuer, subject, audience, token and client contracts
 
 - **Owner File(s):** docs/architecture/identity/oidc-contract.md
 - **Depends On:** I02, I03
@@ -101,15 +101,15 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - Include illustrative non-production examples only; use reserved example domains and fake subjects.
 - **DO NOT:** Do not place company membership lists or complete model permissions in tokens; do not include real secrets or domains.
 - **Acceptance Criteria:**
-  - [ ] Contract covers access token, ID token and client types separately.
-  - [ ] All required claims and validation failures are explicit.
-  - [ ] Examples contain no production secrets.
+  - [x] Contract covers access token, ID token and client types separately.
+  - [x] All required claims and validation failures are explicit.
+  - [x] Examples contain no production secrets.
 - **Verify:** git diff --check; manually trace each claim to ADR-001.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:**
   - Command: git diff --check - passed
-  - Manual verification: all cited source paths opened and confirmed current
-  - Commit: 977e9a5c docs(identity): write legacy authentication surface inventory for I01
+  - Manual verification: every access-token and ID-token claim traced to ADR-001 (§9 of oidc-contract.md)
+  - Commit: <placeholder> docs(identity): define issuer subject audience token and client contracts for I04
 
 #### - [ ] I05 — Define the threat model and Platform/Tenant authorization boundary
 

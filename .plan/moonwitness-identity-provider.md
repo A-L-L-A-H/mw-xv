@@ -76,7 +76,7 @@ Task dependencies are declared inside each playbook. Follow them exactly; the fi
 - [x] **I01** — Re-verify the existing authentication surface and write a source-backed legacy inventory
 - [x] **I02** — Freeze Identity vs Business User ownership in ADR-001
 - [x] **I03** — Evaluate and select a maintained OIDC Provider implementation
-- [ ] **I04** — Define issuer, subject, audience, token and client contracts
+- [x] **I04** — Define issuer, subject, audience, token and client contracts
 - [ ] **I05** — Define the threat model and Platform/Tenant authorization boundary
 - [ ] **I06** — Create the acceptance matrix and architecture exit gate
 
