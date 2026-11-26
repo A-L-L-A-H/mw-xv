@@ -270,15 +270,15 @@ jobs:
           import { readFile } from 'node:fs/promises';
 
           const registry = JSON.parse(await readFile(process.env.TASKOS_CANDIDATE, 'utf8'));
-          assert.equal(registry.tasks.length, 679);
+          assert.equal(registry.tasks.length, 715);
           const statusCounts = Object.fromEntries(
             ['done', 'doing', 'todo', 'blocked'].map((status) => [
               status,
               registry.tasks.filter((task) => task.status === status).length,
             ])
           );
-          assert.deepEqual(statusCounts, { done: 469, doing: 49, todo: 119, blocked: 24 });
-          console.log('Validated 679 isolated TaskOS candidate records; canonical registry was not changed.');
+          assert.deepEqual(statusCounts, { done: 469, doing: 49, todo: 155, blocked: 24 });
+          console.log('Validated 715 isolated TaskOS candidate records; canonical registry was not changed.');
           NODE
           echo "candidate_generated=true" >> "$GITHUB_OUTPUT"
       - name: Validate canonical TaskOS registry and projections
