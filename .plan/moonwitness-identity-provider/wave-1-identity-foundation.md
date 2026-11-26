@@ -83,7 +83,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
     - Manual verification: Node 24 Fastify service with build/dev/start/test scripts; injectable logger, config and database; no business routes/addon imports; smoke tests cover startup/shutdown
     - Commit: 589c4c59 feat(id): scaffold apps/id service entry point for I09
 
-#### - [ ] I10 — Add strict Identity environment and configuration validation
+#### - [x] I10 — Add strict Identity environment and configuration validation
 
 - **Owner File(s):** apps/id/src/config/env.ts; apps/id/src/config/env.test.ts
 - **Depends On:** I09
@@ -95,12 +95,16 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - Redact credentials in all configuration validation errors.
 - **DO NOT:** Do not add real secret values, silently fall back to shared DB credentials, or log full connection URLs.
 - **Acceptance Criteria:**
-  - [ ] Valid configuration parses to a typed immutable object.
-  - [ ] Missing production database URL and invalid issuer URL fail closed.
-  - [ ] Error output never includes DB credentials or secret values.
+  - [x] Valid configuration parses to a typed immutable object.
+  - [x] Missing production database URL and invalid issuer URL fail closed.
+  - [x] Error output never includes DB credentials or secret values.
 - **Verify:** bun --filter @moonwitness/id test; bun --filter @moonwitness/id build.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
+  - **Evidence:**
+    - Command: bun --filter @moonwitness/id test — passed (2 files, 10 tests)
+    - Command: bun --filter @moonwitness/id build — passed (tsc exited 0)
+    - Manual verification: immutable typed config; explicit key-provider mode; no DATABASE_URL fallback; production requires HTTPS non-local issuer and external keys; all errors redact credentials/query values
+    - Commit: PENDING_I10_COMMIT
 
 #### - [ ] I11 — Add a dedicated Identity PostgreSQL connection
 
