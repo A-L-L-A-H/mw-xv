@@ -127,7 +127,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
     - Command: bun --filter @moonwitness/id test — passed (3 files, 14 tests)
     - Command: bun --filter @moonwitness/id build — passed (tsc exited 0)
     - Manual verification: Knex `pg` factory only reads IDENTITY_DATABASE_URL, rejects equality with DATABASE_URL, supports injected pool settings and closes once without a live database
-    - Commit: PENDING_I11_COMMIT
+    - Commit: 1cddc7c5 feat(id): add dedicated identity database connection for I11
 
 #### - [ ] I12 — Add liveness and readiness endpoints
 
