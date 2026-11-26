@@ -111,7 +111,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - Command: `bun --filter @moonwitness/id build` — passed (tsc exited 0)
   - Integration test using an isolated Identity DB: not run; no isolated PostgreSQL harness is configured in this environment. Atomicity and fail-closed behavior are covered with deterministic transaction/delegation mocks.
   - Manual verification: POST `/setup/claim` accepts only bounded fields, requires HTTPS in production, hashes the token once before delegating to the atomic first-owner transaction, returns only generic completion/next-step output, and records only redacted field names in logs; no access token is issued and no public registration route exists.
-  - Commit: pending I25 implementation commit
+  - Commit: 0b7c8d54 feat(identity): add single-use bootstrap claim endpoint for I25
 
 #### - [ ] I26 — Add the minimal first-install setup page
 
