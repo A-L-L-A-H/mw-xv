@@ -623,8 +623,9 @@ export async function enforceOverdueSubscriberSuspensions(
       disconnectDispatched = result.ok;
       if (result.ok) {
         await ISPRadiusOutbox.query().findById(outbox.id).patch({
-          status: 'sent',
+          status: 'acknowledged',
           sent_at: isoNow(),
+          acknowledged_at: isoNow(),
           error_message: null,
         });
         dispatched += 1;
@@ -632,7 +633,10 @@ export async function enforceOverdueSubscriberSuspensions(
         await ISPRadiusOutbox.query()
           .findById(outbox.id)
           .patch({
-            status: 'failed',
+            status:
+              result.outcome === 'retryable_failure' || result.outcome === 'timed_out'
+                ? 'retryable_failure'
+                : result.outcome,
             error_message: result.errorMessage ?? 'Overdue suspension disconnect failed',
           });
         dispatchFailures += 1;

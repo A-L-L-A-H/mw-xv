@@ -20,11 +20,13 @@ use std::fmt;
 
 /// Current contract schema version. Receivers reject envelopes whose
 /// `schema_version` does not match (unsupported version).
+#[allow(dead_code)]
 pub const CONTRACT_SCHEMA_VERSION: u16 = 1;
 
 /// Operations relevant to RADIUS/DHCP/DNS service control.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[allow(dead_code)]
 pub enum OperationType {
     /// Push desired service config to the Rust runtime (RADIUS/DHCP/DNS).
     #[default]
@@ -40,6 +42,7 @@ pub enum OperationType {
 /// Typed outcome of a control operation.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[allow(dead_code)]
 pub enum OperationOutcome {
     Planned,
     Applied,
@@ -53,6 +56,7 @@ pub enum OperationOutcome {
 /// Separate health signals — none of these is collapsed into a single "ok".
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[allow(dead_code)]
 pub enum HealthSignal {
     Liveness,
     Readiness,
@@ -63,6 +67,7 @@ pub enum HealthSignal {
 /// Typed error code emitted on negative outcomes.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[allow(dead_code)]
 pub enum ErrorCode {
     UnsupportedVersion,
     StaleGeneration,
@@ -75,6 +80,7 @@ pub enum ErrorCode {
 
 /// Reason an envelope was rejected, mapped to a typed error code and outcome.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[allow(dead_code)]
 pub enum RejectionReason {
     UnsupportedVersion(u16),
     StaleGeneration { seen: u64, current: u64 },
@@ -146,6 +152,7 @@ impl fmt::Display for RejectionReason {
 
 /// Versioned request envelope sent from the Go control plane to a Rust runtime.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[allow(dead_code)]
 pub struct ControlRequest {
     /// Contract schema version (validated by the receiver).
     pub schema_version: u16,
@@ -169,6 +176,7 @@ pub struct ControlRequest {
 
 /// Versioned response envelope returned by a Rust runtime to Go.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[allow(dead_code)]
 pub struct ControlResponse {
     /// Echo of the request schema version.
     pub schema_version: u16,
@@ -187,6 +195,7 @@ pub struct ControlResponse {
 }
 
 /// Context under which a request envelope is validated.
+#[allow(dead_code)]
 pub struct ValidationContext<'a> {
     /// The config generation the runtime currently serves.
     pub current_generation: u64,
@@ -199,6 +208,7 @@ pub struct ValidationContext<'a> {
 }
 
 /// Build a rejected response echoing the request's identity fields.
+#[allow(dead_code)]
 fn rejected_response(req: &ControlRequest, reason: RejectionReason) -> ControlResponse {
     ControlResponse {
         schema_version: req.schema_version,
@@ -216,6 +226,7 @@ fn rejected_response(req: &ControlRequest, reason: RejectionReason) -> ControlRe
 /// Returns a `ControlResponse` in all cases: `Ok(response)` for accepted
 /// requests (outcome `Planned`) and `Err(response)` for rejected ones, so
 /// callers can serialize either branch over the authenticated transport.
+#[allow(dead_code)]
 pub fn validate_request(
     req: &ControlRequest,
     ctx: &ValidationContext<'_>,
@@ -304,6 +315,7 @@ pub fn validate_request(
 }
 
 /// Constant-time comparison to avoid leaking the auth token.
+#[allow(dead_code)]
 fn subtle_constant_time_eq(a: &[u8], b: &[u8]) -> bool {
     if a.len() != b.len() {
         return false;
@@ -315,6 +327,7 @@ fn subtle_constant_time_eq(a: &[u8], b: &[u8]) -> bool {
     result == 0
 }
 
+#[allow(dead_code)]
 fn constant_time_eq(a: &[u8], b: &[u8]) -> bool {
     subtle_constant_time_eq(a, b)
 }

@@ -211,6 +211,23 @@ fn write_admin_token_file(path: &std::path::Path, token: &str) -> Result<()> {
     Ok(())
 }
 
+/// Parameters for recording RADIUS accounting events.
+/// Moved to module scope to satisfy clippy (struct not supported in impl blocks).
+#[derive(Debug, Clone)]
+pub struct RecordAccountingParams<'a> {
+    pub session_id: &'a str,
+    pub username: &'a str,
+    pub nas_ip: &'a str,
+    pub nas_port: Option<String>,
+    pub framed_ip: Option<String>,
+    pub calling_station_id: Option<String>,
+    pub status_type: u32,
+    pub input_octets: i64,
+    pub output_octets: i64,
+    pub session_time: i64,
+    pub terminate_cause: Option<i64>,
+}
+
 #[derive(Clone)]
 struct AppState {
     db: Database,
@@ -411,18 +428,21 @@ impl Database {
 
     async fn record_accounting(
         &self,
-        session_id: &str,
-        username: &str,
-        nas_ip: &str,
-        nas_port: Option<String>,
-        framed_ip: Option<String>,
-        calling_station_id: Option<String>,
-        status_type: u32,
-        input_octets: i64,
-        output_octets: i64,
-        session_time: i64,
-        terminate_cause: Option<i64>,
+        params: RecordAccountingParams<'_>,
     ) -> Result<()> {
+        let RecordAccountingParams {
+            session_id,
+            username,
+            nas_ip,
+            nas_port,
+            framed_ip,
+            calling_station_id,
+            status_type,
+            input_octets,
+            output_octets,
+            session_time,
+            terminate_cause,
+        } = params;
         match status_type {
             acct_status::START => {
                 sqlx::query(
@@ -991,11 +1011,10 @@ async fn process_access_request(db: &Database, raw: &[u8], src_ip: &str) -> Opti
         RadiusAttribute::string(attr_type::FILTER_ID, &filter_id),
         rate_limit,
     ];
-    if let Some(ip_str) = subscriber.framed_ip.as_deref() {
-        if let Ok(ip) = ip_str.parse::<Ipv4Addr>() {
+    if let Some(ip_str) = subscriber.framed_ip.as_deref()
+        && let Ok(ip) = ip_str.parse::<Ipv4Addr>() {
             reply_attrs.push(RadiusAttribute::ipv4(attr_type::FRAMED_IP_ADDRESS, ip));
         }
-    }
 
     let _ = db
         .log_auth(Some(nas.id), &username, true, src_ip, "Access-Accept")
@@ -1081,10 +1100,10 @@ async fn process_accounting_request(db: &Database, raw: &[u8], src_ip: &str) -> 
     // send no response so the NAS retransmits and we do not acknowledge an event we
     // may lose. A bounded counter tracks withheld ACKs for diagnostics.
     if let Err(err) = db
-        .record_accounting(
-            &session_id,
-            &username,
-            src_ip,
+        .record_accounting(RecordAccountingParams {
+            session_id: &session_id,
+            username: &username,
+            nas_ip: src_ip,
             nas_port,
             framed_ip,
             calling_station_id,
@@ -1093,7 +1112,7 @@ async fn process_accounting_request(db: &Database, raw: &[u8], src_ip: &str) -> 
             output_octets,
             session_time,
             terminate_cause,
-        )
+        })
         .await
     {
         warn!(
@@ -1385,8 +1404,8 @@ async fn disconnect_session(
     .await
     {
         Ok(ack) => {
-            if ack {
-                if let Err(err) = db
+            if ack
+                && let Err(err) = db
                     .mark_sessions_terminated(&payload.username, session_id.as_deref())
                     .await
                 {
@@ -1395,7 +1414,6 @@ async fn disconnect_session(
                         payload.username, err
                     );
                 }
-            }
             Ok(Json(DisconnectResponse {
                 sent: true,
                 ack,
@@ -1437,11 +1455,10 @@ async fn send_disconnect_request(
             session_id,
         ));
     }
-    if let Some(framed_ip) = payload.framed_ip.as_deref() {
-        if let Ok(ip) = framed_ip.parse::<Ipv4Addr>() {
+    if let Some(framed_ip) = payload.framed_ip.as_deref()
+        && let Ok(ip) = framed_ip.parse::<Ipv4Addr>() {
             attributes.push(RadiusAttribute::ipv4(attr_type::FRAMED_IP_ADDRESS, ip));
         }
-    }
 
     let packet = encode_disconnect_request(1, &attributes, secret.as_bytes());
     socket.send(&packet).await?;
@@ -2081,19 +2098,19 @@ mod tests {
         db.upsert_client("Loopback CoA NAS", "127.0.0.1", nas_secret)
             .await
             .unwrap();
-        db.record_accounting(
-            "sess-coa-900",
-            "fiber-cust-9",
-            "127.0.0.1",
-            Some("1".to_string()),
-            Some("100.64.9.9".to_string()),
-            None,
-            acct_status::START,
-            0,
-            0,
-            0,
-            None,
-        )
+        db.record_accounting(RecordAccountingParams {
+            session_id: "sess-coa-900",
+            username: "fiber-cust-9",
+            nas_ip: "127.0.0.1",
+            nas_port: Some("1".to_string()),
+            framed_ip: Some("100.64.9.9".to_string()),
+            calling_station_id: None,
+            status_type: acct_status::START,
+            input_octets: 0,
+            output_octets: 0,
+            session_time: 0,
+            terminate_cause: None,
+        })
         .await
         .unwrap();
 
@@ -2189,19 +2206,19 @@ mod tests {
 
         // One active session with cumulative counters of 1GB (as a NAS would
         // report on every interim update / re-acknowledged session).
-        db.record_accounting(
-            "sess-replay-001",
-            "replay-user",
-            "127.0.0.1",
-            None,
-            Some("100.64.5.1".to_string()),
-            None,
-            acct_status::INTERIM_UPDATE,
-            536870912,
-            536870912,
-            3600,
-            None,
-        )
+        db.record_accounting(RecordAccountingParams {
+            session_id: "sess-replay-001",
+            username: "replay-user",
+            nas_ip: "127.0.0.1",
+            nas_port: None,
+            framed_ip: Some("100.64.5.1".to_string()),
+            calling_station_id: None,
+            status_type: acct_status::INTERIM_UPDATE,
+            input_octets: 536870912,
+            output_octets: 536870912,
+            session_time: 3600,
+            terminate_cause: None,
+        })
         .await
         .unwrap();
 
@@ -2262,19 +2279,19 @@ mod tests {
             } else {
                 acct_status::INTERIM_UPDATE
             };
-            db.record_accounting(
-                "sess-delta-001",
-                "delta-user",
-                "127.0.0.1",
-                None,
-                Some("100.64.6.1".to_string()),
-                None,
+            db.record_accounting(RecordAccountingParams {
+                session_id: "sess-delta-001",
+                username: "delta-user",
+                nas_ip: "127.0.0.1",
+                nas_port: None,
+                framed_ip: Some("100.64.6.1".to_string()),
+                calling_station_id: None,
                 status_type,
-                *input as i64,
-                *output as i64,
-                60 * (i as i64 + 1),
-                None,
-            )
+                input_octets: *input as i64,
+                output_octets: *output as i64,
+                session_time: 60 * (i as i64 + 1),
+                terminate_cause: None,
+            })
             .await
             .unwrap();
             db.accumulate_quota_usage("delta-user").await.unwrap();
@@ -2397,19 +2414,19 @@ mod tests {
         .unwrap();
 
         // Create an active session for this NAS
-        db.record_accounting(
-            "sess-rotate-001",
-            "rotate-user",
-            "127.0.0.1",
-            Some("1".to_string()),
-            Some("100.64.4.1".to_string()),
-            None,
-            acct_status::START,
-            0,
-            0,
-            0,
-            None,
-        )
+        db.record_accounting(RecordAccountingParams {
+            session_id: "sess-rotate-001",
+            username: "rotate-user",
+            nas_ip: "127.0.0.1",
+            nas_port: Some("1".to_string()),
+            framed_ip: Some("100.64.4.1".to_string()),
+            calling_station_id: None,
+            status_type: acct_status::START,
+            input_octets: 0,
+            output_octets: 0,
+            session_time: 0,
+            terminate_cause: None,
+        })
         .await
         .unwrap();
 
@@ -2709,19 +2726,19 @@ mod tests {
         .unwrap();
 
         // Interim with 1 GiGa wrap in each direction + 100MB low bits each.
-        db.record_accounting(
-            "sess-giga-quota",
-            "giga-quota",
-            "127.0.0.1",
-            None,
-            Some("100.64.7.2".to_string()),
-            None,
-            acct_status::INTERIM_UPDATE,
-            combine_gigawords(100_000_000, Some(1)),
-            combine_gigawords(100_000_000, Some(1)),
-            600,
-            None,
-        )
+        db.record_accounting(RecordAccountingParams {
+            session_id: "sess-giga-quota",
+            username: "giga-quota",
+            nas_ip: "127.0.0.1",
+            nas_port: None,
+            framed_ip: Some("100.64.7.2".to_string()),
+            calling_station_id: None,
+            status_type: acct_status::INTERIM_UPDATE,
+            input_octets: combine_gigawords(100_000_000, Some(1)),
+            output_octets: combine_gigawords(100_000_000, Some(1)),
+            session_time: 600,
+            terminate_cause: None,
+        })
         .await
         .unwrap();
         db.accumulate_quota_usage("giga-quota").await.unwrap();
@@ -2743,19 +2760,19 @@ mod tests {
         let user = "ordering-user";
 
         // A newer interim advances both directions and session time.
-        db.record_accounting(
-            session,
-            user,
-            "127.0.0.1",
-            None,
-            None,
-            None,
-            acct_status::INTERIM_UPDATE,
-            5_000_000_000,
-            3_000_000_000,
-            3600,
-            None,
-        )
+        db.record_accounting(RecordAccountingParams {
+            session_id: session,
+            username: user,
+            nas_ip: "127.0.0.1",
+            nas_port: None,
+            framed_ip: None,
+            calling_station_id: None,
+            status_type: acct_status::INTERIM_UPDATE,
+            input_octets: 5_000_000_000,
+            output_octets: 3_000_000_000,
+            session_time: 3600,
+            terminate_cause: None,
+        })
         .await
         .unwrap();
 
@@ -2764,19 +2781,19 @@ mod tests {
             (1_000_000_000i64, 500_000_000i64, 1200i64),
             (5_000_000_000, 3_000_000_000, 3600),
         ] {
-            db.record_accounting(
-                session,
-                user,
-                "127.0.0.1",
-                None,
-                None,
-                None,
-                acct_status::INTERIM_UPDATE,
-                input,
-                output,
-                time,
-                None,
-            )
+            db.record_accounting(RecordAccountingParams {
+                session_id: session,
+                username: user,
+                nas_ip: "127.0.0.1",
+                nas_port: None,
+                framed_ip: None,
+                calling_station_id: None,
+                status_type: acct_status::INTERIM_UPDATE,
+                input_octets: input,
+                output_octets: output,
+                session_time: time,
+                terminate_cause: None,
+            })
             .await
             .unwrap();
         }
@@ -2792,36 +2809,36 @@ mod tests {
     async fn nas_reboot_with_new_session_id_keeps_separate_counter_history() {
         let (_dir, db) = test_db().await;
         let user = "reboot-user";
-        db.record_accounting(
-            "sess-before-reboot",
-            user,
-            "127.0.0.1",
-            None,
-            None,
-            None,
-            acct_status::INTERIM_UPDATE,
-            9_000_000_000,
-            9_000_000_000,
-            5000,
-            None,
-        )
+        db.record_accounting(RecordAccountingParams {
+            session_id: "sess-before-reboot",
+            username: user,
+            nas_ip: "127.0.0.1",
+            nas_port: None,
+            framed_ip: None,
+            calling_station_id: None,
+            status_type: acct_status::INTERIM_UPDATE,
+            input_octets: 9_000_000_000,
+            output_octets: 9_000_000_000,
+            session_time: 5000,
+            terminate_cause: None,
+        })
         .await
         .unwrap();
         // Counters restart near zero after a NAS reboot; a new Acct-Session-Id
         // represents a new session and must not be clamped to the old totals.
-        db.record_accounting(
-            "sess-after-reboot",
-            user,
-            "127.0.0.1",
-            None,
-            None,
-            None,
-            acct_status::INTERIM_UPDATE,
-            100,
-            200,
-            10,
-            None,
-        )
+        db.record_accounting(RecordAccountingParams {
+            session_id: "sess-after-reboot",
+            username: user,
+            nas_ip: "127.0.0.1",
+            nas_port: None,
+            framed_ip: None,
+            calling_station_id: None,
+            status_type: acct_status::INTERIM_UPDATE,
+            input_octets: 100,
+            output_octets: 200,
+            session_time: 10,
+            terminate_cause: None,
+        })
         .await
         .unwrap();
 

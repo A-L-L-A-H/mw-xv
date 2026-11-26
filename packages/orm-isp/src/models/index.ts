@@ -182,15 +182,25 @@ export const ISPRadiusOutbox = defineModel('isp.radius_outbox', {
     nas_port: fields.string({ label: 'NAS Port' }),
     username: fields.string({ required: true, label: 'Username' }),
     type: fields.enum(['disconnect', 'accounting'], { required: true, label: 'Type' }),
-    status: fields.enum(['pending', 'sent', 'failed'], {
-      required: true,
-      default: 'pending',
-      label: 'Status',
-    }),
+    // M19.08: lifecycle states are distinct from the transport outcome. Only
+    // `acknowledged` means the NAS verified the Disconnect; `sent` means the
+    // request went out but completion is still pending verification.
+    status: fields.enum(
+      ['pending', 'sent', 'acknowledged', 'rejected', 'timed_out', 'no_session', 'retryable_failure', 'failed'],
+      {
+        required: true,
+        default: 'pending',
+        label: 'Status',
+      }
+    ),
     acct_session_id: fields.string({ label: 'Acct-Session-ID' }),
     framed_ip_address: fields.string({ label: 'Framed IP Address' }),
     created_at: fields.string({ label: 'Created At' }),
     sent_at: fields.string({ label: 'Sent At' }),
+    acknowledged_at: fields.string({ label: 'Acknowledged At' }),
+    attempt_count: fields.integer({ label: 'Attempt Count' }),
+    next_attempt_at: fields.string({ label: 'Next Attempt At' }),
+    claim_token: fields.string({ label: 'Claim Token' }),
     response: fields.text({ label: 'Response' }),
     error_message: fields.text({ label: 'Error Message' }),
   },

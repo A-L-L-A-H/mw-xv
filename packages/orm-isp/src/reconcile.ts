@@ -1,4 +1,5 @@
 import { createConnection } from 'node:net';
+import { randomUUID } from 'node:crypto';
 import { DEFAULT_ISP_SERVICE_URL, isRecord } from '@moonwitness/types';
 import { ispAuthHeaders, resolveIspAdminToken } from './auth.js';
 import { meterSessionsToSubscriptionInvoices } from './metering.js';
@@ -30,11 +31,16 @@ export interface ProcessIspRadiusOutboxOptions {
   readonly jwtSecret?: string;
   readonly fetchImpl?: typeof fetch;
   readonly limit?: number;
+  /** Upper bound on re-dispatch attempts for one outbox row (default 3). */
+  readonly maxAttempts?: number;
+  /** Delay before an unsuccessful attempt becomes eligible again. */
+  readonly retryDelayMs?: number;
 }
 
 export interface ProcessIspRadiusOutboxResult {
   readonly processed: number;
   readonly sent: number;
+  readonly acknowledged: number;
   readonly failed: number;
 }
 
@@ -62,10 +68,51 @@ export interface DispatchIspDisconnectInput {
   readonly timeoutMs?: number;
 }
 
+/**
+ * M19.08: a dispatch only succeeds when the Rust runtime reports a verified
+ * Disconnect-ACK. Every other response is a distinct, non-success outcome so
+ * callers cannot mistake "request was sent" for "session was disconnected".
+ */
+export type DisconnectOutcome =
+  | 'acknowledged'
+  | 'rejected'
+  | 'timed_out'
+  | 'no_session'
+  | 'retryable_failure';
+
 export interface DispatchIspDisconnectResult {
   readonly ok: boolean;
+  readonly outcome: DisconnectOutcome;
   readonly response?: string;
   readonly errorMessage?: string;
+}
+
+export function parseDisconnectOutcome(
+  status: number,
+  body: string
+): DisconnectOutcome {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(body);
+  } catch {
+    return 'retryable_failure';
+  }
+  if (!isRecord(parsed)) return 'retryable_failure';
+
+  if (parsed.ack === true && parsed.sent === true) return 'acknowledged';
+  if (parsed.ack === false) {
+    if (status === 408 || status === 504) return 'timed_out';
+    if (typeof parsed.error === 'string' && /timed out/i.test(parsed.error)) return 'timed_out';
+    if (parsed.error === 'no active session or nas_ip provided') return 'no_session';
+    if (status === 404) return 'no_session';
+    return 'rejected';
+  }
+  // HTTP success without an explicit verified ACK is never a completion.
+  if (status >= 200 && status < 300) return 'retryable_failure';
+  if (status === 408 || status === 504) return 'timed_out';
+  if (status === 404) return 'no_session';
+  if (status >= 500) return 'retryable_failure';
+  return 'rejected';
 }
 
 interface RuntimeRadiusSession {
@@ -152,6 +199,7 @@ export async function dispatchIspDisconnect(
     if (!suspendRes.ok) {
       return {
         ok: false,
+        outcome: suspendRes.status >= 500 ? 'retryable_failure' : 'rejected',
         errorMessage: `ISP subscriber suspend failed (${suspendRes.status})`,
       };
     }
@@ -168,25 +216,26 @@ export async function dispatchIspDisconnect(
       signal: AbortSignal.timeout(timeoutMs),
     });
 
-    if (!disconnectRes.ok && disconnectRes.status !== 404) {
-      return {
-        ok: false,
-        errorMessage: `ISP session disconnect failed (${disconnectRes.status})`,
-      };
-    }
-
     const disconnectBody = await disconnectRes.text().catch(() => '');
+    const outcome = parseDisconnectOutcome(disconnectRes.status, disconnectBody);
+    const response = JSON.stringify({
+      suspendStatus: suspendRes.status,
+      disconnectStatus: disconnectRes.status,
+      disconnectBody: disconnectBody.slice(0, 500),
+    });
+    if (outcome === 'acknowledged') {
+      return { ok: true, outcome, response };
+    }
     return {
-      ok: true,
-      response: JSON.stringify({
-        suspendStatus: suspendRes.status,
-        disconnectStatus: disconnectRes.status,
-        disconnectBody: disconnectBody.slice(0, 500),
-      }),
+      ok: false,
+      outcome,
+      response,
+      errorMessage: `ISP disconnect not verified: ${outcome} (${disconnectRes.status})`,
     };
   } catch (error) {
     return {
       ok: false,
+      outcome: 'retryable_failure',
       errorMessage: error instanceof Error ? error.message : String(error),
     };
   }
@@ -309,66 +358,124 @@ export async function processIspRadiusOutbox(
     jwtSecret: options.jwtSecret,
   });
   const limit = options.limit ?? 50;
-
-  let query = ISPRadiusOutbox.query()
-    .where({ active: true })
-    .whereIn('status', ['pending', 'failed'])
-    .orderBy('id', 'asc')
-    .limit(limit);
-  if (options.companyId !== undefined) {
-    query = query.where({ company_id: options.companyId });
-  }
-  const rows = await query;
+  const maxAttempts = options.maxAttempts ?? 3;
+  const retryDelayMs = options.retryDelayMs ?? 5_000;
+  const nowIso = () => new Date().toISOString().slice(0, 19);
+  const retryAt = (delayMs: number) =>
+    new Date(Date.now() + Math.max(0, delayMs)).toISOString().slice(0, 19);
 
   let processed = 0;
   let sent = 0;
+  let acknowledged = 0;
   let failed = 0;
 
-  for (const row of rows) {
-    processed += 1;
-    if (row.type !== 'disconnect') {
-      await ISPRadiusOutbox.query()
-        .findById(row.id)
-        .patch({
-          status: 'failed',
-          error_message: `Unsupported outbox type: ${row.type}`,
-        });
-      failed += 1;
-      continue;
+  // M19.08: claim candidates with a conditional UPDATE in a single statement.
+  // Only one worker can take a row: a second UPDATE sees the changed claim and
+  // matches zero rows, so concurrent workers never dispatch the same operation.
+  for (let pass = 0; pass < limit; pass += 1) {
+    const claimToken = randomUUID();
+    let claimQuery = ISPRadiusOutbox.query()
+      .where({ active: true })
+      .whereIn('status', ['pending', 'sent', 'retryable_failure'])
+      .whereNull('claim_token')
+      .where((builder) =>
+        builder.whereNull('next_attempt_at').orWhere('next_attempt_at', '<=', nowIso())
+      )
+      .orderBy('id', 'asc')
+      .limit(1);
+    if (options.companyId !== undefined) {
+      claimQuery = claimQuery.where({ company_id: options.companyId });
     }
+    const candidate = await claimQuery.first();
+    if (!candidate) break;
 
-    const result = await dispatchIspDisconnect({
-      baseUrl,
-      token,
-      fetchImpl,
-      username: row.username,
-      nasIp: row.nas_ip,
-      acctSessionId: row.acct_session_id,
-      framedIp: row.framed_ip_address,
-    });
+    const claimed = await ISPRadiusOutbox.query()
+      .findById(candidate.id)
+      .whereIn('status', ['pending', 'sent', 'retryable_failure'])
+      .whereNull('claim_token')
+      .where((builder) =>
+        builder.whereNull('next_attempt_at').orWhere('next_attempt_at', '<=', nowIso())
+      )
+      .patch({ claim_token: claimToken });
+    if (claimed !== 1) continue;
 
-    if (result.ok) {
-      await ISPRadiusOutbox.query()
-        .findById(row.id)
-        .patch({
-          status: 'sent',
-          sent_at: new Date().toISOString().slice(0, 19),
-          response: result.response ?? null,
-          error_message: null,
-        });
-      sent += 1;
-    } else {
-      await ISPRadiusOutbox.query()
-        .findById(row.id)
-        .patch({
+    processed += 1;
+    try {
+      if (candidate.type !== 'disconnect') {
+        await ISPRadiusOutbox.query().findById(candidate.id).patch({
           status: 'failed',
-          error_message: result.errorMessage ?? 'ISP disconnect dispatch failed',
+          error_message: `Unsupported outbox type: ${candidate.type}`,
+          claim_token: null,
         });
+        failed += 1;
+        continue;
+      }
+
+      const attempt = Number(candidate.attempt_count ?? 0) + 1;
+      const result = await dispatchIspDisconnect({
+        baseUrl,
+        token,
+        fetchImpl,
+        username: candidate.username,
+        nasIp: candidate.nas_ip,
+        acctSessionId: candidate.acct_session_id,
+        framedIp: candidate.framed_ip_address,
+      });
+      const common = {
+        attempt_count: attempt,
+        response: result.response ?? null,
+        claim_token: null,
+      };
+
+      if (result.ok) {
+        await ISPRadiusOutbox.query().findById(candidate.id).patch({
+          ...common,
+          status: 'acknowledged',
+          acknowledged_at: nowIso(),
+          sent_at: nowIso(),
+          error_message: null,
+          next_attempt_at: null,
+        });
+        acknowledged += 1;
+        continue;
+      }
+
+      if (result.outcome === 'acknowledged') {
+        // Defensive: ok=false with a verified ACK is a contradiction; keep the
+        // row retryable instead of completing it.
+        await ISPRadiusOutbox.query().findById(candidate.id).patch({
+          ...common,
+          status: 'retryable_failure',
+          error_message: 'conflicting dispatch result for verified ACK',
+          next_attempt_at: retryAt(retryDelayMs),
+        });
+        sent += 1;
+        continue;
+      }
+
+      const retryable = result.outcome === 'retryable_failure';
+      const exhausted = retryable && attempt >= maxAttempts;
+      await ISPRadiusOutbox.query().findById(candidate.id).patch({
+        ...common,
+        status: exhausted ? 'failed' : result.outcome,
+        error_message: result.errorMessage ?? 'ISP disconnect dispatch failed',
+        next_attempt_at: exhausted ? null : retryAt(retryDelayMs),
+      });
+      if (exhausted) failed += 1;
+      else sent += 1;
+    } catch (error) {
+      // A worker crash must release the claim so another worker can retry.
+      await ISPRadiusOutbox.query().findById(candidate.id).patch({
+        status: 'retryable_failure',
+        error_message: error instanceof Error ? error.message : String(error),
+        claim_token: null,
+        next_attempt_at: retryAt(retryDelayMs),
+      });
       failed += 1;
     }
   }
 
-  return { processed, sent, failed };
+  return { processed, sent, acknowledged, failed };
 }
 
 function resolveNasProbePort(): number {

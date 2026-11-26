@@ -13,6 +13,7 @@ import { meterSessionsToSubscriptionInvoices } from './metering.js';
 import {
   probeIspNasHealth,
   processIspRadiusOutbox,
+  parseDisconnectOutcome,
   syncIspRuntimeSessions,
   trimTrailingSlashes,
   type NasHealthStatus,
@@ -296,7 +297,7 @@ export function createIspHttpPlugin(options: IspHttpPluginOptions = {}): AddonHt
           created_at: new Date().toISOString().slice(0, 19),
         });
 
-        let dispatched = false;
+        let acknowledged = false;
         try {
           const suspendRes = await fetchImpl(
             `${baseUrl}/api/subscribers/${encodeURIComponent(subscriber.username)}/suspend`,
@@ -318,31 +319,41 @@ export function createIspHttpPlugin(options: IspHttpPluginOptions = {}): AddonHt
               }),
               signal: AbortSignal.timeout(5_000),
             });
-            dispatched = disconnectRes.ok || disconnectRes.status === 404;
+            const body = await disconnectRes.text().catch(() => '');
+            acknowledged = parseDisconnectOutcome(disconnectRes.status, body) === 'acknowledged';
+            if (acknowledged) {
+              await ISPRadiusOutbox.query().findById(outboxRow.id).patch({
+                response: JSON.stringify({
+                  immediateDispatch: true,
+                  disconnectStatus: disconnectRes.status,
+                  disconnectBody: body.slice(0, 500),
+                }),
+              });
+            }
           }
         } catch {
-          dispatched = false;
+          // The outbox row remains pending for the verified dispatcher.
         }
 
-        if (dispatched) {
+        if (acknowledged) {
           await ISPRadiusOutbox.query()
             .findById(outboxRow.id)
             .patch({
-              status: 'sent',
+              status: 'acknowledged',
               sent_at: new Date().toISOString().slice(0, 19),
-              response: JSON.stringify({ immediateDispatch: true }),
+              acknowledged_at: new Date().toISOString().slice(0, 19),
               error_message: null,
             });
         }
 
-        return {
-          success: true,
-          data: {
-            id: subscriber.id,
-            username: subscriber.username,
-            status: 'suspended',
-            dispatched,
-          },
+          return {
+            success: true,
+            data: {
+              id: subscriber.id,
+              username: subscriber.username,
+              status: 'suspended',
+              dispatched: acknowledged,
+            },
         };
       }
     );

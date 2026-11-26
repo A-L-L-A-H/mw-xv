@@ -32,8 +32,11 @@ import {
   ISPType,
   ISP_INTERNAL_AUTH_DOMAIN,
   createIspHttpPlugin,
+  dispatchIspDisconnect,
   ensureIspCrons,
   manifest,
+  parseDisconnectOutcome,
+  processIspRadiusOutbox,
   registerIspJobHandlers,
   resolveIspAdminToken,
   selectHealthyNas,
@@ -265,7 +268,7 @@ describe('@moonwitness/orm-isp addon', () => {
               return new Response(JSON.stringify({ username: 'acme-fiber-01' }), { status: 200 });
             }
             if (url.endsWith('/api/sessions/disconnect')) {
-              return new Response(JSON.stringify({ disconnected: true }), { status: 200 });
+              return new Response(JSON.stringify({ sent: true, ack: true }), { status: 200 });
             }
             if (url.endsWith('/api/sessions')) {
               return new Response(JSON.stringify(runtimeSessionsPayload), { status: 200 });
@@ -340,7 +343,7 @@ describe('@moonwitness/orm-isp addon', () => {
       expect(disconnectPayload.framed_ip).toBeUndefined();
 
       const outboxRow = await ISPRadiusOutbox.query().first();
-      expect(outboxRow).toMatchObject({ status: 'sent', username: subscriber!.username });
+      expect(outboxRow).toMatchObject({ status: 'acknowledged', username: subscriber!.username });
     });
 
     it('keeps the outbox row pending when the runtime suspend dispatch fails', async () => {
@@ -454,7 +457,7 @@ describe('@moonwitness/orm-isp addon', () => {
       expect(liveRes.json().data.dbSessions).toHaveLength(1);
     });
 
-    it('processes pending and failed outbox rows through the retry endpoint and marks them sent', async () => {
+    it('processes pending and failed outbox rows only after a verified ACK', async () => {
       const subscriber = await ISPSubscriber.query().first();
       expect(subscriber).toBeDefined();
 
@@ -471,7 +474,7 @@ describe('@moonwitness/orm-isp addon', () => {
         company_id: 1,
         username: subscriber!.username,
         type: 'disconnect',
-        status: 'failed',
+        status: 'retryable_failure',
         error_message: 'previous runtime outage',
       });
 
@@ -479,13 +482,15 @@ describe('@moonwitness/orm-isp addon', () => {
       expect(res.statusCode).toBe(200);
       expect(res.json()).toMatchObject({
         success: true,
-        data: { processed: 2, sent: 2, failed: 0 },
+        data: { processed: 2, sent: 0, acknowledged: 2, failed: 0 },
       });
 
       const rows = await ISPRadiusOutbox.query().orderBy('id', 'asc');
       for (const row of rows) {
-        expect(row.status).toBe('sent');
+        expect(row.status).toBe('acknowledged');
         expect(row.sent_at).toBeTruthy();
+        expect(row.acknowledged_at).toBeTruthy();
+        expect(row.claim_token).toBeNull();
         expect(row.error_message).toBeNull();
       }
       const disconnectCalls = requests.filter((r) => r.url.endsWith('/api/sessions/disconnect'));
@@ -861,6 +866,190 @@ describe('@moonwitness/orm-isp addon', () => {
     });
   });
 
+  describe('M19.08 verified NAS ACK outbox', () => {
+    const allDeps = [
+      baseManifest,
+      jobsManifest,
+      notificationManifest,
+      organizationManifest,
+      workflowManifest,
+      projectManifest,
+      crmManifest,
+      salesManifest,
+      subscriptionManifest,
+      manifest,
+    ];
+
+    beforeEach(async () => {
+      await installAddons(db, allDeps);
+    });
+
+    function response(status: number, body: unknown): Response {
+      return new Response(typeof body === 'string' ? body : JSON.stringify(body), { status });
+    }
+
+    async function createOutbox(status: string, attemptCount = 0) {
+      return ISPRadiusOutbox.query().insertAndFetch({
+        company_id: 1,
+        username: 'ack-subscriber',
+        type: 'disconnect',
+        status,
+        nas_ip: '127.0.0.1',
+        acct_session_id: `sess-${status}-${attemptCount}`,
+        attempt_count: attemptCount,
+      });
+    }
+
+    it('parses verified ACK, NAK, timeout, no-session, and malformed responses', () => {
+      expect(parseDisconnectOutcome(200, JSON.stringify({ sent: true, ack: true }))).toBe(
+        'acknowledged'
+      );
+      expect(parseDisconnectOutcome(200, JSON.stringify({ sent: true, ack: false }))).toBe(
+        'rejected'
+      );
+      expect(parseDisconnectOutcome(200, JSON.stringify({ disconnected: true }))).toBe(
+        'retryable_failure'
+      );
+      expect(parseDisconnectOutcome(504, JSON.stringify({ sent: false, ack: false }))).toBe(
+        'timed_out'
+      );
+      expect(
+        parseDisconnectOutcome(
+          200,
+          JSON.stringify({ sent: false, ack: false, error: 'no active session or nas_ip provided' })
+        )
+      ).toBe('no_session');
+      expect(parseDisconnectOutcome(200, 'not-json')).toBe('retryable_failure');
+      expect(parseDisconnectOutcome(500, '{}')).toBe('retryable_failure');
+    });
+
+    it('never reports success for HTTP 200 without sent=true and ack=true', async () => {
+      const dispatch = await dispatchIspDisconnect({
+        baseUrl: 'http://isp.local:3002',
+        token: 'test-token',
+        fetchImpl: (async () => response(200, { sent: false, ack: false })) as typeof fetch,
+        username: 'ack-subscriber',
+      });
+      expect(dispatch).toMatchObject({ ok: false, outcome: 'rejected' });
+    });
+
+    it('keeps ack=false rows retryable and does not mark them sent or acknowledged', async () => {
+      const row = await createOutbox('pending');
+      const result = await processIspRadiusOutbox({
+        companyId: 1,
+        fetchImpl: (async (input: string | URL | Request) => {
+          const url = String(input);
+          if (url.endsWith('/suspend')) return response(200, {});
+          return response(200, { sent: true, ack: false, error: 'Disconnect-NAK' });
+        }) as typeof fetch,
+        maxAttempts: 3,
+        retryDelayMs: 60_000,
+      });
+
+      expect(result).toMatchObject({ processed: 1, sent: 1, acknowledged: 0, failed: 0 });
+      const updated = await ISPRadiusOutbox.query().findById(row.id);
+      expect(updated).toMatchObject({
+        status: 'rejected',
+        attempt_count: 1,
+        sent_at: null,
+        acknowledged_at: null,
+        claim_token: null,
+      });
+      expect(updated?.next_attempt_at).toBeTruthy();
+    });
+
+    it('classifies timeout and no-session responses without completing the row', async () => {
+      const timedOut = await createOutbox('pending');
+      const noSession = await createOutbox('pending');
+      const outcomes = [
+        response(504, { sent: false, ack: false }),
+        response(200, { sent: false, ack: false, error: 'no active session or nas_ip provided' }),
+      ];
+      let call = 0;
+      const result = await processIspRadiusOutbox({
+        companyId: 1,
+        fetchImpl: (async (input: string | URL | Request) => {
+          const url = String(input);
+          if (url.endsWith('/suspend')) return response(200, {});
+          return outcomes[call++]!;
+        }) as typeof fetch,
+        retryDelayMs: 60_000,
+      });
+
+      expect(result).toMatchObject({ processed: 2, acknowledged: 0 });
+      await expect(ISPRadiusOutbox.query().findById(timedOut.id)).resolves.toMatchObject({
+        status: 'timed_out',
+        acknowledged_at: null,
+      });
+      await expect(ISPRadiusOutbox.query().findById(noSession.id)).resolves.toMatchObject({
+        status: 'no_session',
+        acknowledged_at: null,
+      });
+    });
+
+    it('bounds retry attempts and only acknowledges after a later verified ACK', async () => {
+      const exhausted = await createOutbox('pending', 2);
+      await ISPRadiusOutbox.query().findById(exhausted.id).patch({ next_attempt_at: '2020-01-01 00:00:00' });
+      const laterAck = await createOutbox('pending', 1);
+
+      const exhaustedResult = await processIspRadiusOutbox({
+        companyId: 1,
+        fetchImpl: (async (input: string | URL | Request) => {
+          const url = String(input);
+          if (url.endsWith('/suspend')) return response(200, {});
+          return response(200, 'not-json');
+        }) as typeof fetch,
+        maxAttempts: 2,
+        retryDelayMs: -1,
+        limit: 1,
+      });
+      expect(exhaustedResult).toMatchObject({ processed: 1, acknowledged: 0, failed: 1, sent: 0 });
+      const failedRow = await ISPRadiusOutbox.query().findById(exhausted.id);
+      expect(failedRow).toMatchObject({ status: 'failed', attempt_count: 3 });
+
+      await ISPRadiusOutbox.query().findById(exhausted.id).patch({
+        status: 'pending',
+        attempt_count: 1,
+        next_attempt_at: '2020-01-01 00:00:00',
+      });
+
+      const ackResult = await processIspRadiusOutbox({
+        companyId: 1,
+        fetchImpl: (async (input: string | URL | Request) => {
+          const url = String(input);
+          if (url.endsWith('/suspend')) return response(200, {});
+          return response(200, { sent: true, ack: true });
+        }) as typeof fetch,
+        maxAttempts: 2,
+        retryDelayMs: -1,
+        limit: 2,
+      });
+      expect(ackResult).toMatchObject({ processed: 2, acknowledged: 2, failed: 0 });
+      const recovered = await ISPRadiusOutbox.query().findById(laterAck.id);
+      expect(recovered).toMatchObject({ status: 'acknowledged', attempt_count: 2 });
+    });
+
+    it('atomically claims one outbox row for concurrent workers', async () => {
+      const row = await createOutbox('pending');
+      let claims = 0;
+      const blockingFetch = (async () => {
+        claims += 1;
+        await new Promise((resolve) => setTimeout(resolve, 25));
+        return response(200, { sent: true, ack: true });
+      }) as typeof fetch;
+
+      const [first, second] = await Promise.all([
+        processIspRadiusOutbox({ companyId: 1, fetchImpl: blockingFetch }),
+        processIspRadiusOutbox({ companyId: 1, fetchImpl: blockingFetch }),
+      ]);
+      expect(claims).toBe(2);
+      expect(first.processed + second.processed).toBe(1);
+      expect(first.acknowledged + second.acknowledged).toBe(1);
+      const updated = await ISPRadiusOutbox.query().findById(row.id);
+      expect(updated).toMatchObject({ status: 'acknowledged', claim_token: null });
+    });
+  });
+
   describe('ISP job handlers & crons', () => {
     interface JobRequest {
       url: string;
@@ -913,7 +1102,7 @@ describe('@moonwitness/orm-isp addon', () => {
             return new Response(JSON.stringify({}), { status: 200 });
           }
           if (url.endsWith('/api/sessions/disconnect')) {
-            return new Response(JSON.stringify({}), { status: 200 });
+            return new Response(JSON.stringify({ sent: true, ack: true }), { status: 200 });
           }
           return new Response('{}', { status: 404 });
         }) as typeof fetch,

@@ -9,8 +9,11 @@ pub mod codes {
     pub const ACCESS_REJECT: u8 = 3;
     pub const ACCOUNTING_REQUEST: u8 = 4;
     pub const ACCOUNTING_RESPONSE: u8 = 5;
+    #[allow(dead_code)]
     pub const DISCONNECT_REQUEST: u8 = 40;
+    #[allow(dead_code)]
     pub const DISCONNECT_ACK: u8 = 41;
+    #[allow(dead_code)]
     pub const DISCONNECT_NAK: u8 = 42;
 }
 
@@ -88,11 +91,12 @@ pub fn encode_vsa(vendor_id: u32, vendor_type: u8, value: &[u8]) -> RadiusAttrib
 }
 
 /// Decodes a VSA value, rejecting malformed vendor-length fields.
-pub fn decode_vsa_value<'a>(
-    attr: &'a RadiusAttribute,
+#[allow(dead_code)]
+pub fn decode_vsa_value(
+    attr: &RadiusAttribute,
     vendor_id: u32,
     vendor_type: u8,
-) -> Option<&'a [u8]> {
+) -> Option<&[u8]> {
     if attr.attr_type != attr_type::VENDOR_SPECIFIC || attr.value.len() < 6 {
         return None;
     }
@@ -225,6 +229,7 @@ impl RadiusAttribute {
         }
     }
 
+    #[allow(dead_code)]
     pub fn u32(attr_type: u8, value: u32) -> Self {
         Self {
             attr_type,
@@ -366,13 +371,13 @@ pub fn decrypt_pap_password(
     request_authenticator: &[u8; 16],
     secret: &[u8],
 ) -> Option<String> {
-    if encrypted.is_empty() || encrypted.len() % 16 != 0 {
+    if encrypted.is_empty() || !encrypted.len().is_multiple_of(16) {
         return None;
     }
     let mut out = Vec::with_capacity(encrypted.len());
     let mut prev_block = request_authenticator.as_slice();
 
-    for chunk in encrypted.chunks_exact(16) {
+    for chunk in encrypted.as_chunks::<16>().0 {
         let mut hasher = Md5::new();
         hasher.update(secret);
         hasher.update(prev_block);
@@ -390,19 +395,20 @@ pub fn decrypt_pap_password(
 }
 
 /// RFC 2865 §5.2 PAP password encryption (used by clients/tests)
+#[allow(dead_code)]
 pub fn encrypt_pap_password(
     password: &str,
     request_authenticator: &[u8; 16],
     secret: &[u8],
 ) -> Vec<u8> {
     let raw = password.as_bytes();
-    let padded_len = ((raw.len().max(1) + 15) / 16) * 16;
+    let padded_len = raw.len().max(1).div_ceil(16) * 16;
     let mut padded = vec![0u8; padded_len];
     padded[..raw.len()].copy_from_slice(raw);
 
     let mut out = Vec::with_capacity(padded_len);
     let mut prev_block = *request_authenticator;
-    for chunk in padded.chunks_exact(16) {
+    for chunk in padded.as_chunks::<16>().0 {
         let mut hasher = Md5::new();
         hasher.update(secret);
         hasher.update(prev_block);
@@ -508,6 +514,7 @@ pub fn verify_response_authenticator(
     constant_time_eq(&raw_packet[4..20], &expected)
 }
 
+#[allow(dead_code)]
 pub fn sign_accounting_request(raw_packet: &mut [u8], secret: &[u8]) {
     if raw_packet.len() < 20 {
         return;

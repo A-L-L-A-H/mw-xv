@@ -88,7 +88,7 @@ export function registerIspJobHandlers(options: RegisterIspJobHandlersOptions = 
         parse: parseIspJobPayload,
         async run(payload, context) {
           if (context.signal.aborted) {
-            return { processed: 0, sent: 0, failed: 0 };
+            return { processed: 0, sent: 0, acknowledged: 0, failed: 0 };
           }
           return processIspRadiusOutbox({
             companyId: payload.companyId ?? context.companyId,

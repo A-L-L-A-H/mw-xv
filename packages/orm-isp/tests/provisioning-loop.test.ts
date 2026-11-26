@@ -166,6 +166,7 @@ describe('orm-isp provisioning loop', () => {
         if (String(url).includes('/api/sessions/disconnect')) {
           const body = JSON.parse(String(init?.body ?? '{}')) as Record<string, string>;
           disconnectBodies.push(body);
+          return new Response(JSON.stringify({ sent: true, ack: true }), { status: 200 });
         }
         return new Response('{}', { status: 200 });
       };
@@ -205,7 +206,7 @@ describe('orm-isp provisioning loop', () => {
       });
       expect(await ISPRadiusOutbox.query().where({ company_id: 1 }).orderBy('id')).toHaveLength(1);
       expect(await ISPRadiusOutbox.query().first()).toMatchObject({
-        status: 'sent',
+        status: 'acknowledged',
         type: 'disconnect',
         username: 'nusantara-fttx-001',
         nas_ip: '10.10.0.1',
@@ -289,7 +290,7 @@ describe('orm-isp provisioning loop', () => {
         dispatchFailures: 1,
       });
       expect(await ISPRadiusOutbox.query().first()).toMatchObject({
-        status: 'failed',
+        status: 'retryable_failure',
         error_message: 'ISP subscriber suspend failed (503)',
       });
     } finally {

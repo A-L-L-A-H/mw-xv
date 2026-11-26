@@ -18,9 +18,11 @@ export {
 } from './auth.js';
 export {
   dispatchIspDisconnect,
+  parseDisconnectOutcome,
   processIspRadiusOutbox,
   probeIspNasHealth,
   syncIspRuntimeSessions,
+  type DisconnectOutcome,
   type DispatchIspDisconnectInput,
   type DispatchIspDisconnectResult,
   type IspNasRecord,
