@@ -4,7 +4,7 @@ Dokumen ini adalah sumber utama rencana lintas milestone. Dibuat 2026-11-26 berd
 
 **Panduan implementasi lengkap:** [docs/roadmap/README.md](docs/roadmap/README.md). Seluruh 210 M-series ID dan 65 K-series ID di bawah mempunyai kartu kerja dengan prasyarat, source files, deliverable, langkah konkret, dan acceptance. Agen harus membaca [protokol eksekusi](docs/roadmap/EXECUTION.md) sebelum mengambil tugas. Dependensi terstruktur tersedia di [tasks.json](docs/tasks/tasks.json); status resmi tetap checklist ini.
 
-**Rencana eksekusi aktif (audit 2026-11-26; jumlah kartu diukur ulang 2026-11-26):** checklist dokumen ini berisi 110 kartu terbuka (77 kartu M-series terbuka dan 33 kartu K-series terbuka), dan [docs/roadmap/ACTIVE-PLAN.md](docs/roadmap/ACTIVE-PLAN.md) mengelompokkan pekerjaan menjadi release blockers, pekerjaan lokal, blocker approval/akses, dan backlog dengan exit condition. `pnpm automation:check:roadmap` menolak angka prose yang tidak sama dengan checklist; untuk jumlah hidup gunakan `pnpm roadmap:progress`. Mulai pekerjaan lokal independen tanpa menunggu hosted CI; pertahankan persetujuan CODEOWNER dan semua gate.
+**Rencana eksekusi aktif (audit 2026-11-26; jumlah kartu diukur ulang 2026-11-26):** checklist dokumen ini berisi 109 kartu terbuka (76 kartu M-series terbuka dan 33 kartu K-series terbuka), dan [docs/roadmap/ACTIVE-PLAN.md](docs/roadmap/ACTIVE-PLAN.md) mengelompokkan pekerjaan menjadi release blockers, pekerjaan lokal, blocker approval/akses, dan backlog dengan exit condition. `pnpm automation:check:roadmap` menolak angka prose yang tidak sama dengan checklist; untuk jumlah hidup gunakan `pnpm roadmap:progress`. Mulai pekerjaan lokal independen tanpa menunggu hosted CI; pertahankan persetujuan CODEOWNER dan semua gate.
 
 Urutan nomor bukan urutan aktivasi mutlak: misalnya required checks M1.06 baru diaktifkan setelah ci-gate M2.05 tersedia. Kontrak automation, spesifikasi UI/asset, skenario test minimum, dan template bukti ada pada panduan detail.
 
@@ -268,7 +268,7 @@ Architecture contract: [ADR 0019](docs/decisions/0019-isp-rust-go-boundaries.md)
 - [x] M19.05 Persist RADIUS accounting before sending Accounting-Response — [detail](docs/roadmap/20-isp-rust-go-architecture-aaa.md). [Evidence](docs/roadmap/evidence/M19.05.md).
 - [x] M19.06 Add RADIUS 64-bit counters and Gigawords support — [detail](docs/roadmap/20-isp-rust-go-architecture-aaa.md). [Evidence](docs/roadmap/evidence/M19.06.md).
 - [x] M19.07 Add MikroTik bandwidth RADIUS Vendor-Specific Attribute — [detail](docs/roadmap/20-isp-rust-go-architecture-aaa.md). [Evidence](docs/roadmap/evidence/M19.07.md).
-- [ ] M19.08 Make CoA and Disconnect completion depend on verified NAS ACK — [detail](docs/roadmap/20-isp-rust-go-architecture-aaa.md).
+- [x] M19.08 Make CoA and Disconnect completion depend on verified NAS ACK — [detail](docs/roadmap/20-isp-rust-go-architecture-aaa.md).
 - [x] M19.09 Add ISP control module to the existing Go control-plane — [detail](docs/roadmap/20-isp-rust-go-architecture-aaa.md). [Evidence](docs/roadmap/evidence/M19.09.md).
 - [ ] M19.10 Implement Go desired-state reconciliation for NAS and subscriber services — [detail](docs/roadmap/20-isp-rust-go-architecture-aaa.md).
 - [ ] M19.11 Add read-only MikroTik RouterOS discovery adapter in Go — [detail](docs/roadmap/20-isp-rust-go-architecture-aaa.md).
