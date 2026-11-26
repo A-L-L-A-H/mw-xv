@@ -5,6 +5,7 @@ import { bootstrapRoutes, type BootstrapRoutesOptions } from './routes/bootstrap
 import { setupPageRoutes } from './ui/setup-page.js';
 import { authRoutes, type AuthDatabasePort, type AuthRoutesOptions } from './routes/auth.routes.js';
 import { login as loginService, type LoginDatabasePort } from './auth/login-service.js';
+import { runOutboxPublisher, type DeliveryAdapter } from './events/outbox-publisher.js';
 
 export interface IdentityServerOptions extends BuildAppOptions, HealthRoutesOptions, BootstrapRoutesOptions {
   readonly host?: string;
@@ -13,6 +14,8 @@ export interface IdentityServerOptions extends BuildAppOptions, HealthRoutesOpti
   readonly login?: AuthRoutesOptions['login'];
   readonly readSession?: AuthRoutesOptions['readSession'];
   readonly production?: AuthRoutesOptions['production'];
+  readonly outboxDelivery?: DeliveryAdapter;
+  readonly startOutboxPublisher?: boolean;
 }
 
 function identityLogin(options: {
@@ -77,6 +80,8 @@ export async function createIdentityServer(options: IdentityServerOptions = {}):
   });
   await app.ready();
   let started = false;
+  const publisherController = new AbortController();
+  let publisherPromise: Promise<void> | null = null;
 
   return {
     app,
@@ -84,10 +89,21 @@ export async function createIdentityServer(options: IdentityServerOptions = {}):
       if (started) return app.server.address()?.toString() ?? `${host}:${port}`;
       const address = await app.listen({ host, port });
       started = true;
+      if (options.outboxDelivery && options.startOutboxPublisher && !publisherPromise) {
+        publisherPromise = runOutboxPublisher({
+          database: options.bootstrapDatabase as unknown as {
+            raw: (sql: string, bindings: readonly unknown[]) => Promise<unknown>;
+          },
+          delivery: options.outboxDelivery,
+          signal: publisherController.signal,
+        }).catch(() => undefined);
+      }
       return address;
     },
     stop: async () => {
       if (!started) return;
+      publisherController.abort();
+      if (publisherPromise) await publisherPromise;
       await app.close();
       started = false;
     },
