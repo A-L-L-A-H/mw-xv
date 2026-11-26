@@ -12888,7 +12888,7 @@
       "category": "architecture",
       "type": "feature",
       "priority": "p1",
-      "status": "todo",
+      "status": "done",
       "human": false,
       "owner": null,
       "assignee": null,
@@ -12905,8 +12905,18 @@
       "acceptanceCriteria": [
         {
           "id": "M19.08-ac-1",
-          "text": "Truthful CoA state machine and retry tests",
-          "done": false
+          "text": "ack=false is never marked sent/acknowledged",
+          "done": true
+        },
+        {
+          "id": "M19.08-ac-2",
+          "text": "Only verified ACK completes a disconnect operation",
+          "done": true
+        },
+        {
+          "id": "M19.08-ac-3",
+          "text": "ACK, NAK, timeout, no session, malformed response, retry and concurrency tests pass",
+          "done": true
         }
       ],
       "validation": {
@@ -12914,9 +12924,13 @@
         "expected": "All acceptance criteria and evidence proven"
       },
       "evidence": {
-        "paths": [],
+        "paths": [
+          "docs/roadmap/evidence/M19.08.md",
+          "packages/orm-isp/tests/isp.test.ts",
+          "packages/orm-isp/tests/provisioning-loop.test.ts"
+        ],
         "detailFile": "docs/roadmap/20-isp-rust-go-architecture-aaa.md",
-        "commitSha": null
+        "commitSha": "7017f547"
       },
       "references": ["docs/roadmap/20-isp-rust-go-architecture-aaa.md"],
       "blockedReason": null,
@@ -12924,7 +12938,7 @@
         "file": "ROADMAP.md",
         "legacyId": "M19.08"
       },
-      "url": "",
+      "url": "https://github.com/A-L-L-A-H/mw-xv/commit/7017f547",
       "comments": []
     },
     {

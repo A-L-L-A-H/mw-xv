@@ -219,9 +219,9 @@ Rust is the only implementation language for first-party ISP protocol/server run
 
 ### Acceptance criteria
 
-- [ ] ack=false is never marked sent/acknowledged.
-- [ ] Only verified ACK completes a disconnect operation.
-- [ ] ACK, NAK, timeout, no session, malformed response, retry and concurrency tests pass.
+- [x] ack=false is never marked sent/acknowledged.
+- [x] Only verified ACK completes a disconnect operation.
+- [x] ACK, NAK, timeout, no session, malformed response, retry and concurrency tests pass.
 
 ### Delivery gates
 
