@@ -352,7 +352,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - Manual verification: adapter conformance tests cover provider-scope instantiation, opaque handles, expiry, single-use consumption, client binding, grant revocation, and secret redaction; no custom code format or duplicate protocol state was introduced.
   - Commit: 3d1e9222 feat(identity): add provider authorization code adapter for I20
 
-#### - [ ] I21 — Add Identity audit-event and transactional-outbox models
+#### - [x] I21 — Add Identity audit-event and transactional-outbox models
 
 - **Owner File(s):** packages/orm-identity/src/models/audit-event.ts; packages/orm-identity/src/models/outbox-event.ts; packages/orm-identity/src/models/audit-event.test.ts; apps/id/src/database/migrations/*audit*; apps/id/src/database/migrations/*outbox*
 - **Depends On:** I14, I17, I18
@@ -364,12 +364,18 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - Keep event payloads minimal and avoid copying credentials or private authentication data.
 - **DO NOT:** Do not publish external messages inside the account transaction without the outbox record; do not store secrets in event payloads.
 - **Acceptance Criteria:**
-  - [ ] Audit events are append-oriented and redact-sensitive fields.
-  - [ ] Outbox rows can be claimed and retried without losing delivery state.
-  - [ ] Both tables have dedicated migrations and tests.
+  - [x] Audit events are append-oriented and redact-sensitive fields.
+  - [x] Outbox rows can be claimed and retried without losing delivery state.
+  - [x] Both tables have dedicated migrations and tests.
 - **Verify:** bun --filter @moonwitness/orm-identity test; bun --filter @moonwitness/id test.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
+- **Evidence:**
+  - Command: `bun --filter @moonwitness/orm-identity test` — passed (8 files, 32 tests)
+  - Command: `bun --filter @moonwitness/id test` — passed (7 files, 32 tests)
+  - Command: `bun --filter @moonwitness/orm-identity build` — passed (tsc exited 0)
+  - Command: `bun --filter @moonwitness/id build` — passed (tsc exited 0)
+  - Manual verification: audit events set immutable identity/correlation fields, reject updates/deletes in the model and a database trigger, and redact sensitive nested keys, tokens, private keys and oversized values; outbox rows use a single `FOR UPDATE SKIP LOCKED` claim, increment attempt count, keep delivery state through complete/retry, and have dedicated pending/type indexes.
+  - Commit: pending I21 implementation commit
 
 
 
