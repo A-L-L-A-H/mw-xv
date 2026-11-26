@@ -133,7 +133,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
 - **Evidence:**
   - Command: git diff --check - passed
   - Manual verification: all 10 threats mapped to at least one control and one future test scenario; actor boundaries and redaction rules explicit
-  - Commit: <placeholder> docs(identity): define threat model and platform tenant authorization boundary for I05
+  - Commit: 39ac8796 docs(identity): define threat model and platform tenant authorization boundary for I05
 
 #### - [ ] I06 — Create the acceptance matrix and architecture exit gate
 
