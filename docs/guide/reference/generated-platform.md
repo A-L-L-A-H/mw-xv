@@ -1,6 +1,6 @@
 # Generated platform reference
 
-Source fingerprint: `da961eb7495692c41dd65a2cef110e285c289c011bba7068af0865f14dc85293`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
+Source fingerprint: `4d42f3a9756e43100fb6dccaa454a9d1d085d714fba3707a7f848cb2739f069f`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
 
 ## Workspace packages and apps
 
@@ -45,6 +45,7 @@ Source fingerprint: `da961eb7495692c41dd65a2cef110e285c289c011bba7068af0865f14dc
 | `@moonwitness/orm-ecommerce-sync`   | Package | 1.0.0      | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-governance`       | Package | 1.0.0      | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-helpdesk`         | Package | 1.0.0      | `build`, `test`                                                                                                                                                                                                                                                                    |
+| `@moonwitness/orm-identity`         | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-income-ledger`    | Package | 1.0.0      | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-integration`      | Package | 1.0.0-rc.1 | `build`, `test`                                                                                                                                                                                                                                                                    |
 | `@moonwitness/orm-isp`              | Package | 1.0.0      | `build`, `test`                                                                                                                                                                                                                                                                    |
