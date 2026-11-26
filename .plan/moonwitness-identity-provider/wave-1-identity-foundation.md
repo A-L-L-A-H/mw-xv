@@ -152,7 +152,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
     - Manual verification: `/livez` never checks dependencies; `/readyz` requires both database and migration probes; failed probes return 503 with only stable status fields and no secrets
     - Commit: 8d21881c feat(id): add liveness and readiness endpoints for I12
 
-#### - [ ] I13 — Add deterministic Identity migration runner
+#### - [x] I13 — Add deterministic Identity migration runner
 
 - **Owner File(s):** apps/id/src/database/migrations/**; apps/id/src/database/migrate.ts; apps/id/src/database/migrate.test.ts
 - **Depends On:** I11
@@ -164,12 +164,17 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - Make startup readiness depend on successful migration status.
 - **DO NOT:** Do not run destructive schema resets or import Business ORM addon seeds.
 - **Acceptance Criteria:**
-  - [ ] Fresh Identity DB migrates to latest schema.
-  - [ ] Running migrations twice is a no-op.
-  - [ ] Migration history is stored only in Identity DB.
+  - [x] Fresh Identity DB migrates to latest schema.
+  - [x] Running migrations twice is a no-op.
+  - [x] Migration history is stored only in Identity DB.
 - **Verify:** bun --filter @moonwitness/id test; use an isolated PostgreSQL integration test when the test harness supports it.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
+  - **Evidence:**
+    - Command: bun --filter @moonwitness/id test — passed (5 files, 20 tests)
+    - Command: bun --filter @moonwitness/id build — passed (tsc exited 0)
+    - Integration harness: not run; POSTGRES_TEST_URL is not configured in this environment (no claim of integration success)
+    - Manual verification: Knex Migrator with identity schema/table, ordered migration, repeat apply, status, refusal to rollback; no business migration imports
+    - Commit: PENDING_I13_COMMIT
 
 #### - [ ] I14 — Add identity.account model and migration
 
