@@ -150,7 +150,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
     - Command: bun --filter @moonwitness/id test — passed (4 files, 17 tests)
     - Command: bun --filter @moonwitness/id build — passed (tsc exited 0)
     - Manual verification: `/livez` never checks dependencies; `/readyz` requires both database and migration probes; failed probes return 503 with only stable status fields and no secrets
-    - Commit: PENDING_I12_COMMIT
+    - Commit: 8d21881c feat(id): add liveness and readiness endpoints for I12
 
 #### - [ ] I13 — Add deterministic Identity migration runner
 
