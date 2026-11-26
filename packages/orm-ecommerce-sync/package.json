@@ -1,6 +1,6 @@
 {
   "name": "@moonwitness/orm-ecommerce-sync",
-  "version": "1.0.0",
+  "version": "1.0.0-rc.1",
   "private": true,
   "description": "E-commerce marketplace synchronization addon for MoonWitness ORM (sync jobs, connections, credentials, metrics)",
   "type": "module",

@@ -1,6 +1,6 @@
 {
   "name": "@moonwitness/orm-rnd",
-  "version": "1.0.0",
+  "version": "1.0.0-rc.1",
   "private": true,
   "description": "R&D addon for MoonWitness ORM (research programs, hypotheses, experiments, protocols, instruments, reagents, samples, publications, patents, IPR)",
   "type": "module",

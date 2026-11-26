@@ -52,7 +52,7 @@
     },
     {
       "name": "@moonwitness/control-plane",
-      "version": "0.1.0",
+      "version": "1.0.0-rc.1",
       "directory": "apps/control-plane",
       "scripts": ["dev", "docker:build", "fmt"]
     },
@@ -78,7 +78,7 @@
     },
     {
       "name": "@moonwitness/isp",
-      "version": "0.1.0",
+      "version": "1.0.0-rc.1",
       "directory": "apps/isp",
       "scripts": ["cargo:build", "clippy", "dev", "fmt", "migrate", "start", "test"]
     },
@@ -204,7 +204,7 @@
     },
     {
       "name": "@moonwitness/orm-automation-core",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "directory": "packages/orm-automation-core",
       "scripts": ["build", "test"]
     },
@@ -216,67 +216,67 @@
     },
     {
       "name": "@moonwitness/orm-bot-orchestrator",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "directory": "packages/orm-bot-orchestrator",
       "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm-catalog",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "directory": "packages/orm-catalog",
       "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm-cli",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "directory": "packages/orm-cli",
       "scripts": ["build", "dev"]
     },
     {
       "name": "@moonwitness/orm-clinical",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "directory": "packages/orm-clinical",
       "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm-cloud",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "directory": "packages/orm-cloud",
       "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm-compliance",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "directory": "packages/orm-compliance",
       "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm-content-factory",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "directory": "packages/orm-content-factory",
       "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm-crm",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "directory": "packages/orm-crm",
       "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm-ecommerce-sync",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "directory": "packages/orm-ecommerce-sync",
       "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm-governance",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "directory": "packages/orm-governance",
       "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm-helpdesk",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "directory": "packages/orm-helpdesk",
       "scripts": ["build", "test"]
     },
@@ -288,7 +288,7 @@
     },
     {
       "name": "@moonwitness/orm-income-ledger",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "directory": "packages/orm-income-ledger",
       "scripts": ["build", "test"]
     },
@@ -300,7 +300,7 @@
     },
     {
       "name": "@moonwitness/orm-isp",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "directory": "packages/orm-isp",
       "scripts": ["build", "test"]
     },
@@ -336,7 +336,7 @@
     },
     {
       "name": "@moonwitness/orm-public-services",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "directory": "packages/orm-public-services",
       "scripts": ["build", "test"]
     },
@@ -348,37 +348,37 @@
     },
     {
       "name": "@moonwitness/orm-rnd",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "directory": "packages/orm-rnd",
       "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm-sales",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "directory": "packages/orm-sales",
       "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm-sensor",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "directory": "packages/orm-sensor",
       "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm-sharia",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "directory": "packages/orm-sharia",
       "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm-signal",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "directory": "packages/orm-signal",
       "scripts": ["build", "test"]
     },
     {
       "name": "@moonwitness/orm-sim",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "directory": "packages/orm-sim",
       "scripts": ["build", "test"]
     },
@@ -390,7 +390,7 @@
     },
     {
       "name": "@moonwitness/orm-subscription",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "directory": "packages/orm-subscription",
       "scripts": ["build", "test"]
     },
@@ -408,25 +408,25 @@
     },
     {
       "name": "paas-template-pack-bigbear",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "directory": "packages/paas-template-pack-bigbear",
       "scripts": []
     },
     {
       "name": "paas-template-pack-coolify",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "directory": "packages/paas-template-pack-coolify",
       "scripts": []
     },
     {
       "name": "paas-template-pack-dokploy",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "directory": "packages/paas-template-pack-dokploy",
       "scripts": []
     },
     {
       "name": "paas-template-pack-moonwitness",
-      "version": "1.0.0",
+      "version": "1.0.0-rc.1",
       "directory": "packages/paas-template-pack-moonwitness",
       "scripts": []
     },
@@ -10926,5 +10926,5 @@
       "path": "/whatsapp/readyz"
     }
   ],
-  "generatedFromSha256": "40de80590b1bc75044fa7b4741ac05b6c105d62641e3e7d04532a5786c7d1ae1"
+  "generatedFromSha256": "51254aa99d127e674ec3901e78054d8c9c88cfbe5edfc859e4053b1f77953cb0"
 }

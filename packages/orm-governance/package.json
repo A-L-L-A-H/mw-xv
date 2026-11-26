@@ -1,6 +1,6 @@
 {
   "name": "@moonwitness/orm-governance",
-  "version": "1.0.0",
+  "version": "1.0.0-rc.1",
   "private": true,
   "description": "Governance / Statecraft addon for MoonWitness ORM",
   "type": "module",

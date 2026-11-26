@@ -1,6 +1,6 @@
 {
   "name": "@moonwitness/orm-clinical",
-  "version": "1.0.0",
+  "version": "1.0.0-rc.1",
   "private": true,
   "description": "Clinical/Medicine/Health addon for MoonWitness ORM: patients, encounters, diagnoses, procedures, medication orders, lab results and vital observations",
   "type": "module",

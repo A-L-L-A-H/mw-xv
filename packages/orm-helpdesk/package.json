@@ -1,6 +1,6 @@
 {
   "name": "@moonwitness/orm-helpdesk",
-  "version": "1.0.0",
+  "version": "1.0.0-rc.1",
   "private": true,
   "description": "Omnichannel Ticketing, SLA & CSAT addon for MoonWitness ORM",
   "type": "module",

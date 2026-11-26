@@ -20,9 +20,17 @@ jobs:
       group: dev-branch-updates
       cancel-in-progress: false
     steps:
+      - name: Mint optional automation GitHub App token
+        id: app-token
+        if: vars.AUTOMATION_APP_CLIENT_ID != '' && secrets.AUTOMATION_APP_PRIVATE_KEY != ''
+        uses: actions/create-github-app-token@f418cff399f7aef4c2f0ad47e25ca7a6abbdd6fc # v3.4.0
+        with:
+          client-id: ${{ vars.AUTOMATION_APP_CLIENT_ID }}
+          private-key: ${{ secrets.AUTOMATION_APP_PRIVATE_KEY }}
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.sha }}
+          token: ${{ steps.app-token.outputs.token || github.token }}
           fetch-depth: 0
           persist-credentials: true
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0

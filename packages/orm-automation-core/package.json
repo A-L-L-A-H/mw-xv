@@ -1,6 +1,6 @@
 {
   "name": "@moonwitness/orm-automation-core",
-  "version": "1.0.0",
+  "version": "1.0.0-rc.1",
   "private": true,
   "description": "Trigger → Condition → Action automation engine addon for MoonWitness ORM",
   "type": "module",
