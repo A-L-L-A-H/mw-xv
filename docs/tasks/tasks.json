@@ -12654,7 +12654,7 @@
         "expected": "All acceptance criteria and evidence proven"
       },
       "evidence": {
-        "paths": [],
+        "paths": ["docs/roadmap/evidence/M19.03.md"],
         "detailFile": "docs/roadmap/20-isp-rust-go-architecture-aaa.md",
         "commitSha": null
       },

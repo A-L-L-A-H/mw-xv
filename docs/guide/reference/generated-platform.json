@@ -914,6 +914,7 @@
       "test:flaky-policy": "node --test scripts/flaky-policy.test.mjs scripts/playwright-flake-reporter.test.mjs",
       "test:integration": "node scripts/run-postgres-tests.mjs",
       "test:integration:built": "node scripts/run-postgres-tests.mjs --built",
+      "test:isp": "node --test scripts/isp-compose-config.test.mjs",
       "test:knowledge-cli:built": "node --test scripts/knowledge/validate.test.mjs scripts/knowledge/snapshot.test.mjs scripts/knowledge/legacy-inventory.test.mjs scripts/knowledge/ingest.test.mjs scripts/knowledge/revelation-identity.test.mjs scripts/knowledge/rebuild.test.mjs",
       "test:maintenance-incidents": "node --test scripts/maintenance-incident.test.mjs",
       "test:package-manager": "node --test scripts/package-manager.test.mjs",
@@ -10924,5 +10925,5 @@
       "path": "/whatsapp/readyz"
     }
   ],
-  "generatedFromSha256": "4d42f3a9756e43100fb6dccaa454a9d1d085d714fba3707a7f848cb2739f069f"
+  "generatedFromSha256": "1e277a3d66c195621721ffad0b8473264ac094e67634e183324c9eef73ecbf97"
 }
