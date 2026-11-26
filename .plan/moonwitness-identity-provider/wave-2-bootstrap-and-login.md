@@ -12,7 +12,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
 
 
 
-#### - [ ] I22 — Add operator CLI for one-time bootstrap-token issuance
+#### - [x] I22 — Add operator CLI for one-time bootstrap-token issuance
 
 - **Owner File(s):** packages/orm-identity/src/models/bootstrap-token.ts; packages/orm-identity/src/models/bootstrap-token.test.ts; apps/id/src/commands/create-bootstrap-token.ts; apps/id/package.json; apps/id/src/database/migrations/*bootstrap*
 - **Depends On:** I11, I13, I14, I21
@@ -25,13 +25,18 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - Add redaction for command logs and errors.
 - **DO NOT:** Do not put the token in a committed .env file, compose default, database plaintext column, telemetry or shell history by default.
 - **Acceptance Criteria:**
-  - [ ] Raw token is displayed once and is not recoverable from DB.
-  - [ ] Expired, consumed and revoked tokens cannot be claimed.
-  - [ ] Only an operator command can issue a token.
-  - [ ] Tests cover duplicate active token and expiry behavior.
+  - [x] Raw token is displayed once and is not recoverable from DB.
+  - [x] Expired, consumed and revoked tokens cannot be claimed.
+  - [x] Only an operator command can issue a token.
+  - [x] Tests cover duplicate active token and expiry behavior.
 - **Verify:** bun --filter @moonwitness/orm-identity test; bun --filter @moonwitness/id test.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append exact command, result and commit SHA here.
+- **Evidence:**
+  - Command: `bun --filter @moonwitness/orm-identity test` — passed (9 files, 38 tests)
+  - Command: `bun --filter @moonwitness/id test` — passed (8 files, 36 tests)
+  - Command: `bun --filter @moonwitness/id build` — passed (tsc exited 0)
+  - Manual verification: digest-only bootstrap token model, partial unique index for one active token per installation scope, atomic consume restricted to unconsumed/unrevoked/unexpired rows, operator-only `bootstrap:token` script with one-time stdout raw token and redacted errors; no public HTTP route was added.
+  - Commit: pending I22 implementation commit
 
 #### - [ ] I23 — Add bootstrap-state service and setup-status endpoint
 

@@ -98,7 +98,7 @@ Task dependencies are declared inside each playbook. Follow them exactly; the fi
 - [x] **I21** — Add Identity audit-event and transactional-outbox models
 
 ### Wave 2 — Bootstrap and login
-- [ ] **I22** — Add operator CLI for one-time bootstrap-token issuance
+- [x] **I22** — Add operator CLI for one-time bootstrap-token issuance
 - [ ] **I23** — Add bootstrap-state service and setup-status endpoint
 - [ ] **I24** — Add atomic first Platform Owner creation service
 - [ ] **I25** — Add single-use bootstrap claim endpoint
