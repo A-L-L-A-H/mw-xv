@@ -350,7 +350,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - Command: `bun --filter @moonwitness/id build` — passed (tsc exited 0)
   - Command: `node $env:TEMP/mw-oidc-smoke-915/smoke.cjs` — passed (`SMOKE_TEST_PASS`; discovery, PKCE S256, single-use exchange, refresh replay rejection, JWKS, client credentials)
   - Manual verification: adapter conformance tests cover provider-scope instantiation, opaque handles, expiry, single-use consumption, client binding, grant revocation, and secret redaction; no custom code format or duplicate protocol state was introduced.
-  - Commit: pending I20 implementation commit
+  - Commit: 3d1e9222 feat(identity): add provider authorization code adapter for I20
 
 #### - [ ] I21 — Add Identity audit-event and transactional-outbox models
 
