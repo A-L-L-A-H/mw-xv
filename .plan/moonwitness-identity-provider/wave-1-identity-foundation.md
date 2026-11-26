@@ -276,7 +276,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
     - Manual verification: digest-only secret, bounded metadata, active/expired/revoked helpers, account+expiry indexes and pruning index; no raw bearer token
     - Commit: 76d720e8 feat(identity): add session model and expiry indexes for I17
 
-#### - [ ] I18 — Add refresh-token family persistence and revocation state
+#### - [x] I18 — Add refresh-token family persistence and revocation state
 
 - **Owner File(s):** packages/orm-identity/src/models/refresh-token-family.ts; packages/orm-identity/src/models/refresh-token-family.test.ts; apps/id/src/database/migrations/*refresh*
 - **Depends On:** I17
@@ -288,12 +288,19 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - Keep token material out of ORM debug output and logs.
 - **DO NOT:** Do not store raw refresh tokens or rely on a non-atomic read-then-write rotation sequence.
 - **Acceptance Criteria:**
-  - [ ] A token can be consumed once and rotated atomically.
-  - [ ] Replay revokes the corresponding family/session.
-  - [ ] Tests cover expiry, revocation, replay and concurrent consume.
+  - [x] A token can be consumed once and rotated atomically.
+  - [x] Replay revokes the corresponding family/session.
+  - [x] Tests cover expiry, revocation, replay and concurrent consume.
 - **Verify:** bun --filter @moonwitness/orm-identity test; PostgreSQL transaction tests when available.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
+  - **Evidence:**
+    - Command: bun --filter @moonwitness/orm-identity test — passed (6 files, 18 tests)
+    - Command: bun --filter @moonwitness/id test — passed (6 files, 23 tests)
+    - Command: bun --filter @moonwitness/orm-identity build — passed (tsc exited 0)
+    - Command: bun --filter @moonwitness/id build — passed (tsc exited 0)
+    - PostgreSQL transaction tests: not run; no POSTGRES_TEST_URL harness configured in this environment
+    - Manual verification: digest-only storage, single-statement conditional consume, replay family/session revocation, expiry/revocation/concurrent-reuse tests, no token in JSON
+    - Commit: PENDING_I18_COMMIT
 
 #### - [ ] I19 — Add OAuth client registry model
 
