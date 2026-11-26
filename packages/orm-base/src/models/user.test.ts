@@ -1,10 +1,23 @@
+import { existsSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import knex, { type Knex } from 'knex';
 import { installAddons } from '@moonwitness/orm';
-import { manifest, User, Partner, Company } from '../index.js';
-const migrationModulePath = '../migrations/001_identity_subject.js';
+import { manifest, User } from '../index.js';
+
+const currentDirectory = path.dirname(fileURLToPath(import.meta.url));
+const migrationCandidates = [
+  path.resolve(currentDirectory, '../migrations/001_identity_subject.js'),
+  path.resolve(currentDirectory, '../../src/migrations/001_identity_subject.js'),
+];
+const migrationFilePath = migrationCandidates.find((candidate) => existsSync(candidate));
+
 const migrationUp = (async (database: Knex) => {
-  const module = (await import(migrationModulePath)) as { up: (db: Knex) => Promise<void> };
+  if (!migrationFilePath) throw new Error('Migration file 001_identity_subject.js was not found');
+  const module = (await import(pathToFileURL(migrationFilePath).href)) as {
+    up: (db: Knex) => Promise<void>;
+  };
   await module.up(database);
 }) satisfies (db: Knex) => Promise<void>;
 
@@ -64,5 +77,22 @@ describe('base.user identity_subject mapping (I41)', () => {
     await migrationUp(db);
     await migrationUp(db);
     expect(await db.schema.hasColumn('users', 'identity_subject')).toBe(true);
+
+    const legacyDb = knex({
+      client: 'better-sqlite3',
+      connection: { filename: ':memory:' },
+      useNullAsDefault: true,
+    });
+    try {
+      await legacyDb.schema.createTable('users', (table) => {
+        table.increments('id').primary();
+        table.text('login').notNullable();
+      });
+      await migrationUp(legacyDb);
+      await migrationUp(legacyDb);
+      expect(await legacyDb.schema.hasColumn('users', 'identity_subject')).toBe(true);
+    } finally {
+      await legacyDb.destroy();
+    }
   });
 });
