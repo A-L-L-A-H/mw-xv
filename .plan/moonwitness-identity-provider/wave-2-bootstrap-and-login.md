@@ -135,7 +135,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - Command: `bun --filter @moonwitness/id build` — passed (tsc exited 0)
   - Browser/smoke test: not run; no separate browser or smoke-test script is configured for apps/id. Route-level injection tests cover fresh-install rendering, post-completion unavailability, claim posting, escaping, and absence of browser storage/URL query secrets.
   - Manual verification: `GET /setup` renders a standalone labelled form with explicit focus order; `POST /setup` forwards fields by POST to `/setup/claim` without query strings or storage; completed installations receive a generic unavailable page; all responses use no-store and no Board shell is imported.
-  - Commit: pending I26 implementation commit
+  - Commit: 33bce8a7 feat(identity): add first-install setup page for I26
 
 #### - [ ] I27 — Add password verification and login-session service
 
