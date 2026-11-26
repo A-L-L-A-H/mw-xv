@@ -1,4 +1,5 @@
 mod radius_protocol;
+mod control_contract;
 
 use anyhow::Result;
 use axum::{
