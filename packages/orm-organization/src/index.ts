@@ -18,3 +18,15 @@ export {
   type OrganizationMemberSeed,
   type OrganizationTeamSeed,
 } from './seed.js';
+export {
+  lintAbacRbacPolicies,
+  type AbacCondition,
+  type AccessPolicyRule,
+  type LintIssueCode,
+  type LintSeverity,
+  type PolicyEffect,
+  type PolicyLintInput,
+  type PolicyLintIssue,
+  type PolicyLintReport,
+  type RoleDefinition,
+} from './abac-rbac-lint.js';

@@ -54,3 +54,21 @@ export type {
   ValidatedSagaDag,
 } from './saga-engine.js';
 export { seedWorkflowDefinitions, workflowSeedManifest } from './seed-manifest.js';
+export {
+  createDagExecutionState,
+  DagValidationError,
+  detectDagCycles,
+  executeDagWorkflow,
+  getReadyDagNodes,
+  topologicalSortDag,
+  transitionDagNode,
+} from './dag-engine.js';
+export type {
+  DagExecutionOptions,
+  DagExecutionResult,
+  DagExecutionState,
+  DagNodeDefinition,
+  DagNodeState,
+  DagNodeStatus,
+  DagValidationErrorCode,
+} from './dag-engine.js';

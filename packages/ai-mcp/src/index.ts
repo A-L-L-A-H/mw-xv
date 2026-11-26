@@ -1543,3 +1543,16 @@ export function serveAiMcpStdio(
 
 export const createMcpServer = createAiMcpServer;
 export const createMcpHandler = createAiMcpServer;
+
+export {
+  McpRegistryError,
+  McpServerRegistry,
+  validateAgainstSchema,
+  type JsonSchemaProperty,
+  type McpPromptArgument,
+  type McpPromptEntry,
+  type McpRegistryErrorCode,
+  type McpResourceEntry,
+  type McpToolEntry,
+  type McpToolSchema,
+} from './server-registry.js';
