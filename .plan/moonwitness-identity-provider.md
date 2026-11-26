@@ -124,7 +124,7 @@ Task dependencies are declared inside each playbook. Follow them exactly; the fi
 - [x] **I41** — Add opaque identity_subject mapping to base.user
 - [x] **I42** — Add API repository to resolve verified subject to business user
 - [x] **I43** — Define a versioned Identity-to-Business event contract
-- [ ] **I44** — Publish account lifecycle events through Identity outbox
+- [x] **I44** — Publish account lifecycle events through Identity outbox
 - [ ] **I45** — Consume provisioning events idempotently in API
 - [ ] **I46** — Provision/link base.partner as a business contact only
 - [ ] **I47** — Provision least-privilege company membership and user group

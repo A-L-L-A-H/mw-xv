@@ -83,7 +83,7 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
   - Manual verification: `docs/architecture/identity/provisioning-contract.md` documents envelope (`identity.outbox_event`), deterministic `event_id` (`sha256_hex`), schema versioning (`v1`), ordering (`occurred_at`), idempotency, retry, and fail-closed unknown-version behavior; `packages/types/src/identity-provisioning.ts` exports strict validators rejecting missing required fields, unknown/credential payload fields, and mismatched `event_type`/`payload` pairs.
   - Commit: b714a3e9
 
-#### - [ ] I44 — Publish account lifecycle events through Identity outbox
+#### - [x] I44 — Publish account lifecycle events through Identity outbox
 
 - **Owner File(s):** apps/id/src/events/outbox-publisher.ts; apps/id/src/events/outbox-publisher.test.ts; apps/id/src/server.ts
 - **Depends On:** I21, I43
@@ -95,13 +95,17 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
   - Add shutdown handling and avoid blocking login requests on downstream Business API availability.
 - **DO NOT:** Do not access the Business database or pretend two databases share one transaction.
 - **Acceptance Criteria:**
-  - [ ] Outbox rows are created in the same transaction as account lifecycle changes.
-  - [ ] Publisher retries transient failures and marks delivered only after acknowledgement.
-  - [ ] Publisher can restart without losing pending work.
-  - [ ] Event payloads are redacted and do not contain credentials.
+  - [x] Outbox rows are created in the same transaction as account lifecycle changes.
+  - [x] Publisher retries transient failures and marks delivered only after acknowledgement.
+  - [x] Publisher can restart without losing pending work.
+  - [x] Event payloads are redacted and do not contain credentials.
 - **Verify:** bun --filter @moonwitness/id test; integration test with a fake receiver.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append exact command, result and commit SHA here.
+- **Evidence:**
+  - Command: `bun --filter @moonwitness/id test` — passed (17 test files, 85 tests, including 4 publisher tests with a fake receiver)
+  - Command: `bun --filter @moonwitness/id build` — passed (`tsc` exited 0)
+  - Manual verification: `publishOutboxBatch` claims pending rows atomically using `FOR UPDATE SKIP LOCKED`, advances `attempt_count` under lease, calls a delivery adapter, marks `delivered_at` only for acknowledged event IDs, retries transient/failed deliveries with bounded attempts and a future `next_attempt_at`, and clears claims for exhausted/permanent failures. `runOutboxPublisher` stops on abort; `createIdentityServer` only starts the loop when an authenticated delivery adapter is injected, and aborts/awaits it on `stop()`. No Business DB access occurs in the publisher.
+  - Commit: d255b838
 
 #### - [ ] I45 — Consume provisioning events idempotently in API
 
