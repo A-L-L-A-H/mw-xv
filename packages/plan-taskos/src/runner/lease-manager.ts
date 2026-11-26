@@ -6,8 +6,7 @@
  */
 
 import type { BrainStorageDriver } from "../brain/storage.js";
-import { join } from "node:path";
-import { writeFile, mkdir, readFile } from "node:fs/promises";
+import { join } from "node:path";import { writeFile, mkdir } from "node:fs/promises";
 
 export interface LeaseClaimInput {
   readonly taskUrn: string;
@@ -284,16 +283,3 @@ async function mirrorLeasesLocal(store: BrainStorageDriver, planId: string): Pro
   }
 }
 
-/**
- * Read the local leases mirror file.
- */
-export async function readLocalLeases(planId: string): Promise<ActiveLease[]> {
-  try {
-    const localPath = join(process.cwd(), ".plan", planId, ".leases.local.json");
-    const content = await readFile(localPath, "utf8");
-    const parsed = JSON.parse(content);
-    return parsed.leases ?? [];
-  } catch {
-    return [];
-  }
-}
