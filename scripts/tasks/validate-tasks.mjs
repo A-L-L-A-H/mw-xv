@@ -2,11 +2,31 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
+import {
+  CANONICAL_TASKS_RELATIVE_PATH,
+  isRoadmapTaskCode,
+  toRoadmapTaskStatus,
+} from './roadmap-index.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const require = createRequire(new URL('../../packages/knowledge/package.json', import.meta.url));
 const Ajv = require('ajv');
 const addFormats = require('ajv-formats');
+
+export { toRoadmapTaskStatus };
+
+const IGNORED_SCAN_DIRS = new Set([
+  '.git',
+  '.claude',
+  '.next',
+  '.turbo',
+  '.vitest',
+  'coverage',
+  'dist',
+  'node_modules',
+  'target',
+  'vendor',
+]);
 
 export function parseTasksRegistry(raw) {
   if (typeof raw !== 'string' || raw.trim().length === 0) {
@@ -23,25 +43,44 @@ export function parseTasksRegistry(raw) {
   }
 }
 
-export function toRoadmapTaskStatus(status) {
-  const statusMap = {
-    done: 'complete',
-    doing: 'in_progress',
-    review: 'in_progress',
-    blocked: 'blocked',
-    backlog: 'todo',
-    todo: 'todo',
-  };
-  return statusMap[status] ?? null;
+export async function findDuplicateTaskJsonFiles(scanRoot = rootDir) {
+  const duplicates = [];
+
+  async function walk(currentDir, relativePrefix) {
+    let entries;
+    try {
+      entries = await fs.readdir(currentDir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        if (IGNORED_SCAN_DIRS.has(entry.name)) continue;
+        await walk(
+          path.join(currentDir, entry.name),
+          relativePrefix ? `${relativePrefix}/${entry.name}` : entry.name
+        );
+        continue;
+      }
+      if (!entry.isFile()) continue;
+      if (entry.name !== 'task.json' && entry.name !== 'tasks.json') continue;
+      const relPath = relativePrefix ? `${relativePrefix}/${entry.name}` : entry.name;
+      if (relPath !== CANONICAL_TASKS_RELATIVE_PATH) {
+        duplicates.push(relPath);
+      }
+    }
+  }
+
+  await walk(scanRoot, '');
+  return duplicates.sort();
 }
 
 export async function validateTaskRegistryData(tasksData, { checkRoadmapParity = true } = {}) {
   const errors = [];
   const schemaFilePath = path.join(rootDir, 'docs/tasks/tasks.schema.json');
-  const roadmapTasksPath = path.join(rootDir, 'docs/roadmap/tasks.json');
   const roadmapMdPath = path.join(rootDir, 'ROADMAP.md');
 
-  // 1. Validate the complete candidate before any registry write.
+  // 1. Validate against canonical TaskOS v2 JSON Schema.
   const schemaRaw = await fs.readFile(schemaFilePath, 'utf8');
   const schema = JSON.parse(schemaRaw);
   const ajv = new Ajv({ allErrors: true });
@@ -144,83 +183,52 @@ export async function validateTaskRegistryData(tasksData, { checkRoadmapParity =
   }
   for (const code of taskMap.keys()) checkCycle(code);
 
-  // 6. Exact lifecycle parity with roadmap index plus completion checkbox mirror.
-  try {
-    const roadmapTasksRaw = await fs.readFile(roadmapTasksPath, 'utf8');
-    const roadmapData = JSON.parse(roadmapTasksRaw);
-    if (!Array.isArray(roadmapData.tasks)) {
-      throw new Error('docs/roadmap/tasks.json must contain a tasks array.');
-    }
-    const roadmapById = new Map();
-    for (const roadmapTask of roadmapData.tasks) {
-      if (roadmapById.has(roadmapTask.id)) {
-        errors.push(`Duplicate roadmap task ID "${roadmapTask.id}".`);
-      }
-      roadmapById.set(roadmapTask.id, roadmapTask);
-    }
-
-    const roadmapText = await fs.readFile(roadmapMdPath, 'utf8');
-    const roadmapCheckState = new Map();
-    for (const line of roadmapText.split(/\r?\n/)) {
-      const match = /^\s*-\s*\[([ xX])\]\s+([A-Za-z0-9_.-]+)\b/.exec(line);
-      if (match) {
-        if (roadmapCheckState.has(match[2])) {
-          errors.push(`Duplicate ROADMAP.md checkbox ID "${match[2]}".`);
+  // 6. Direct checkbox parity between ROADMAP.md and canonical docs/tasks/tasks.json.
+  if (checkRoadmapParity) {
+    try {
+      const roadmapText = await fs.readFile(roadmapMdPath, 'utf8');
+      const roadmapCheckState = new Map();
+      for (const line of roadmapText.split(/\r?\n/)) {
+        const match = /^\s*-\s*\[([ xX])\]\s+([A-Za-z0-9_.-]+)\b/.exec(line);
+        if (match) {
+          if (roadmapCheckState.has(match[2])) {
+            errors.push(`Duplicate ROADMAP.md checkbox ID "${match[2]}".`);
+          }
+          roadmapCheckState.set(match[2], match[1].toLowerCase() === 'x');
         }
-        roadmapCheckState.set(match[2], match[1].toLowerCase() === 'x');
       }
-    }
 
-    for (const roadmapId of roadmapById.keys()) {
-      if (!roadmapCheckState.has(roadmapId)) {
-        errors.push(`Roadmap task "${roadmapId}" is missing its ROADMAP.md checkbox entry.`);
+      for (const checkboxId of roadmapCheckState.keys()) {
+        if (!taskMap.has(checkboxId)) {
+          errors.push(
+            `ROADMAP.md contains task "${checkboxId}" that is missing from docs/tasks/tasks.json.`
+          );
+        }
       }
-    }
-    for (const checkboxId of roadmapCheckState.keys()) {
-      if (!roadmapById.has(checkboxId)) {
-        errors.push(
-          `ROADMAP.md contains task "${checkboxId}" that is missing from docs/roadmap/tasks.json.`
-        );
-      }
-    }
 
-    for (const roadmapTask of roadmapData.tasks) {
-      const canonical = taskMap.get(roadmapTask.id);
-      if (!canonical) {
-        errors.push(`Roadmap task "${roadmapTask.id}" is missing from canonical TaskOS.`);
-        continue;
-      }
-      if (checkRoadmapParity) {
+      for (const canonical of tasksData.tasks) {
+        if (!isRoadmapTaskCode(canonical.code)) continue;
+        if (!roadmapCheckState.has(canonical.code)) {
+          errors.push(`Roadmap task "${canonical.code}" is missing its ROADMAP.md checkbox entry.`);
+          continue;
+        }
         const expectedStatus = toRoadmapTaskStatus(canonical.status);
         if (expectedStatus === null) {
           errors.push(
-            `Task "${canonical.code}" has status "${canonical.status}" with no roadmap projection mapping.`
-          );
-        } else if (roadmapTask.status !== expectedStatus) {
-          errors.push(
-            `Status mismatch on "${roadmapTask.id}": roadmap index is "${roadmapTask.status}", but TaskOS maps to "${expectedStatus}".`
+            `Task "${canonical.code}" has status "${canonical.status}" with no roadmap mapping.`
           );
         }
-
-        const isRoadmapDone = roadmapCheckState.get(roadmapTask.id) ?? false;
+        const isRoadmapDone = roadmapCheckState.get(canonical.code) ?? false;
         const isCanonicalDone = canonical.status === 'done';
         if (isRoadmapDone !== isCanonicalDone) {
           errors.push(
-            `Checkbox mismatch on "${roadmapTask.id}": ROADMAP.md is ${isRoadmapDone ? '[x]' : '[ ]'}, but TaskOS status is "${canonical.status}".`
+            `Checkbox mismatch on "${canonical.code}": ROADMAP.md is ${isRoadmapDone ? '[x]' : '[ ]'}, but TaskOS status is "${canonical.status}".`
           );
         }
       }
+    } catch (err) {
+      errors.push(`Failed reading ROADMAP.md for parity check: ${err.message}`);
     }
-
-    for (const canonical of tasksData.tasks) {
-      if (/^(?:M\d+\.\d+|K\d+-\d+)$/u.test(canonical.code) && !roadmapById.has(canonical.code)) {
-        errors.push(
-          `TaskOS roadmap task "${canonical.code}" is missing from docs/roadmap/tasks.json.`
-        );
-      }
-    }
-  } catch (err) {
-    errors.push(`Failed reading roadmap files for parity check: ${err.message}`);
   }
 
   return {
@@ -244,8 +252,8 @@ export function findStaleRecoveryNarrative(narrative, taskCount) {
   return staleClaims.filter(([pattern]) => pattern.test(narrative)).map(([, message]) => message);
 }
 
-export async function validateTasks({ checkRoadmapParity = true } = {}) {
-  const tasksFilePath = path.join(rootDir, 'docs/tasks/tasks.json');
+export async function validateTasks({ checkRoadmapParity = true, checkSingleSource = true } = {}) {
+  const tasksFilePath = path.join(rootDir, CANONICAL_TASKS_RELATIVE_PATH);
   let tasksData;
   try {
     const tasksRaw = await fs.readFile(tasksFilePath, 'utf8');
@@ -254,6 +262,14 @@ export async function validateTasks({ checkRoadmapParity = true } = {}) {
     return { valid: false, taskCount: 0, errors: [error.message] };
   }
   const result = await validateTaskRegistryData(tasksData, { checkRoadmapParity });
+  if (checkSingleSource) {
+    const duplicateFiles = await findDuplicateTaskJsonFiles(rootDir);
+    for (const dup of duplicateFiles) {
+      result.errors.push(
+        `Duplicate task JSON detected at "${dup}". Keep only canonical "${CANONICAL_TASKS_RELATIVE_PATH}".`
+      );
+    }
+  }
   try {
     const narrative = await fs.readFile(path.join(rootDir, 'docs/tasks/sources/todo.md'), 'utf8');
     result.errors.push(...findStaleRecoveryNarrative(narrative, result.taskCount));
@@ -270,7 +286,7 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.a
     .then((res) => {
       if (res.valid) {
         console.log(
-          `TaskOS Validation PASSED: ${res.taskCount} tasks verified zero-drift and schema-valid.`
+          `TaskOS Validation PASSED: ${res.taskCount} tasks verified single-source and schema-valid.`
         );
         process.exit(0);
       } else {

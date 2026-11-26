@@ -256,47 +256,11 @@ jobs:
         run: |
           bun run build
           bun run test:unit:built
-      - name: Build and validate the one-time TaskOS recovery candidate
-        id: taskos-recovery
-        shell: bash
-        run: |
-          set -euo pipefail
-          candidate_path="$RUNNER_TEMP/taskos-candidate-${GITHUB_SHA}.json"
-          # Pin generatedAt to the source commit so reruns of the same SHA are byte-for-byte reproducible.
-          # Candidate mode is non-mutating and performs full schema/provenance/DAG validation.
-          source_date_epoch="$(git show -s --format=%ct "$GITHUB_SHA")"
-          SOURCE_DATE_EPOCH="$source_date_epoch" bun run tasks:sweep --candidate "$candidate_path"
-          TASKOS_CANDIDATE="$candidate_path" node --input-type=module <<'NODE'
-          import assert from 'node:assert/strict';
-          import { readFile } from 'node:fs/promises';
-
-          const registry = JSON.parse(await readFile(process.env.TASKOS_CANDIDATE, 'utf8'));
-          assert.equal(registry.tasks.length, 715);
-          const statusCounts = Object.fromEntries(
-            ['done', 'doing', 'todo', 'blocked'].map((status) => [
-              status,
-              registry.tasks.filter((task) => task.status === status).length,
-            ])
-          );
-          assert.deepEqual(statusCounts, { done: 477, doing: 49, todo: 147, blocked: 24 });
-          console.log('Validated 715 isolated TaskOS candidate records; canonical registry was not changed.');
-          NODE
-          echo "candidate_generated=true" >> "$GITHUB_OUTPUT"
-      - name: Validate canonical TaskOS registry and projections
+      - name: Validate canonical TaskOS single source of truth
         run: |
           set -euo pipefail
           bun run tasks:validate
           bun run automation:check:roadmap
-          bun run tasks:sweep -- --check
-          node docs/bundles/visual-universe-pack/tools/sync-task-state.mjs --check
-      - name: Upload the source-validated TaskOS recovery candidate
-        if: always() && steps.taskos-recovery.outputs.candidate_generated == 'true'
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
-        with:
-          name: taskos-candidate-${{ github.sha }}
-          path: ${{ runner.temp }}/taskos-candidate-${{ github.sha }}.json
-          if-no-files-found: error
-          retention-days: 7
 
   knowledge-gate:
     runs-on: ubuntu-24.04

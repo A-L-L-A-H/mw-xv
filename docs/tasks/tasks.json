@@ -82,7 +82,7 @@
       "references": ["docs/roadmap/00-baseline.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M0.01"
       },
       "url": "",
@@ -134,7 +134,7 @@
       "references": ["docs/roadmap/00-baseline.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M0.02"
       },
       "url": "",
@@ -186,7 +186,7 @@
       "references": ["docs/roadmap/00-baseline.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M0.03"
       },
       "url": "",
@@ -252,7 +252,7 @@
       "references": ["docs/roadmap/00-baseline.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M0.04"
       },
       "url": "",
@@ -304,7 +304,7 @@
       "references": ["docs/roadmap/00-baseline.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M0.05"
       },
       "url": "",
@@ -356,7 +356,7 @@
       "references": ["docs/roadmap/00-baseline.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M0.06"
       },
       "url": "",
@@ -408,7 +408,7 @@
       "references": ["docs/roadmap/00-baseline.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M0.07"
       },
       "url": "",
@@ -460,7 +460,7 @@
       "references": ["docs/roadmap/00-baseline.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M0.08"
       },
       "url": "",
@@ -512,7 +512,7 @@
       "references": ["docs/roadmap/01-governance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M1.01"
       },
       "url": "",
@@ -564,7 +564,7 @@
       "references": ["docs/roadmap/01-governance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M1.02"
       },
       "url": "",
@@ -616,7 +616,7 @@
       "references": ["docs/roadmap/01-governance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M1.03"
       },
       "url": "",
@@ -668,7 +668,7 @@
       "references": ["docs/roadmap/01-governance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M1.04"
       },
       "url": "",
@@ -720,7 +720,7 @@
       "references": ["docs/roadmap/01-governance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M1.05"
       },
       "url": "",
@@ -772,7 +772,7 @@
       "references": ["docs/roadmap/01-governance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M1.06"
       },
       "url": "",
@@ -824,7 +824,7 @@
       "references": ["docs/roadmap/01-governance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M1.07"
       },
       "url": "",
@@ -876,7 +876,7 @@
       "references": ["docs/roadmap/01-governance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M1.08"
       },
       "url": "",
@@ -928,7 +928,7 @@
       "references": ["docs/roadmap/01-governance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M1.09"
       },
       "url": "",
@@ -980,7 +980,7 @@
       "references": ["docs/roadmap/01-governance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M1.10"
       },
       "url": "",
@@ -1032,7 +1032,7 @@
       "references": ["docs/roadmap/01-governance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M1.11"
       },
       "url": "",
@@ -1084,7 +1084,7 @@
       "references": ["docs/roadmap/01-governance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M1.12"
       },
       "url": "",
@@ -1136,7 +1136,7 @@
       "references": ["docs/roadmap/02-ci.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M2.01"
       },
       "url": "",
@@ -1188,7 +1188,7 @@
       "references": ["docs/roadmap/02-ci.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M2.02"
       },
       "url": "",
@@ -1240,7 +1240,7 @@
       "references": ["docs/roadmap/02-ci.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M2.03"
       },
       "url": "",
@@ -1292,7 +1292,7 @@
       "references": ["docs/roadmap/02-ci.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M2.04"
       },
       "url": "",
@@ -1344,7 +1344,7 @@
       "references": ["docs/roadmap/02-ci.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M2.05"
       },
       "url": "",
@@ -1396,7 +1396,7 @@
       "references": ["docs/roadmap/02-ci.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M2.06"
       },
       "url": "",
@@ -1448,7 +1448,7 @@
       "references": ["docs/roadmap/02-ci.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M2.07"
       },
       "url": "",
@@ -1500,7 +1500,7 @@
       "references": ["docs/roadmap/02-ci.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M2.08"
       },
       "url": "",
@@ -1552,7 +1552,7 @@
       "references": ["docs/roadmap/02-ci.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M2.09"
       },
       "url": "",
@@ -1604,7 +1604,7 @@
       "references": ["docs/roadmap/02-ci.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M2.10"
       },
       "url": "",
@@ -1656,7 +1656,7 @@
       "references": ["docs/roadmap/02-ci.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M2.11"
       },
       "url": "",
@@ -1708,7 +1708,7 @@
       "references": ["docs/roadmap/02-ci.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M2.12"
       },
       "url": "",
@@ -1760,7 +1760,7 @@
       "references": ["docs/roadmap/02-ci.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M2.13"
       },
       "url": "",
@@ -1812,7 +1812,7 @@
       "references": ["docs/roadmap/03-board.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M3.01"
       },
       "url": "",
@@ -1864,7 +1864,7 @@
       "references": ["docs/roadmap/03-board.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M3.02"
       },
       "url": "",
@@ -1916,7 +1916,7 @@
       "references": ["docs/roadmap/03-board.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M3.03"
       },
       "url": "",
@@ -1968,7 +1968,7 @@
       "references": ["docs/roadmap/03-board.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M3.04"
       },
       "url": "",
@@ -2020,7 +2020,7 @@
       "references": ["docs/roadmap/03-board.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M3.05"
       },
       "url": "",
@@ -2072,7 +2072,7 @@
       "references": ["docs/roadmap/03-board.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M3.06"
       },
       "url": "",
@@ -2124,7 +2124,7 @@
       "references": ["docs/roadmap/03-board.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M3.07"
       },
       "url": "",
@@ -2176,7 +2176,7 @@
       "references": ["docs/roadmap/03-board.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M3.08"
       },
       "url": "",
@@ -2228,7 +2228,7 @@
       "references": ["docs/roadmap/03-board.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M3.09"
       },
       "url": "",
@@ -2280,7 +2280,7 @@
       "references": ["docs/roadmap/03-board.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M3.10"
       },
       "url": "",
@@ -2332,7 +2332,7 @@
       "references": ["docs/roadmap/03-board.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M3.11"
       },
       "url": "",
@@ -2384,7 +2384,7 @@
       "references": ["docs/roadmap/04-backend.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M4.01"
       },
       "url": "",
@@ -2436,7 +2436,7 @@
       "references": ["docs/roadmap/04-backend.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M4.02"
       },
       "url": "",
@@ -2488,7 +2488,7 @@
       "references": ["docs/roadmap/04-backend.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M4.03"
       },
       "url": "",
@@ -2540,7 +2540,7 @@
       "references": ["docs/roadmap/04-backend.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M4.04"
       },
       "url": "",
@@ -2592,7 +2592,7 @@
       "references": ["docs/roadmap/04-backend.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M4.05"
       },
       "url": "",
@@ -2644,7 +2644,7 @@
       "references": ["docs/roadmap/04-backend.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M4.06"
       },
       "url": "",
@@ -2696,7 +2696,7 @@
       "references": ["docs/roadmap/04-backend.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M4.07"
       },
       "url": "",
@@ -2748,7 +2748,7 @@
       "references": ["docs/roadmap/04-backend.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M4.08"
       },
       "url": "",
@@ -2800,7 +2800,7 @@
       "references": ["docs/roadmap/04-backend.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M4.09"
       },
       "url": "",
@@ -2852,7 +2852,7 @@
       "references": ["docs/roadmap/04-backend.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M4.10"
       },
       "url": "",
@@ -2904,7 +2904,7 @@
       "references": ["docs/roadmap/04-backend.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M4.11"
       },
       "url": "",
@@ -2956,7 +2956,7 @@
       "references": ["docs/roadmap/04-backend.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M4.12"
       },
       "url": "",
@@ -3008,7 +3008,7 @@
       "references": ["docs/roadmap/04-backend.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M4.13"
       },
       "url": "",
@@ -3060,7 +3060,7 @@
       "references": ["docs/roadmap/04-backend.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M4.14"
       },
       "url": "",
@@ -3112,7 +3112,7 @@
       "references": ["docs/roadmap/04-backend.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M4.15"
       },
       "url": "",
@@ -3164,7 +3164,7 @@
       "references": ["docs/roadmap/04-backend.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M4.16"
       },
       "url": "",
@@ -3216,7 +3216,7 @@
       "references": ["docs/roadmap/05-design-system.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M5.01"
       },
       "url": "",
@@ -3268,7 +3268,7 @@
       "references": ["docs/roadmap/05-design-system.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M5.02"
       },
       "url": "",
@@ -3320,7 +3320,7 @@
       "references": ["docs/roadmap/05-design-system.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M5.03"
       },
       "url": "",
@@ -3372,7 +3372,7 @@
       "references": ["docs/roadmap/05-design-system.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M5.04"
       },
       "url": "",
@@ -3424,7 +3424,7 @@
       "references": ["docs/roadmap/05-design-system.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M5.05"
       },
       "url": "",
@@ -3476,7 +3476,7 @@
       "references": ["docs/roadmap/05-design-system.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M5.06"
       },
       "url": "",
@@ -3528,7 +3528,7 @@
       "references": ["docs/roadmap/05-design-system.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M5.07"
       },
       "url": "",
@@ -3580,7 +3580,7 @@
       "references": ["docs/roadmap/05-design-system.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M5.08"
       },
       "url": "",
@@ -3632,7 +3632,7 @@
       "references": ["docs/roadmap/05-design-system.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M5.09"
       },
       "url": "",
@@ -3684,7 +3684,7 @@
       "references": ["docs/roadmap/05-design-system.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M5.10"
       },
       "url": "",
@@ -3736,7 +3736,7 @@
       "references": ["docs/roadmap/05-design-system.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M5.11"
       },
       "url": "",
@@ -3788,7 +3788,7 @@
       "references": ["docs/roadmap/05-design-system.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M5.12"
       },
       "url": "",
@@ -3840,7 +3840,7 @@
       "references": ["docs/roadmap/05-design-system.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M5.13"
       },
       "url": "",
@@ -3892,7 +3892,7 @@
       "references": ["docs/roadmap/05-design-system.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M5.14"
       },
       "url": "",
@@ -3944,7 +3944,7 @@
       "references": ["docs/roadmap/05-design-system.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M5.15"
       },
       "url": "",
@@ -3996,7 +3996,7 @@
       "references": ["docs/roadmap/05-design-system.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M5.16"
       },
       "url": "",
@@ -4048,7 +4048,7 @@
       "references": ["docs/roadmap/05-design-system.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M5.17"
       },
       "url": "",
@@ -4100,7 +4100,7 @@
       "references": ["docs/roadmap/06-documentation.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M6.01"
       },
       "url": "",
@@ -4152,7 +4152,7 @@
       "references": ["docs/roadmap/06-documentation.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M6.02"
       },
       "url": "",
@@ -4204,7 +4204,7 @@
       "references": ["docs/roadmap/06-documentation.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M6.03"
       },
       "url": "",
@@ -4256,7 +4256,7 @@
       "references": ["docs/roadmap/06-documentation.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M6.04"
       },
       "url": "",
@@ -4308,7 +4308,7 @@
       "references": ["docs/roadmap/06-documentation.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M6.05"
       },
       "url": "",
@@ -4360,7 +4360,7 @@
       "references": ["docs/roadmap/06-documentation.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M6.06"
       },
       "url": "",
@@ -4412,7 +4412,7 @@
       "references": ["docs/roadmap/06-documentation.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M6.07"
       },
       "url": "",
@@ -4464,7 +4464,7 @@
       "references": ["docs/roadmap/06-documentation.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M6.08"
       },
       "url": "",
@@ -4516,7 +4516,7 @@
       "references": ["docs/roadmap/06-documentation.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M6.09"
       },
       "url": "",
@@ -4568,7 +4568,7 @@
       "references": ["docs/roadmap/06-documentation.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M6.10"
       },
       "url": "",
@@ -4620,7 +4620,7 @@
       "references": ["docs/roadmap/06-documentation.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M6.11"
       },
       "url": "",
@@ -4672,7 +4672,7 @@
       "references": ["docs/roadmap/07-release.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M7.01"
       },
       "url": "",
@@ -4724,7 +4724,7 @@
       "references": ["docs/roadmap/07-release.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M7.02"
       },
       "url": "",
@@ -4776,7 +4776,7 @@
       "references": ["docs/roadmap/07-release.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M7.03"
       },
       "url": "",
@@ -4828,7 +4828,7 @@
       "references": ["docs/roadmap/07-release.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M7.04"
       },
       "url": "",
@@ -4880,7 +4880,7 @@
       "references": ["docs/roadmap/07-release.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M7.05"
       },
       "url": "",
@@ -4932,7 +4932,7 @@
       "references": ["docs/roadmap/07-release.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M7.06"
       },
       "url": "",
@@ -4984,7 +4984,7 @@
       "references": ["docs/roadmap/07-release.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M7.07"
       },
       "url": "",
@@ -5036,7 +5036,7 @@
       "references": ["docs/roadmap/07-release.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M7.08"
       },
       "url": "",
@@ -5088,7 +5088,7 @@
       "references": ["docs/roadmap/07-release.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M7.09"
       },
       "url": "",
@@ -5140,7 +5140,7 @@
       "references": ["docs/roadmap/07-release.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M7.10"
       },
       "url": "",
@@ -5192,7 +5192,7 @@
       "references": ["docs/roadmap/07-release.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M7.11"
       },
       "url": "",
@@ -5244,7 +5244,7 @@
       "references": ["docs/roadmap/07-release.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M7.12"
       },
       "url": "",
@@ -5296,7 +5296,7 @@
       "references": ["docs/roadmap/07-release.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M7.13"
       },
       "url": "",
@@ -5348,7 +5348,7 @@
       "references": ["docs/roadmap/07-release.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M7.14"
       },
       "url": "",
@@ -5400,7 +5400,7 @@
       "references": ["docs/roadmap/07-release.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M7.15"
       },
       "url": "",
@@ -5452,7 +5452,7 @@
       "references": ["docs/roadmap/07-release.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M7.16"
       },
       "url": "",
@@ -5504,7 +5504,7 @@
       "references": ["docs/roadmap/08-security-maintenance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M8.01"
       },
       "url": "",
@@ -5556,7 +5556,7 @@
       "references": ["docs/roadmap/08-security-maintenance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M8.02"
       },
       "url": "",
@@ -5608,7 +5608,7 @@
       "references": ["docs/roadmap/08-security-maintenance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M8.03"
       },
       "url": "",
@@ -5660,7 +5660,7 @@
       "references": ["docs/roadmap/08-security-maintenance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M8.04"
       },
       "url": "",
@@ -5712,7 +5712,7 @@
       "references": ["docs/roadmap/08-security-maintenance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M8.05"
       },
       "url": "",
@@ -5764,7 +5764,7 @@
       "references": ["docs/roadmap/08-security-maintenance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M8.06"
       },
       "url": "",
@@ -5816,7 +5816,7 @@
       "references": ["docs/roadmap/08-security-maintenance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M8.07"
       },
       "url": "",
@@ -5868,7 +5868,7 @@
       "references": ["docs/roadmap/08-security-maintenance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M8.08"
       },
       "url": "",
@@ -5920,7 +5920,7 @@
       "references": ["docs/roadmap/08-security-maintenance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M8.09"
       },
       "url": "",
@@ -5972,7 +5972,7 @@
       "references": ["docs/roadmap/08-security-maintenance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M8.10"
       },
       "url": "",
@@ -6024,7 +6024,7 @@
       "references": ["docs/roadmap/08-security-maintenance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M8.11"
       },
       "url": "",
@@ -6076,7 +6076,7 @@
       "references": ["docs/roadmap/09-addons.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M9.01"
       },
       "url": "",
@@ -6128,7 +6128,7 @@
       "references": ["docs/roadmap/09-addons.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M9.02"
       },
       "url": "",
@@ -6180,7 +6180,7 @@
       "references": ["docs/roadmap/09-addons.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M9.03"
       },
       "url": "",
@@ -6232,7 +6232,7 @@
       "references": ["docs/roadmap/09-addons.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M9.04"
       },
       "url": "",
@@ -6284,7 +6284,7 @@
       "references": ["docs/roadmap/09-addons.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M9.05"
       },
       "url": "",
@@ -6336,7 +6336,7 @@
       "references": ["docs/roadmap/09-addons.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M9.06"
       },
       "url": "",
@@ -6388,7 +6388,7 @@
       "references": ["docs/roadmap/09-addons.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M9.07"
       },
       "url": "",
@@ -6440,7 +6440,7 @@
       "references": ["docs/roadmap/09-addons.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M9.08"
       },
       "url": "",
@@ -6492,7 +6492,7 @@
       "references": ["docs/roadmap/10-acceptance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M10.01"
       },
       "url": "",
@@ -6544,7 +6544,7 @@
       "references": ["docs/roadmap/10-acceptance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M10.02"
       },
       "url": "",
@@ -6596,7 +6596,7 @@
       "references": ["docs/roadmap/10-acceptance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M10.03"
       },
       "url": "",
@@ -6648,7 +6648,7 @@
       "references": ["docs/roadmap/10-acceptance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M10.04"
       },
       "url": "",
@@ -6700,7 +6700,7 @@
       "references": ["docs/roadmap/10-acceptance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M10.05"
       },
       "url": "",
@@ -6752,7 +6752,7 @@
       "references": ["docs/roadmap/10-acceptance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M10.06"
       },
       "url": "",
@@ -6804,7 +6804,7 @@
       "references": ["docs/roadmap/10-acceptance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M10.07"
       },
       "url": "",
@@ -6856,7 +6856,7 @@
       "references": ["docs/roadmap/10-acceptance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M10.08"
       },
       "url": "",
@@ -6908,7 +6908,7 @@
       "references": ["docs/roadmap/10-acceptance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M10.09"
       },
       "url": "",
@@ -6960,7 +6960,7 @@
       "references": ["docs/roadmap/10-acceptance.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M10.10"
       },
       "url": "",
@@ -7012,7 +7012,7 @@
       "references": ["docs/roadmap/11-issues-delivery.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M11.01"
       },
       "url": "",
@@ -7064,7 +7064,7 @@
       "references": ["docs/roadmap/11-issues-delivery.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M11.02"
       },
       "url": "",
@@ -7116,7 +7116,7 @@
       "references": ["docs/roadmap/11-issues-delivery.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M11.03"
       },
       "url": "",
@@ -7168,7 +7168,7 @@
       "references": ["docs/roadmap/11-issues-delivery.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M11.04"
       },
       "url": "",
@@ -7220,7 +7220,7 @@
       "references": ["docs/roadmap/11-issues-delivery.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M11.05"
       },
       "url": "",
@@ -7272,7 +7272,7 @@
       "references": ["docs/roadmap/11-issues-delivery.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M11.06"
       },
       "url": "",
@@ -7324,7 +7324,7 @@
       "references": ["docs/roadmap/11-issues-delivery.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M11.07"
       },
       "url": "",
@@ -7376,7 +7376,7 @@
       "references": ["docs/roadmap/11-issues-delivery.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M11.08"
       },
       "url": "",
@@ -7428,7 +7428,7 @@
       "references": ["docs/roadmap/11-issues-delivery.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M11.09"
       },
       "url": "",
@@ -7480,7 +7480,7 @@
       "references": ["docs/roadmap/11-issues-delivery.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M11.10"
       },
       "url": "",
@@ -7532,7 +7532,7 @@
       "references": ["docs/roadmap/11-issues-delivery.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M11.11"
       },
       "url": "",
@@ -7584,7 +7584,7 @@
       "references": ["docs/roadmap/11-issues-delivery.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M11.12"
       },
       "url": "",
@@ -7636,7 +7636,7 @@
       "references": ["docs/roadmap/11-issues-delivery.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M11.13"
       },
       "url": "",
@@ -7688,7 +7688,7 @@
       "references": ["docs/roadmap/11-issues-delivery.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M11.14"
       },
       "url": "",
@@ -7740,7 +7740,7 @@
       "references": ["docs/roadmap/11-issues-delivery.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M11.15"
       },
       "url": "",
@@ -7802,7 +7802,7 @@
       "references": ["docs/roadmap/13-ai-corporation.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M12.01"
       },
       "url": "",
@@ -7854,7 +7854,7 @@
       "references": ["docs/roadmap/13-ai-corporation.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M12.02"
       },
       "url": "",
@@ -7906,7 +7906,7 @@
       "references": ["docs/roadmap/13-ai-corporation.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M12.03"
       },
       "url": "",
@@ -7958,7 +7958,7 @@
       "references": ["docs/roadmap/13-ai-corporation.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M12.04"
       },
       "url": "",
@@ -8010,7 +8010,7 @@
       "references": ["docs/roadmap/13-ai-corporation.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M12.05"
       },
       "url": "",
@@ -8062,7 +8062,7 @@
       "references": ["docs/roadmap/13-ai-corporation.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M12.06"
       },
       "url": "",
@@ -8114,7 +8114,7 @@
       "references": ["docs/roadmap/13-ai-corporation.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M12.07"
       },
       "url": "",
@@ -8166,7 +8166,7 @@
       "references": ["docs/roadmap/13-ai-corporation.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M12.08"
       },
       "url": "",
@@ -8218,7 +8218,7 @@
       "references": ["docs/roadmap/13-ai-corporation.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M12.09"
       },
       "url": "",
@@ -8270,7 +8270,7 @@
       "references": ["docs/roadmap/13-ai-corporation.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M12.10"
       },
       "url": "",
@@ -8322,7 +8322,7 @@
       "references": ["docs/roadmap/13-ai-corporation.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M12.11"
       },
       "url": "",
@@ -8374,7 +8374,7 @@
       "references": ["docs/roadmap/13-ai-corporation.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M12.12"
       },
       "url": "",
@@ -8426,7 +8426,7 @@
       "references": ["docs/roadmap/13-ai-corporation.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M12.13"
       },
       "url": "",
@@ -8478,7 +8478,7 @@
       "references": ["docs/roadmap/13-ai-corporation.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M12.14"
       },
       "url": "",
@@ -8530,7 +8530,7 @@
       "references": ["docs/roadmap/14-desktop-engineering.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M13.01"
       },
       "url": "",
@@ -8582,7 +8582,7 @@
       "references": ["docs/roadmap/14-desktop-engineering.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M13.02"
       },
       "url": "",
@@ -8634,7 +8634,7 @@
       "references": ["docs/roadmap/14-desktop-engineering.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M13.03"
       },
       "url": "",
@@ -8686,7 +8686,7 @@
       "references": ["docs/roadmap/14-desktop-engineering.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M13.04"
       },
       "url": "",
@@ -8738,7 +8738,7 @@
       "references": ["docs/roadmap/14-desktop-engineering.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M13.05"
       },
       "url": "",
@@ -8790,7 +8790,7 @@
       "references": ["docs/roadmap/14-desktop-engineering.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M13.06"
       },
       "url": "",
@@ -8842,7 +8842,7 @@
       "references": ["docs/roadmap/14-desktop-engineering.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M13.07"
       },
       "url": "",
@@ -8894,7 +8894,7 @@
       "references": ["docs/roadmap/14-desktop-engineering.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M13.08"
       },
       "url": "",
@@ -8946,7 +8946,7 @@
       "references": ["docs/roadmap/14-desktop-engineering.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M13.09"
       },
       "url": "",
@@ -8998,7 +8998,7 @@
       "references": ["docs/roadmap/14-desktop-engineering.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M13.10"
       },
       "url": "",
@@ -9050,7 +9050,7 @@
       "references": ["docs/roadmap/14-desktop-engineering.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M13.11"
       },
       "url": "",
@@ -9102,7 +9102,7 @@
       "references": ["docs/roadmap/14-desktop-engineering.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M13.12"
       },
       "url": "",
@@ -9154,7 +9154,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K0-001"
       },
       "url": "",
@@ -9206,7 +9206,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K0-002"
       },
       "url": "",
@@ -9258,7 +9258,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K0-003"
       },
       "url": "",
@@ -9310,7 +9310,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K0-004"
       },
       "url": "",
@@ -9362,7 +9362,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K0-005"
       },
       "url": "",
@@ -9414,7 +9414,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K0-006"
       },
       "url": "",
@@ -9466,7 +9466,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K0-007"
       },
       "url": "",
@@ -9518,7 +9518,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K1-001"
       },
       "url": "",
@@ -9570,7 +9570,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K1-002"
       },
       "url": "",
@@ -9622,7 +9622,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K1-003"
       },
       "url": "",
@@ -9674,7 +9674,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K1-004"
       },
       "url": "",
@@ -9726,7 +9726,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K1-005"
       },
       "url": "",
@@ -9778,7 +9778,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K1-006"
       },
       "url": "",
@@ -9830,7 +9830,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K1-007"
       },
       "url": "",
@@ -9882,7 +9882,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K2-001"
       },
       "url": "",
@@ -9934,7 +9934,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K2-002"
       },
       "url": "",
@@ -9986,7 +9986,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K2-003"
       },
       "url": "",
@@ -10038,7 +10038,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K2-004"
       },
       "url": "",
@@ -10090,7 +10090,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K2-005"
       },
       "url": "",
@@ -10142,7 +10142,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K2-006"
       },
       "url": "",
@@ -10194,7 +10194,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K2-007"
       },
       "url": "",
@@ -10246,7 +10246,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K2-008"
       },
       "url": "",
@@ -10298,7 +10298,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K3-001"
       },
       "url": "",
@@ -10350,7 +10350,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K3-002"
       },
       "url": "",
@@ -10402,7 +10402,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K3-003"
       },
       "url": "",
@@ -10454,7 +10454,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K3-004"
       },
       "url": "",
@@ -10506,7 +10506,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K3-005"
       },
       "url": "",
@@ -10558,7 +10558,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K3-006"
       },
       "url": "",
@@ -10610,7 +10610,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K3-007"
       },
       "url": "",
@@ -10662,7 +10662,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K4-001"
       },
       "url": "",
@@ -10714,7 +10714,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K4-002"
       },
       "url": "",
@@ -10766,7 +10766,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K4-003"
       },
       "url": "",
@@ -10818,7 +10818,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K4-004"
       },
       "url": "",
@@ -10870,7 +10870,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K4-005"
       },
       "url": "",
@@ -10922,7 +10922,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K4-006"
       },
       "url": "",
@@ -10974,7 +10974,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K5-001"
       },
       "url": "",
@@ -11026,7 +11026,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K5-002"
       },
       "url": "",
@@ -11078,7 +11078,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K5-003"
       },
       "url": "",
@@ -11130,7 +11130,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K5-004"
       },
       "url": "",
@@ -11182,7 +11182,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K5-005"
       },
       "url": "",
@@ -11234,7 +11234,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K5-006"
       },
       "url": "",
@@ -11286,7 +11286,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K6-001"
       },
       "url": "",
@@ -11338,7 +11338,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K6-002"
       },
       "url": "",
@@ -11390,7 +11390,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K6-003"
       },
       "url": "",
@@ -11442,7 +11442,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K6-004"
       },
       "url": "",
@@ -11494,7 +11494,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K6-005"
       },
       "url": "",
@@ -11546,7 +11546,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K7-001"
       },
       "url": "",
@@ -11598,7 +11598,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K7-002"
       },
       "url": "",
@@ -11650,7 +11650,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K7-003"
       },
       "url": "",
@@ -11702,7 +11702,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K7-004"
       },
       "url": "",
@@ -11754,7 +11754,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K7-005"
       },
       "url": "",
@@ -11806,7 +11806,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K7-006"
       },
       "url": "",
@@ -11858,7 +11858,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K8-001"
       },
       "url": "",
@@ -11910,7 +11910,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K8-002"
       },
       "url": "",
@@ -11962,7 +11962,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K8-003"
       },
       "url": "",
@@ -12014,7 +12014,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K8-004"
       },
       "url": "",
@@ -12066,7 +12066,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K8-005"
       },
       "url": "",
@@ -12118,7 +12118,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K8-006"
       },
       "url": "",
@@ -12170,7 +12170,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K9-001"
       },
       "url": "",
@@ -12222,7 +12222,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K9-002"
       },
       "url": "",
@@ -12274,7 +12274,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K9-003"
       },
       "url": "",
@@ -12326,7 +12326,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K9-004"
       },
       "url": "",
@@ -12378,7 +12378,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K9-005"
       },
       "url": "",
@@ -12430,7 +12430,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K9-006"
       },
       "url": "",
@@ -12482,7 +12482,7 @@
       "references": ["docs/roadmap/12-local-ai-rebuild.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "K9-007"
       },
       "url": "",
@@ -12546,7 +12546,7 @@
       "references": ["docs/roadmap/20-isp-rust-go-architecture-aaa.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M19.01"
       },
       "url": "",
@@ -12609,7 +12609,7 @@
       "references": ["docs/roadmap/20-isp-rust-go-architecture-aaa.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M19.02"
       },
       "url": "",
@@ -12661,7 +12661,7 @@
       "references": ["docs/roadmap/20-isp-rust-go-architecture-aaa.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M19.03"
       },
       "url": "",
@@ -12713,7 +12713,7 @@
       "references": ["docs/roadmap/20-isp-rust-go-architecture-aaa.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M19.04"
       },
       "url": "",
@@ -12765,7 +12765,7 @@
       "references": ["docs/roadmap/20-isp-rust-go-architecture-aaa.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M19.05"
       },
       "url": "",
@@ -12817,7 +12817,7 @@
       "references": ["docs/roadmap/20-isp-rust-go-architecture-aaa.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M19.06"
       },
       "url": "",
@@ -12869,7 +12869,7 @@
       "references": ["docs/roadmap/20-isp-rust-go-architecture-aaa.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M19.07"
       },
       "url": "",
@@ -12921,7 +12921,7 @@
       "references": ["docs/roadmap/20-isp-rust-go-architecture-aaa.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M19.08"
       },
       "url": "",
@@ -12973,7 +12973,7 @@
       "references": ["docs/roadmap/20-isp-rust-go-architecture-aaa.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M19.09"
       },
       "url": "",
@@ -13025,7 +13025,7 @@
       "references": ["docs/roadmap/20-isp-rust-go-architecture-aaa.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M19.10"
       },
       "url": "",
@@ -13077,7 +13077,7 @@
       "references": ["docs/roadmap/20-isp-rust-go-architecture-aaa.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M19.11"
       },
       "url": "",
@@ -13129,7 +13129,7 @@
       "references": ["docs/roadmap/20-isp-rust-go-architecture-aaa.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M19.12"
       },
       "url": "",
@@ -13181,7 +13181,7 @@
       "references": ["docs/roadmap/20-isp-rust-go-architecture-aaa.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M19.13"
       },
       "url": "",
@@ -13233,7 +13233,7 @@
       "references": ["docs/roadmap/21-isp-oss-fttx-ipam.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M20.01"
       },
       "url": "",
@@ -13285,7 +13285,7 @@
       "references": ["docs/roadmap/21-isp-oss-fttx-ipam.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M20.02"
       },
       "url": "",
@@ -13337,7 +13337,7 @@
       "references": ["docs/roadmap/21-isp-oss-fttx-ipam.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M20.03"
       },
       "url": "",
@@ -13389,7 +13389,7 @@
       "references": ["docs/roadmap/21-isp-oss-fttx-ipam.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M20.04"
       },
       "url": "",
@@ -13441,7 +13441,7 @@
       "references": ["docs/roadmap/21-isp-oss-fttx-ipam.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M20.05"
       },
       "url": "",
@@ -13493,7 +13493,7 @@
       "references": ["docs/roadmap/21-isp-oss-fttx-ipam.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M20.06"
       },
       "url": "",
@@ -13545,7 +13545,7 @@
       "references": ["docs/roadmap/21-isp-oss-fttx-ipam.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M20.07"
       },
       "url": "",
@@ -13597,7 +13597,7 @@
       "references": ["docs/roadmap/21-isp-oss-fttx-ipam.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M20.08"
       },
       "url": "",
@@ -13649,7 +13649,7 @@
       "references": ["docs/roadmap/22-isp-rust-services-noc.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M21.01"
       },
       "url": "",
@@ -13701,7 +13701,7 @@
       "references": ["docs/roadmap/22-isp-rust-services-noc.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M21.02"
       },
       "url": "",
@@ -13753,7 +13753,7 @@
       "references": ["docs/roadmap/22-isp-rust-services-noc.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M21.03"
       },
       "url": "",
@@ -13805,7 +13805,7 @@
       "references": ["docs/roadmap/22-isp-rust-services-noc.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M21.04"
       },
       "url": "",
@@ -13857,7 +13857,7 @@
       "references": ["docs/roadmap/22-isp-rust-services-noc.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M21.05"
       },
       "url": "",
@@ -13909,7 +13909,7 @@
       "references": ["docs/roadmap/22-isp-rust-services-noc.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M21.06"
       },
       "url": "",
@@ -13961,7 +13961,7 @@
       "references": ["docs/roadmap/22-isp-rust-services-noc.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M21.07"
       },
       "url": "",
@@ -14013,7 +14013,7 @@
       "references": ["docs/roadmap/22-isp-rust-services-noc.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M21.08"
       },
       "url": "",
@@ -14065,7 +14065,7 @@
       "references": ["docs/roadmap/23-isp-bss-server-products.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M22.01"
       },
       "url": "",
@@ -14117,7 +14117,7 @@
       "references": ["docs/roadmap/23-isp-bss-server-products.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M22.02"
       },
       "url": "",
@@ -14169,7 +14169,7 @@
       "references": ["docs/roadmap/23-isp-bss-server-products.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M22.03"
       },
       "url": "",
@@ -14221,7 +14221,7 @@
       "references": ["docs/roadmap/23-isp-bss-server-products.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M22.04"
       },
       "url": "",
@@ -14273,7 +14273,7 @@
       "references": ["docs/roadmap/23-isp-bss-server-products.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M22.05"
       },
       "url": "",
@@ -14325,7 +14325,7 @@
       "references": ["docs/roadmap/23-isp-bss-server-products.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M22.06"
       },
       "url": "",
@@ -14390,7 +14390,7 @@
       "references": ["docs/roadmap/23-isp-bss-server-products.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "docs/roadmap/tasks.json",
+        "file": "ROADMAP.md",
         "legacyId": "M22.07"
       },
       "url": "",
@@ -14461,7 +14461,7 @@
       "references": ["docs/decisions/0007-ai-corporation-addon-first-architecture.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "file": "docs/tasks/tasks.json",
         "legacyId": "AUD-001"
       },
       "url": "",
@@ -14540,7 +14540,7 @@
       "references": ["ROADMAP.md#M2.04", "ROADMAP.md#M9.07"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "file": "docs/tasks/tasks.json",
         "legacyId": "AUD-002"
       },
       "url": "",
@@ -14603,7 +14603,7 @@
       "references": ["apps/todo/Cargo.toml"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "file": "docs/tasks/tasks.json",
         "legacyId": "AUD-003"
       },
       "url": "",
@@ -14671,7 +14671,7 @@
       "references": ["apps/api/src/plugins/rate-limit-store.ts"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "file": "docs/tasks/tasks.json",
         "legacyId": "AUD-004"
       },
       "url": "",
@@ -14734,7 +14734,7 @@
       "references": ["ROADMAP.md#M4.06", "ROADMAP.md#M10.05"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "file": "docs/tasks/tasks.json",
         "legacyId": "AUD-005"
       },
       "url": "",
@@ -14802,7 +14802,7 @@
       "references": ["docs/engineering/authentication-security.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "file": "docs/tasks/tasks.json",
         "legacyId": "AUD-006"
       },
       "url": "",
@@ -14870,7 +14870,7 @@
       "references": ["arXiv:2508.02866"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "file": "docs/tasks/tasks.json",
         "legacyId": "AUD-007"
       },
       "url": "",
@@ -14943,7 +14943,7 @@
       "references": ["turbo.json"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "file": "docs/tasks/tasks.json",
         "legacyId": "AUD-008"
       },
       "url": "",
@@ -15006,7 +15006,7 @@
       "references": ["packages/logger/src/index.ts"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "file": "docs/tasks/tasks.json",
         "legacyId": "AUD-009"
       },
       "url": "",
@@ -15073,7 +15073,7 @@
       "references": ["packages/orm/src/schema-sync.ts"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "file": "docs/tasks/tasks.json",
         "legacyId": "AUD-010"
       },
       "url": "",
@@ -15134,7 +15134,7 @@
       "references": ["arXiv:2503.18813", "arXiv:2605.17634"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "file": "docs/tasks/tasks.json",
         "legacyId": "AUD-011"
       },
       "url": "",
@@ -15197,7 +15197,7 @@
       "references": ["docs/guide/how-to/jobs-outbox.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "file": "docs/tasks/tasks.json",
         "legacyId": "AUD-012"
       },
       "url": "",
@@ -15269,7 +15269,7 @@
       "references": ["docs/engineering/refactor-map.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "file": "docs/tasks/tasks.json",
         "legacyId": "AUD-013"
       },
       "url": "",
@@ -15332,7 +15332,7 @@
       "references": ["scripts/orm-codegen.mjs"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "file": "docs/tasks/tasks.json",
         "legacyId": "AUD-014"
       },
       "url": "",
@@ -15406,7 +15406,7 @@
       ],
       "blockedReason": null,
       "sourceRef": {
-        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "file": "docs/tasks/tasks.json",
         "legacyId": "AUD-015"
       },
       "url": "",
@@ -15473,7 +15473,7 @@
       "references": ["apps/ui-catalog/src/asset-review-status.ts", "packages/assets/licenses.json"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "file": "docs/tasks/tasks.json",
         "legacyId": "AUD-016"
       },
       "url": "",
@@ -15538,7 +15538,7 @@
       "references": ["apps/ui-catalog/src/AssetBrowser.tsx", "packages/ui/README.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "file": "docs/tasks/tasks.json",
         "legacyId": "AUD-017"
       },
       "url": "",
@@ -15603,7 +15603,7 @@
       "references": ["packages/assets/licenses.json", "apps/ui-catalog/src/AssetBrowser.tsx"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "file": "docs/tasks/tasks.json",
         "legacyId": "AUD-018"
       },
       "url": "",
@@ -15686,7 +15686,7 @@
       ],
       "blockedReason": "Canonical SceneLab integration is already owned by existing GitHub issue #53; retain this record for traceability only and do not execute independently. Issue #53 must wait for issue #52.",
       "sourceRef": {
-        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "file": "docs/tasks/tasks.json",
         "legacyId": "AUD-019"
       },
       "url": "",
@@ -15758,7 +15758,7 @@
       ],
       "blockedReason": "The SceneLab status and missing-metadata tests are already included in existing GitHub issue #53; retain this record for traceability only and do not execute a duplicate task.",
       "sourceRef": {
-        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "file": "docs/tasks/tasks.json",
         "legacyId": "AUD-020"
       },
       "url": "",
@@ -15834,7 +15834,7 @@
       ],
       "blockedReason": null,
       "sourceRef": {
-        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "file": "docs/tasks/tasks.json",
         "legacyId": "AUD-021"
       },
       "url": "",
@@ -15901,7 +15901,7 @@
       "references": ["apps/board/e2e/visual-audit.spec.ts", "docs/design/visual-direction.md"],
       "blockedReason": "Maintainer re-triage required: current source evidence does not support the proposed documentation change. Do not edit the document until this finding is replaced or retired.",
       "sourceRef": {
-        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "file": "docs/tasks/tasks.json",
         "legacyId": "AUD-022"
       },
       "url": "",
@@ -15973,7 +15973,7 @@
       ],
       "blockedReason": null,
       "sourceRef": {
-        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "file": "docs/tasks/tasks.json",
         "legacyId": "AUD-023"
       },
       "url": "",
@@ -16042,7 +16042,7 @@
       "references": ["apps/board/e2e/visual-audit.spec.ts", "docs/design/visual-direction.md"],
       "blockedReason": null,
       "sourceRef": {
-        "file": "scripts/tasks/sources/audit-tasks.mjs",
+        "file": "docs/tasks/tasks.json",
         "legacyId": "AUD-024"
       },
       "url": "",

@@ -1031,8 +1031,10 @@ test('requested assignees are resolved as GitHub accounts and invalid names fail
 });
 
 test('all indexed tasks render implementation steps and acceptance from their roadmap cards', async () => {
-  const indexUrl = new URL('../../docs/roadmap/tasks.json', import.meta.url);
-  const index = JSON.parse(await readFile(indexUrl, 'utf8'));
+  const { loadCanonicalRoadmapIndex } = await import('../tasks/roadmap-index.mjs');
+  const { index } = await loadCanonicalRoadmapIndex(
+    new URL('../..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')
+  );
   const cards = new Map();
   const cardDetailsByTask = new Map();
   for (const task of index.tasks) {

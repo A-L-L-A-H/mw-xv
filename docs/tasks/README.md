@@ -19,33 +19,24 @@ The initial owner-approved migration reconciled **1,358 → 627** task identitie
 - **Roadmap completion:** `ROADMAP.md` checkboxes and linked evidence remain the completion proof for M/K work; TaskOS statuses must pass roadmap parity.
 - **Human triage:** GitHub Issues own assignees, discussion and human approval gates.
 - **Delivery/release:** exact source SHA, required CI, promotion PR/review and release metadata; never infer release readiness from checkboxes.
-- **Projections:** `docs/roadmap/tasks.json`, root `docs/tasks/sources/todo.md`, and Visual Universe `task.json`, `TASKS.md` and individual task cards are views, not competing lifecycle authorities.
+- **Single Source of Truth:** `docs/tasks/tasks.json` is the **only** live task JSON file in this repository (`docs/roadmap/tasks.json` and `docs/bundles/visual-universe-pack/task.json` have been removed; roadmap tooling projects M/K records in memory via `scripts/tasks/roadmap-index.mjs`).
 
 ## Core files
 
 - `docs/tasks/tasks.schema.json`: JSON Schema Draft-07 for `moonwitness-tasks/v2`.
-- `docs/tasks/tasks.json`: current 679-record `dev` registry; `main` is currently at the 627-record snapshot.
+- `docs/tasks/tasks.json`: sole canonical TaskOS registry across all repository projects.
 - `docs/tasks/archives/tasks-legacy-1358-2026-11-23.json`: immutable pre-migration 1,358-record snapshot; retain it for rollback and audit.
 - `docs/tasks/RECOVERY-INVENTORY.md`: source inventory, complete identity reconciliation, migration evidence and live follow-up comparison.
 
 ## Safe commands
 
 ```bash
-# Run focused registry, provenance, import and projection tests
+# Run focused registry and roadmap-projection tests
 bun run test:taskos
 
-# Validate the canonical registry and roadmap parity
+# Validate the canonical single-source registry and roadmap parity
 bun run tasks:validate
 bun run automation:check:roadmap
-
-# Confirm the registry exactly matches its deterministic source projection
-bun run tasks:sweep -- --check
-
-# Confirm the Visual Universe views are generated from canonical TaskOS
-node docs/bundles/visual-universe-pack/tools/sync-task-state.mjs --check
-
-# Regenerate Visual Universe local views only after canonical validation
-node docs/bundles/visual-universe-pack/tools/sync-task-state.mjs
 ```
 
 The `--candidate` mode remains non-mutating and writes only outside the repository. The one-time `--write` importer is for an empty registry and refuses to overwrite a populated canonical file. Do not use it to replace the migrated registry. Canonical lifecycle changes must use the reviewed TaskOS workflow and must preserve source provenance and dependency integrity.

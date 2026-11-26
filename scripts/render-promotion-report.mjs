@@ -4,6 +4,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath, pathToFileURL, URL } from 'node:url';
 import { parseTaskId, taskIdSource } from './roadmap/task-ids.mjs';
+import { loadRoadmapIndexFromRevision } from './tasks/roadmap-index.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const beginMarker = '<!-- BEGIN MOONWITNESS PROMOTION REPORT -->';
@@ -212,7 +213,7 @@ export function loadPromotionSourceMetadata(
   if (!/^[a-f0-9]{40}$/u.test(headSha))
     throw new Error('Promotion source metadata requires a full lowercase commit SHA.');
   const roadmap = readAtRevision('ROADMAP.md');
-  const tasksIndex = JSON.parse(readAtRevision('docs/roadmap/tasks.json'));
+  const tasksIndex = loadRoadmapIndexFromRevision(readAtRevision);
   if (!Array.isArray(tasksIndex.tasks)) throw new Error('Promotion source task index is invalid.');
   return { roadmap, tasksIndex };
 }

@@ -5,6 +5,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { ghJson as runGhJson } from '../lib/gh-cli.mjs';
+import { loadCanonicalRoadmapIndex } from '../tasks/roadmap-index.mjs';
 import {
   collectLifecycleSnapshot,
   completedExactDevPullRequestTechnicalGate,
@@ -149,9 +150,7 @@ async function main() {
   const currentSha = git(['rev-parse', 'HEAD']);
   if (currentSha !== eventSha)
     throw new Error('Checkout HEAD does not match the workflow event SHA.');
-  const index = JSON.parse(
-    await readFile(path.join(repositoryRoot, 'docs/roadmap/tasks.json'), 'utf8')
-  );
+  const { index } = await loadCanonicalRoadmapIndex(repositoryRoot);
   const roadmap = await readFile(path.join(repositoryRoot, 'ROADMAP.md'), 'utf8');
   const branchHeads = {
     dev: git(['rev-parse', 'refs/remotes/origin/dev']),

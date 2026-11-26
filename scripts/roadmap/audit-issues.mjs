@@ -6,6 +6,7 @@ import { fileURLToPath, pathToFileURL, URL } from 'node:url';
 import { createGitHubIssuesClient } from './sync-issues.mjs';
 import { parseRoadmapTaskStates } from './collect-lifecycle-snapshot.mjs';
 import { taskIdCaptureSource } from './task-ids.mjs';
+import { loadCanonicalRoadmapIndex } from '../tasks/roadmap-index.mjs';
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const markerPattern = new RegExp(
@@ -303,9 +304,7 @@ async function main() {
     [path.join(repositoryRoot, 'scripts/roadmap/validate-roadmap.mjs')],
     { cwd: repositoryRoot, stdio: 'ignore' }
   );
-  const index = JSON.parse(
-    await readFile(path.join(repositoryRoot, 'docs/roadmap/tasks.json'), 'utf8')
-  );
+  const { index } = await loadCanonicalRoadmapIndex(repositoryRoot);
   const taskStates = parseRoadmapTaskStates(
     await readFile(path.join(repositoryRoot, 'ROADMAP.md'), 'utf8'),
     index.tasks

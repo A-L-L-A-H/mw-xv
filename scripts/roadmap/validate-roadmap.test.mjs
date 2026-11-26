@@ -4,9 +4,10 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { findDuplicateJsonObjectKeys, validateRoadmapIndex } from './validate-roadmap.mjs';
+import { loadCanonicalRoadmapIndex } from '../tasks/roadmap-index.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const schema = JSON.parse(await readFile(path.join(root, 'docs/roadmap/task.schema.json'), 'utf8'));
+const schema = JSON.parse(await readFile(path.join(root, 'docs/tasks/tasks.schema.json'), 'utf8'));
 
 function fixture() {
   const index = {
@@ -47,20 +48,15 @@ function fixture() {
   return { index, roadmap, documents };
 }
 
-test('schema declares versioned tasks and optional prioritization/assignment fields', () => {
-  assert.equal(schema.properties.schemaVersion.const, 1);
-  assert.deepEqual(schema.$defs.task.required, [
-    'id',
-    'title',
-    'milestone',
-    'dependsOn',
-    'output',
-    'detailFile',
-  ]);
-  assert.deepEqual(schema.$defs.task.properties.priority.enum, ['p0', 'p1', 'p2', 'p3']);
-  assert.ok(schema.$defs.task.properties.assignee);
-  assert.ok(schema.$defs.task.properties.labels);
-  assert.match(schema.$defs.task.properties.id.pattern, /K\(\?:0/u);
+test('canonical TaskOS schema declares versioned tasks and priority/assignee fields', () => {
+  assert.deepEqual(schema.properties.format.enum, ['moonwitness-tasks/v2']);
+  const taskSchema = schema.definitions.task;
+  assert.ok(taskSchema.required.includes('code'));
+  assert.ok(taskSchema.required.includes('title'));
+  assert.ok(taskSchema.required.includes('status'));
+  assert.deepEqual(taskSchema.properties.priority.enum, ['p0', 'p1', 'p2', 'p3']);
+  assert.ok(taskSchema.properties.assignee);
+  assert.ok(taskSchema.properties.tags);
 });
 
 test('detects duplicate keys within one object without confusing separate objects', () => {
@@ -220,7 +216,7 @@ test('rejects a roadmap checkbox without an index record or a duplicate checkbox
 });
 
 test('validates the live roadmap task index against cards, evidence and master checkboxes', async () => {
-  const index = JSON.parse(await readFile(path.join(root, 'docs/roadmap/tasks.json'), 'utf8'));
+  const { index } = await loadCanonicalRoadmapIndex(root);
   const roadmap = await readFile(path.join(root, 'ROADMAP.md'), 'utf8');
   const documents = new Map();
   const linkedEvidence = [

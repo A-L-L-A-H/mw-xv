@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { loadCanonicalRoadmapIndex } from '../tasks/roadmap-index.mjs';
 import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { mkdir, readFile, rm } from 'node:fs/promises';
@@ -78,8 +79,8 @@ test('workflow CLI commands write valid source-bound Markdown and JSON reports',
     assert.match(markdown, /Source SHA: `[a-f0-9]{40}`/u);
     assert.equal(json.schemaVersion, 1);
     assert.match(json.sourceSha, /^[a-f0-9]{40}$/u);
-    const roadmap = JSON.parse(
-      await readFile(new URL('../../docs/roadmap/tasks.json', import.meta.url), 'utf8')
+    const { index: roadmap } = await loadCanonicalRoadmapIndex(
+      path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
     );
     assert.equal(json.totals.taskCount, roadmap.tasks.length);
     assert.equal(typeof json.sourceDirty, 'boolean');

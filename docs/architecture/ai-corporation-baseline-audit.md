@@ -44,7 +44,7 @@
 
 ### 1.3 Master Roadmap, Active Plan, `tasks.json`, ADRs & Overlap Inventory (`AI0.6`–`AI0.12`)
 
-- **Baseline master roadmap (pre-reconciliation):** [`ROADMAP.md`](../../ROADMAP.md), [`docs/roadmap/ACTIVE-PLAN.md`](../roadmap/ACTIVE-PLAN.md), and [`docs/roadmap/tasks.json`](../roadmap/tasks.json) (`schemaVersion: 1`) held **213 tasks**: **148 M-series** (`M0.01`–`M11.15`, 100 complete, 48 open) and **65 K-series** (`K0-001`–`K9-007`, 32 complete, 33 open), totaling 132 complete / 81 open.
+- **Baseline master roadmap (pre-reconciliation):** [`ROADMAP.md`](../../ROADMAP.md), [`docs/roadmap/ACTIVE-PLAN.md`](../roadmap/ACTIVE-PLAN.md), and [`docs/roadmap/tasks.json`](../tasks/tasks.json) (`schemaVersion: 1`) held **213 tasks**: **148 M-series** (`M0.01`–`M11.15`, 100 complete, 48 open) and **65 K-series** (`K0-001`–`K9-007`, 32 complete, 33 open), totaling 132 complete / 81 open.
 - **Task ID & validator rules:** `scripts/roadmap/task-ids.mjs` and `docs/roadmap/task.schema.json` accept `M<n>.<two-digit>` and `K<n>-<three-digit>`. `scripts/roadmap/validate-roadmap.mjs` enforces 1-to-1 sync across `tasks.json`, `ROADMAP.md` checkboxes, `docs/roadmap/<card>.md` headings (`## <ID> — ...`), `docs/roadmap/evidence/<ID>.md`, acyclic `dependsOn`, and exact open-card prose counts in `ROADMAP.md`.
 - **ADR index (`AI0.10`):** `docs/decisions/` contains `0001-platform-contracts.md` through `0006-mandatory-addon-thin-api.md`. The next valid ADR slot is **`0007`** (`docs/decisions/0007-ai-corporation-addon-first-architecture.md`), with a non-duplicating pointer at `docs/architecture/adr/0007-ai-corporation-addon-first-architecture.md`.
 

@@ -7,14 +7,14 @@ Roadmap ini terdiri dari 210 kartu M-series dan 65 kartu K-series (275 task). Ch
 1. Baca [master checklist](../../ROADMAP.md) untuk scope, keputusan pengguna dan status terbaru.
 2. Baca [jalur rilis aktif](ACTIVE-PLAN.md), lalu cek [backlog tertunda](EXECUTION-BACKLOG.md) untuk syarat membuka pekerjaan opsional kembali.
 3. Baca [EXECUTION.md](EXECUTION.md) untuk prosedur kerja paralel, validasi, commit/push, dan handoff.
-4. Pilih ID melalui [tasks.json](tasks.json). Index ini berisi judul, dependensi, file detail dan deliverable. Status checklist berada di `ROADMAP.md`.
+4. Pilih ID melalui [tasks.json](../tasks/tasks.json). Index ini berisi judul, dependensi, file detail dan deliverable. Status checklist berada di `ROADMAP.md`.
 5. Buka kartu pada dokumen milestone di bawah dan baca sumber kode yang disebutkan.
 6. Untuk pekerjaan automation, baca [AUTOMATION-CONTRACTS.md](AUTOMATION-CONTRACTS.md).
 7. Untuk desain dan UI, baca [DESIGN-SPEC.md](DESIGN-SPEC.md).
 8. Untuk test, baca [TEST-SCENARIOS.md](TEST-SCENARIOS.md).
 9. Untuk Issues/auto-PR/commit-push, baca [ISSUE-SYNC-CONTRACT.md](ISSUE-SYNC-CONTRACT.md).
 10. Untuk otoritas field dan lifecycle Issues, baca [kebijakan issue sync](../engineering/issue-sync-policy.md).
-11. Schema dan validator silang roadmap/issue index ada di [task schema](task.schema.json) dan `pnpm automation:check:roadmap`.
+11. Schema dan validator silang roadmap/issue index ada di [task schema](../tasks/tasks.schema.json) dan `pnpm automation:check:roadmap`.
 12. Salin [template evidence](evidence/TEMPLATE.md) untuk hasil pekerjaan.
 
 ## Kartu kerja

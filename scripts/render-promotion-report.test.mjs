@@ -165,10 +165,23 @@ test('promotion source metadata is loaded from the exact reported commit', () =>
   const metadata = loadPromotionSourceMetadata(headSha, (file) => {
     requestedFiles.push(file);
     if (file === 'ROADMAP.md') return '- [x] M11.10 generated source status';
-    return JSON.stringify({ tasks: [{ id: 'M11.10', title: 'Exact source task' }] });
+    if (file === 'docs/tasks/tasks.json') {
+      return JSON.stringify({
+        tasks: [
+          {
+            code: 'M11.10',
+            series: 'M',
+            milestone: 'M11',
+            title: 'Exact source task',
+            status: 'done',
+          },
+        ],
+      });
+    }
+    throw new Error(`unexpected read: ${file}`);
   });
 
-  assert.deepEqual(requestedFiles, ['ROADMAP.md', 'docs/roadmap/tasks.json']);
+  assert.deepEqual(requestedFiles, ['ROADMAP.md', 'docs/tasks/tasks.json']);
   assert.match(metadata.roadmap, /\[x\] M11\.10/u);
   assert.equal(metadata.tasksIndex.tasks[0]?.title, 'Exact source task');
   assert.throws(() => loadPromotionSourceMetadata('dev', () => '{}'), /full lowercase commit SHA/u);
