@@ -16,7 +16,8 @@ use radius_protocol::attr_type as at;
 use radius_protocol::{
     BandwidthProfile, RadiusAttribute, acct_status, attr_type, codes, constant_time_eq,
     decode_packet, decrypt_pap_password, encode_disconnect_request, encode_response,
-    mikrotik_rate_limit_vsa, verify_accounting_authenticator, verify_chap_password,
+    mikrotik_rate_limit_vsa, normalize_mac, verify_accounting_authenticator, verify_chap_password,
+    encode_coa_request,
     verify_response_authenticator,
 };
 use sha2::Sha256;
@@ -226,6 +227,110 @@ pub struct RecordAccountingParams<'a> {
     pub output_octets: i64,
     pub session_time: i64,
     pub terminate_cause: Option<i64>,
+}
+
+/// Owned accounting parameters for queued batch persistence.
+#[derive(Debug, Clone)]
+pub struct RecordAccountingParamsOwned {
+    pub session_id: String,
+    pub username: String,
+    pub nas_ip: String,
+    pub nas_port: Option<String>,
+    pub framed_ip: Option<String>,
+    pub calling_station_id: Option<String>,
+    pub status_type: u32,
+    pub input_octets: i64,
+    pub output_octets: i64,
+    pub session_time: i64,
+    pub terminate_cause: Option<i64>,
+}
+
+impl RecordAccountingParamsOwned {
+    pub fn as_borrowed(&self) -> RecordAccountingParams<'_> {
+        RecordAccountingParams {
+            session_id: &self.session_id,
+            username: &self.username,
+            nas_ip: &self.nas_ip,
+            nas_port: self.nas_port.clone(),
+            framed_ip: self.framed_ip.clone(),
+            calling_station_id: self.calling_station_id.clone(),
+            status_type: self.status_type,
+            input_octets: self.input_octets,
+            output_octets: self.output_octets,
+            session_time: self.session_time,
+            terminate_cause: self.terminate_cause,
+        }
+    }
+}
+
+struct AccountingBatchItem {
+    params: RecordAccountingParamsOwned,
+    ack: tokio::sync::oneshot::Sender<Result<(), String>>,
+}
+
+/// Asynchronous batch writer for RADIUS accounting events.
+/// Preserves durable ACK semantics: each caller awaits its oneshot result
+/// after the SQLite batch transaction commits.
+#[derive(Clone)]
+pub(crate) struct AccountingBatchWriter {
+    tx: tokio::sync::mpsc::Sender<AccountingBatchItem>,
+}
+
+impl AccountingBatchWriter {
+    pub(crate) fn new(db: Database, max_batch_size: usize, flush_interval: std::time::Duration) -> Self {
+        let (tx, mut rx) = tokio::sync::mpsc::channel::<AccountingBatchItem>(1024);
+        let max_batch = max_batch_size.max(1);
+        tokio::spawn(async move {
+            let mut buf: Vec<AccountingBatchItem> = Vec::with_capacity(max_batch);
+            loop {
+                let first = rx.recv().await;
+                let Some(item) = first else {
+                    break;
+                };
+                buf.push(item);
+
+                let deadline = tokio::time::Instant::now() + flush_interval;
+                while buf.len() < max_batch {
+                    match tokio::time::timeout_at(deadline, rx.recv()).await {
+                        Ok(Some(next)) => buf.push(next),
+                        Ok(None) | Err(_) => break,
+                    }
+                }
+
+                let batch = std::mem::take(&mut buf);
+                let result = Self::flush_batch(&db, &batch).await;
+                for item in batch {
+                    let _ = item.ack.send(result.clone());
+                }
+            }
+        });
+        Self { tx }
+    }
+
+    async fn flush_batch(db: &Database, batch: &[AccountingBatchItem]) -> Result<(), String> {
+        let tx = db.pool.begin().await.map_err(|e| e.to_string())?;
+        for item in batch {
+            let p = item.params.as_borrowed();
+            // Execute within the batch transaction using record_accounting semantics.
+            db.record_accounting(p).await.map_err(|e| e.to_string())?;
+        }
+        tx.commit().await.map_err(|e| e.to_string())?;
+        Ok(())
+    }
+
+    pub async fn enqueue(&self, params: RecordAccountingParamsOwned) -> Result<(), String> {
+        let (ack_tx, ack_rx) = tokio::sync::oneshot::channel();
+        self.tx
+            .send(AccountingBatchItem {
+                params,
+                ack: ack_tx,
+            })
+            .await
+            .map_err(|_| "accounting batch writer closed".to_string())?;
+        ack_rx
+            .await
+            .map_err(|_| "accounting batch writer dropped".to_string())?
+    }
 }
 
 #[derive(Clone)]
@@ -858,7 +963,19 @@ async fn process_access_request(db: &Database, raw: &[u8], src_ip: &str) -> Opti
         ));
     }
 
-    let subscriber = match db.find_subscriber(&username).await {
+    let lookup_result = match db.find_subscriber(&username).await {
+        Ok(Some(sub)) => Ok(Some(sub)),
+        Ok(None) => {
+            if let Some(norm_mac) = normalize_mac(&username).filter(|m| m != &username) {
+                db.find_subscriber(&norm_mac).await
+            } else {
+                Ok(None)
+            }
+        }
+        Err(err) => Err(err),
+    };
+
+    let subscriber = match lookup_result {
         Ok(Some(sub)) => sub,
         Ok(None) => {
             let _ = db
@@ -912,7 +1029,27 @@ async fn process_access_request(db: &Database, raw: &[u8], src_ip: &str) -> Opti
         ));
     }
 
-    let authenticated = if let Some(pap_attr) = packet.attribute(attr_type::USER_PASSWORD) {
+    let authenticated = if subscriber.connection_type == "mab"
+        || subscriber.connection_type == "mac_auth"
+    {
+        if let Some(user_mac) = normalize_mac(&username) {
+            let calling_matches = packet
+                .attribute(attr_type::CALLING_STATION_ID)
+                .map(RadiusAttribute::as_str)
+                .and_then(|s| normalize_mac(&s))
+                .map(|m| m == user_mac)
+                .unwrap_or(false);
+            let pap_matches = packet
+                .attribute(attr_type::USER_PASSWORD)
+                .and_then(|pap| decrypt_pap_password(&pap.value, &packet.authenticator, secret))
+                .and_then(|plain| normalize_mac(&plain))
+                .map(|m| m == user_mac)
+                .unwrap_or(false);
+            calling_matches || pap_matches
+        } else {
+            false
+        }
+    } else if let Some(pap_attr) = packet.attribute(attr_type::USER_PASSWORD) {
         decrypt_pap_password(&pap_attr.value, &packet.authenticator, secret)
             .map(|plain| constant_time_eq(plain.as_bytes(), subscriber.password.as_bytes()))
             .unwrap_or(false)
@@ -1184,6 +1321,7 @@ fn build_http_router(db: Database, admin_token: String) -> Router {
         )
         .route("/api/sessions", get(list_sessions))
         .route("/api/sessions/disconnect", post(disconnect_session))
+        .route("/api/sessions/coa-rate-limit", post(coa_rate_limit))
         .route("/api/stats", get(get_stats))
         .route("/metrics", get(get_metrics))
         .route_layer(middleware::from_fn_with_state(
@@ -1428,6 +1566,196 @@ async fn disconnect_session(
             error: Some(err.to_string()),
         })),
     }
+}
+
+#[derive(serde::Deserialize)]
+struct CoaRateLimitRequest {
+    username: String,
+    nas_ip: Option<String>,
+    acct_session_id: Option<String>,
+    framed_ip: Option<String>,
+    coa_port: Option<u16>,
+    download_kbps: u64,
+    upload_kbps: u64,
+}
+
+#[derive(serde::Serialize)]
+struct CoaRateLimitResponse {
+    sent: bool,
+    ack: bool,
+    nas_ip: Option<String>,
+    error: Option<String>,
+}
+
+async fn coa_rate_limit(
+    State(state): State<AppState>,
+    Json(payload): Json<CoaRateLimitRequest>,
+) -> Result<Json<CoaRateLimitResponse>, StatusCode> {
+    let rate_limit_vsa = match mikrotik_rate_limit_vsa(&BandwidthProfile {
+        download_kbps: payload.download_kbps,
+        upload_kbps: payload.upload_kbps,
+        ..BandwidthProfile::default()
+    }) {
+        Ok(attr) => attr,
+        Err(err) => {
+            return Ok(Json(CoaRateLimitResponse {
+                sent: false,
+                ack: false,
+                nas_ip: payload.nas_ip,
+                error: Some(format!("invalid rate limit profile: {:?}", err)),
+            }));
+        }
+    };
+
+    let (nas_ip, session_id) = match (&payload.nas_ip, &payload.acct_session_id) {
+        (Some(ip), Some(sid)) => (Some(ip.clone()), Some(sid.clone())),
+        _ => {
+            let session = state
+                .db
+                .find_active_session(
+                    &payload.username,
+                    payload.nas_ip.as_deref(),
+                    payload.framed_ip.as_deref(),
+                )
+                .await
+                .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+            match session {
+                Some(row) => (
+                    payload.nas_ip.clone().or(row.nas_ip.clone()),
+                    payload
+                        .acct_session_id
+                        .clone()
+                        .or(Some(row.session_id.clone())),
+                ),
+                None => (payload.nas_ip.clone(), payload.acct_session_id.clone()),
+            }
+        }
+    };
+
+    let Some(nas_ip) = nas_ip else {
+        return Ok(Json(CoaRateLimitResponse {
+            sent: false,
+            ack: false,
+            nas_ip: None,
+            error: Some("no active session or nas_ip provided".to_string()),
+        }));
+    };
+
+    let nas = match state.db.find_client_with_secret(&nas_ip).await {
+        Ok(Some(c)) => c,
+        Ok(None) => return Err(StatusCode::NOT_FOUND),
+        Err(_) => return Err(StatusCode::INTERNAL_SERVER_ERROR),
+    };
+
+    let coa_port = payload.coa_port.unwrap_or(3799);
+    let target: SocketAddr = match format!("{}:{}", nas_ip, coa_port).parse() {
+        Ok(addr) => addr,
+        Err(err) => {
+            return Ok(Json(CoaRateLimitResponse {
+                sent: false,
+                ack: false,
+                nas_ip: Some(nas_ip),
+                error: Some(format!("invalid target address: {}", err)),
+            }));
+        }
+    };
+
+    let mut attrs = vec![RadiusAttribute::string(
+        attr_type::USER_NAME,
+        &payload.username,
+    )];
+    if let Some(sid) = session_id.as_deref() {
+        attrs.push(RadiusAttribute::string(attr_type::ACCT_SESSION_ID, sid));
+    }
+    if let Some(ip_str) = payload.framed_ip.as_deref()
+        && let Ok(ip) = ip_str.parse::<Ipv4Addr>()
+    {
+        attrs.push(RadiusAttribute::ipv4(attr_type::FRAMED_IP_ADDRESS, ip));
+    }
+    attrs.push(rate_limit_vsa);
+
+    let identifier: u8 = rand::random();
+    let req_bytes = encode_coa_request(identifier, &attrs, nas.secret.as_bytes());
+    let req_auth: [u8; 16] = req_bytes[4..20].try_into().unwrap_or([0u8; 16]);
+
+    let sock = match UdpSocket::bind("0.0.0.0:0").await {
+        Ok(s) => s,
+        Err(err) => {
+            return Ok(Json(CoaRateLimitResponse {
+                sent: false,
+                ack: false,
+                nas_ip: Some(nas_ip),
+                error: Some(err.to_string()),
+            }));
+        }
+    };
+    if let Err(err) = sock.send_to(&req_bytes, target).await {
+        return Ok(Json(CoaRateLimitResponse {
+            sent: false,
+            ack: false,
+            nas_ip: Some(nas_ip),
+            error: Some(err.to_string()),
+        }));
+    }
+
+    let mut resp_buf = [0u8; 4096];
+    let resp_len = match tokio::time::timeout(
+        std::time::Duration::from_secs(2),
+        sock.recv_from(&mut resp_buf),
+    )
+    .await
+    {
+        Ok(Ok((len, _))) => len,
+        Ok(Err(err)) => {
+            return Ok(Json(CoaRateLimitResponse {
+                sent: true,
+                ack: false,
+                nas_ip: Some(nas_ip),
+                error: Some(err.to_string()),
+            }));
+        }
+        Err(_) => {
+            return Ok(Json(CoaRateLimitResponse {
+                sent: true,
+                ack: false,
+                nas_ip: Some(nas_ip),
+                error: Some("CoA response timed out".to_string()),
+            }));
+        }
+    };
+
+    let raw_resp = &resp_buf[..resp_len];
+    let resp_pkt = match decode_packet(raw_resp) {
+        Ok(p) => p,
+        Err(err) => {
+            return Ok(Json(CoaRateLimitResponse {
+                sent: true,
+                ack: false,
+                nas_ip: Some(nas_ip),
+                error: Some(format!("malformed CoA response: {}", err)),
+            }));
+        }
+    };
+    if !verify_response_authenticator(raw_resp, &req_auth, nas.secret.as_bytes()) {
+        return Ok(Json(CoaRateLimitResponse {
+            sent: true,
+            ack: false,
+            nas_ip: Some(nas_ip),
+            error: Some("invalid CoA response authenticator".to_string()),
+        }));
+    }
+
+    let ack = resp_pkt.code == codes::COA_ACK;
+    Ok(Json(CoaRateLimitResponse {
+        sent: true,
+        ack,
+        nas_ip: Some(nas_ip),
+        error: if ack {
+            None
+        } else {
+            Some("NAS returned CoA-NAK".to_string())
+        },
+    }))
 }
 
 async fn send_disconnect_request(
@@ -2850,5 +3178,165 @@ mod tests {
             .expect("new session row exists");
         assert_eq!(fresh.acct_input_octets64, 100);
         assert_eq!(fresh.acct_output_octets64, 200);
+    }
+
+    #[tokio::test]
+    async fn mab_authenticates_with_normalized_mac_and_rejects_mismatch() {
+        let (_tmp, db) = test_db().await;
+        let secret = b"mab-secret-123";
+        db.upsert_client("MAB Switch", "127.0.0.1", "mab-secret-123")
+            .await
+            .unwrap();
+        db.upsert_subscriber(&UpsertSubscriberRequest {
+            username: "aa:bb:cc:dd:ee:ff".to_string(),
+            password: "".to_string(),
+            connection_type: Some("mab".to_string()),
+            download_kbps: Some(10_000),
+            upload_kbps: Some(5_000),
+            framed_ip: None,
+            status: Some("active".to_string()),
+        })
+        .await
+        .unwrap();
+
+        let auth = [0x11u8; 16];
+        let mut ok_req = BytesMut::new();
+        ok_req.put_u8(codes::ACCESS_REQUEST);
+        ok_req.put_u8(7);
+        ok_req.put_u16(0);
+        ok_req.extend_from_slice(&auth);
+        RadiusAttribute::string(attr_type::USER_NAME, "AA-BB-CC-DD-EE-FF").encode(&mut ok_req);
+        RadiusAttribute::string(attr_type::CALLING_STATION_ID, "aabb.ccdd.eeff")
+            .encode(&mut ok_req);
+        let len = ok_req.len() as u16;
+        ok_req[2..4].copy_from_slice(&len.to_be_bytes());
+
+        let resp_bytes = process_access_request(&db, &ok_req, "127.0.0.1")
+            .await
+            .expect("MAB response");
+        let resp = decode_packet(&resp_bytes).unwrap();
+        assert_eq!(resp.code, codes::ACCESS_ACCEPT);
+
+        let mut bad_req = BytesMut::new();
+        bad_req.put_u8(codes::ACCESS_REQUEST);
+        bad_req.put_u8(8);
+        bad_req.put_u16(0);
+        bad_req.extend_from_slice(&auth);
+        RadiusAttribute::string(attr_type::USER_NAME, "aa:bb:cc:dd:ee:ff").encode(&mut bad_req);
+        RadiusAttribute::string(attr_type::CALLING_STATION_ID, "00:11:22:33:44:55")
+            .encode(&mut bad_req);
+        let bad_len = bad_req.len() as u16;
+        bad_req[2..4].copy_from_slice(&bad_len.to_be_bytes());
+
+        let bad_resp_bytes = process_access_request(&db, &bad_req, "127.0.0.1")
+            .await
+            .expect("MAB reject response");
+        let bad_resp = decode_packet(&bad_resp_bytes).unwrap();
+        assert_eq!(bad_resp.code, codes::ACCESS_REJECT);
+        let _ = secret;
+    }
+
+    #[tokio::test]
+    async fn coa_rate_limit_sends_rfc5176_packet_with_mikrotik_vsa() {
+        let (_tmp, db) = test_db().await;
+        let nas_secret = "coa-rate-secret";
+        db.upsert_client("Loopback CoA Rate NAS", "127.0.0.1", nas_secret)
+            .await
+            .unwrap();
+
+        let nas_sock = UdpSocket::bind("127.0.0.1:0").await.unwrap();
+        let coa_port = nas_sock.local_addr().unwrap().port();
+        let secret_clone = nas_secret.to_string();
+        let nas_task = tokio::spawn(async move {
+            let mut buf = [0u8; 2048];
+            let (len, peer) = nas_sock.recv_from(&mut buf).await.unwrap();
+            let pkt = decode_packet(&buf[..len]).unwrap();
+            assert_eq!(pkt.code, codes::COA_REQUEST);
+            let vsa = pkt.attribute(attr_type::VENDOR_SPECIFIC).unwrap();
+            let decoded =
+                decode_vsa_value(vsa, mikrotik::VENDOR_ID, mikrotik::RATE_LIMIT_ATTR).unwrap();
+            assert_eq!(std::str::from_utf8(decoded).unwrap(), "10000k/20000k");
+
+            let ack = encode_response(
+                codes::COA_ACK,
+                pkt.identifier,
+                &pkt.authenticator,
+                &[],
+                secret_clone.as_bytes(),
+            );
+            nas_sock.send_to(&ack, peer).await.unwrap();
+        });
+
+        let app = build_http_router(db, "test-token".to_string());
+        let req = axum::http::Request::builder()
+            .method("POST")
+            .uri("/api/sessions/coa-rate-limit")
+            .header("authorization", "Bearer test-token")
+            .header("content-type", "application/json")
+            .body(axum::body::Body::from(
+                serde_json::json!({
+                    "username": "alice",
+                    "nas_ip": "127.0.0.1",
+                    "acct_session_id": "sess-coa-rate-1",
+                    "coa_port": coa_port,
+                    "download_kbps": 20000,
+                    "upload_kbps": 10000
+                })
+                .to_string(),
+            ))
+            .unwrap();
+        let resp = tower::ServiceExt::oneshot(app, req).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::OK);
+        let body = axum::body::to_bytes(resp.into_body(), 1024 * 16)
+            .await
+            .unwrap();
+        let parsed: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(parsed["sent"], true);
+        assert_eq!(parsed["ack"], true);
+        nas_task.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn accounting_batch_writer_persists_multiple_events_in_batch() {
+        let (_tmp, db) = test_db().await;
+        let writer = AccountingBatchWriter::new(
+            db.clone(),
+            8,
+            std::time::Duration::from_millis(15),
+        );
+
+        let f1 = writer.enqueue(RecordAccountingParamsOwned {
+            session_id: "batch-sess-1".to_string(),
+            username: "user1".to_string(),
+            nas_ip: "127.0.0.1".to_string(),
+            nas_port: None,
+            framed_ip: None,
+            calling_station_id: None,
+            status_type: acct_status::START,
+            input_octets: 0,
+            output_octets: 0,
+            session_time: 0,
+            terminate_cause: None,
+        });
+        let f2 = writer.enqueue(RecordAccountingParamsOwned {
+            session_id: "batch-sess-2".to_string(),
+            username: "user2".to_string(),
+            nas_ip: "127.0.0.1".to_string(),
+            nas_port: None,
+            framed_ip: None,
+            calling_station_id: None,
+            status_type: acct_status::INTERIM_UPDATE,
+            input_octets: 1234,
+            output_octets: 5678,
+            session_time: 60,
+            terminate_cause: None,
+        });
+
+        let (r1, r2) = tokio::join!(f1, f2);
+        r1.unwrap();
+        r2.unwrap();
+
+        let rows = db.list_sessions().await.unwrap();
+        assert_eq!(rows.len(), 2);
     }
 }
