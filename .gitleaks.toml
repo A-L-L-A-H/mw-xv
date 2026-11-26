@@ -350,6 +350,14 @@ regexes = [
   '''TEST_SIGNING_SECRET = 'mw-a2a-mesh-test-secret-0123456789abcdef'''',
 ]
 
+[[allowlists]]
+description = "API identity principal repository test: synthetic JWT token fixture for invalid subject rejection test"
+regexTarget = "match"
+paths = ["^apps/api/src/auth/identity-principal-repository\\.test\\.ts$"]
+regexes = [
+  '''eyJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJ1c2VyXzEifQ.c2lnbmF0dXJl'''',
+]
+
 [[rules]]
 id = "moonwitness-runtime-secret"
 description = "High-entropy MoonWitness runtime authentication, metrics, or WhatsApp credential"
