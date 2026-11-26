@@ -126,7 +126,7 @@
 
 ---
 
-## - [ ] T42 — Add OpenTelemetry Plan-TaskOS Lifecycle Spans & Metrics in `apps/agent-observability`
+## - [x] T42 — Add OpenTelemetry Plan-TaskOS Lifecycle Spans & Metrics in `apps/agent-observability`
 
 - **Owner File(s):** `apps/agent-observability/package.json`, `apps/agent-observability/src/plan-telemetry.ts`, `apps/agent-observability/src/index.ts`, `apps/agent-observability/tests/plan-telemetry.test.ts`
   - `apps/agent-observability/package.json` (MODIFY — add `"@moonwitness/plan-taskos": "workspace:*"`)
@@ -148,7 +148,7 @@
 
 ---
 
-## - [ ] T43 — Add TaskOS v2 & GitHub Sync Parity Verification Test (`scripts/tasks/plan-taskos-parity.test.mjs`)
+## - [x] T43 — Add TaskOS v2 & GitHub Sync Parity Verification Test (`scripts/tasks/plan-taskos-parity.test.mjs`)
 
 - **Owner File(s):** `scripts/tasks/plan-taskos-parity.test.mjs`
   - `scripts/tasks/plan-taskos-parity.test.mjs` (CREATE)
@@ -167,7 +167,7 @@
 
 ---
 
-## - [ ] T44 — Full Workspace Generator Sync, Boundary Gates & Ledger Closeout
+## - [x] T44 — Full Workspace Generator Sync, Boundary Gates & Ledger Closeout
 
 - **Owner File(s):** `docs:generate`, `bun.lock`, `.plan/plan-taskos-cognitive-workgraph.md`
   - Generated docs/diagrams from `docs:generate` & `architecture:generate` (MODIFY if changed)
