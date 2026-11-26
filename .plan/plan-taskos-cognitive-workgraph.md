@@ -112,10 +112,10 @@ Execute strictly **1 micro-task (`Txx`) per cycle** without asking the user any 
 
 | Wave | Task Range | Completed Tasks | Last Commit SHA | Latest Verification Evidence |
 |---|---|---|---|---|
-| Wave 0 | `T01`–`T05` | `5 / 5` | 8c45fbbb | `bun --filter @moonwitness/plan-taskos typecheck` exit 0 |
-| Wave 1 | `T06`–`T11` | `6 / 6` | cb133e05 | `bun --filter @moonwitness/plan-taskos typecheck` exit 0 |
-| Wave 2 | `T12`–`T18` | `7 / 7` | 2f3f6d11 | `bun --filter @moonwitness/plan-taskos typecheck` exit 0 |
+| Wave 0 | `T01`–`T05` | `5 / 5` | d941cca9 | `bun --filter @moonwitness/plan-taskos typecheck` exit 0 |
+| Wave 1 | `T06`–`T11` | `6 / 6` | 3bd60944 | `bun --filter @moonwitness/plan-taskos typecheck` exit 0 |
+| Wave 2 | `T12`–`T18` | `7 / 7` | b5f17094 | `bun --filter @moonwitness/plan-taskos typecheck` exit 0 |
 | Wave 3 | `T19`–`T23` | `5 / 5` | 2f3f6d11 | `bun --filter @moonwitness/plan-taskos typecheck && bun --filter @moonwitness/plan-taskos build && bun --filter @moonwitness/plan-taskos test` (80/80) |
-| Wave 4 | `T24`–`T30` | `7 / 7` | ced7a0d3 | `build` exit 0 && test 114/114 across 13 files |
+| Wave 4 | `T24`–`T30` | `7 / 7` | b8bff98b | `build` exit 0 && test 114/114 across 13 files |
 | Wave 5 | `T31`–`T36` | `6 / 6` | c9b72c27 | build + typecheck exit 0; 131/131 tests (15 files); live reindex 209 nodes/205 edges + lint PASS on all 4 plans |
 | Wave 6 | `T37`–`T44` | `8 / 8` | c16d5332 | `docs:generate` + `architecture:generate` + `docs:links` exit 0; plan-taskos 131/131, orm-project 15/15, desktop+ai-mcp 14/14, Observatory 14/14, MCP 28/28, observability 5/5, TaskOS validator suite 33/33; Docker manifest, UI, API addon, lockfile dry-run, reindex (209 nodes/205 edges) + plan lint gates exit 0 |
