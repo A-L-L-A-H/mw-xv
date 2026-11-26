@@ -104,7 +104,7 @@ Task dependencies are declared inside each playbook. Follow them exactly; the fi
 - [x] **I25** — Add single-use bootstrap claim endpoint
 - [x] **I26** — Add the minimal first-install setup page
 - [x] **I27** — Add password verification and login-session service
-- [ ] **I28** — Add login, current-session and logout routes
+- [x] **I28** — Add login, current-session and logout routes
 - [ ] **I29** — Add login throttling and brute-force regression tests
 
 ### Wave 3 — OIDC provider

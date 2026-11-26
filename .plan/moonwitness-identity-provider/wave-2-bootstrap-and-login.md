@@ -160,7 +160,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - Manual verification: identifier normalization follows the Identity contract; account and credential are resolved only from identity tables; password verification uses the maintained scrypt adapter; malformed stored verifiers are rejected; sessions store only a SHA-256 digest with bounded device/userAgent metadata and explicit expiry; unknown account, wrong password, disabled account, malformed credential and database errors all produce the same generic failure without plaintext or verifier leakage.
   - Commit: 409d1275 feat(identity): add login session service for I27
 
-#### - [ ] I28 — Add login, current-session and logout routes
+#### - [x] I28 — Add login, current-session and logout routes
 
 - **Owner File(s):** apps/id/src/routes/auth.routes.ts; apps/id/src/routes/auth.routes.test.ts; apps/id/src/server.ts
 - **Depends On:** I27
@@ -172,13 +172,17 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - Do not expose an API resembling the old API-owned /auth/register route; account creation is via controlled bootstrap or an approved later invitation flow.
 - **DO NOT:** Do not put session IDs, passwords or refresh tokens in localStorage/sessionStorage or URL query parameters.
 - **Acceptance Criteria:**
-  - [ ] Login, current-session and logout flows are tested.
-  - [ ] Cookie security attributes are asserted in production-mode tests.
-  - [ ] Logout revokes server-side session state.
-  - [ ] No public self-registration route exists.
+  - [x] Login, current-session and logout flows are tested.
+  - [x] Cookie security attributes are asserted in production-mode tests.
+  - [x] Logout revokes server-side session state.
+  - [x] No public self-registration route exists.
 - **Verify:** bun --filter @moonwitness/id test; bun --filter @moonwitness/id build.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append exact command, result and commit SHA here.
+- **Evidence:**
+  - Command: `bun --filter @moonwitness/id test` — passed (14 files, 64 tests)
+  - Command: `bun --filter @moonwitness/id build` — passed (tsc exited 0)
+  - Manual verification: `POST /auth/login`, `GET /auth/session`, and `POST /auth/logout` are registered by the Identity server; session cookies are HttpOnly, SameSite=Lax, Path=/, bounded to 8 hours and Secure in production; CSRF uses a non-HttpOnly cookie plus matching `x-csrf-token`; logout revokes `identity.session.revoked_at`; login/current-session responses expose no raw session credential or password; revoked/expired/missing sessions fail closed; no `/auth/register`, `/register`, or `/setup/register` route exists.
+  - Commit: PENDING_IMPLEMENTATION_SHA
 
 #### - [ ] I29 — Add login throttling and brute-force regression tests
 

@@ -3,13 +3,30 @@ import { createLogger, type LogLevel } from '@moonwitness/logger';
 import { healthRoutes, type HealthRoutesOptions } from './routes/health.routes.js';
 import { bootstrapRoutes, type BootstrapRoutesOptions } from './routes/bootstrap.routes.js';
 import { setupPageRoutes } from './ui/setup-page.js';
+import { authRoutes, type AuthDatabasePort, type AuthRoutesOptions } from './routes/auth.routes.js';
+import { login as loginService, type LoginDatabasePort } from './auth/login-service.js';
 
-export interface IdentityServerOptions
-  extends BuildAppOptions,
-    HealthRoutesOptions,
-    BootstrapRoutesOptions {
+export interface IdentityServerOptions extends BuildAppOptions, HealthRoutesOptions, BootstrapRoutesOptions {
   readonly host?: string;
   readonly port?: number;
+  readonly authDatabase?: AuthDatabasePort;
+  readonly login?: AuthRoutesOptions['login'];
+  readonly readSession?: AuthRoutesOptions['readSession'];
+  readonly production?: AuthRoutesOptions['production'];
+}
+
+function identityLogin(options: {
+  readonly database?: AuthDatabasePort;
+  readonly now?: () => Date;
+}): AuthRoutesOptions['login'] {
+  return async (input) => {
+    if (!options.database) throw new Error('Identity database unavailable');
+    return loginService({
+      ...input,
+      database: options.database as LoginDatabasePort,
+      ...(options.now ? { now: options.now() } : {}),
+    });
+  };
 }
 
 export interface IdentityServer {
@@ -48,6 +65,15 @@ export async function createIdentityServer(options: IdentityServerOptions = {}):
     ...(options.hasPlatformOwner ? { hasPlatformOwner: options.hasPlatformOwner } : {}),
     ...(options.now ? { now: options.now } : {}),
     ...(options.installationScope ? { installationScope: options.installationScope } : {}),
+  });
+  await app.register(authRoutes, {
+    database: options.authDatabase ?? options.bootstrapDatabase as AuthDatabasePort | undefined,
+    login: options.login ?? identityLogin({
+      database: options.authDatabase ?? options.bootstrapDatabase as AuthDatabasePort | undefined,
+      ...(options.now ? { now: options.now } : {}),
+    }),
+    ...(options.now ? { now: options.now } : {}),
+    ...(options.production !== undefined ? { production: options.production } : {}),
   });
   await app.ready();
   let started = false;
