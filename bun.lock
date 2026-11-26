@@ -254,11 +254,13 @@
         "@fastify/swagger": "^9.9.1",
         "@fastify/swagger-ui": "^6.1.1",
         "@fastify/vite": "^10.0.0",
+        "@moonwitness/assets": "workspace:*",
         "@moonwitness/logger": "workspace:*",
         "@moonwitness/orm": "workspace:*",
         "@moonwitness/orm-base": "workspace:*",
         "@moonwitness/orm-whatsapp": "workspace:*",
         "@moonwitness/types": "workspace:*",
+        "@moonwitness/ui": "workspace:*",
         "@vitejs/plugin-react": "^6.1.1",
         "fastify": "^5.12.8",
         "knex": "^3.3.0",
@@ -741,6 +743,22 @@
       "devDependencies": {
         "@vitest/coverage-v8": "5.0.3",
         "better-sqlite3": "^13.0.3",
+        "typescript": "~5.7.3",
+        "vitest": "^5.0.3",
+      },
+    },
+    "packages/orm-identity": {
+      "name": "@moonwitness/orm-identity",
+      "version": "1.0.0-rc.1",
+      "dependencies": {
+        "@moonwitness/orm": "workspace:*",
+        "@moonwitness/types": "workspace:*",
+        "objection": "^3.1.5",
+      },
+      "devDependencies": {
+        "@vitest/coverage-v8": "5.0.3",
+        "better-sqlite3": "^13.0.3",
+        "knex": "^3.3.0",
         "typescript": "~5.7.3",
         "vitest": "^5.0.3",
       },
@@ -1601,6 +1619,8 @@
     "@moonwitness/orm-governance": ["@moonwitness/orm-governance@workspace:packages/orm-governance"],
 
     "@moonwitness/orm-helpdesk": ["@moonwitness/orm-helpdesk@workspace:packages/orm-helpdesk"],
+
+    "@moonwitness/orm-identity": ["@moonwitness/orm-identity@workspace:packages/orm-identity"],
 
     "@moonwitness/orm-income-ledger": ["@moonwitness/orm-income-ledger@workspace:packages/orm-income-ledger"],
 
