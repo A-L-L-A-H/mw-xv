@@ -166,7 +166,6 @@
     "test:secrets": "node --test scripts/check-gitleaks-config.test.mjs",
     "automation:check:roadmap": "node scripts/roadmap/validate-roadmap.mjs",
     "tasks:validate": "node scripts/tasks/validate-tasks.mjs",
-    "tasks:sync": "node scripts/tasks/sync-roadmap.mjs",
     "test:roadmap": "node --test scripts/roadmap/validate-roadmap.test.mjs scripts/roadmap/sync-issues.test.mjs scripts/roadmap/changed-task-ids.test.mjs scripts/roadmap/select-issue-sync-batch.test.mjs scripts/roadmap/lifecycle.test.mjs scripts/roadmap/lifecycle-snapshot.test.mjs scripts/roadmap/collect-lifecycle-snapshot.test.mjs scripts/roadmap/resume-stale-issue-sync.test.mjs scripts/roadmap/issue-sync-continuation.test.mjs scripts/roadmap/issue-sync-workflow.test.mjs scripts/roadmap/issue-intake.test.mjs scripts/roadmap/progress-dashboard.test.mjs scripts/roadmap/progress-workflow.test.mjs scripts/roadmap/audit-issues.test.mjs",
     "local-ai:register-model": "node scripts/local-ai/register-model.mjs",
     "local-ai:eval": "node scripts/local-ai/eval.mjs",
@@ -194,8 +193,7 @@
     "test:knowledge-cli:built": "node --test scripts/knowledge/validate.test.mjs scripts/knowledge/snapshot.test.mjs scripts/knowledge/legacy-inventory.test.mjs scripts/knowledge/ingest.test.mjs scripts/knowledge/revelation-identity.test.mjs scripts/knowledge/rebuild.test.mjs",
     "test:whatsapp": "node --test scripts/whatsapp-compose-env.test.mjs scripts/whatsapp-monitoring.test.mjs && bunx --cwd apps/api vitest run tests/whatsapp.config.test.ts tests/whatsapp.media.test.ts tests/whatsapp.routes.test.ts tests/whatsapp-attachment-references.test.ts tests/whatsapp-attachments-job.test.ts tests/whatsapp-attachments-job.postgres.integration.test.ts tests/whatsapp.version-guard.test.ts",
     "test:isp": "node --test scripts/isp-compose-config.test.mjs",
-    "tasks:sweep": "node scripts/tasks/sweep-and-consolidate.mjs",
-    "test:taskos": "node --test scripts/tasks/validate-tasks.test.mjs scripts/tasks/sync-roadmap.test.mjs scripts/tasks/sweep-and-consolidate.test.mjs scripts/tasks/visual-universe-projection.test.mjs scripts/tasks/visual-universe-renderers.test.mjs"
+    "test:taskos": "node --test scripts/tasks/validate-tasks.test.mjs scripts/tasks/roadmap-index.test.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",

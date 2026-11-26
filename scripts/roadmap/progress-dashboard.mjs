@@ -5,6 +5,7 @@ import process from 'node:process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { projectLifecycleSnapshot } from './lifecycle-snapshot.mjs';
 import { parseRoadmapTaskStates } from './collect-lifecycle-snapshot.mjs';
+import { loadCanonicalRoadmapIndex } from '../tasks/roadmap-index.mjs';
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const workKeys = ['todo', 'running', 'blocked', 'complete'];
@@ -154,8 +155,8 @@ async function main() {
   const sha = git(['rev-parse', 'HEAD']);
   const sourceDirty = git(['status', '--porcelain']).length > 0;
   const generatedAt = new Date().toISOString();
-  const [index, roadmap] = await Promise.all([
-    readFile(path.join(repositoryRoot, 'docs/roadmap/tasks.json'), 'utf8').then(JSON.parse),
+  const [{ index }, roadmap] = await Promise.all([
+    loadCanonicalRoadmapIndex(repositoryRoot),
     readFile(path.join(repositoryRoot, 'ROADMAP.md'), 'utf8'),
   ]);
   let lifecycleByTask;

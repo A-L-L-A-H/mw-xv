@@ -3,6 +3,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { milestonePattern, parseTaskId, taskIdPattern, taskIdSource } from './task-ids.mjs';
+import { loadCanonicalRoadmapIndex } from '../tasks/roadmap-index.mjs';
 
 function isRecord(value) {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -333,16 +334,14 @@ export function validateRoadmapIndex(input, roadmap, documents) {
 }
 
 async function loadRepository() {
-  const indexPath = path.join(repositoryRoot, 'docs/roadmap/tasks.json');
+  const { sourceText: indexSource, index } = await loadCanonicalRoadmapIndex(repositoryRoot);
   const roadmapPath = path.join(repositoryRoot, 'ROADMAP.md');
-  const indexSource = await readFile(indexPath, 'utf8');
   const duplicateKeys = findDuplicateJsonObjectKeys(indexSource);
   if (duplicateKeys.length > 0) {
     throw new Error(
       `tasks.json contains duplicate object keys: ${[...new Set(duplicateKeys)].join(', ')}`
     );
   }
-  const index = JSON.parse(indexSource);
   const roadmap = await readFile(roadmapPath, 'utf8');
   /** @type {Map<string, string>} */
   const documents = new Map();

@@ -1,6 +1,6 @@
 {
   "name": "@moonwitness/orm-public-services",
-  "version": "1.0.0",
+  "version": "1.0.0-rc.1",
   "private": true,
   "description": "Public free-tools / charity / portfolio addon for MoonWitness ORM (anonymous rate-limited endpoints, usage metering, daily metrics, charity attribution)",
   "type": "module",

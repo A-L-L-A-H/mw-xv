@@ -199,6 +199,7 @@
         <span id="hdrMeshBadge" class="badge">mesh: unknown</span>
       </div>
       <div class="row">
+        <button id="sysUpdateBtn" class="sm" title="Check or apply MoonWitness platform update">Checking version…</button>
         <button id="refreshBtn" class="sm">Refresh</button>
         <button class="sm primary" onclick="switchTab('deploy')">+ New Resource</button>
       </div>
@@ -583,6 +584,102 @@ function updateDomainPreviews() {
 });
 
 document.getElementById("refreshBtn").addEventListener("click", refreshAll);
+let latestUpdateState = null;
+let updatePollTimer = null;
+
+function renderUpdateButton(st) {
+  const btn = document.getElementById("sysUpdateBtn");
+  if (!btn || !st) return;
+  if (st.status === "updating" || st.status === "restarting") {
+    btn.textContent = (st.status === "restarting" ? "Restarting " : "Updating ") + (st.targetVersion || "") + "…";
+    btn.className = "sm primary";
+    return;
+  }
+  if (st.updateAvailable && st.latestVersion) {
+    btn.textContent = "Update Available: " + st.latestVersion;
+    btn.className = "sm primary";
+  } else {
+    btn.textContent = (st.currentVersion || "v1.0.0-rc.1") + " · Up to date";
+    btn.className = "sm";
+  }
+}
+
+async function checkSystemUpdate(force) {
+  try {
+    const st = await api("/system/update" + (force ? "?force=true" : ""));
+    latestUpdateState = st;
+    renderUpdateButton(st);
+    return st;
+  } catch {
+    return null;
+  }
+}
+
+async function openSystemUpdateModal(force) {
+  const st = (await checkSystemUpdate(Boolean(force))) || latestUpdateState;
+  if (!st) { toast("Unable to check platform updates"); return; }
+  const canClick = st.canApply && (st.updateAvailable || st.latestVersion);
+  const badgeCls = st.status === "failed" ? "err" : (st.updateAvailable ? "warn" : "ok");
+  const statusLabel = st.status !== "idle" ? st.status : (st.updateAvailable ? "update available" : "up to date");
+  openModal("Platform Self-Update", `
+    <div class="between" style="margin-bottom:12px;">
+      <div>
+        <div class="sub">Running: <strong style="color:var(--text);font-family:var(--mono)">${esc(st.currentVersion)}</strong> · Latest: <strong style="color:var(--text);font-family:var(--mono)">${esc(st.latestVersion || "none yet")}</strong></div>
+        ${st.releaseUrl ? `<div class="sub"><a href="${esc(st.releaseUrl)}" target="_blank" rel="noopener">View GitHub Release Notes &nearr;</a></div>` : ""}
+      </div>
+      <span class="badge ${badgeCls}">${esc(statusLabel)}</span>
+    </div>
+    ${st.releaseNotes ? `<pre class="terminal" style="max-height:130px;margin-bottom:12px;">${esc(st.releaseNotes)}</pre>` : ""}
+    <div class="row" style="margin-bottom:12px;">
+      <button class="sm" onclick="openSystemUpdateModal(true)">Check Again</button>
+      <button class="sm primary" id="applySysUpdateBtn" ${canClick ? "" : "disabled"}>${st.updateAvailable ? ("Update to " + esc(st.latestVersion) + " &amp; Restart") : ("Re-pull &amp; Restart " + esc(st.latestVersion || st.currentVersion))}</button>
+    </div>
+    <pre id="sysUpdateLog" class="terminal">${esc(st.lastUpdateLog || (st.lastError ? ("Error: " + st.lastError) : "Ready. Click Update & Restart to pull signed GHCR images and recreate services."))}</pre>
+  `);
+  const applyBtn = document.getElementById("applySysUpdateBtn");
+  if (applyBtn) {
+    applyBtn.onclick = async () => {
+      const target = st.latestVersion || st.currentVersion;
+      if (!confirm("Pull " + target + " and restart MoonWitness services?")) return;
+      try {
+        applyBtn.disabled = true;
+        const next = await api("/system/update/apply", { method: "POST", body: JSON.stringify({ version: target }) });
+        latestUpdateState = next;
+        renderUpdateButton(next);
+        document.getElementById("sysUpdateLog").textContent = next.lastUpdateLog || "Updating...";
+        toast("Update to " + target + " started; polling status...");
+        pollSystemUpdate();
+      } catch (err) {
+        applyBtn.disabled = false;
+        toast("Update failed: " + err.message);
+      }
+    };
+  }
+}
+
+function pollSystemUpdate() {
+  if (updatePollTimer) clearInterval(updatePollTimer);
+  updatePollTimer = setInterval(async () => {
+    try {
+      const st = await checkSystemUpdate(false);
+      if (!st) return;
+      const pre = document.getElementById("sysUpdateLog");
+      if (pre && st.lastUpdateLog) pre.textContent = st.lastUpdateLog;
+      if (st.status === "succeeded") {
+        clearInterval(updatePollTimer); updatePollTimer = null;
+        toast("Updated to " + st.currentVersion + " — reloading...");
+        setTimeout(() => location.reload(), 1500);
+      } else if (st.status === "failed") {
+        clearInterval(updatePollTimer); updatePollTimer = null;
+        toast("Update failed: " + (st.lastError || "check logs"));
+      }
+    } catch {
+      // Service is restarting; keep polling until it comes back up.
+    }
+  }, 3000);
+}
+
+document.getElementById("sysUpdateBtn").addEventListener("click", () => openSystemUpdateModal(false));
 
 async function refreshAll() {
   try {
@@ -591,6 +688,7 @@ async function refreshAll() {
       api("/apps"),
       api("/host/services")
     ]);
+    void checkSystemUpdate(false);
     if (metrics.baseDomain) currentBaseDomain = metrics.baseDomain;
     document.getElementById("sbBaseDomain").textContent = currentBaseDomain ? ("*." + currentBaseDomain) : "local mode";
     updateDomainPreviews();

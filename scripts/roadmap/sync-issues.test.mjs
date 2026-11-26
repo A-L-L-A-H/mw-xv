@@ -119,11 +119,9 @@ test('issue sync workflow bounds changed-task and backlog writes to an exact dev
   const applyBoundary = jobs.indexOf('\n  apply:\n');
   const planJob = jobs.slice(0, applyBoundary);
   const applyJob = jobs.slice(applyBoundary);
-  assert.match(workflow, /branches: \[dev\]/u);
-  assert.match(workflow, /schedule:/u);
   assert.match(workflow, /workflow_dispatch:/u);
+  assert.doesNotMatch(workflow, /^\s+schedule:/mu);
   assert.match(workflow, /default: false/u);
-  assert.match(workflow, /cron: '13 9 \* \* \*'/u);
   assert.match(workflow, /backfill_next_batch:/u);
   assert.match(workflow, /github\.event_name == 'schedule' && 'dev'/u);
   assert.match(workflow, /changed-task-ids\.mjs --base/u);
@@ -1031,8 +1029,10 @@ test('requested assignees are resolved as GitHub accounts and invalid names fail
 });
 
 test('all indexed tasks render implementation steps and acceptance from their roadmap cards', async () => {
-  const indexUrl = new URL('../../docs/roadmap/tasks.json', import.meta.url);
-  const index = JSON.parse(await readFile(indexUrl, 'utf8'));
+  const { loadCanonicalRoadmapIndex } = await import('../tasks/roadmap-index.mjs');
+  const { index } = await loadCanonicalRoadmapIndex(
+    new URL('../..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')
+  );
   const cards = new Map();
   const cardDetailsByTask = new Map();
   for (const task of index.tasks) {

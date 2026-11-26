@@ -1,6 +1,6 @@
 {
   "name": "@moonwitness/orm-income-ledger",
-  "version": "1.0.0",
+  "version": "1.0.0-rc.1",
   "private": true,
   "description": "Income ledger addon for MoonWitness ORM (streams, entries, metrics, experiments, allocations, adapters, recompute)",
   "type": "module",

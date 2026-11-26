@@ -4,6 +4,10 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { taskIdPattern, taskIdSource } from './task-ids.mjs';
+import {
+  loadCanonicalRoadmapIndex,
+  loadRoadmapIndexFromRevision,
+} from '../tasks/roadmap-index.mjs';
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
@@ -121,11 +125,8 @@ async function main() {
     return;
   }
 
-  const beforeIndex = parseIndex(gitText(['show', `${base}:docs/roadmap/tasks.json`]), 'Base');
-  const afterIndex = parseIndex(
-    await readFile(path.join(repositoryRoot, 'docs/roadmap/tasks.json'), 'utf8'),
-    'Head'
-  );
+  const beforeIndex = loadRoadmapIndexFromRevision((file) => gitText(['show', `${base}:${file}`]));
+  const { index: afterIndex } = await loadCanonicalRoadmapIndex(repositoryRoot);
   const beforeRoadmap = gitText(['show', `${base}:ROADMAP.md`]);
   const afterRoadmap = await readFile(path.join(repositoryRoot, 'ROADMAP.md'), 'utf8');
   const files = new Set([

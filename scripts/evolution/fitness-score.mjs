@@ -95,12 +95,10 @@ export async function computeRepositoryFitness(options = {}) {
     existsSync(path.join(repositoryRoot, 'README.md')) &&
     existsSync(path.join(repositoryRoot, 'docs/guide/reference/generated-platform.json'));
 
+  // Measure true architectural cleanliness (not raw sprawl counts).
+  // Never reward adding redundant packages, workflows, or test files.
   const compositeScore =
-    addonPackageCount * 100 +
-    testFiles.length * 10 +
-    workflowCount * 20 -
-    legacyAllowlistCount * 500 -
-    Math.floor(apiRouteMaxLoc / 100);
+    10000 - legacyAllowlistCount * 500 - Math.floor(apiRouteMaxLoc / 10) - (docsPresent ? 0 : 1000);
 
   const metrics = {
     format: 'moonwitness-fitness-snapshot/v1',

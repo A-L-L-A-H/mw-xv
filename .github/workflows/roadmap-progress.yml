@@ -3,8 +3,9 @@ name: Roadmap progress report
 on:
   push:
     branches: [dev]
-  schedule:
-    - cron: '23 9 * * *'
+    paths:
+      - ROADMAP.md
+      - docs/tasks/tasks.json
   workflow_dispatch: {}
 
 permissions:

@@ -180,6 +180,9 @@ install_binaries() {
     chmod 755 "${MW_CONTROL_PLANE_BIN}"
   fi
   [ -x "${MW_CONTROL_PLANE_BIN}" ] || { echo "ERROR: ${MW_CONTROL_PLANE_BIN} missing." >&2; exit 1; }
+  if [ -f "${MW_INSTALL_DIR}/deploy/vps/self-update.sh" ]; then
+    install -m 0755 "${MW_INSTALL_DIR}/deploy/vps/self-update.sh" /usr/local/bin/moonwitness-self-update
+  fi
 }
 
 ensure_mesh_and_network() {
@@ -288,6 +291,21 @@ configure_secrets_and_env() {
   upsert_env "$cp_env" "MW_PAAS_BACKUP_DIR" "${MW_DATA_DIR}/backups"
   upsert_env "$cp_env" "MW_PAAS_PG_CONTAINER" "moonwitness_postgres"
   upsert_env "$cp_env" "MW_PAAS_STATIC_ROUTES" "${MW_BASE_DOMAIN}=moonwitness_board:8080,wa.${MW_BASE_DOMAIN}=moonwitness_whatsapp:3000"
+  local detected_version="v1.0.0-rc.1"
+  if [ -f "${MW_INSTALL_DIR}/package.json" ]; then
+    local pkg_ver
+    pkg_ver="$(sed -n 's/^[[:space:]]*"version":[[:space:]]*"\([^"]*\)".*/\1/p' "${MW_INSTALL_DIR}/package.json" | head -n 1)"
+    if [ -n "$pkg_ver" ]; then
+      detected_version="v${pkg_ver#v}"
+    fi
+  fi
+  upsert_env "$cp_env" "MW_VERSION" "${detected_version}"
+  upsert_env "$cp_env" "MW_UPDATE_REPO" "A-L-L-A-H/mw-xv"
+  upsert_env "$cp_env" "MW_INSTALL_DIR" "${MW_INSTALL_DIR}"
+  upsert_env "$cp_env" "MW_COMPOSE_FILE" "${MW_INSTALL_DIR}/docker-compose.vps.yml"
+  if [ -x /usr/local/bin/moonwitness-self-update ]; then
+    upsert_env "$cp_env" "MW_SELF_UPDATE_SCRIPT" "/usr/local/bin/moonwitness-self-update"
+  fi
 }
 
 write_compose_and_edge() {

@@ -1,13 +1,6 @@
 name: Roadmap issue sync
 
 on:
-  push:
-    branches: [dev]
-    paths:
-      - ROADMAP.md
-      - docs/roadmap/**
-  schedule:
-    - cron: '13 9 * * *'
   workflow_dispatch:
     inputs:
       apply:

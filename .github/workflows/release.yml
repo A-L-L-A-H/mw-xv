@@ -468,9 +468,16 @@ jobs:
           sbom-path: release-images/release-board.spdx.json
           push-to-registry: true
           create-storage-record: false
+      - name: Mint optional automation GitHub App token for release publication
+        id: app-token
+        if: vars.AUTOMATION_APP_CLIENT_ID != ''
+        uses: actions/create-github-app-token@f418cff399f7aef4c2f0ad47e25ca7a6abbdd6fc # v3.4.0
+        with:
+          client-id: ${{ vars.AUTOMATION_APP_CLIENT_ID }}
+          private-key: ${{ secrets.AUTOMATION_APP_PRIVATE_KEY }}
       - name: Complete the same verified GitHub Release idempotently
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}
           GH_REPOSITORY: ${{ github.repository }}
           RELEASE_TAG: ${{ github.ref_name }}
           UPDATE_LATEST: ${{ steps.latest_policy.outputs.advance || 'false' }}

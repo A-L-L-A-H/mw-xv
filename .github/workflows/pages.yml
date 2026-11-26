@@ -1,29 +1,6 @@
 name: Documentation Pages
 
 on:
-  push:
-    branches: [dev, main]
-    paths:
-      - 'apps/docs/**'
-      - 'apps/api/**'
-      - 'packages/**'
-      - 'docs/**'
-      - 'README.md'
-      - 'ROADMAP.md'
-      - 'scripts/docs/**'
-      - 'scripts/check-docs-publication.mjs'
-      - 'scripts/classify-docs-change.mjs'
-      - 'scripts/docs-change-policy.mjs'
-      - 'scripts/main-ci-policy.mjs'
-      - 'scripts/maintenance-incident.mjs'
-      - 'scripts/maintenance-incident.test.mjs'
-      - 'scripts/write-docs-metadata.mjs'
-      - 'packages/assets/**'
-      - 'packages/ui/**'
-      - '.github/workflows/pages.yml'
-      - 'package.json'
-      - 'bun.lock'
-      - 'bun.lock'
   workflow_dispatch:
     inputs:
       source_ref:
@@ -263,6 +240,8 @@ jobs:
         run: node scripts/ci/build-workspace-package.mjs @moonwitness/orm-organization
       - name: Build documentation package workflow
         run: node scripts/ci/build-workspace-package.mjs @moonwitness/orm-workflow
+      - name: Build documentation package plan-taskos
+        run: bun --filter @moonwitness/plan-taskos build
       - name: Build documentation package project
         run: node scripts/ci/build-workspace-package.mjs @moonwitness/orm-project
       - name: Build documentation package requests

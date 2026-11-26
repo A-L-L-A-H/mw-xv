@@ -21,16 +21,6 @@ export function compareFitnessRatchet(baseline, current) {
       `apiRouteMaxLoc regressed (${current.apiRouteMaxLoc} > ${baseline.apiRouteMaxLoc})`
     );
   }
-  if (current.addonPackageCount < baseline.addonPackageCount) {
-    regressions.push(
-      `addonPackageCount regressed (${current.addonPackageCount} < ${baseline.addonPackageCount})`
-    );
-  }
-  if (current.testFileCount < baseline.testFileCount) {
-    regressions.push(
-      `testFileCount regressed (${current.testFileCount} < ${baseline.testFileCount})`
-    );
-  }
   if (current.compositeScore < baseline.compositeScore) {
     regressions.push(
       `compositeScore regressed (${current.compositeScore} < ${baseline.compositeScore})`

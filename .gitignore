@@ -32,3 +32,4 @@ depcruise-report.txt
 .plan/.brain/
 .plan/*/.leases.local.json
 gitleaks-report.json
+apps/control-plane/control-plane

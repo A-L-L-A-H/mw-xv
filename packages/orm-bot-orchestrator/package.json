@@ -1,6 +1,6 @@
 {
   "name": "@moonwitness/orm-bot-orchestrator",
-  "version": "1.0.0",
+  "version": "1.0.0-rc.1",
   "private": true,
   "description": "Bot orchestrator addon for MoonWitness ORM (flows, flow steps, bot runs, step runs, schedules, run queues)",
   "type": "module",

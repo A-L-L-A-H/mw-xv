@@ -1,6 +1,6 @@
 {
   "name": "paas-template-pack-moonwitness",
-  "version": "1.0.0",
+  "version": "1.0.0-rc.1",
   "private": true,
   "description": "Sovereign MoonWitness template pack: aplikasi & stack kurasi yang tidak ada di pack upstream (fintech/billing, storage/backup, AI-agent/MCP, edge/mesh, WhatsApp regional).",
   "type": "module",

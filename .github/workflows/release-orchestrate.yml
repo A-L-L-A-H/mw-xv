@@ -6,6 +6,8 @@ on:
       - CI
     types: [completed]
     branches: [main]
+  schedule:
+    - cron: '15 4 * * 1'
   workflow_dispatch:
     inputs:
       channel:
@@ -38,6 +40,7 @@ jobs:
     name: decide-release
     if: >-
       github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'schedule' && vars.AUTONOMOUS_STABLE_RELEASE == 'true') ||
       (github.event.workflow_run.event == 'push' &&
       github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.head_branch == 'main' &&
@@ -81,6 +84,9 @@ jobs:
             [[ "$RUN_REPOSITORY" == "$GH_REPO" ]]
             source="$RUN_SHA"
             run_id="$RUN_ID"
+          elif [[ "$EVENT_NAME" == "schedule" ]]; then
+            source="$(gh api "repos/$GH_REPO/git/ref/heads/main" --jq '.object.sha')"
+            run_id=""
           else
             [[ "$DISPATCH_REF" == "refs/heads/main" ]]
             if [[ -n "$INPUT_SHA" ]]; then source="$INPUT_SHA"; else source="$DISPATCH_SHA"; fi
@@ -155,6 +161,11 @@ jobs:
             else
               CHANNEL=rc
             fi
+          elif [[ "$EVENT_NAME" == "schedule" ]]; then
+            version="$(jq -r '.version' package.json)"
+            CHANNEL=stable
+            CONFIRM_VERSION="v${version%%-rc.*}"
+            CONFIRM_VERSION="v${CONFIRM_VERSION#v}"
           else
             CHANNEL="$INPUT_CHANNEL"
           fi
@@ -195,9 +206,16 @@ jobs:
       actions: write
       contents: read
     steps:
+      - name: Mint optional automation GitHub App token
+        id: app-token
+        if: vars.AUTOMATION_APP_CLIENT_ID != ''
+        uses: actions/create-github-app-token@f418cff399f7aef4c2f0ad47e25ca7a6abbdd6fc # v3.4.0
+        with:
+          client-id: ${{ vars.AUTOMATION_APP_CLIENT_ID }}
+          private-key: ${{ secrets.AUTOMATION_APP_PRIVATE_KEY }}
       - name: Dispatch release preparation on dev
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token || github.token }}
           GH_REPO: ${{ github.repository }}
           EXPECTED_DEV_SHA: ${{ needs.decide.outputs.expected_dev_sha }}
           CHANNEL: ${{ needs.decide.outputs.channel }}
@@ -221,9 +239,17 @@ jobs:
       group: release-asset-updates
       cancel-in-progress: false
     steps:
+      - name: Mint optional automation GitHub App token
+        id: app-token
+        if: vars.AUTOMATION_APP_CLIENT_ID != ''
+        uses: actions/create-github-app-token@f418cff399f7aef4c2f0ad47e25ca7a6abbdd6fc # v3.4.0
+        with:
+          client-id: ${{ vars.AUTOMATION_APP_CLIENT_ID }}
+          private-key: ${{ secrets.AUTOMATION_APP_PRIVATE_KEY }}
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.decide.outputs.source_sha }}
+          token: ${{ steps.app-token.outputs.token || github.token }}
           fetch-depth: 0
           persist-credentials: true
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -240,7 +266,7 @@ jobs:
           node scripts/create-release-tag.mjs "$TAG" "$SOURCE_SHA"
       - name: Dispatch the trusted release workflow for the new tag
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token || github.token }}
           GH_REPO: ${{ github.repository }}
           TAG: ${{ needs.decide.outputs.tag }}
         run: |
@@ -263,9 +289,17 @@ jobs:
       group: release-asset-updates
       cancel-in-progress: false
     steps:
+      - name: Mint optional automation GitHub App token
+        id: app-token
+        if: vars.AUTOMATION_APP_CLIENT_ID != ''
+        uses: actions/create-github-app-token@f418cff399f7aef4c2f0ad47e25ca7a6abbdd6fc # v3.4.0
+        with:
+          client-id: ${{ vars.AUTOMATION_APP_CLIENT_ID }}
+          private-key: ${{ secrets.AUTOMATION_APP_PRIVATE_KEY }}
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.decide.outputs.source_sha }}
+          token: ${{ steps.app-token.outputs.token || github.token }}
           fetch-depth: 0
           persist-credentials: true
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -284,7 +318,7 @@ jobs:
           node scripts/create-release-tag.mjs "$TAG" "$SOURCE_SHA"
       - name: Dispatch the confirmed stable release workflow
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token || github.token }}
           GH_REPO: ${{ github.repository }}
           TAG: ${{ needs.decide.outputs.tag }}
         run: |

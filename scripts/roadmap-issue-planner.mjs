@@ -260,13 +260,9 @@ export async function runCli(args = process.argv.slice(2)) {
 
   let tasks = [];
   const tasksPath = resolve(repositoryRoot, 'docs/tasks/tasks.json');
-  const roadmapTasksPath = resolve(repositoryRoot, 'docs/roadmap/tasks.json');
 
   if (existsSync(tasksPath)) {
     const data = JSON.parse(readFileSync(tasksPath, 'utf8'));
-    tasks = data.tasks || data;
-  } else if (existsSync(roadmapTasksPath)) {
-    const data = JSON.parse(readFileSync(roadmapTasksPath, 'utf8'));
     tasks = data.tasks || data;
   }
 

@@ -85,6 +85,8 @@ var controlPlaneRouteMatrix = []controlPlaneRoute{
 	{pattern: "/paas/node/metrics", family: "paas-ops", access: accessAuthenticated},
 	{pattern: "/paas/metrics", family: "paas-ops", access: accessAuthenticated, methods: []string{http.MethodGet}},
 	{pattern: "/paas/host/services", family: "paas-ops", access: accessAuthenticated, methods: []string{http.MethodGet}},
+	{pattern: "/paas/system/update", family: "paas-ops", access: accessAuthenticated, methods: []string{http.MethodGet}},
+	{pattern: "/paas/system/update/apply", family: "paas-ops", access: accessPrivileged, methods: []string{http.MethodPost}},
 	{pattern: "/paas/templates", family: "paas-coolify", access: accessAuthenticated, methods: []string{http.MethodGet}},
 	{pattern: "/paas/apps", family: "paas-apps", access: accessAuthenticated},
 	{pattern: "/paas/apps/deploy", family: "paas-apps", access: accessPrivileged, methods: []string{http.MethodPost}},
@@ -343,6 +345,7 @@ func buildMux(db *sql.DB, dockerBin, adminToken string) http.Handler {
 	mux := http.NewServeMux()
 	paasMgr := NewPaasManager(db, dockerBin, NewMeshManagerFromEnv(dockerBin), nil, nil)
 	paasMgr.SetAdminToken(adminToken)
+	updater := newSelfUpdaterFromEnv(dockerBin)
 	a2aMgr := NewA2AManagerFromEnv()
 	ispRouter := ispcontrol.NewRouter(
 		ispcontrol.DefaultPolicy(),
@@ -367,6 +370,8 @@ func buildMux(db *sql.DB, dockerBin, adminToken string) http.Handler {
 		"/paas/node/metrics":        paasMgr.handleNodeMetrics(),
 		"/paas/metrics":             paasMgr.handleNodeMetrics(),
 		"/paas/host/services":       paasMgr.handleHostServices(),
+		"/paas/system/update":       updater.handleStatus(),
+		"/paas/system/update/apply": updater.handleApply(),
 		"/paas/templates":           paasMgr.handleTemplates(),
 		"/paas/apps":                paasMgr.handleApps(),
 		"/paas/apps/deploy":         paasMgr.handleDeploy(),

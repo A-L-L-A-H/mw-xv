@@ -142,7 +142,7 @@ Goal lengkap hanya selesai bila seluruh acceptance master terbukti. Selesainya k
 Workstream tunggal untuk mengimplementasikan AI Corporation secara Addon-First di atas `dev` tanpa menduplikasi atau membuka ulang M0–M11 maupun K0–K9:
 
 - **Keputusan arsitektur:** [ADR 0007](../decisions/0007-ai-corporation-addon-first-architecture.md) (pointer kompatibilitas: [docs/architecture/adr/0007-ai-corporation-addon-first-architecture.md](../architecture/adr/0007-ai-corporation-addon-first-architecture.md)) dan [Baseline Audit & Reuse Matrix](../architecture/ai-corporation-baseline-audit.md).
-- **Kartu kerja kanonik (`M12.01`–`M12.14`):** [13-ai-corporation.md](13-ai-corporation.md) terdaftar dalam [tasks.json](tasks.json) dan [ROADMAP.md](../../ROADMAP.md).
+- **Kartu kerja kanonik (`M12.01`–`M12.14`):** [13-ai-corporation.md](13-ai-corporation.md) terdaftar dalam [tasks.json](../tasks/tasks.json) dan [ROADMAP.md](../../ROADMAP.md).
 - **Ledger implementasi granular (`BASE.17`–`BASE.30`, `AI0`–`AI11`, `DOC`, `PR`, `GATE`, `SLICE`):** [`todo-ai-corporation.md`](../bundles/ai-corporation-blueprint/docs/roadmap/todo-ai-corporation.md).
 
 ### Kontrak sinkronisasi progress (`AI1.33`–`AI1.34`)

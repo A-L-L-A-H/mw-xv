@@ -7,6 +7,7 @@ import process from 'node:process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { taskIdCaptureSource } from './task-ids.mjs';
 import { assertLifecycleSnapshotFresh, projectLifecycleSnapshot } from './lifecycle-snapshot.mjs';
+import { loadCanonicalRoadmapIndex } from '../tasks/roadmap-index.mjs';
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const beginMarker = '<!-- BEGIN MOONWITNESS MANAGED -->';
@@ -801,9 +802,7 @@ async function main() {
     throw new Error('--task-ids requires a comma-separated task ID list.');
   if (!owner || !repo || !repositoryId)
     throw new Error('Set GITHUB_REPOSITORY and GITHUB_REPOSITORY_ID.');
-  const index = JSON.parse(
-    await readFile(path.join(repositoryRoot, 'docs/roadmap/tasks.json'), 'utf8')
-  );
+  const { index } = await loadCanonicalRoadmapIndex(repositoryRoot);
   execFileSync(
     process.execPath,
     [path.join(repositoryRoot, 'scripts/roadmap/validate-roadmap.mjs')],
