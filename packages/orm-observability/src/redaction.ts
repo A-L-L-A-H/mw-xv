@@ -9,6 +9,12 @@ const KEY_VALUE_SECRET_PATTERN =
 const MAX_REDACTION_DEPTH = 12;
 const MAX_JSON_REDACTION_DEPTH = 3;
 
+// Telemetry keys are headers (x-api-key), env var names, and bracket notations.
+// Restrict property writes to that character set so a hostile JSON payload
+// cannot inject arbitrary object property names.
+const SAFE_KEY_PATTERN = /^[A-Za-z0-9][A-Za-z0-9 ._:\/\-\[\]()@]{0,255}$/u;
+const UNSAFE_KEY_MARKER = '[unsafe-key-redacted]';
+
 function redactString(input: string, jsonDepth: number): string {
   const trimmed = input.trim();
   if (
@@ -44,15 +50,35 @@ function redactValue(value: unknown, depth: number, seen: WeakSet<object>, jsonD
   }
 
   const output: Record<string, unknown> = {};
+  let unsafeKeyIndex = 0;
   for (const [key, item] of Object.entries(value as Record<string, unknown>)) {
-    Object.defineProperty(output, key, {
-      value: SENSITIVE_KEY_PATTERN.test(key)
-        ? '[redacted]'
-        : redactValue(item, depth + 1, seen, jsonDepth),
-      enumerable: true,
-      configurable: true,
-      writable: true,
-    });
+    const redactedVal = SENSITIVE_KEY_PATTERN.test(key)
+      ? '[redacted]'
+      : redactValue(item, depth + 1, seen, jsonDepth);
+
+    if (
+      key !== '__proto__' &&
+      key !== 'prototype' &&
+      key !== 'constructor' &&
+      SAFE_KEY_PATTERN.test(key)
+    ) {
+      Object.defineProperty(output, key, {
+        value: redactedVal,
+        enumerable: true,
+        configurable: true,
+        writable: true,
+      });
+    } else {
+      const safeKey =
+        unsafeKeyIndex === 0 ? UNSAFE_KEY_MARKER : `${UNSAFE_KEY_MARKER}_${unsafeKeyIndex}`;
+      unsafeKeyIndex += 1;
+      Object.defineProperty(output, safeKey, {
+        value: redactedVal,
+        enumerable: true,
+        configurable: true,
+        writable: true,
+      });
+    }
   }
   return output;
 }

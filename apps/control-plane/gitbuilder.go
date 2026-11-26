@@ -30,6 +30,9 @@ var (
 	gitBranchPattern     = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9._/-]{0,127}$`)
 	gitDockerfilePattern = regexp.MustCompile(`^[a-zA-Z0-9._/-]{1,255}$`)
 	gitShortShaPattern   = regexp.MustCompile(`^[a-fA-F0-9]{7,40}$`)
+	// gitHealthPathPattern constrains healthcheck paths used in SSRF-sensitive
+	// probe URLs: must start with '/', limited to path-safe characters.
+	gitHealthPathPattern = regexp.MustCompile(`^/[A-Za-z0-9._\-\/]*$`)
 )
 
 // GitDeployRequest is the payload for POST /paas/apps/deploy-git.
@@ -646,6 +649,9 @@ func (m *PaasManager) deployPreviewBlueGreen(ctx context.Context, req PreviewDep
 	if healthPath == "" {
 		healthPath = "/health"
 	}
+	if !gitHealthPathPattern.MatchString(healthPath) {
+		return PreviewDeployResponse{}, fmt.Errorf("invalid healthcheckPath: %q", req.HealthcheckPath)
+	}
 	if m.healthProber != nil {
 		probeURL := fmt.Sprintf("http://%s:%d%s", candidateName, req.Port, healthPath)
 		if err := m.healthProber(ctx, probeURL); err != nil {
@@ -752,6 +758,10 @@ func (m *PaasManager) probeCandidateContainer(ctx context.Context, candidateName
 			}
 			if targetIP == nil {
 				lastErr = errors.New("candidate container has no private network IP")
+			} else if err := ValidatePaasPort(port); err != nil {
+				return err
+			} else if !gitHealthPathPattern.MatchString(healthPath) {
+				return fmt.Errorf("invalid healthcheck path: %q", healthPath)
 			} else {
 				targetURL := fmt.Sprintf("http://%s%s", net.JoinHostPort(targetIP.String(), strconv.Itoa(port)), healthPath)
 				req, reqErr := http.NewRequestWithContext(ctx, http.MethodGet, targetURL, nil)

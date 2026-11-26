@@ -78,17 +78,31 @@ export function createCpuSampler(): () => number {
   };
 }
 
-export function isBlockedProbeUrl(rawUrl: string): boolean {
+const HOST_CONTROL_CHARS_PATTERN = /[\s\u0000-\u001f\u007f]/u;
+
+/**
+ * Parses and validates a probe URL. Returns a sanitized URL object, or null when the
+ * URL is not a safe http(s) probe target. Callers must fetch the returned URL object,
+ * never the raw string, so unvalidated input cannot reach network sinks.
+ */
+export function parseProbeUrl(rawUrl: string): URL | null {
   let parsed: URL;
   try {
     parsed = new URL(rawUrl);
   } catch {
-    return true;
+    return null;
   }
   if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-    return true;
+    return null;
+  }
+  // Credentials in the URL would leak secrets to the probed host; reject them.
+  if (parsed.username !== '' || parsed.password !== '') {
+    return null;
   }
   const host = parsed.hostname.toLowerCase().replace(/^\[|\]$/gu, '');
+  if (host === '' || HOST_CONTROL_CHARS_PATTERN.test(host)) {
+    return null;
+  }
   if (
     host === '169.254.169.254' ||
     host.startsWith('169.254.') ||
@@ -97,9 +111,13 @@ export function isBlockedProbeUrl(rawUrl: string): boolean {
     host.startsWith('fc') ||
     host.startsWith('fd')
   ) {
-    return true;
+    return null;
   }
-  return false;
+  return parsed;
+}
+
+export function isBlockedProbeUrl(rawUrl: string): boolean {
+  return parseProbeUrl(rawUrl) === null;
 }
 
 function classifyGitArea(filePath: string): string {
@@ -290,7 +308,9 @@ export async function readGitCommitDetail(
 export async function probeHttpTarget(
   target: ObservatoryProbeTarget
 ): Promise<ObservatoryProbeResult> {
-  if (isBlockedProbeUrl(target.url)) {
+  // Fetch only the validated URL object; the raw string never reaches the network sink.
+  const validatedUrl = parseProbeUrl(target.url);
+  if (!validatedUrl) {
     return {
       ...target,
       status: 'blocked',
@@ -306,7 +326,7 @@ export async function probeHttpTarget(
   timer.unref();
 
   try {
-    const response = await fetch(target.url, {
+    const response = await fetch(validatedUrl, {
       method: 'GET',
       redirect: 'manual',
       signal: controller.signal,

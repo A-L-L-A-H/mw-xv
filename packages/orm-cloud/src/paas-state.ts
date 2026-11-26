@@ -1,5 +1,6 @@
 import { isIP } from 'node:net';
 import { defineModel, fields } from '@moonwitness/orm';
+import { trimTrailingSlashes } from '@moonwitness/types';
 import { CloudApp } from './models/index.js';
 
 /**
@@ -356,11 +357,11 @@ export async function reconcileCaddyWithAgent(params: ReconcileCaddyWithAgentPar
       previewListeners: params.previews ?? spec.previewListeners,
       routes: agentRoutes,
     };
-    const endpoint = (
+    const endpoint = trimTrailingSlashes(
       params.endpoint ??
       process.env.MW_CONTROL_PLANE_URL ??
       'http://127.0.0.1:3003'
-    ).replace(/\/+$/, '');
+    );
     const fetchFn = params.fetchImpl ?? globalThis.fetch;
     if (typeof fetchFn === 'function') {
       await fetchFn(`${endpoint}/agent/caddy/reconcile`, {

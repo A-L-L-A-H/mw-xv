@@ -585,6 +585,11 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
         ? Number(options.quotaUnits)
         : 1;
 
+    // Per-route rate limits, activated by @fastify/rate-limit when the host app
+    // registers it with `global: false` (see packages/orm-observability/src/http-plugin.ts).
+    const READ_RATE_LIMIT = { config: { rateLimit: { max: 120, timeWindow: '1 minute' } } } as const;
+    const WRITE_RATE_LIMIT = { config: { rateLimit: { max: 30, timeWindow: '1 minute' } } } as const;
+
     const mark = (
       operation: CloudOperation,
       outcome: CloudOutcome,
@@ -677,7 +682,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       return rule;
     };
 
-    fastify.get('/api/cloud/health', async (req, reply) => {
+    fastify.get('/api/cloud/health', READ_RATE_LIMIT, async (req, reply) => {
       const rule = ruleFor('/api/cloud/health');
       const ctx = requireAuthorizedModelAccess(req, reply, rule);
       if (!ctx) return;
@@ -715,7 +720,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       };
     });
 
-    fastify.get('/api/cloud/services', async (req, reply) => {
+    fastify.get('/api/cloud/services', READ_RATE_LIMIT, async (req, reply) => {
       const rule = ruleFor('/api/cloud/services');
       const ctx = requireAuthorizedModelAccess(req, reply, rule);
       if (!ctx) return;
@@ -741,7 +746,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       }
     });
 
-    fastify.get('/api/cloud/readiness', async (req, reply) => {
+    fastify.get('/api/cloud/readiness', READ_RATE_LIMIT, async (req, reply) => {
       const rule = ruleFor('/api/cloud/readiness');
       const ctx = requireAuthorizedModelAccess(req, reply, rule);
       if (!ctx) return;
@@ -749,7 +754,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       return { success: true, data: readCloudReadiness(validation) };
     });
 
-    fastify.post<{ Params: { id: string } }>('/api/cloud/apps/:id/deploy', async (req, reply) => {
+    fastify.post<{ Params: { id: string } }>('/api/cloud/apps/:id/deploy', WRITE_RATE_LIMIT, async (req, reply) => {
       const rule = ruleFor('/api/cloud/apps/:id/deploy');
       const ctx = requireAuthorizedModelAccess(req, reply, rule);
       if (!ctx) return;
@@ -1192,7 +1197,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       return reply.code(outcome.statusCode).send(outcome.body);
     });
 
-    fastify.delete<{ Params: { id: string } }>('/api/cloud/apps/:id', async (req, reply) => {
+    fastify.delete<{ Params: { id: string } }>('/api/cloud/apps/:id', WRITE_RATE_LIMIT, async (req, reply) => {
       const rule = ruleFor('/api/cloud/apps/:id');
       const ctx = requireAuthorizedModelAccess(req, reply, rule);
       if (!ctx) return;
@@ -1226,6 +1231,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
 
     fastify.post<{ Params: { id: string } }>(
       '/api/cloud/subscriptions/:id/enforce',
+      WRITE_RATE_LIMIT,
       async (req, reply) => {
         const rule = ruleFor('/api/cloud/subscriptions/:id/enforce');
         const ctx = requireAuthorizedModelAccess(req, reply, rule);
@@ -1299,6 +1305,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
 
     fastify.get<{ Params: { id: string } }>(
       '/api/cloud/deployments/:id/logs',
+      READ_RATE_LIMIT,
       async (req, reply) => {
         const rule = ruleFor('/api/cloud/deployments/:id/logs');
         const ctx = requireAuthorizedModelAccess(req, reply, rule);
@@ -1365,6 +1372,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
 
     fastify.get<{ Params: { id: string } }>(
       '/api/cloud/deployments/:id/logs/stream',
+      READ_RATE_LIMIT,
       async (req, reply) => {
         const rule = ruleFor('/api/cloud/deployments/:id/logs/stream');
         const ctx = requireAuthorizedModelAccess(req, reply, rule);
@@ -1449,7 +1457,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       }
     );
 
-    fastify.post('/api/cloud/targets/probe', async (req, reply) => {
+    fastify.post('/api/cloud/targets/probe', WRITE_RATE_LIMIT, async (req, reply) => {
       const rule = ruleFor('/api/cloud/targets/probe');
       const ctx = requireAuthorizedModelAccess(req, reply, rule);
       if (!ctx) return;
@@ -1464,7 +1472,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       return { success: true, data: result };
     });
 
-    fastify.get('/api/cloud/export/terraform', async (req, reply) => {
+    fastify.get('/api/cloud/export/terraform', READ_RATE_LIMIT, async (req, reply) => {
       const rule = ruleFor('/api/cloud/export/terraform');
       const ctx = requireAuthorizedModelAccess(req, reply, rule);
       if (!ctx) return;
@@ -1497,7 +1505,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       };
     };
 
-    fastify.get('/api/cloud/paas/metrics', async (req, reply) => {
+    fastify.get('/api/cloud/paas/metrics', READ_RATE_LIMIT, async (req, reply) => {
       const rule = ruleFor('/api/cloud/paas/metrics');
       const ctx = requireAuthorizedModelAccess(req, reply, rule);
       if (!ctx) return;
@@ -1522,7 +1530,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       }
     });
 
-    fastify.get('/api/cloud/paas/apps', async (req, reply) => {
+    fastify.get('/api/cloud/paas/apps', READ_RATE_LIMIT, async (req, reply) => {
       const rule = ruleFor('/api/cloud/paas/apps');
       const ctx = requireAuthorizedModelAccess(req, reply, rule);
       if (!ctx) return;
@@ -1547,7 +1555,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       }
     });
 
-    fastify.get('/api/cloud/paas/templates', async (req, reply) => {
+    fastify.get('/api/cloud/paas/templates', READ_RATE_LIMIT, async (req, reply) => {
       const rule = ruleFor('/api/cloud/paas/templates');
       const ctx = requireAuthorizedModelAccess(req, reply, rule);
       if (!ctx) return;
@@ -1583,7 +1591,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       }
     });
 
-    fastify.get<{ Params: { id: string } }>('/api/cloud/paas/templates/:id', async (req, reply) => {
+    fastify.get<{ Params: { id: string } }>('/api/cloud/paas/templates/:id', READ_RATE_LIMIT, async (req, reply) => {
       const rule = ruleFor('/api/cloud/paas/templates/:id');
       const ctx = requireAuthorizedModelAccess(req, reply, rule);
       if (!ctx) return;
@@ -1599,7 +1607,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       return { success: true, data: detail };
     });
 
-    fastify.post<{ Body: { slug?: string; tenantId?: string; env?: Record<string, string>; domain?: string; port?: number } }>('/api/cloud/paas/templates/deploy', async (req, reply) => {
+    fastify.post<{ Body: { slug?: string; tenantId?: string; env?: Record<string, string>; domain?: string; port?: number } }>('/api/cloud/paas/templates/deploy', WRITE_RATE_LIMIT, async (req, reply) => {
       const rule = ruleFor('/api/cloud/paas/templates/deploy');
       const ctx = requireAuthorizedModelAccess(req, reply, rule);
       if (!ctx) return;
@@ -1712,7 +1720,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       }
     });
 
-    fastify.post('/api/cloud/paas/apps/deploy', async (req, reply) => {
+    fastify.post('/api/cloud/paas/apps/deploy', WRITE_RATE_LIMIT, async (req, reply) => {
       const rule = ruleFor('/api/cloud/paas/apps/deploy');
       const ctx = requireAuthorizedModelAccess(req, reply, rule);
       if (!ctx) return;
@@ -1858,6 +1866,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
 
     fastify.post<{ Body: { slug?: string; tenantId?: string; composeSpec?: string; env?: Record<string, string>; domain?: string; port?: number } }>(
       '/api/cloud/paas/apps/deploy-compose',
+      WRITE_RATE_LIMIT,
       async (req, reply) => {
         const rule = ruleFor('/api/cloud/paas/apps/deploy-compose');
         const ctx = requireAuthorizedModelAccess(req, reply, rule);
@@ -1991,6 +2000,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
 
     fastify.post<{ Body: { slug?: string; tenantId?: string; gitRepo?: string; branch?: string; dockerfilePath?: string; domain?: string; port?: number; env?: Record<string, string> } }>(
       '/api/cloud/paas/apps/deploy-git',
+      WRITE_RATE_LIMIT,
       async (req, reply) => {
         const rule = ruleFor('/api/cloud/paas/apps/deploy-git');
         const ctx = requireAuthorizedModelAccess(req, reply, rule);
@@ -2151,6 +2161,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
 
     fastify.post<{ Params: { slug: string }; Headers: { 'x-hub-signature-256'?: string }; Body: unknown }>(
       '/api/cloud/paas/webhooks/github/:slug',
+      WRITE_RATE_LIMIT,
       async (req, reply) => {
         const rule = ruleFor('/api/cloud/paas/webhooks/github/:slug');
         const ctx = requireAuthorizedModelAccess(req, reply, rule);
@@ -2230,6 +2241,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
 
     fastify.post<{ Params: { slug: string; action: string } }>(
       '/api/cloud/paas/apps/:slug/:action',
+      WRITE_RATE_LIMIT,
       async (req, reply) => {
         const rule = ruleFor('/api/cloud/paas/apps/:slug/:action');
         const ctx = requireAuthorizedModelAccess(req, reply, rule);
@@ -2377,6 +2389,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
 
     fastify.get<{ Params: { slug: string } }>(
       '/api/cloud/paas/apps/:slug/stats',
+      READ_RATE_LIMIT,
       async (req, reply) => {
         const rule = ruleFor('/api/cloud/paas/apps/:slug/stats');
         const ctx = requireAuthorizedModelAccess(req, reply, rule);
@@ -2424,6 +2437,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
 
     fastify.get<{ Params: { slug: string } }>(
       '/api/cloud/paas/apps/:slug',
+      READ_RATE_LIMIT,
       async (req, reply) => {
         const rule = ruleFor('/api/cloud/paas/apps/:slug');
         const ctx = requireAuthorizedModelAccess(req, reply, rule);
@@ -2491,6 +2505,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
 
     fastify.post<{ Params: { slug: string }; Body: { env?: Record<string, string>; merge?: boolean; redeploy?: boolean } }>(
       '/api/cloud/paas/apps/:slug/env',
+      WRITE_RATE_LIMIT,
       async (req, reply) => {
         const rule = ruleFor('/api/cloud/paas/apps/:slug/env');
         const ctx = requireAuthorizedModelAccess(req, reply, rule);
@@ -2594,6 +2609,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
 
     fastify.post<{ Params: { slug: string }; Body: { domain?: string } }>(
       '/api/cloud/paas/apps/:slug/domain',
+      WRITE_RATE_LIMIT,
       async (req, reply) => {
         const rule = ruleFor('/api/cloud/paas/apps/:slug/domain');
         const ctx = requireAuthorizedModelAccess(req, reply, rule);
@@ -2689,6 +2705,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
 
     fastify.get<{ Params: { slug: string } }>(
       '/api/cloud/paas/apps/:slug/logs/stream',
+      READ_RATE_LIMIT,
       async (req, reply) => {
         const rule = ruleFor('/api/cloud/paas/apps/:slug/logs/stream');
         const ctx = requireAuthorizedModelAccess(req, reply, rule);
@@ -2733,7 +2750,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       }
     );
 
-    fastify.get('/api/cloud/paas/backups', async (req, reply) => {
+    fastify.get('/api/cloud/paas/backups', READ_RATE_LIMIT, async (req, reply) => {
       const rule = ruleFor('/api/cloud/paas/backups');
       const ctx = requireAuthorizedModelAccess(req, reply, rule);
       if (!ctx) return;
@@ -2760,7 +2777,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       }
     });
 
-    fastify.post('/api/cloud/paas/backups/postgres', async (req, reply) => {
+    fastify.post('/api/cloud/paas/backups/postgres', WRITE_RATE_LIMIT, async (req, reply) => {
       const rule = ruleFor('/api/cloud/paas/backups/postgres');
       const ctx = requireAuthorizedModelAccess(req, reply, rule);
       if (!ctx) return;
@@ -2789,7 +2806,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       }
     });
 
-    fastify.post('/api/cloud/paas/backups/restore', async (req, reply) => {
+    fastify.post('/api/cloud/paas/backups/restore', WRITE_RATE_LIMIT, async (req, reply) => {
       const rule = ruleFor('/api/cloud/paas/backups/restore');
       const ctx = requireAuthorizedModelAccess(req, reply, rule);
       if (!ctx) return;
@@ -2833,7 +2850,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       }
     });
 
-    fastify.get('/api/cloud/paas/settings', async (req, reply) => {
+    fastify.get('/api/cloud/paas/settings', READ_RATE_LIMIT, async (req, reply) => {
     const rule = ruleFor('/api/cloud/paas/settings');
     const ctx = requireAuthorizedModelAccess(req, reply, rule);
     if (!ctx) return;
@@ -2869,7 +2886,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       expectedIpv4?: string;
       checkHttps?: boolean;
     };
-  }>('/api/cloud/paas/settings/verify-dns', async (req, reply) => {
+  }>('/api/cloud/paas/settings/verify-dns', WRITE_RATE_LIMIT, async (req, reply) => {
     const rule = ruleFor('/api/cloud/paas/settings/verify-dns');
     const ctx = requireAuthorizedModelAccess(req, reply, rule);
     if (!ctx) return;
@@ -2907,7 +2924,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       publicPortEnabled?: boolean;
       publicIpv4?: string;
     };
-  }>('/api/cloud/paas/settings/apply', async (req, reply) => {
+  }>('/api/cloud/paas/settings/apply', WRITE_RATE_LIMIT, async (req, reply) => {
     const rule = ruleFor('/api/cloud/paas/settings/apply');
     const ctx = requireAuthorizedModelAccess(req, reply, rule);
     if (!ctx) return;
@@ -2917,10 +2934,28 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
     const { instanceDomain, wildcardDomain, whatsappDomain, publicPort, publicPortEnabled, publicIpv4 } =
       req.body;
 
+    // Validate settings inputs before acting on them: the TLS-lockdown guard below
+    // must run on an effective, server-side-defaulted value, not on raw user input.
+    if (
+      publicPortEnabled !== undefined &&
+      typeof publicPortEnabled !== 'boolean'
+    ) {
+      mark(rule.operation, 'invalid');
+      return reply.code(400).send({ success: false, error: 'publicPortEnabled must be a boolean' });
+    }
+    if (
+      publicPort !== undefined &&
+      (!Number.isSafeInteger(publicPort) || publicPort < 1 || publicPort > 65535)
+    ) {
+      mark(rule.operation, 'invalid');
+      return reply.code(400).send({ success: false, error: 'publicPort must be an integer between 1 and 65535' });
+    }
+    const nextPublicPortEnabled = publicPortEnabled ?? true;
+
     // TLS lockdown guard: disabling the public port requires a reachable,
     // certificate-verified HTTPS /readyz on the instance domain, otherwise we
     // would lock ourselves out of the control plane.
-    if (publicPortEnabled === false) {
+    if (nextPublicPortEnabled === false) {
       const dns = await verifyAgentDns({
         endpoint: defaultAgentUrl,
         fetchImpl,
@@ -2939,7 +2974,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
     }
 
     try {
-      await savePaasInstanceSettings({ instanceDomain, wildcardDomain, whatsappDomain, publicPort, publicPortEnabled, publicIpv4 });
+      await savePaasInstanceSettings({ instanceDomain, wildcardDomain, whatsappDomain, publicPort, publicPortEnabled: nextPublicPortEnabled, publicIpv4 });
       await reconcileCaddyWithAgent({ token: resolvedToken });
       mark(rule.operation, 'success');
       return { success: true, data: { ok: true } };
@@ -2951,7 +2986,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       });
     }
   });
-  fastify.post<{ Body: { wildcardDomain?: string } }>('/api/cloud/paas/settings/promote-wildcard', async (req, reply) => {
+  fastify.post<{ Body: { wildcardDomain?: string } }>('/api/cloud/paas/settings/promote-wildcard', WRITE_RATE_LIMIT, async (req, reply) => {
     const rule = ruleFor('/api/cloud/paas/settings/promote-wildcard');
     const ctx = requireAuthorizedModelAccess(req, reply, rule);
     if (!ctx) return;
@@ -2997,7 +3032,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       });
     }
   });
-  fastify.get('/api/cloud/paas/mesh/status', async (req, reply) => {
+  fastify.get('/api/cloud/paas/mesh/status', READ_RATE_LIMIT, async (req, reply) => {
     const rule = ruleFor('/api/cloud/paas/mesh/status');
     const ctx = requireAuthorizedModelAccess(req, reply, rule);
     if (!ctx) return;
