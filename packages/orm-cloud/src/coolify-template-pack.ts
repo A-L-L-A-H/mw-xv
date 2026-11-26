@@ -100,6 +100,22 @@ export function resolveCoolifyServiceTemplatesPath(): string {
     return distFallback;
   }
 
+  // Also check fixtures directory
+  const fixturesFallback = path.resolve(baseDir, '../tests/fixtures/mw-templates/paas-template-pack-coolify/service-templates.json');
+  if (existsSync(fixturesFallback)) {
+    return fixturesFallback;
+  }
+  const fixturesDistFallback = path.resolve(baseDir, '../../tests/fixtures/mw-templates/paas-template-pack-coolify/service-templates.json');
+  if (existsSync(fixturesDistFallback)) {
+    return fixturesDistFallback;
+  }
+
+  // Also check default external repo layout z:/repo/mw-templates
+  const defaultRepoPath = path.resolve('z:/repo/mw-templates/packs/paas-template-pack-coolify/service-templates.json');
+  if (existsSync(defaultRepoPath)) {
+    return defaultRepoPath;
+  }
+
   throw new Error('Unable to locate paas-template-pack-coolify/service-templates.json');
 }
 

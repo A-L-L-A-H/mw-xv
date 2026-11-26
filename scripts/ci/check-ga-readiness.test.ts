@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import {
   checkAddonSeeds,
+  checkNoMonolithTemplatePacks,
   checkReleasePackaging,
   checkWorkspaceManifests,
   evaluateGaReadiness,
@@ -77,6 +78,19 @@ describe('check-ga-readiness', () => {
       expect(result.errors.some((e) => e.message.includes('Missing deterministic lockfile'))).toBe(
         true
       );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('detects forbidden paas-template-pack-* directories in monolith', () => {
+    const root = createTempRepo();
+    try {
+      mkdirSync(join(root, 'packages', 'paas-template-pack-coolify'), { recursive: true });
+      const result = checkNoMonolithTemplatePacks(root);
+      expect(result.passed).toBe(false);
+      expect(result.errors.length).toBe(1);
+      expect(result.errors[0].message).toContain('Extracted template pack directory must not exist');
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

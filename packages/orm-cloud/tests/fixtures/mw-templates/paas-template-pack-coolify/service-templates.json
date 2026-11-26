@@ -1,0 +1,16 @@
+{
+  "n8n": {
+    "name": "n8n",
+    "slogan": "Workflow Automation",
+    "category": "automation",
+    "port": 5678,
+    "compose": "dmVyc2lvbjogIjMuOCIKc2VydmljZXM6CiAgbjhuOgogICAgaW1hZ2U6IG44bmlvL244bjpsYXRlc3QKICAgIHBvcnRzOgogICAgICAtICI1Njc4OjU2NzgiCg=="
+  },
+  "uptime-kuma": {
+    "name": "Uptime Kuma",
+    "slogan": "Monitoring Tool",
+    "category": "monitoring",
+    "port": 3001,
+    "compose": "dmVyc2lvbjogIjMuOCIKc2VydmljZXM6CiAgdXB0aW1lLWt1bWE6CiAgICBpbWFnZTogbG91aXNsYW0vdXB0aW1lLWt1bWE6bGF0ZXN0CiAgICBwb3J0czoKICAgICAgLSAiMzAwMTozMDAxIgo="
+  }
+}

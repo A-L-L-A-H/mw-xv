@@ -1,9 +1,0 @@
-[variables]
-main_domain = "${domain}"
-
-[config]
-mounts = []
-[[config.domains]]
-serviceName = "traccar"
-port = 8082
-host = "${main_domain}"

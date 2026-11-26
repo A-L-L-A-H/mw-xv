@@ -68,9 +68,6 @@ COPY packages/orm-storage/package.json ./packages/orm-storage/package.json
 COPY packages/orm-subscription/package.json ./packages/orm-subscription/package.json
 COPY packages/orm-whatsapp/package.json ./packages/orm-whatsapp/package.json
 COPY packages/orm-workflow/package.json ./packages/orm-workflow/package.json
-COPY packages/paas-template-pack-bigbear/package.json ./packages/paas-template-pack-bigbear/package.json
-COPY packages/paas-template-pack-coolify/package.json ./packages/paas-template-pack-coolify/package.json
-COPY packages/paas-template-pack-dokploy/package.json ./packages/paas-template-pack-dokploy/package.json
 COPY packages/plan-taskos/package.json ./packages/plan-taskos/package.json
 COPY packages/research/package.json ./packages/research/package.json
 COPY packages/types/package.json ./packages/types/package.json
@@ -98,6 +95,7 @@ ENV NODE_ENV=production \
     WHATSAPP_SERVICE_HOST=0.0.0.0 \
     WHATSAPP_SERVICE_PORT=3000 \
     WHATSAPP_DRIVER=baileys \
+    MW_TEMPLATES_DIR=/opt/mw-templates \
     WHATSAPP_BAILEYS_AUTH_DIR=/var/lib/moonwitness/whatsapp-auth \
     LOG_TO_FILE=false \
     LOG_PRETTY=false

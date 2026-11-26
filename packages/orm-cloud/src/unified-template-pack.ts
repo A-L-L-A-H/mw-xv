@@ -107,6 +107,22 @@ function resolvePackDir(packName: string, envKey: string): string {
     return fallback;
   }
 
+  // Also check fixtures directory
+  const fixturesFallback = path.resolve(baseDir, `../tests/fixtures/mw-templates/${packName}`);
+  if (existsSync(fixturesFallback)) {
+    return fixturesFallback;
+  }
+  const fixturesDistFallback = path.resolve(baseDir, `../../tests/fixtures/mw-templates/${packName}`);
+  if (existsSync(fixturesDistFallback)) {
+    return fixturesDistFallback;
+  }
+
+  // Also check default external repo layout z:/repo/mw-templates
+  const defaultRepoPath = path.resolve(`z:/repo/mw-templates/packs/${packName}`);
+  if (existsSync(defaultRepoPath)) {
+    return defaultRepoPath;
+  }
+
   throw new Error(`Unable to locate template pack: ${packName}`);
 }
 

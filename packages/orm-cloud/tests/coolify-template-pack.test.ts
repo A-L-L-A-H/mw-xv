@@ -1,4 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
+import { existsSync } from 'node:fs';
+import path from 'node:path';
 import {
   listCoolifyTemplates,
   getCoolifyTemplateDetail,
@@ -6,6 +8,18 @@ import {
   type CoolifyTemplateDetail,
   type CompileCoolifyComposeResult,
 } from '../src/index.js';
+
+beforeAll(() => {
+  if (!process.env.MW_TEMPLATES_DIR) {
+    const defaultPacks = 'z:/repo/mw-templates';
+    const fallbackFixtures = path.resolve(__dirname, 'fixtures/mw-templates');
+    if (existsSync(path.resolve(defaultPacks, 'packs/paas-template-pack-coolify/service-templates.json'))) {
+      process.env.MW_TEMPLATES_DIR = defaultPacks;
+    } else if (existsSync(fallbackFixtures)) {
+      process.env.MW_TEMPLATES_DIR = fallbackFixtures;
+    }
+  }
+});
 
 describe('Coolify Template Pack (390+ templates)', () => {
   it('loads catalog with total >= 350 and zero unhandled parse errors', () => {

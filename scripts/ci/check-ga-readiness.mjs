@@ -248,6 +248,40 @@ export function checkReleasePackaging(rootDir) {
 }
 
 /**
+ * Asserts zero extracted paas template packs exist inside packages/.
+ * Anti-reintroduction guard for mw-xv monolith diet prune.
+ */
+export function checkNoMonolithTemplatePacks(rootDir) {
+  const packagesDir = join(rootDir, 'packages');
+  const errors = [];
+  if (!existsSync(packagesDir)) {
+    return { passed: true, errors };
+  }
+
+  const forbiddenPacks = [
+    'paas-template-pack-coolify',
+    'paas-template-pack-dokploy',
+    'paas-template-pack-bigbear',
+  ];
+
+  for (const pack of forbiddenPacks) {
+    const packDir = join(packagesDir, pack);
+    if (existsSync(packDir)) {
+      errors.push({
+        scope: 'monolithDietGuard',
+        target: `packages/${pack}`,
+        message: `Extracted template pack directory must not exist in mw-xv: packages/${pack}`,
+      });
+    }
+  }
+
+  return {
+    passed: errors.length === 0,
+    errors,
+  };
+}
+
+/**
  * Computes a deterministic SHA-256 digest of the sorted workspace + addon inventory.
  */
 export function computeManifestDigest(workspaces, addons, lockfile) {
@@ -271,11 +305,13 @@ export function evaluateGaReadiness(rootDir = DEFAULT_ROOT) {
   const workspaceResult = checkWorkspaceManifests(resolvedRoot);
   const addonResult = checkAddonSeeds(resolvedRoot);
   const packagingResult = checkReleasePackaging(resolvedRoot);
+  const templatePacksResult = checkNoMonolithTemplatePacks(resolvedRoot);
 
   const errors = [
     ...workspaceResult.errors,
     ...addonResult.errors,
     ...packagingResult.errors,
+    ...templatePacksResult.errors,
   ];
 
   const manifestDigest = computeManifestDigest(
@@ -307,6 +343,10 @@ export function evaluateGaReadiness(rootDir = DEFAULT_ROOT) {
         passed: packagingResult.passed,
         lockfile: packagingResult.lockfile,
         errors: packagingResult.errors,
+      },
+      monolithDietGuard: {
+        passed: templatePacksResult.passed,
+        errors: templatePacksResult.errors,
       },
     },
     workspaces: workspaceResult.workspaces,

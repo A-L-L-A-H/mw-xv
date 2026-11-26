@@ -1,9 +1,0 @@
-[variables]
-main_domain = "${domain}"
-
-[config]
-mounts = []
-[[config.domains]]
-serviceName = "tautulli"
-port = 8181
-host = "${main_domain}"

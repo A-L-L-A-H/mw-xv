@@ -1,4 +1,6 @@
-import { describe, expect, it, beforeEach } from 'vitest';
+import { beforeAll, describe, expect, it, beforeEach } from 'vitest';
+import { existsSync } from 'node:fs';
+import path from 'node:path';
 import {
   canonicalTemplateSlug,
   clearUnifiedTemplateCatalogCache,
@@ -7,6 +9,18 @@ import {
   loadUnifiedTemplateCatalog,
 } from '../src/unified-template-pack.js';
 import { clearCoolifyTemplateCatalogCache } from '../src/coolify-template-pack.js';
+
+beforeAll(() => {
+  if (!process.env.MW_TEMPLATES_DIR) {
+    const defaultPacks = 'z:/repo/mw-templates';
+    const fallbackFixtures = path.resolve(__dirname, 'fixtures/mw-templates');
+    if (existsSync(path.resolve(defaultPacks, 'packs/paas-template-pack-coolify/service-templates.json'))) {
+      process.env.MW_TEMPLATES_DIR = defaultPacks;
+    } else if (existsSync(fallbackFixtures)) {
+      process.env.MW_TEMPLATES_DIR = fallbackFixtures;
+    }
+  }
+});
 
 describe('canonicalTemplateSlug', () => {
   it('strips DB-suffix variants', () => {

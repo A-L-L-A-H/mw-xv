@@ -1,9 +1,0 @@
-*
-!Dockerfile
-!harbor/
-!harbor/*.py
-!images.lock.json
-!vendor/
-!vendor/harbor.yml.tmpl
-!tests/
-!tests/*.py

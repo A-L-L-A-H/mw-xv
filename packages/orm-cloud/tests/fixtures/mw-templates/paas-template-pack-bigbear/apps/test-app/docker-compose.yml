@@ -1,0 +1,5 @@
+services:
+  web:
+    image: redis:alpine
+    x-casaos:
+      title: Test Bigbear

@@ -67,14 +67,11 @@ COPY packages/orm-sim/package.json ./packages/orm-sim/package.json
 COPY packages/orm-storage/package.json ./packages/orm-storage/package.json
 COPY packages/orm-subscription/package.json ./packages/orm-subscription/package.json
 COPY packages/orm-whatsapp/package.json ./packages/orm-whatsapp/package.json
-COPY packages/paas-template-pack-coolify/package.json ./packages/paas-template-pack-coolify/package.json
 COPY packages/paas-template-pack-moonwitness/package.json ./packages/paas-template-pack-moonwitness/package.json
 COPY packages/research/package.json ./packages/research/package.json
 COPY packages/types/package.json ./packages/types/package.json
 COPY packages/ui/package.json ./packages/ui/package.json
 COPY packages/orm-workflow/package.json ./packages/orm-workflow/package.json
-COPY packages/paas-template-pack-bigbear/package.json ./packages/paas-template-pack-bigbear/package.json
-COPY packages/paas-template-pack-dokploy/package.json ./packages/paas-template-pack-dokploy/package.json
 COPY packages/plan-taskos/package.json ./packages/plan-taskos/package.json
 RUN --mount=type=cache,id=moonwitness-bun-cache,target=/root/.bun/install/cache \
     bun install --frozen-lockfile
@@ -97,6 +94,7 @@ FROM node:24-bookworm-slim AS runtime
 ENV NODE_ENV=production \
     API_HOST=0.0.0.0 \
     API_PORT=3000 \
+    MW_TEMPLATES_DIR=/opt/mw-templates \
     LOG_TO_FILE=false \
     LOG_PRETTY=false
 RUN apt-get update \

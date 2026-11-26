@@ -1,7 +1,0 @@
-[variables]
-kividb_password = "${password:32}"
-
-[config]
-env = [
-  "KIVIDB_PASSWORD=${kividb_password}"
-]
