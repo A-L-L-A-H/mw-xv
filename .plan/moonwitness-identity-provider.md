@@ -85,7 +85,7 @@ Task dependencies are declared inside each playbook. Follow them exactly; the fi
 - [x] **I08** — Add ORM package exports, tests and build checks
 - [x] **I09** — Scaffold apps/id service entry point
 - [x] **I10** — Add strict Identity environment/config validation
-- [ ] **I11** — Add a dedicated Identity PostgreSQL connection
+- [x] **I11** — Add a dedicated Identity PostgreSQL connection
 - [ ] **I12** — Add liveness and readiness endpoints
 - [ ] **I13** — Add deterministic Identity migration runner
 - [ ] **I14** — Add identity.account model and migration

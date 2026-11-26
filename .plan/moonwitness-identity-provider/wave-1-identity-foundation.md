@@ -106,7 +106,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
     - Manual verification: immutable typed config; explicit key-provider mode; no DATABASE_URL fallback; production requires HTTPS non-local issuer and external keys; all errors redact credentials/query values
     - Commit: 3240f374 feat(id): add strict identity environment validation for I10
 
-#### - [ ] I11 — Add a dedicated Identity PostgreSQL connection
+#### - [x] I11 — Add a dedicated Identity PostgreSQL connection
 
 - **Owner File(s):** apps/id/src/database/identity-database.ts; apps/id/src/database/identity-database.test.ts
 - **Depends On:** I08, I10
@@ -118,12 +118,16 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - Add a test proving that absent IDENTITY_DATABASE_URL causes a clear failure and never falls back to DATABASE_URL.
 - **DO NOT:** Do not share the API Knex instance or connect to the same database name by implicit default.
 - **Acceptance Criteria:**
-  - [ ] Identity connection uses a distinct configured database URL.
-  - [ ] Connection lifecycle is testable and cleanly closed.
-  - [ ] No fallback to business DB is possible.
+  - [x] Identity connection uses a distinct configured database URL.
+  - [x] Connection lifecycle is testable and cleanly closed.
+  - [x] No fallback to business DB is possible.
 - **Verify:** bun --filter @moonwitness/id test; bun --filter @moonwitness/id build.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
+  - **Evidence:**
+    - Command: bun --filter @moonwitness/id test — passed (3 files, 14 tests)
+    - Command: bun --filter @moonwitness/id build — passed (tsc exited 0)
+    - Manual verification: Knex `pg` factory only reads IDENTITY_DATABASE_URL, rejects equality with DATABASE_URL, supports injected pool settings and closes once without a live database
+    - Commit: PENDING_I11_COMMIT
 
 #### - [ ] I12 — Add liveness and readiness endpoints
 
