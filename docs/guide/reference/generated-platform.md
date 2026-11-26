@@ -1,6 +1,6 @@
 # Generated platform reference
 
-Source fingerprint: `51254aa99d127e674ec3901e78054d8c9c88cfbe5edfc859e4053b1f77953cb0`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
+Source fingerprint: `4078b3dd3adda57019e6e1c02aa8f0947849fc053d9c83b18239a46bc382d3b2`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
 
 ## Workspace packages and apps
 
@@ -282,8 +282,6 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm start`
 - `pnpm start:built`
 - `pnpm swarm-observability:boundary:check`
-- `pnpm tasks:sweep`
-- `pnpm tasks:sync`
 - `pnpm tasks:validate`
 - `pnpm test`
 - `pnpm test:action-pins`

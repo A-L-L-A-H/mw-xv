@@ -884,8 +884,6 @@
       "start": "node scripts/run-local-services.mjs start",
       "start:built": "node scripts/run-local-services.mjs start:built",
       "swarm-observability:boundary:check": "node --test scripts/check-swarm-observability-boundary.test.mjs && node scripts/check-swarm-observability-boundary.mjs",
-      "tasks:sweep": "node scripts/tasks/sweep-and-consolidate.mjs",
-      "tasks:sync": "node scripts/tasks/sync-roadmap.mjs",
       "tasks:validate": "node scripts/tasks/validate-tasks.mjs",
       "test": "bun run test:unit",
       "test:action-pins": "node --test scripts/check-action-pins.test.mjs",
@@ -940,7 +938,7 @@
       "test:roadmap": "node --test scripts/roadmap/validate-roadmap.test.mjs scripts/roadmap/sync-issues.test.mjs scripts/roadmap/changed-task-ids.test.mjs scripts/roadmap/select-issue-sync-batch.test.mjs scripts/roadmap/lifecycle.test.mjs scripts/roadmap/lifecycle-snapshot.test.mjs scripts/roadmap/collect-lifecycle-snapshot.test.mjs scripts/roadmap/resume-stale-issue-sync.test.mjs scripts/roadmap/issue-sync-continuation.test.mjs scripts/roadmap/issue-sync-workflow.test.mjs scripts/roadmap/issue-intake.test.mjs scripts/roadmap/progress-dashboard.test.mjs scripts/roadmap/progress-workflow.test.mjs scripts/roadmap/audit-issues.test.mjs",
       "test:secrets": "node --test scripts/check-gitleaks-config.test.mjs",
       "test:security-policy": "node --test scripts/security-scan-policy.test.mjs scripts/check-trivy-sarif.test.mjs scripts/check-vulnerability-policy.test.mjs",
-      "test:taskos": "node --test scripts/tasks/validate-tasks.test.mjs scripts/tasks/sync-roadmap.test.mjs scripts/tasks/sweep-and-consolidate.test.mjs scripts/tasks/visual-universe-projection.test.mjs scripts/tasks/visual-universe-renderers.test.mjs",
+      "test:taskos": "node --test scripts/tasks/validate-tasks.test.mjs scripts/tasks/roadmap-index.test.mjs",
       "test:ubuntu-runner-candidate": "node --test scripts/check-ubuntu-runner-candidate.test.mjs",
       "test:ui": "bun --filter @moonwitness/ui build && node --test packages/ui/tests/*.test.mjs && node packages/ui/scripts/verify-package.mjs",
       "test:ui-budget": "node --test apps/ui-catalog/tests/bundle-budget.test.mjs && bun --filter @moonwitness/ui-catalog build:built && bun run ui:budget",
@@ -10926,5 +10924,5 @@
       "path": "/whatsapp/readyz"
     }
   ],
-  "generatedFromSha256": "51254aa99d127e674ec3901e78054d8c9c88cfbe5edfc859e4053b1f77953cb0"
+  "generatedFromSha256": "4078b3dd3adda57019e6e1c02aa8f0947849fc053d9c83b18239a46bc382d3b2"
 }
