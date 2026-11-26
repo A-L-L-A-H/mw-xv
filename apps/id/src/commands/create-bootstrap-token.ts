@@ -48,7 +48,7 @@ async function insertBootstrapToken(
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     if (/unique|duplicate|conflict|active bootstrap/i.test(message)) {
-      throw new Error('An active bootstrap token already exists');
+      throw new Error('An active bootstrap token already exists', { cause: error });
     }
     throw error;
   }
