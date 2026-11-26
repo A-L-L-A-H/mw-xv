@@ -136,7 +136,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - Command: `bun --filter @moonwitness/orm-identity build` — passed (tsc exited 0)
   - Manual verification: SigningKeyProvider exposes injectable external adapter plus explicitly opt-in development-only provider; production fails closed when no external provider/config is supplied; public JWK validation and database CHECK constraint reject private JWK parameters and PEM private keys; only RS256 and ES256 are allowed; migration 012 stores only public JWK metadata, provider id, kid, status, activation/retirement/expiry timestamps and contains no private key column.
   - Note: I30 remains blocked because `oidc-provider` is not installed and `apps/id/package.json` is outside I35 ownership. I35 dependencies (I03, I04, I14) are satisfied and no protocol endpoints were added.
-  - Commit: PENDING_IMPLEMENTATION_SHA
+  - Commit: 1d309c3d
 
 #### - [ ] I36 — Publish JWKS and active public keys
 
