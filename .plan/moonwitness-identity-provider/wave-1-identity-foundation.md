@@ -35,7 +35,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - Manual verification: package name, engines.node=24.x, type=module, exports, build/test scripts mirror orm-base conventions; dependencies limited to orm/types/objection + dev tooling; no apps/api or UI dependency; data-model-only
   - Commit: 84863466 feat(identity): scaffold orm-identity package for I07
 
-#### - [ ] I08 — Add ORM package exports, tests and build checks
+#### - [x] I08 — Add ORM package exports, tests and build checks
 
 - **Owner File(s):** packages/orm-identity/src/index.ts; packages/orm-identity/tsconfig.check.json; packages/orm-identity/vitest.config.ts; packages/orm-identity/tests/smoke.test.ts
 - **Depends On:** I07
@@ -47,12 +47,16 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - Ensure test command exits successfully in the monorepo.
 - **DO NOT:** Do not export private implementation files or connect the package to business addon registration.
 - **Acceptance Criteria:**
-  - [ ] Build and test scripts exist and pass.
-  - [ ] Public entry point can be imported in Node 24.
-  - [ ] No database connection occurs during module import.
+  - [x] Build and test scripts exist and pass.
+  - [x] Public entry point can be imported in Node 24.
+  - [x] No database connection occurs during module import.
 - **Verify:** bun --filter @moonwitness/orm-identity build; bun --filter @moonwitness/orm-identity test.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
+- **Evidence:**
+  - Command: bun --filter @moonwitness/orm-identity build — passed (tsc exited 0)
+  - Command: bun --filter @moonwitness/orm-identity test — passed (1 file, 5 tests, 175ms; includes a mocked-knex assertion that no DB connection occurs during module import)
+  - Manual verification: public barrel exports IDENTITY_PACKAGE_NAME, IdentityModelEntry, IDENTITY_MODELS (frozen, empty), findIdentityModel; no private implementation files exported; no business addon registration; vitest.config.ts mirrors orm-* package tooling pattern
+  - Commit: <placeholder> feat(identity): add orm-identity public exports tests and build checks for I08
 
 #### - [ ] I09 — Scaffold apps/id service entry point
 
