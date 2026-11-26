@@ -307,7 +307,7 @@ export async function reindexBrainFromRepo(
 
   // Learned invariants become invariant nodes + decided_by edges to plans.
   const invariantsPath = join(repoRoot, ".agents", "rules", "learned-invariants.md");
-  const invariantsContent = readTextIfExistsSync(invariantsPath);
+  const invariantsContent = await readTextIfExists(invariantsPath);
   const invariantIds = loadInvariantRuleIds(invariantsContent);
   for (const invId of invariantIds) {
     nodes.push({
@@ -326,7 +326,7 @@ export async function reindexBrainFromRepo(
 
   // Episodic memory from .plan/memory/episodes.jsonl (Git-portable memory).
   const episodesPath = join(repoRoot, ".plan", "memory", "episodes.jsonl");
-  const episodesContent = readTextIfExistsSync(episodesPath);
+  const episodesContent = await readTextIfExists(episodesPath);
   const episodes = parseEpisodes(episodesContent);
   for (const ep of episodes) {
     const summaryRedacted = redactSensitiveText(ep.summary ?? "").text;
@@ -363,7 +363,7 @@ export async function reindexBrainFromRepo(
   }
 
   // Evidence proofs from .plan/*/evidence/*.proof.json (best-effort scan).
-  const evidenceIndex = readTextIfExistsSync(join(repoRoot, ".plan", "evidence-index.json"));
+  const evidenceIndex = await readTextIfExists(join(repoRoot, ".plan", "evidence-index.json"));
   if (evidenceIndex) {
     for (const { envelope } of loadProofLedgers(evidenceIndex)) {
       const envelopeSha = (envelope.envelope_sha256 as string) ?? sha256Hex(safeJson(envelope));
@@ -473,16 +473,6 @@ export async function reindexBrainFromRepo(
 
   const durationMs = Number(process.hrtime.bigint() - startedAt) / 1_000_000;
   return { nodeCount, edgeCount, ftsCount: ftsRows.length, proofCount: proofRows.length, episodeCount, durationMs };
-}
-
-function readTextIfExistsSync(path: string): string {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const fs = require("node:fs") as typeof import("node:fs");
-    return fs.readFileSync(path, "utf8");
-  } catch {
-    return "";
-  }
 }
 
 export { GRAPH_RELATIONS };

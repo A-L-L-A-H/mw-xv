@@ -15,7 +15,7 @@ import { inspectChangedFiles, checkOwnerFileScope, executeVerifyCommands, captur
 import { claimTaskLease, releaseTaskLease } from "./lease-manager.js";
 import { join } from "node:path";
 import { writeFile, mkdir, readdir, readFile } from "node:fs/promises";
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 
 export interface CompleteMicroTaskOptions {
   readonly autoCommit?: boolean;
@@ -544,7 +544,7 @@ async function atomicCommit(
 
   try {
     // Stage files
-    execSync(`git add ${ownedChanged.join(" ")} ${planFiles.join(" ")}`, {
+    execFileSync("git", ["add", ...ownedChanged, ...planFiles], {
       cwd: repoRoot,
       encoding: "utf8",
     });
@@ -553,7 +553,7 @@ async function atomicCommit(
     let committed = false;
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
-        execSync(`git commit --only ${ownedChanged.join(" ")} ${planFiles.join(" ")} -m "${commitMsg.replace(/"/g, '\\"')}"`, {
+        execFileSync("git", ["commit", "--only", ...ownedChanged, ...planFiles, "-m", commitMsg], {
           cwd: repoRoot,
           encoding: "utf8",
         });
@@ -573,7 +573,7 @@ async function atomicCommit(
     }
 
     // Get commit SHA
-    const sha = execSync("git rev-parse HEAD", { cwd: repoRoot, encoding: "utf8" }).trim();
+    const sha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: repoRoot, encoding: "utf8" }).trim();
     return sha;
   } catch (e) {
     throw new Error(`Atomic commit failed: ${(e as Error).message}`, { cause: e });
