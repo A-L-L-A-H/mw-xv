@@ -126,7 +126,7 @@
 
 ---
 
-## - [ ] T36 — Add Wave 5 CLI + MCP E2E Tests & Dogfood on Live `.plan/`
+## - [x] T36 — Add Wave 5 CLI + MCP E2E Tests & Dogfood on Live `.plan/`
 
 - **Owner File(s):** `packages/plan-taskos/tests/cli-e2e.test.ts`, `packages/plan-taskos/tests/mcp-server.test.ts`
   - `packages/plan-taskos/tests/cli-e2e.test.ts` (CREATE)
