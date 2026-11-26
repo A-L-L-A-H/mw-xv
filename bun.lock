@@ -216,6 +216,24 @@
         "vite": "^8.3.3",
       },
     },
+    "apps/id": {
+      "name": "@moonwitness/id",
+      "version": "1.0.0-rc.1",
+      "dependencies": {
+        "@moonwitness/logger": "workspace:*",
+        "@moonwitness/orm-identity": "workspace:*",
+        "@moonwitness/types": "workspace:*",
+        "fastify": "^5.12.8",
+        "fastify-plugin": "6.0.1",
+      },
+      "devDependencies": {
+        "@types/node": "^26.6.4",
+        "@vitest/coverage-v8": "5.0.3",
+        "tsx": "^4.23.15",
+        "typescript": "~5.7.3",
+        "vitest": "^5.0.3",
+      },
+    },
     "apps/isp": {
       "name": "@moonwitness/isp",
       "version": "0.1.0",
@@ -1575,6 +1593,8 @@
     "@moonwitness/docs": ["@moonwitness/docs@workspace:apps/docs"],
 
     "@moonwitness/eslint-config": ["@moonwitness/eslint-config@workspace:packages/eslint-config"],
+
+    "@moonwitness/id": ["@moonwitness/id@workspace:apps/id"],
 
     "@moonwitness/isp": ["@moonwitness/isp@workspace:apps/isp"],
 

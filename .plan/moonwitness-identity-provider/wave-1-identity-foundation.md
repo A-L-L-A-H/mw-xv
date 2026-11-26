@@ -58,7 +58,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - Manual verification: public barrel exports IDENTITY_PACKAGE_NAME, IdentityModelEntry, IDENTITY_MODELS (frozen, empty), findIdentityModel; no private implementation files exported; no business addon registration; vitest.config.ts mirrors orm-* package tooling pattern
   - Commit: d5e4b67c feat(identity): add orm-identity public exports tests and build checks for I08
 
-#### - [ ] I09 — Scaffold apps/id service entry point
+#### - [x] I09 — Scaffold apps/id service entry point
 
 - **Owner File(s):** apps/id/package.json; apps/id/tsconfig.json; apps/id/src/server.ts; apps/id/src/index.ts
 - **Depends On:** I03, I04
@@ -71,12 +71,17 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - Do not add OIDC protocol routes in this scaffold.
 - **DO NOT:** Do not duplicate apps/api business routes or introduce a frontend framework into the identity server.
 - **Acceptance Criteria:**
-  - [ ] apps/id can be built independently.
-  - [ ] Server factory supports controlled startup/shutdown for tests.
-  - [ ] The package imports no business addon registry.
+  - [x] apps/id can be built independently.
+  - [x] Server factory supports controlled startup/shutdown for tests.
+  - [x] The package imports no business addon registry.
 - **Verify:** bun --filter @moonwitness/id build; bun --filter @moonwitness/id test.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
+  - **Evidence:**
+    - Command: bun install --lockfile-only — passed (1061 packages resolved; workspace package registered)
+    - Command: bun --filter @moonwitness/id build — passed (tsc exited 0)
+    - Command: bun --filter @moonwitness/id test — passed (1 file, 3 tests)
+    - Manual verification: Node 24 Fastify service with build/dev/start/test scripts; injectable logger, config and database; no business routes/addon imports; smoke tests cover startup/shutdown
+    - Commit: PENDING_I09_COMMIT
 
 #### - [ ] I10 — Add strict Identity environment and configuration validation
 

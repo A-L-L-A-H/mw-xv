@@ -83,7 +83,7 @@ Task dependencies are declared inside each playbook. Follow them exactly; the fi
 ### Wave 1 — Identity foundation
 - [x] **I07** — Scaffold packages/orm-identity
 - [x] **I08** — Add ORM package exports, tests and build checks
-- [ ] **I09** — Scaffold apps/id service entry point
+- [x] **I09** — Scaffold apps/id service entry point
 - [ ] **I10** — Add strict Identity environment/config validation
 - [ ] **I11** — Add a dedicated Identity PostgreSQL connection
 - [ ] **I12** — Add liveness and readiness endpoints
