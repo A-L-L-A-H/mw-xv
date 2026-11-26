@@ -1,0 +1,29 @@
+{
+  "name": "valid config push",
+  "request": {
+    "schema_version": 1,
+    "correlation_id": "corr-config-001",
+    "operation_id": "op-config-001",
+    "idempotency_key": "idem-config-001",
+    "config_generation": 5,
+    "deadline": "2026-12-01T00:00:00Z",
+    "auth_token": "secret-token",
+    "operation_type": "config_push",
+    "payload": {
+      "service": "radius",
+      "clients": [
+        { "name": "Local NAS", "ip_address": "127.0.0.1", "secret": "fixture-placeholder" }
+      ]
+    }
+  },
+  "context": {
+    "current_generation": 5,
+    "expected_auth_token": "secret-token",
+    "applied_operations": [],
+    "deadline_expired": false
+  },
+  "expected": {
+    "outcome": "planned",
+    "error_code": null
+  }
+}
