@@ -11,6 +11,7 @@ import { listMoonWitnessModels, describeMoonWitnessModel } from './catalog.js';
 import { queryMoonWitnessModel, countMoonWitnessModel } from './query.js';
 import { summarizeTaskos } from './taskos.js';
 import { probeApiHealth } from './health.js';
+import { readPlanImpact, readPlanRecall, readPlanStatus } from './plan-brain.js';
 
 export const MCP_SERVER_NAME = '@moonwitness/mcp-moonwitness';
 export const MCP_SERVER_VERSION = '1.0.0-rc.1';
@@ -122,6 +123,48 @@ export const MOONWITNESS_MCP_TOOLS: readonly McpToolDescriptor[] = [
       },
     },
   },
+  {
+    name: 'plan_status',
+    description:
+      'Read-only Plan-TaskOS status: discovered plans, wave progress, Boss Critical Path, Merkle roots, and active leases.',
+    riskTier: 'R0',
+    readOnly: true,
+    idempotent: true,
+    requiredCapability: 'mw.plan.read@v1',
+    inputSchema: { type: 'object', properties: {} },
+  },
+  {
+    name: 'plan_recall',
+    description:
+      'Read-only offline BM25 recall across Plan-TaskOS plans, ADRs, specs, and redacted episodic memory.',
+    riskTier: 'R0',
+    readOnly: true,
+    idempotent: true,
+    requiredCapability: 'mw.plan.read@v1',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'Lexical query (FTS5 BM25)' },
+      },
+      required: ['query'],
+    },
+  },
+  {
+    name: 'plan_impact',
+    description:
+      'Read-only two-hop blast radius for a file path or Plan-TaskOS task URN.',
+    riskTier: 'R0',
+    readOnly: true,
+    idempotent: true,
+    requiredCapability: 'mw.plan.read@v1',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        target: { type: 'string', description: 'Repository file path or canonical task URN' },
+      },
+      required: ['target'],
+    },
+  },
 ];
 
 export interface MoonWitnessMcpRequest {
@@ -141,6 +184,7 @@ export interface MoonWitnessMcpResponse {
 export interface MoonWitnessMcpContext {
   readonly apiBaseUrl?: string;
   readonly taskosPath?: string;
+  readonly brain?: import('./plan-brain.js').PlanBrainContext;
 }
 
 const JSON_RPC_PARSE_ERROR = -32700;
@@ -296,6 +340,31 @@ export class MoonWitnessMcpServer {
           timeoutMs: typeof args['timeoutMs'] === 'number' ? args['timeoutMs'] : undefined,
         });
         return { jsonrpc: '2.0', id, result: text(outcome) };
+      }
+      case 'plan_status': {
+        return { jsonrpc: '2.0', id, result: text(await readPlanStatus(this.context.brain)) };
+      }
+      case 'plan_recall': {
+        const query = args['query'];
+        if (typeof query !== 'string' || !query.trim()) {
+          return {
+            jsonrpc: '2.0',
+            id,
+            error: { code: JSON_RPC_INVALID_PARAMS, message: "Missing required argument: 'query'" },
+          };
+        }
+        return { jsonrpc: '2.0', id, result: text(await readPlanRecall(query, this.context.brain)) };
+      }
+      case 'plan_impact': {
+        const target = args['target'];
+        if (typeof target !== 'string' || !target.trim()) {
+          return {
+            jsonrpc: '2.0',
+            id,
+            error: { code: JSON_RPC_INVALID_PARAMS, message: "Missing required argument: 'target'" },
+          };
+        }
+        return { jsonrpc: '2.0', id, result: text(await readPlanImpact(target, this.context.brain)) };
       }
       default:
         return {

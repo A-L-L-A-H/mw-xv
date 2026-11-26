@@ -456,6 +456,7 @@
       },
       "dependencies": {
         "@moonwitness/orm": "workspace:*",
+        "@moonwitness/plan-taskos": "workspace:*",
         "@moonwitness/types": "workspace:*",
       },
       "devDependencies": {

@@ -101,7 +101,7 @@
 
 ---
 
-## - [ ] T41 — Add Read-Only Plan-TaskOS Brain Tools to `packages/mcp-moonwitness`
+## - [x] T41 — Add Read-Only Plan-TaskOS Brain Tools to `packages/mcp-moonwitness`
 
 - **Owner File(s):** `packages/mcp-moonwitness/package.json`, `packages/mcp-moonwitness/src/plan-brain.ts`, `packages/mcp-moonwitness/src/server.ts`, `packages/mcp-moonwitness/tests/plan-brain.test.ts`
   - `packages/mcp-moonwitness/package.json` (MODIFY — add `"@moonwitness/plan-taskos": "workspace:*"`)
