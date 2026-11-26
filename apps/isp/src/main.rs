@@ -435,16 +435,21 @@ impl Database {
                 .execute(&self.pool)
                 .await?;
             }
+            // M19.06: accept only forward progress. A duplicate or out-of-order
+            // interim brings older totals; with MAX() those packets are durably
+            // recorded as a no-op instead of regressing counters that quota and
+            // billing already consumed. A NAS reboot or session restart uses a
+            // new Acct-Session-Id and therefore inserts a fresh row.
             acct_status::INTERIM_UPDATE => {
                 sqlx::query(
                     "INSERT INTO radius_sessions (session_id, username, nas_ip, nas_port, framed_ip, calling_station_id, acct_input_octets, acct_output_octets, acct_input_octets64, acct_output_octets64, acct_session_time, status)
                      VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?7, ?8, ?9, 'active')
                      ON CONFLICT(session_id) DO UPDATE SET
-                       acct_input_octets = excluded.acct_input_octets,
-                       acct_output_octets = excluded.acct_output_octets,
-                       acct_input_octets64 = excluded.acct_input_octets64,
-                       acct_output_octets64 = excluded.acct_output_octets64,
-                       acct_session_time = excluded.acct_session_time,
+                       acct_input_octets = MAX(radius_sessions.acct_input_octets, excluded.acct_input_octets),
+                       acct_output_octets = MAX(radius_sessions.acct_output_octets, excluded.acct_output_octets),
+                       acct_input_octets64 = MAX(radius_sessions.acct_input_octets64, excluded.acct_input_octets64),
+                       acct_output_octets64 = MAX(radius_sessions.acct_output_octets64, excluded.acct_output_octets64),
+                       acct_session_time = MAX(radius_sessions.acct_session_time, excluded.acct_session_time),
                        framed_ip = COALESCE(excluded.framed_ip, radius_sessions.framed_ip),
                        updated_at = datetime('now')",
                 )
@@ -465,13 +470,13 @@ impl Database {
                     "INSERT INTO radius_sessions (session_id, username, nas_ip, nas_port, framed_ip, calling_station_id, acct_input_octets, acct_output_octets, acct_input_octets64, acct_output_octets64, acct_session_time, status, terminate_cause, stopped_at)
                      VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?7, ?8, ?9, 'closed', ?10, datetime('now'))
                      ON CONFLICT(session_id) DO UPDATE SET
-                       acct_input_octets = excluded.acct_input_octets,
-                       acct_output_octets = excluded.acct_output_octets,
-                       acct_input_octets64 = excluded.acct_input_octets64,
-                       acct_output_octets64 = excluded.acct_output_octets64,
-                       acct_session_time = excluded.acct_session_time,
+                       acct_input_octets = MAX(radius_sessions.acct_input_octets, excluded.acct_input_octets),
+                       acct_output_octets = MAX(radius_sessions.acct_output_octets, excluded.acct_output_octets),
+                       acct_input_octets64 = MAX(radius_sessions.acct_input_octets64, excluded.acct_input_octets64),
+                       acct_output_octets64 = MAX(radius_sessions.acct_output_octets64, excluded.acct_output_octets64),
+                       acct_session_time = MAX(radius_sessions.acct_session_time, excluded.acct_session_time),
                        status = 'closed',
-                       terminate_cause = excluded.terminate_cause,
+                       terminate_cause = COALESCE(excluded.terminate_cause, radius_sessions.terminate_cause),
                        stopped_at = datetime('now'),
                        updated_at = datetime('now')",
                 )
@@ -2366,7 +2371,9 @@ mod tests {
         sign_accounting_request(&mut pkt, b"giga-secret-12");
         assert!(process_accounting_request(&db, &pkt, "127.0.0.1").await.is_some());
 
-        // STOP at >2^32 total each direction (6 GiGa + 5e9 low / 2 GiGa + 1e9 low).
+        // STOP at >2^32 total each direction, advancing past the interim totals:
+        // input 6 GiGa + 5e9 low, output 5 GiGa + 3e9 low. Low 32-bit values are
+        // reduced modulo 2^32 because RADIUS carries 32-bit counters.
         let mut stop = BytesMut::new();
         stop.put_u8(codes::ACCOUNTING_REQUEST);
         stop.put_u8(23);
@@ -2377,9 +2384,9 @@ mod tests {
         RadiusAttribute::u32(attr_type::ACCT_STATUS_TYPE, acct_status::STOP).encode(&mut stop);
         // Low 32 bits of the input counter: 5_000_000_000 mod 2^32 = 705_032_704.
         RadiusAttribute::u32(attr_type::ACCT_INPUT_OCTETS, 705_032_704).encode(&mut stop);
-        RadiusAttribute::u32(attr_type::ACCT_OUTPUT_OCTETS, 1_000_000_000).encode(&mut stop);
+        RadiusAttribute::u32(attr_type::ACCT_OUTPUT_OCTETS, 3_000_000_000).encode(&mut stop);
         RadiusAttribute::u32(attr_type::ACCT_INPUT_GIGAWORDS, 6).encode(&mut stop);
-        RadiusAttribute::u32(attr_type::ACCT_OUTPUT_GIGAWORDS, 2).encode(&mut stop);
+        RadiusAttribute::u32(attr_type::ACCT_OUTPUT_GIGAWORDS, 5).encode(&mut stop);
         RadiusAttribute::u32(attr_type::ACCT_SESSION_TIME, 9000).encode(&mut stop);
         let total = stop.len() as u16;
         stop[2..4].copy_from_slice(&total.to_be_bytes());
@@ -2392,7 +2399,7 @@ mod tests {
         // 6 * 2^32 + 5e9 low bits (the low u32 is 5_000_000_000 mod 2^32 = 705_032_704).
         let expected_input = 6i64 * (1i64 << 32) + 705_032_704i64;
         assert_eq!(sess.acct_input_octets64, expected_input);
-        assert_eq!(sess.acct_output_octets64, 2i64 * (1i64 << 32) + 1_000_000_000i64);
+        assert_eq!(sess.acct_output_octets64, 5i64 * (1i64 << 32) + 3_000_000_000i64);
         assert_eq!(sess.status, "closed");
     }
 
@@ -2440,5 +2447,101 @@ mod tests {
                 .unwrap();
         // Must include the wrapped high bits: (2^32 + 1e8) * 2, not 2e8.
         assert_eq!(usage, 2i64 * ((1i64 << 32) + 100_000_000));
+    }
+
+    #[tokio::test]
+    async fn stale_and_duplicate_interim_do_not_regress_counters() {
+        let (_dir, db) = test_db().await;
+        let session = "sess-ordering-001";
+        let user = "ordering-user";
+
+        // A newer interim advances both directions and session time.
+        db.record_accounting(
+            session,
+            user,
+            "127.0.0.1",
+            None,
+            None,
+            None,
+            acct_status::INTERIM_UPDATE,
+            5_000_000_000,
+            3_000_000_000,
+            3600,
+            None,
+        )
+        .await
+        .unwrap();
+
+        // A replayed older interim, then an exact duplicate, must be no-ops.
+        for (input, output, time) in [(1_000_000_000i64, 500_000_000i64, 1200i64), (5_000_000_000, 3_000_000_000, 3600)] {
+            db.record_accounting(
+                session,
+                user,
+                "127.0.0.1",
+                None,
+                None,
+                None,
+                acct_status::INTERIM_UPDATE,
+                input,
+                output,
+                time,
+                None,
+            )
+            .await
+            .unwrap();
+        }
+
+        let rows = db.list_sessions().await.unwrap();
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0].acct_input_octets64, 5_000_000_000);
+        assert_eq!(rows[0].acct_output_octets64, 3_000_000_000);
+        assert_eq!(rows[0].acct_session_time, 3600);
+    }
+
+    #[tokio::test]
+    async fn nas_reboot_with_new_session_id_keeps_separate_counter_history() {
+        let (_dir, db) = test_db().await;
+        let user = "reboot-user";
+        db.record_accounting(
+            "sess-before-reboot",
+            user,
+            "127.0.0.1",
+            None,
+            None,
+            None,
+            acct_status::INTERIM_UPDATE,
+            9_000_000_000,
+            9_000_000_000,
+            5000,
+            None,
+        )
+        .await
+        .unwrap();
+        // Counters restart near zero after a NAS reboot; a new Acct-Session-Id
+        // represents a new session and must not be clamped to the old totals.
+        db.record_accounting(
+            "sess-after-reboot",
+            user,
+            "127.0.0.1",
+            None,
+            None,
+            None,
+            acct_status::INTERIM_UPDATE,
+            100,
+            200,
+            10,
+            None,
+        )
+        .await
+        .unwrap();
+
+        let rows = db.list_sessions().await.unwrap();
+        assert_eq!(rows.len(), 2);
+        let fresh = rows
+            .iter()
+            .find(|row| row.session_id == "sess-after-reboot")
+            .expect("new session row exists");
+        assert_eq!(fresh.acct_input_octets64, 100);
+        assert_eq!(fresh.acct_output_octets64, 200);
     }
 }
