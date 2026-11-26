@@ -14,14 +14,14 @@ All first-party ISP protocol/telemetry servers are Rust. NOC correlation, event 
 - **Priority:** P1
 - **Deliverable:** Add a Rust protocol server configured by Go with durable local lease state.
 
-### Steps
+### Execution steps
 
 1. Implement DHCPDISCOVER/OFFER/REQUEST/ACK/NAK/RELEASE/INFORM and agreed relay support.
 2. Support reservations, options, lease timers, duplicate requests and restart recovery.
 3. Consume signed/versioned Go config; no per-packet Go call or commercial data authority.
 4. Add packet fixtures and parser fuzzing.
 
-### Acceptance
+### Acceptance criteria
 
 - [ ] Rust tests cover state machine, relay, malformed and duplicate packets, and restart.
 - [ ] Go configuration activates runtime without per-packet control-plane dependency.
@@ -42,14 +42,14 @@ All first-party ISP protocol/telemetry servers are Rust. NOC correlation, event 
 - **Priority:** P2
 - **Deliverable:** Extend the Rust DHCP runtime to IPv6 and delegated subscriber prefixes.
 
-### Steps
+### Execution steps
 
 1. Implement Solicit/Advertise/Request/Reply/Renew/Rebind/Release/Decline/Information-Request.
 2. Support IA_NA, IA_PD, lifetimes, DUID and relay options.
 3. Resolve leases against Go IPAM reservation contract asynchronously/idempotently where possible.
 4. Test duplicate DUID, exhaustion and restart.
 
-### Acceptance
+### Acceptance criteria
 
 - [ ] Golden DHCPv6 and IA_PD tests pass.
 - [ ] Delegated prefixes do not overlap and renew idempotently.
@@ -70,14 +70,14 @@ All first-party ISP protocol/telemetry servers are Rust. NOC correlation, event 
 - **Priority:** P1
 - **Deliverable:** Deliver authoritative DNS hosting based on canonical ORM zone state.
 
-### Steps
+### Execution steps
 
 1. Implement authoritative zone serving for agreed record types and zone versioning.
 2. Consume versioned desired zone snapshots from Go, sourced from ORM-owned records.
 3. Gate DNSSEC signing/key lifecycle as a separately verified feature.
 4. Apply zone changes atomically and maintain rollback snapshots.
 
-### Acceptance
+### Acceptance criteria
 
 - [ ] Positive, negative, delegation, TTL and zone version fixtures pass.
 - [ ] Cross-tenant reads/writes are denied.
@@ -98,14 +98,14 @@ All first-party ISP protocol/telemetry servers are Rust. NOC correlation, event 
 - **Priority:** P2
 - **Deliverable:** Separate recursive resolver role from authoritative hosting.
 
-### Steps
+### Execution steps
 
 1. Implement recursive lookup, bounded cache, TTL, upstream selection and flushing.
 2. Add tenant policy, safe timeout, allow/deny policies and separately gated DNSSEC validation.
 3. Expose cache/latency/error metrics to NOC.
 4. Test cache poisoning, malformed response and cross-tenant cache isolation.
 
-### Acceptance
+### Acceptance criteria
 
 - [ ] Recursive and authoritative roles deploy/configure independently.
 - [ ] Cache obeys TTL/policy without tenant leakage.
@@ -126,14 +126,14 @@ All first-party ISP protocol/telemetry servers are Rust. NOC correlation, event 
 - **Priority:** P1
 - **Deliverable:** Implement TR-069 CWMP first and leave TR-369 USP as a separately scoped follow-up.
 
-### Steps
+### Execution steps
 
 1. Implement CWMP session/Inform, parameter read-write, download/reboot and connection request profile.
 2. Scope CPE identity/credentials/policy through canonical platform contract.
 3. Use simulated CPE tests; gate fleet firmware/config operations by approval and rollout policy.
 4. Document unsupported USP features clearly.
 
-### Acceptance
+### Acceptance criteria
 
 - [ ] SOAP/session success, malformed, unauthorized and retry fixtures pass.
 - [ ] Credentials never appear in logs/responses.
@@ -154,14 +154,14 @@ All first-party ISP protocol/telemetry servers are Rust. NOC correlation, event 
 - **Priority:** P2
 - **Deliverable:** Ingest network events in Rust, leaving NOC correlation/actions to Go.
 
-### Steps
+### Execution steps
 
 1. Receive bounded UDP/TCP syslog and SNMP traps with source allowlists and rate limits.
 2. Normalize vendor messages to versioned events with source, timestamp, severity, code and payload reference.
 3. Redact secrets and subscriber PII before persistence/forwarding.
 4. Add backpressure, replay-safe IDs, drop counters, health and metrics.
 
-### Acceptance
+### Acceptance criteria
 
 - [ ] Golden fixtures cover MikroTik/Huawei/ZTE, malformed, oversized and high-rate traffic.
 - [ ] Backpressure and drop behavior are bounded and observable.
@@ -182,14 +182,14 @@ All first-party ISP protocol/telemetry servers are Rust. NOC correlation, event 
 - **Priority:** P2
 - **Deliverable:** Collect flow data for utilization, top talkers, capacity and abuse analytics.
 
-### Steps
+### Execution steps
 
 1. Decode selected IPFIX templates and sFlow datagrams with bounded template cache.
 2. Normalize five-tuple, counters, exporter, observation domain and sampling metadata.
 3. Guard malformed templates, spoofed exporters, replay and cardinality explosions.
 4. Publish normalized events to Go NOC contract.
 
-### Acceptance
+### Acceptance criteria
 
 - [ ] Golden IPFIX/sFlow fixtures normalize deterministically.
 - [ ] Malformed/unknown exporters fail closed without unbounded allocation.
@@ -210,14 +210,14 @@ All first-party ISP protocol/telemetry servers are Rust. NOC correlation, event 
 - **Priority:** P1
 - **Deliverable:** Keep NOC policy/correlation/remediation decision-making in Go, using existing platform owners.
 
-### Steps
+### Execution steps
 
 1. Consume normalized Rust telemetry and correlate by site/device/interface/service/tenant.
 2. Add deduplication, maintenance suppression, severity, escalation and service impact mapping.
 3. Create/update incident projections through existing orm-helpdesk and observability owners.
 4. Expose safe action proposals; require approval for remediation.
 
-### Acceptance
+### Acceptance criteria
 
 - [ ] Golden event sequences produce deterministic deduplicated alarms.
 - [ ] Maintenance suppression does not delete evidence.

@@ -14,14 +14,14 @@ Extend canonical ORM-owned network inventory, dual-stack IPAM and FTTH resources
 - **Priority:** P1
 - **Deliverable:** Extend packages/orm-isp instead of introducing another inventory or network database.
 
-### Steps
+### Execution steps
 
 1. Add company-scoped POP/site, rack, network device, interface/port and physical/logical link models.
 2. Add stable identity, vendor/model/firmware, management endpoint reference, hierarchy and lifecycle fields.
 3. Register views/access rules through existing addon manifest.
 4. Keep command execution/config compilation out of ORM models and plugins.
 
-### Acceptance
+### Acceptance criteria
 
 - [ ] Models register through orm-isp manifest and are tenant scoped.
 - [ ] Relations reject cross-company links and duplicate interface/device identity.
@@ -42,14 +42,14 @@ Extend canonical ORM-owned network inventory, dual-stack IPAM and FTTH resources
 - **Priority:** P1
 - **Deliverable:** Represent access, aggregation, peering, transit and customer circuits as canonical resources.
 
-### Steps
+### Execution steps
 
 1. Add VLAN/QinQ, VRF, L2/L3 circuit, interface attachment and upstream/peering references.
 2. Record encapsulation, MTU, routing context, service role, status and source-of-truth links.
 3. Enforce duplicate VLAN/interface assignment constraints within the same resource scope.
 4. Reuse existing partner/project relationships.
 
-### Acceptance
+### Acceptance criteria
 
 - [ ] Resource model validation enforces scope and uniqueness.
 - [ ] Service path is traversable from subscriber to access/aggregation/upstream.
@@ -70,14 +70,14 @@ Extend canonical ORM-owned network inventory, dual-stack IPAM and FTTH resources
 - **Priority:** P1
 - **Deliverable:** Turn existing basic IP pools into routing-context-aware IPAM.
 
-### Steps
+### Execution steps
 
 1. Model prefix hierarchy, family, VRF, gateway, DHCP ranges, delegation size and utilization.
 2. Support IPv4/IPv6 edge cases and overlapping prefixes only in separate VRFs.
 3. Link allocations to subscribers and network resources.
 4. Persist canonical IPAM state through PostgreSQL/orm-isp.
 
-### Acceptance
+### Acceptance criteria
 
 - [ ] CIDR validation covers IPv4/IPv6 and VRF-scoped overlap rules.
 - [ ] Prefix hierarchy and subscriber PD relationships are tested.
@@ -98,14 +98,14 @@ Extend canonical ORM-owned network inventory, dual-stack IPAM and FTTH resources
 - **Priority:** P1
 - **Deliverable:** Provide reserve/allocate/release/renew through ORM-owned persistence, driven by Go.
 
-### Steps
+### Execution steps
 
 1. Define allocate, reserve, release, renew and transfer operations with idempotency keys.
 2. Use DB constraints/transactions to prevent duplicate concurrent allocation within a VRF.
 3. Have Go compile corresponding network action and verify configured state.
 4. Add expiry, reclaim, hold-down and audit events.
 
-### Acceptance
+### Acceptance criteria
 
 - [ ] Concurrent tests never allocate duplicate address/prefix in one VRF.
 - [ ] Retry returns same allocation for same idempotency key.
@@ -126,14 +126,14 @@ Extend canonical ORM-owned network inventory, dual-stack IPAM and FTTH resources
 - **Priority:** P1
 - **Deliverable:** Create the safe vendor-neutral boundary before Huawei/ZTE-specific support.
 
-### Steps
+### Execution steps
 
 1. Define typed operations for inventory, optical diagnostics, ONU registration, service-port, VLAN, DBA/T-CONT, GEM and profile.
 2. Create simulator with capability and realistic error-state support.
 3. Require plan/apply separation, operation IDs, bounded requests and read-back verification.
 4. Label read-only versus mutating capabilities and approval rules.
 
-### Acceptance
+### Acceptance criteria
 
 - [ ] Adapter conformance passes against simulator.
 - [ ] Unsupported operations return typed unsupported errors.
@@ -154,14 +154,14 @@ Extend canonical ORM-owned network inventory, dual-stack IPAM and FTTH resources
 - **Priority:** P1
 - **Deliverable:** Start with read-only OLT inventory and optical diagnostics; no production config writes.
 
-### Steps
+### Execution steps
 
 1. Implement model/firmware capability discovery and read-only shelf/slot/board/PON/ONT/alarm/optical reads.
 2. Normalize responses to vendor-neutral OLT inventory types.
 3. Add sanitized fixtures for MA5800 and C300 profiles.
 4. Fail closed on unknown firmware or changed command output.
 
-### Acceptance
+### Acceptance criteria
 
 - [ ] Both adapters pass sanitized fixture tests.
 - [ ] Secrets and subscriber PII are redacted.
@@ -182,14 +182,14 @@ Extend canonical ORM-owned network inventory, dual-stack IPAM and FTTH resources
 - **Priority:** P1
 - **Deliverable:** Build the FTTH provisioning lifecycle from inventory and reserved resources.
 
-### Steps
+### Execution steps
 
 1. Model POP → OLT → PON → splitter/ODP → ONT/ONU → VLAN/service profile → subscriber relationships.
 2. Compile approved plan for ONT binding, service-port, VLAN, DBA/T-CONT, GEM and bandwidth policy.
 3. Require operator approval for first vendor writes and verify optical/service state after apply.
 4. Define compensation for partial provisioning.
 
-### Acceptance
+### Acceptance criteria
 
 - [ ] Simulator covers successful path and every failure boundary.
 - [ ] Duplicate event cannot provision/register an ONT twice.
@@ -210,14 +210,14 @@ Extend canonical ORM-owned network inventory, dual-stack IPAM and FTTH resources
 - **Priority:** P2
 - **Deliverable:** Connect install/repair to field technician work without creating a second ticket system.
 
-### Steps
+### Execution steps
 
 1. Reuse orm-helpdesk and orm-workflow for work orders and transitions.
 2. Track appointment, technician, POP/ODP/ONT, serial, optical reading, media evidence and customer acceptance.
 3. Link completed work to provisioning and subscription activation.
 4. Add tenant/role access and field-friendly UI.
 
-### Acceptance
+### Acceptance criteria
 
 - [ ] Work order covers planned, assigned, onsite, blocked, completed and cancelled.
 - [ ] Completion requires evidence and verified service.

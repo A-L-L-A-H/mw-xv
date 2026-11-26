@@ -14,14 +14,14 @@ Reuse existing sales, subscription, billing, helpdesk, cloud and PaaS domain own
 - **Priority:** P1
 - **Deliverable:** Define retail, SME, enterprise, dedicated, wholesale and managed service offers without duplicating billing.
 
-### Steps
+### Execution steps
 
 1. Link offer to technology, bandwidth, quota, IP allocation, SLA, contract term and eligibility.
 2. Reuse orm-sales, orm-subscription and orm-income-ledger for sales/financial authority.
 3. Model currency, minor units, recurring/install/overage/discount explicitly.
 4. Version product policy so catalog edits do not silently change active contracts.
 
-### Acceptance
+### Acceptance criteria
 
 - [ ] Active subscription terms change only through explicit renew/migrate action.
 - [ ] Existing subscription/invoice models remain sole billing authority.
@@ -42,14 +42,14 @@ Reuse existing sales, subscription, billing, helpdesk, cloud and PaaS domain own
 - **Priority:** P1
 - **Deliverable:** Connect sales acceptance to Go orchestration and Rust server configuration.
 
-### Steps
+### Execution steps
 
 1. Support new install, upgrade, downgrade, relocation, suspension and termination transitions.
 2. Check coverage, capacity, IP/VLAN resources, device capability and approvals before reserve/apply.
 3. Generate idempotent Go plan and wait for verified network/runtime state before active.
 4. Compensate or release reservations on failed provisioning.
 
-### Acceptance
+### Acceptance criteria
 
 - [ ] Invalid transitions and duplicate commands are rejected.
 - [ ] Activation only after authentication and network health verification.
@@ -70,14 +70,14 @@ Reuse existing sales, subscription, billing, helpdesk, cloud and PaaS domain own
 - **Priority:** P1
 - **Deliverable:** Replace simplistic per-session default pricing with contract and billing-period rating.
 
-### Steps
+### Execution steps
 
 1. Rate recurring packages, install fee, prorata, add-ons, overage and enterprise-specific rates.
 2. Aggregate usage per period before rounding and make rating idempotent by ledger identity.
 3. Use explicit currency/minor units; remove magic minor-unit-per-GB defaults.
 4. Link every rated usage line to accounting/session evidence.
 
-### Acceptance
+### Acceptance criteria
 
 - [ ] Golden invoices cover fixed, prorata, overage, quota, zero usage and currency.
 - [ ] Repeated rating creates no duplicate invoice line.
@@ -98,14 +98,14 @@ Reuse existing sales, subscription, billing, helpdesk, cloud and PaaS domain own
 - **Priority:** P1
 - **Deliverable:** Connect payment status to Go actions and verified Rust/NAS outcomes.
 
-### Steps
+### Execution steps
 
 1. Define grace, warning, reconciliation, soft/hard suspend and restore policy.
 2. Emit idempotent desired state to Go; never infer success from HTTP 200 alone.
 3. Restore only after payment settlement or audited override plus a fresh provision check.
 4. Retain audit history and notification events.
 
-### Acceptance
+### Acceptance criteria
 
 - [ ] Restore requires settlement or audited override.
 - [ ] Completion requires NAS/runtime ACK and follow-up verification.
@@ -126,14 +126,14 @@ Reuse existing sales, subscription, billing, helpdesk, cloud and PaaS domain own
 - **Priority:** P2
 - **Deliverable:** Expose customer account/network information through existing Board and BSS APIs.
 
-### Steps
+### Execution steps
 
 1. Show active service, package, current IP, usage period, quota, invoice and permitted device detail.
 2. Diagnostic/restart actions become proposals handled by Go policy, never direct browser-to-device.
 3. Reuse helpdesk for tickets and show planned/current service outages.
 4. Separate retail, enterprise, reseller and technician access.
 
-### Acceptance
+### Acceptance criteria
 
 - [ ] Queries are subscriber/company/partner scoped; cross-tenant enumeration denied.
 - [ ] Browser never sees router/OLT credentials or private device URLs.
@@ -154,14 +154,14 @@ Reuse existing sales, subscription, billing, helpdesk, cloud and PaaS domain own
 - **Priority:** P2
 - **Deliverable:** Offer DNS/DHCP/VPS/hosting/backup/VPN products without creating another PaaS engine.
 
-### Steps
+### Execution steps
 
 1. Map service SKU to existing cloud capabilities and Rust server runtimes.
 2. Reuse apps/control-plane for lifecycle and orm-cloud for cloud resource ownership/templates.
 3. Define quota, tenant isolation, network attachment, backup/restore and support per SKU.
 4. Separate customer app containers from first-party Rust ISP server daemons.
 
-### Acceptance
+### Acceptance criteria
 
 - [ ] Each SKU maps to one canonical owner and deployment contract.
 - [ ] No second template catalog, PaaS database or orchestrator is created.
@@ -182,14 +182,14 @@ Reuse existing sales, subscription, billing, helpdesk, cloud and PaaS domain own
 - **Priority:** P1
 - **Deliverable:** Prove one complete customer journey on simulators and disposable PostgreSQL before claiming production readiness.
 
-### Steps
+### Execution steps
 
 1. Run order, reservation, Go provisioning, Rust RADIUS auth/accounting, usage reconciliation, invoice rating, collection suspend and restore.
 2. Use simulated NAS/OLT, fake devices and disposable Postgres; do not touch production network/customer data.
 3. Capture exact SHA, tests, redacted protocol traces, rollback and restore evidence.
 4. List remaining hardware acceptance gates.
 
-### Acceptance
+### Acceptance criteria
 
 - [ ] Happy path and negative/partial failures pass automation.
 - [ ] BSS order, Go operation, Rust event, accounting, invoice and restore are traceable.
