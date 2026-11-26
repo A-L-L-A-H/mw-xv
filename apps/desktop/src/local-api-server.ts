@@ -84,6 +84,13 @@ import {
   type VpsComposeAction,
   type VpsOnboardingAuthContext,
 } from './vps-onboarding.js';
+import {
+  exportSubgraph,
+  hybridRecall,
+  openBrainStore,
+  queryBlastRadiusImpact,
+  type BrainStorageDriver,
+} from '@moonwitness/plan-taskos';
 import { DesktopObservatoryService } from './observatory/service.js';
 import type { ObservatoryRuntime } from './observatory/types.js';
 import type { DesktopCapabilityBridge } from './types.js';
@@ -2911,6 +2918,64 @@ export async function startLocalApiServer(
     'visual-swarm',
   ]);
 
+  // T39: read-only Cognitive Brain endpoints. The SQLite handle is opened
+  // lazily on first request and closed in stop() (zero dangling handles).
+  const repoRoot = options.repoRoot ?? process.cwd();
+  const brainPath = path.join(repoRoot, '.plan', '.brain', 'taskos.sqlite');
+  let brainStorePromise: Promise<BrainStorageDriver | null> | null = null;
+  const getBrainStore = (): Promise<BrainStorageDriver | null> => {
+    if (!existsSync(brainPath)) return Promise.resolve(null);
+    brainStorePromise ??= openBrainStore({ dbPath: brainPath, mode: 'sqlite' }).catch(() => null);
+    return brainStorePromise;
+  };
+
+  app.get('/api/desktop/observatory/brain/search', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const query = isRecord(req.query) ? req.query : {};
+    const text = typeof query.q === 'string' ? query.q.trim() : '';
+    if (!text) {
+      return reply.code(400).send({ success: false, error: 'Missing search query' });
+    }
+    const limit = typeof query.limit === 'string' ? Number(query.limit) : 15;
+    const store = await getBrainStore();
+    if (!store) return { success: true, data: { mode: 'unavailable', results: [] } };
+    const data = await hybridRecall(store, {
+      query: text,
+      limit: Number.isSafeInteger(limit) && limit > 0 ? Math.min(limit, 100) : 15,
+    });
+    reply.header('Cache-Control', 'no-store');
+    return { success: true, data };
+  });
+
+  app.get('/api/desktop/observatory/brain/impact', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const query = isRecord(req.query) ? req.query : {};
+    const target = typeof query.target === 'string' ? query.target.trim() : '';
+    if (!target) {
+      return reply.code(400).send({ success: false, error: 'Missing impact target' });
+    }
+    const store = await getBrainStore();
+    if (!store) return { success: true, data: { root: target, tasks: [], depth: 0 } };
+    reply.header('Cache-Control', 'no-store');
+    return { success: true, data: queryBlastRadiusImpact(store, target) };
+  });
+
+  app.get('/api/desktop/observatory/brain/graph', async (req, reply) => {
+    if (!req.auth) {
+      return reply.code(401).send({ success: false, error: 'Authentication required' });
+    }
+    const query = isRecord(req.query) ? req.query : {};
+    const planId = typeof query.planId === 'string' ? query.planId.trim() : undefined;
+    const store = await getBrainStore();
+    if (!store) return { success: true, data: { nodes: [], edges: [] } };
+    reply.header('Cache-Control', 'no-store');
+    return { success: true, data: exportSubgraph(store, { ...(planId ? { planId } : {}) }) };
+  });
+
   app.get('/api/desktop/observatory/state', async (req, reply) => {
     if (!req.auth) {
       return reply.code(401).send({ success: false, error: 'Authentication required' });
@@ -3210,6 +3275,11 @@ export async function startLocalApiServer(
   const stop = async (): Promise<void> => {
     if (stopped) return;
     stopped = true;
+    if (brainStorePromise) {
+      const opened = await brainStorePromise;
+      opened?.close();
+      brainStorePromise = null;
+    }
     observatory.stop();
     meshClientController.stop();
     await app.close();

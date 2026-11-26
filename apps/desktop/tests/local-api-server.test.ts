@@ -1138,6 +1138,11 @@ describe('LocalApiServer & Desktop Importer', () => {
     const loginBody = (await loginRes.json()) as { data: { access_token: string } };
     const authHeaders = { authorization: `Bearer ${loginBody.data.access_token}` };
 
+    // T39: Cognitive Brain endpoints fail closed and return structured data when indexed.
+    for (const route of ['search?q=plan', 'impact?target=src%2Fconfig.ts', 'graph?planId=sample']) {
+      const unauthBrain = await fetch(`${server.apiUrl}/api/desktop/observatory/brain/${route}`);
+      expect(unauthBrain.status).toBe(401);
+    }
     // Authenticated state works in workspace mode
     const stateRes = await fetch(`${server.apiUrl}/api/desktop/observatory/state`, {
       headers: authHeaders,
@@ -1151,6 +1156,25 @@ describe('LocalApiServer & Desktop Importer', () => {
     expect(stateBody.data.defaultPlanId).toBe('sample');
     expect(stateBody.data.plans[0]?.done).toBe(1);
     expect(stateBody.data.plans[0]?.total).toBe(2);
+
+    const brainSearch = await fetch(`${server.apiUrl}/api/desktop/observatory/brain/search?q=plan&limit=5`, {
+      headers: authHeaders,
+    });
+    expect(brainSearch.status).toBe(200);
+    expect(((await brainSearch.json()) as { success: boolean }).success).toBe(true);
+    const brainImpact = await fetch(
+      `${server.apiUrl}/api/desktop/observatory/brain/impact?target=${encodeURIComponent('src/config.ts')}`,
+      { headers: authHeaders }
+    );
+    expect(brainImpact.status).toBe(200);
+    const brainGraph = await fetch(`${server.apiUrl}/api/desktop/observatory/brain/graph?planId=sample`, {
+      headers: authHeaders,
+    });
+    expect(brainGraph.status).toBe(200);
+    expect(((await brainGraph.json()) as { data: { nodes: unknown[]; edges: unknown[] } }).data).toMatchObject({
+      nodes: [],
+      edges: [],
+    });
 
     // Authenticated SSE stream pushes initial snapshot frame and cleans up on abort
     const sseAbort = new AbortController();

@@ -54,7 +54,7 @@
 
 ---
 
-## - [ ] T39 — Mount Read-Only Cognitive Brain Routes on `apps/desktop/src/local-api-server.ts`
+## - [x] T39 — Mount Read-Only Cognitive Brain Routes on `apps/desktop/src/local-api-server.ts`
 
 - **Owner File(s):** `apps/desktop/src/local-api-server.ts`, `apps/desktop/tests/local-api-server.test.ts`
   - `apps/desktop/src/local-api-server.ts` (MODIFY)
