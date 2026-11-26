@@ -9,6 +9,7 @@ import {
   type WorkspaceInfo,
   type WorkspaceSandboxClient,
 } from '@moonwitness/ai-runtime';
+import { getLogger } from '@moonwitness/logger';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TrustedRunSnapshot } from '../src/agent-run-executor.js';
 import {
@@ -587,7 +588,7 @@ describe('createCloudAgentEffect', () => {
       script: [{ kind: 'response', text: 'done', finishReason: 'stop' }],
     });
     const { deps } = makeDeps(provider, sandbox);
-    const warnings = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const warnings = vi.spyOn(getLogger(), 'warn').mockImplementation(() => undefined);
 
     const result = await createCloudAgentEffect(deps).execute(
       createSnapshot(),
