@@ -307,3 +307,78 @@ func handleMeshStatus(mgr *MeshManager) http.HandlerFunc {
 		_ = json.NewEncoder(w).Encode(status)
 	}
 }
+
+// MeshJoinRequest configures and joins an EasyTier P2P mesh network.
+type MeshJoinRequest struct {
+	NetworkName   string   `json:"network_name"`
+	NetworkSecret string   `json:"network_secret"`
+	Peers         []string `json:"peers,omitempty"`
+	Hostname      string   `json:"hostname,omitempty"`
+	IPv4          string   `json:"ipv4,omitempty"`
+}
+
+// Join validates the mesh configuration and updates the manager state.
+func (m *MeshManager) Join(_ context.Context, req MeshJoinRequest) error {
+	cfg := MeshConfig{
+		Enabled:       true,
+		NetworkName:   strings.TrimSpace(req.NetworkName),
+		NetworkSecret: strings.TrimSpace(req.NetworkSecret),
+		Peers:         req.Peers,
+		Hostname:      strings.TrimSpace(req.Hostname),
+		IPv4:          strings.TrimSpace(req.IPv4),
+	}
+	if err := cfg.Validate(); err != nil {
+		return err
+	}
+	m.cfg = cfg
+	m.configErr = nil
+	return nil
+}
+
+// Leave disables the mesh configuration on the manager.
+func (m *MeshManager) Leave(_ context.Context) error {
+	m.cfg.Enabled = false
+	m.cfg.Peers = nil
+	return nil
+}
+
+// handleMeshJoin serves POST /mesh/join with bearer authentication.
+func handleMeshJoin(mgr *MeshManager, adminToken string) http.HandlerFunc {
+	return requirePaasAuth(adminToken, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			writePaasJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
+			return
+		}
+		var req MeshJoinRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			writePaasJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid json payload"})
+			return
+		}
+		if err := mgr.Join(r.Context(), req); err != nil {
+			writePaasJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+			return
+		}
+		writePaasJSON(w, http.StatusOK, map[string]any{
+			"joined":       true,
+			"network_name": mgr.cfg.NetworkName,
+		})
+	})
+}
+
+// handleMeshLeave serves POST /mesh/leave with bearer authentication.
+func handleMeshLeave(mgr *MeshManager, adminToken string) http.HandlerFunc {
+	return requirePaasAuth(adminToken, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			writePaasJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
+			return
+		}
+		if err := mgr.Leave(r.Context()); err != nil {
+			writePaasJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			return
+		}
+		writePaasJSON(w, http.StatusOK, map[string]any{
+			"left":    true,
+			"enabled": false,
+		})
+	})
+}

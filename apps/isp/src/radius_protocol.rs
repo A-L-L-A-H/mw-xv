@@ -15,6 +15,12 @@ pub mod codes {
     pub const DISCONNECT_ACK: u8 = 41;
     #[allow(dead_code)]
     pub const DISCONNECT_NAK: u8 = 42;
+    #[allow(dead_code)]
+    pub const COA_REQUEST: u8 = 43;
+    #[allow(dead_code)]
+    pub const COA_ACK: u8 = 44;
+    #[allow(dead_code)]
+    pub const COA_NAK: u8 = 45;
 }
 
 #[allow(dead_code)]
@@ -462,9 +468,32 @@ pub fn verify_accounting_authenticator(raw_packet: &[u8], secret: &[u8]) -> bool
     constant_time_eq(&raw_packet[4..20], &expected)
 }
 
+/// Normalizes a MAC address string (e.g. `AA:BB:CC:DD:EE:FF`, `aa-bb-cc-dd-ee-ff`,
+/// `aabb.ccdd.eeff`, `aabbccddeeff`) into lowercase colon-separated `aa:bb:cc:dd:ee:ff`.
+pub fn normalize_mac(raw: &str) -> Option<String> {
+    let hex: String = raw
+        .chars()
+        .filter(|c| !matches!(c, ':' | '-' | '.' | ' '))
+        .collect::<String>()
+        .to_ascii_lowercase();
+    if hex.len() != 12 || !hex.bytes().all(|b| b.is_ascii_hexdigit()) {
+        return None;
+    }
+    let mut out = String::with_capacity(17);
+    for (idx, chunk) in hex.as_bytes().chunks_exact(2).enumerate() {
+        if idx > 0 {
+            out.push(':');
+        }
+        out.push(chunk[0] as char);
+        out.push(chunk[1] as char);
+    }
+    Some(out)
+}
+
 /// RFC 5176 §3.2 Dynamic Authorization Request (CoA / Disconnect):
 /// Request-Authenticator = MD5(Code + ID + Length + 16*0 + Attributes + Secret)
-pub fn encode_disconnect_request(
+pub fn encode_rfc5176_request(
+    code: u8,
     identifier: u8,
     attributes: &[RadiusAttribute],
     secret: &[u8],
@@ -476,7 +505,7 @@ pub fn encode_disconnect_request(
     let total_len = (20 + attr_bytes.len()) as u16;
 
     let mut buf = BytesMut::with_capacity(total_len as usize);
-    buf.put_u8(codes::DISCONNECT_REQUEST);
+    buf.put_u8(code);
     buf.put_u8(identifier);
     buf.put_u16(total_len);
     buf.extend_from_slice(&[0u8; 16]);
@@ -487,8 +516,23 @@ pub fn encode_disconnect_request(
     hasher.update(secret);
     let digest = hasher.finalize();
     buf[4..20].copy_from_slice(&digest);
-
     buf.to_vec()
+}
+
+pub fn encode_disconnect_request(
+    identifier: u8,
+    attributes: &[RadiusAttribute],
+    secret: &[u8],
+) -> Vec<u8> {
+    encode_rfc5176_request(codes::DISCONNECT_REQUEST, identifier, attributes, secret)
+}
+
+pub fn encode_coa_request(
+    identifier: u8,
+    attributes: &[RadiusAttribute],
+    secret: &[u8],
+) -> Vec<u8> {
+    encode_rfc5176_request(codes::COA_REQUEST, identifier, attributes, secret)
 }
 
 /// RFC 2865 §3 / RFC 5176 §3.3 Response-Authenticator verification:

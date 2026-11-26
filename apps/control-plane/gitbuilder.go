@@ -206,6 +206,72 @@ func ValidateGitDeployRequest(req GitDeployRequest) error {
 	return nil
 }
 
+// GitHubWebhookDelivery records a persisted GitHub webhook delivery event.
+type GitHubWebhookDelivery struct {
+	ID         int64  `json:"id"`
+	Slug       string `json:"slug"`
+	Event      string `json:"event"`
+	DeliveryID string `json:"delivery_id"`
+	Ref        string `json:"ref"`
+	Status     string `json:"status"`
+	Detail     string `json:"detail"`
+	CreatedAt  string `json:"created_at"`
+}
+
+func (m *PaasManager) ensureGitHubWebhookTable() error {
+	if m == nil || m.db == nil {
+		return errors.New("database not configured")
+	}
+	_, err := m.db.Exec(`CREATE TABLE IF NOT EXISTS paas_github_webhooks (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		slug TEXT NOT NULL,
+		event TEXT NOT NULL,
+		delivery_id TEXT NOT NULL,
+		ref TEXT NOT NULL,
+		status TEXT NOT NULL,
+		detail TEXT NOT NULL,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+	)`)
+	return err
+}
+
+func (m *PaasManager) recordGitHubWebhookDelivery(slug, event, deliveryID, ref, status, detail string) error {
+	if err := m.ensureGitHubWebhookTable(); err != nil {
+		return err
+	}
+	_, err := m.db.Exec(
+		`INSERT INTO paas_github_webhooks (slug, event, delivery_id, ref, status, detail) VALUES (?, ?, ?, ?, ?, ?)`,
+		slug, event, deliveryID, ref, status, detail,
+	)
+	return err
+}
+
+func (m *PaasManager) listGitHubWebhookDeliveries(slug string, limit int) ([]GitHubWebhookDelivery, error) {
+	if err := m.ensureGitHubWebhookTable(); err != nil {
+		return nil, err
+	}
+	if limit <= 0 {
+		limit = 20
+	}
+	rows, err := m.db.Query(
+		`SELECT id, slug, event, delivery_id, ref, status, detail, created_at FROM paas_github_webhooks WHERE slug = ? ORDER BY id DESC LIMIT ?`,
+		slug, limit,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []GitHubWebhookDelivery
+	for rows.Next() {
+		var d GitHubWebhookDelivery
+		if err := rows.Scan(&d.ID, &d.Slug, &d.Event, &d.DeliveryID, &d.Ref, &d.Status, &d.Detail, &d.CreatedAt); err != nil {
+			return nil, err
+		}
+		out = append(out, d)
+	}
+	return out, rows.Err()
+}
+
 // RegisterGitBuilderRoutes mounts the Git-push auto-deploy, preview deploy,
 // and GitHub webhook endpoints onto mux.
 func RegisterGitBuilderRoutes(mux *http.ServeMux, paasMgr *PaasManager, adminToken string) {
