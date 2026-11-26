@@ -224,7 +224,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
     - Command: bun --filter @moonwitness/orm-identity build — passed (tsc exited 0)
     - Command: bun --filter @moonwitness/id build — passed (tsc exited 0)
     - Manual verification: email/username normalization, unique (type, value) DB constraint, account FK, verification/primary flags, no Partner reference or email auto-link
-    - Commit: PENDING_I15_COMMIT
+    - Commit: 395d36de feat(identity): add identity identifier model and constraints for I15
 
 #### - [ ] I16 — Add identity.credential and password-hash adapter
 
