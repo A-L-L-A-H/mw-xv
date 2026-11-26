@@ -206,7 +206,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - Command: `bun --filter @moonwitness/id test` — passed (15 files, 77 tests)
   - Command: `bun --filter @moonwitness/id build` — passed (tsc exited 0)
   - Manual verification: login route records bounded server-side attempts and returns generic 429 with Retry-After when the threshold is reached; claim limiter uses the same privacy-preserving state with a separate window/limit; client keys are HMAC-SHA256 hashed with configured secret and forwarded headers are used only when trustedProxy is explicitly enabled; expired windows are pruned, preventing permanent lockout; constant-time verification helper added with negative tests.
-  - Commit: PENDING_IMPLEMENTATION_SHA
+  - Commit: a74242f0
 
 
 
