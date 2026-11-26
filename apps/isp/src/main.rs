@@ -16,6 +16,7 @@ use radius_protocol::{
     encode_disconnect_request, encode_response, verify_accounting_authenticator,
     verify_chap_password, verify_response_authenticator, RadiusAttribute,
 };
+use radius_protocol::attr_type as at;
 use sha2::Sha256;
 use sqlx::Row;
 use std::net::{Ipv4Addr, SocketAddr};
@@ -101,6 +102,38 @@ struct Config {
 }
 
 const ADMIN_TOKEN_MESSAGE: &[u8] = b"moonwitness-isp-admin-v1";
+
+/// M19.06: combine a 32-bit octet counter with its Gigawords attribute (RFC
+/// 2869 attributes 52/53, counting 2^32-octet wraps) into the normalized
+/// 64-bit total `gigawords * 2^32 + low32`. Both attributes are optional; a
+/// missing Gigawords value means the counter never wrapped.
+fn combine_gigawords(low32: u32, gigawords: Option<u32>) -> i64 {
+    let wraps = gigawords.unwrap_or(0) as i64;
+    (wraps << 32) + low32 as i64
+}
+
+/// Extract a normalized 64-bit input/output octet pair from an accounting
+/// packet, preferring the Gigawords-extended counters when present.
+fn extract_octet_counters(packet: &radius_protocol::RadiusPacket) -> (i64, i64) {
+    let input_low = packet
+        .attribute(at::ACCT_INPUT_OCTETS)
+        .and_then(RadiusAttribute::as_u32)
+        .unwrap_or(0);
+    let output_low = packet
+        .attribute(at::ACCT_OUTPUT_OCTETS)
+        .and_then(RadiusAttribute::as_u32)
+        .unwrap_or(0);
+    let input_giga = packet
+        .attribute(at::ACCT_INPUT_GIGAWORDS)
+        .and_then(RadiusAttribute::as_u32);
+    let output_giga = packet
+        .attribute(at::ACCT_OUTPUT_GIGAWORDS)
+        .and_then(RadiusAttribute::as_u32);
+    (
+        combine_gigawords(input_low, input_giga),
+        combine_gigawords(output_low, output_giga),
+    )
+}
 
 /// Resolve the runtime admin bearer token:
 /// 1. explicit `MW_ISP_ADMIN_TOKEN` (config/env) when non-empty after trim;
@@ -404,11 +437,13 @@ impl Database {
             }
             acct_status::INTERIM_UPDATE => {
                 sqlx::query(
-                    "INSERT INTO radius_sessions (session_id, username, nas_ip, nas_port, framed_ip, calling_station_id, acct_input_octets, acct_output_octets, acct_session_time, status)
-                     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, 'active')
+                    "INSERT INTO radius_sessions (session_id, username, nas_ip, nas_port, framed_ip, calling_station_id, acct_input_octets, acct_output_octets, acct_input_octets64, acct_output_octets64, acct_session_time, status)
+                     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?7, ?8, ?9, 'active')
                      ON CONFLICT(session_id) DO UPDATE SET
                        acct_input_octets = excluded.acct_input_octets,
                        acct_output_octets = excluded.acct_output_octets,
+                       acct_input_octets64 = excluded.acct_input_octets64,
+                       acct_output_octets64 = excluded.acct_output_octets64,
                        acct_session_time = excluded.acct_session_time,
                        framed_ip = COALESCE(excluded.framed_ip, radius_sessions.framed_ip),
                        updated_at = datetime('now')",
@@ -427,11 +462,13 @@ impl Database {
             }
             acct_status::STOP => {
                 sqlx::query(
-                    "INSERT INTO radius_sessions (session_id, username, nas_ip, nas_port, framed_ip, calling_station_id, acct_input_octets, acct_output_octets, acct_session_time, status, terminate_cause, stopped_at)
-                     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, 'closed', ?10, datetime('now'))
+                    "INSERT INTO radius_sessions (session_id, username, nas_ip, nas_port, framed_ip, calling_station_id, acct_input_octets, acct_output_octets, acct_input_octets64, acct_output_octets64, acct_session_time, status, terminate_cause, stopped_at)
+                     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?7, ?8, ?9, 'closed', ?10, datetime('now'))
                      ON CONFLICT(session_id) DO UPDATE SET
                        acct_input_octets = excluded.acct_input_octets,
                        acct_output_octets = excluded.acct_output_octets,
+                       acct_input_octets64 = excluded.acct_input_octets64,
+                       acct_output_octets64 = excluded.acct_output_octets64,
                        acct_session_time = excluded.acct_session_time,
                        status = 'closed',
                        terminate_cause = excluded.terminate_cause,
@@ -459,7 +496,8 @@ impl Database {
     async fn list_sessions(&self) -> Result<Vec<RadiusSessionRow>> {
         let rows = sqlx::query_as(
             "SELECT id, session_id, username, nas_ip, nas_port, framed_ip, calling_station_id,
-                    acct_input_octets, acct_output_octets, acct_session_time, status, terminate_cause,
+                    acct_input_octets, acct_output_octets, acct_input_octets64, acct_output_octets64,
+                    acct_session_time, status, terminate_cause,
                     started_at, updated_at, stopped_at
              FROM radius_sessions ORDER BY id DESC LIMIT 100",
         )
@@ -482,7 +520,8 @@ impl Database {
     ) -> Result<Option<RadiusSessionRow>> {
         let row = sqlx::query_as(
             "SELECT id, session_id, username, nas_ip, nas_port, framed_ip, calling_station_id,
-                    acct_input_octets, acct_output_octets, acct_session_time, status, terminate_cause,
+                    acct_input_octets, acct_output_octets, acct_input_octets64, acct_output_octets64,
+                    acct_session_time, status, terminate_cause,
                     started_at, updated_at, stopped_at
              FROM radius_sessions
              WHERE username = ?1 AND status = 'active'
@@ -558,11 +597,13 @@ impl Database {
     /// inflate the subscriber's usage (AUD/TAUD-08).
     async fn accumulate_quota_usage(&self, username: &str) -> Result<()> {
         // 1. Add each active session's growth since its high-water mark.
+        //    M19.06: consumption uses the normalized 64-bit totals so
+        //    Gigawords-extended counters are not truncated at 2^32.
         let rows = sqlx::query(
-            "SELECT (acct_input_octets + acct_output_octets) - quota_accumulated_octets AS delta
+            "SELECT (acct_input_octets64 + acct_output_octets64) - quota_accumulated_octets AS delta
              FROM radius_sessions
              WHERE username = ?1 AND status = 'active'
-               AND (acct_input_octets + acct_output_octets) > quota_accumulated_octets",
+               AND (acct_input_octets64 + acct_output_octets64) > quota_accumulated_octets",
         )
         .bind(username)
         .fetch_all(&self.pool)
@@ -587,9 +628,9 @@ impl Database {
         // 2. Raise the high-water mark to the counters just accounted for.
         sqlx::query(
             "UPDATE radius_sessions
-             SET quota_accumulated_octets = acct_input_octets + acct_output_octets
+             SET quota_accumulated_octets = acct_input_octets64 + acct_output_octets64
              WHERE username = ?1 AND status = 'active'
-               AND (acct_input_octets + acct_output_octets) > quota_accumulated_octets",
+               AND (acct_input_octets64 + acct_output_octets64) > quota_accumulated_octets",
         )
         .bind(username)
         .execute(&self.pool)
@@ -677,6 +718,10 @@ struct RadiusSessionRow {
     calling_station_id: Option<String>,
     acct_input_octets: i64,
     acct_output_octets: i64,
+    #[serde(rename = "acct_input_octets64")]
+    acct_input_octets64: i64,
+    #[serde(rename = "acct_output_octets64")]
+    acct_output_octets64: i64,
     acct_session_time: i64,
     status: String,
     terminate_cause: Option<i64>,
@@ -965,14 +1010,8 @@ async fn process_accounting_request(db: &Database, raw: &[u8], src_ip: &str) -> 
     let calling_station_id = packet
         .attribute(attr_type::CALLING_STATION_ID)
         .map(RadiusAttribute::as_str);
-    let input_octets = packet
-        .attribute(attr_type::ACCT_INPUT_OCTETS)
-        .and_then(RadiusAttribute::as_u32)
-        .unwrap_or(0) as i64;
-    let output_octets = packet
-        .attribute(attr_type::ACCT_OUTPUT_OCTETS)
-        .and_then(RadiusAttribute::as_u32)
-        .unwrap_or(0) as i64;
+    // M19.06: normalized 64-bit counters, Gigawords-aware.
+    let (input_octets, output_octets) = extract_octet_counters(&packet);
     let session_time = packet
         .attribute(attr_type::ACCT_SESSION_TIME)
         .and_then(RadiusAttribute::as_u32)
