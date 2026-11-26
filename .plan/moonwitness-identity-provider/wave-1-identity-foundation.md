@@ -300,7 +300,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
     - Command: bun --filter @moonwitness/id build — passed (tsc exited 0)
     - PostgreSQL transaction tests: not run; no POSTGRES_TEST_URL harness configured in this environment
     - Manual verification: digest-only storage, single-statement conditional consume, replay family/session revocation, expiry/revocation/concurrent-reuse tests, no token in JSON
-    - Commit: PENDING_I18_COMMIT
+    - Commit: d140d390 feat(identity): add refresh token family persistence for I18
 
 #### - [ ] I19 — Add OAuth client registry model
 
