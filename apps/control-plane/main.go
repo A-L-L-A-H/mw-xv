@@ -28,6 +28,8 @@ import (
 	"syscall"
 	"time"
 
+	"moonwitness-control-plane/ispcontrol"
+
 	// modernc.org/sqlite is a pure-Go SQLite driver; no CGO/gcc required.
 	_ "modernc.org/sqlite"
 )
@@ -49,10 +51,10 @@ type controlPlaneAccess uint8
 
 const (
 	accessPublic           controlPlaneAccess = iota // intentionally public, non-sensitive
-	accessAuthenticated                             // canonical admin bearer token
-	accessPrivileged                                // admin bearer token + explicit method gate
-	accessA2APeer                                   // A2A envelope + verified peer transport identity
-	accessWebhookSignature                          // provider HMAC signature, never a service token
+	accessAuthenticated                              // canonical admin bearer token
+	accessPrivileged                                 // admin bearer token + explicit method gate
+	accessA2APeer                                    // A2A envelope + verified peer transport identity
+	accessWebhookSignature                           // provider HMAC signature, never a service token
 )
 
 // controlPlaneRoute is one row of the explicit Control Plane route matrix.
@@ -105,6 +107,11 @@ var controlPlaneRouteMatrix = []controlPlaneRoute{
 	{pattern: "/agent/compose/up", family: "agent-stateless", access: accessPrivileged, methods: []string{http.MethodPost}},
 	{pattern: "/agent/git/deploy", family: "agent-stateless", access: accessPrivileged, methods: []string{http.MethodPost}},
 	{pattern: "/agent/dns/verify", family: "agent-stateless", access: accessAuthenticated, methods: []string{http.MethodPost}},
+	{pattern: "/isp/health", family: "isp-control", access: accessAuthenticated, methods: []string{http.MethodGet}},
+	{pattern: "/isp/readiness", family: "isp-control", access: accessAuthenticated, methods: []string{http.MethodGet}},
+	{pattern: "/isp/operations/inspect", family: "isp-control", access: accessAuthenticated, methods: []string{http.MethodPost}},
+	{pattern: "/isp/operations/plan", family: "isp-control", access: accessAuthenticated, methods: []string{http.MethodPost}},
+	{pattern: "/isp/admin/reload", family: "isp-control", access: accessPrivileged, methods: []string{http.MethodPost}},
 	{pattern: "/a2a/delegate", family: "a2a-federation", access: accessA2APeer, methods: []string{http.MethodPost}},
 }
 
@@ -337,45 +344,57 @@ func buildMux(db *sql.DB, dockerBin, adminToken string) http.Handler {
 	paasMgr := NewPaasManager(db, dockerBin, NewMeshManagerFromEnv(dockerBin), nil, nil)
 	paasMgr.SetAdminToken(adminToken)
 	a2aMgr := NewA2AManagerFromEnv()
+	ispRouter := ispcontrol.NewRouter(
+		ispcontrol.DefaultPolicy(),
+		ispcontrol.NewSimulatorAdapter(ispcontrol.ResourceNAS, ispcontrol.OperationInspect, ispcontrol.OperationPlan),
+		ispcontrol.NewSimulatorAdapter(ispcontrol.ResourceSubscriber, ispcontrol.OperationInspect, ispcontrol.OperationPlan),
+		ispcontrol.NewSimulatorAdapter(ispcontrol.ResourceProfile, ispcontrol.OperationInspect, ispcontrol.OperationPlan),
+	)
+	ispHandler := ispcontrol.NewHandler(ispRouter, 5*time.Second)
 
 	raw := map[string]http.HandlerFunc{
-		"/health":                     handleHealth(db, dockerBin),
-		"/mesh/status":                handleMeshStatus(NewMeshManagerFromEnv(dockerBin)),
-		"/services":                   handleServices(dockerBin),
-		"/services/":                  handleService(dockerBin),
-		"/deploy":                     handleDeploy(db, dockerBin),
-		"/api/services":               handleApiServices(db),
-		"/api/services/":              handleApiService(db),
-		"/api/deploy":                 handleApiDeploy(db, dockerBin),
-		"/api/deployments":            handleApiDeployments(db),
-		"/api/deployments/":           handleApiDeployment(db),
-		"/api/containers/":            handleContainerSubroutes(dockerBin),
-		"/paas/node/metrics":          paasMgr.handleNodeMetrics(),
-		"/paas/metrics":               paasMgr.handleNodeMetrics(),
-		"/paas/host/services":         paasMgr.handleHostServices(),
-		"/paas/templates":             paasMgr.handleTemplates(),
-		"/paas/apps":                  paasMgr.handleApps(),
-		"/paas/apps/deploy":           paasMgr.handleDeploy(),
-		"/paas/apps/deploy-compose":   paasMgr.handleComposeDeploy(),
-		"/paas/apps/":                 paasMgr.handleAppSubroutes(),
-		"/paas/backups/postgres":      paasMgr.handleBackupPostgres(),
-		"/paas/backups":               paasMgr.handleListBackups(),
-		"/paas/backups/restore":       paasMgr.handleRestoreBackup(),
-		"/paas/cluster/nodes":         paasMgr.handleClusterNodes(),
-		"/paas/cluster/nodes/join":    paasMgr.handleClusterJoin(),
-		"/paas/cluster/ha/status":     paasMgr.handleHAStatus(),
-		"/paas/apps/deploy-git":       paasMgr.handleGitDeploy(),
-		"/paas/apps/preview":          paasMgr.handlePreviewDeploy(),
-		"/paas/webhooks/github/":      paasMgr.handleGitHubWebhook(),
-		"/agent/caddy/reconcile":      paasMgr.handleAgentCaddyReconcile(),
-		"/agent/metrics":              paasMgr.handleAgentMetrics(),
-		"/agent/containers":           paasMgr.handleAgentContainers(),
-		"/agent/containers/":          paasMgr.handleAgentContainerSubroutes(),
-		"/agent/containers/run":       paasMgr.handleAgentContainerRun(),
-		"/agent/compose/up":           paasMgr.handleAgentComposeUp(),
-		"/agent/git/deploy":           paasMgr.handleAgentGitDeploy(),
-		"/agent/dns/verify":           paasMgr.handleAgentDnsVerify(),
-		"/a2a/delegate":               a2aMgr.HandleDelegate(),
+		"/health":                   handleHealth(db, dockerBin),
+		"/mesh/status":              handleMeshStatus(NewMeshManagerFromEnv(dockerBin)),
+		"/services":                 handleServices(dockerBin),
+		"/services/":                handleService(dockerBin),
+		"/deploy":                   handleDeploy(db, dockerBin),
+		"/api/services":             handleApiServices(db),
+		"/api/services/":            handleApiService(db),
+		"/api/deploy":               handleApiDeploy(db, dockerBin),
+		"/api/deployments":          handleApiDeployments(db),
+		"/api/deployments/":         handleApiDeployment(db),
+		"/api/containers/":          handleContainerSubroutes(dockerBin),
+		"/paas/node/metrics":        paasMgr.handleNodeMetrics(),
+		"/paas/metrics":             paasMgr.handleNodeMetrics(),
+		"/paas/host/services":       paasMgr.handleHostServices(),
+		"/paas/templates":           paasMgr.handleTemplates(),
+		"/paas/apps":                paasMgr.handleApps(),
+		"/paas/apps/deploy":         paasMgr.handleDeploy(),
+		"/paas/apps/deploy-compose": paasMgr.handleComposeDeploy(),
+		"/paas/apps/":               paasMgr.handleAppSubroutes(),
+		"/paas/backups/postgres":    paasMgr.handleBackupPostgres(),
+		"/paas/backups":             paasMgr.handleListBackups(),
+		"/paas/backups/restore":     paasMgr.handleRestoreBackup(),
+		"/paas/cluster/nodes":       paasMgr.handleClusterNodes(),
+		"/paas/cluster/nodes/join":  paasMgr.handleClusterJoin(),
+		"/paas/cluster/ha/status":   paasMgr.handleHAStatus(),
+		"/paas/apps/deploy-git":     paasMgr.handleGitDeploy(),
+		"/paas/apps/preview":        paasMgr.handlePreviewDeploy(),
+		"/paas/webhooks/github/":    paasMgr.handleGitHubWebhook(),
+		"/agent/caddy/reconcile":    paasMgr.handleAgentCaddyReconcile(),
+		"/agent/metrics":            paasMgr.handleAgentMetrics(),
+		"/agent/containers":         paasMgr.handleAgentContainers(),
+		"/agent/containers/":        paasMgr.handleAgentContainerSubroutes(),
+		"/agent/containers/run":     paasMgr.handleAgentContainerRun(),
+		"/agent/compose/up":         paasMgr.handleAgentComposeUp(),
+		"/agent/git/deploy":         paasMgr.handleAgentGitDeploy(),
+		"/agent/dns/verify":         paasMgr.handleAgentDnsVerify(),
+		"/isp/health":               ispHandler.HandleHealth,
+		"/isp/readiness":            ispHandler.HandleReadiness,
+		"/isp/operations/inspect":   ispHandler.HandleOperation,
+		"/isp/operations/plan":      ispHandler.HandleOperation,
+		"/isp/admin/reload":         ispHandler.HandleOperation,
+		"/a2a/delegate":             a2aMgr.HandleDelegate(),
 	}
 
 	for _, route := range controlPlaneRouteMatrix {
@@ -395,6 +414,8 @@ func buildMux(db *sql.DB, dockerBin, adminToken string) http.Handler {
 			}
 		case accessPrivileged:
 			if strings.HasPrefix(route.pattern, "/paas/") || strings.HasPrefix(route.pattern, "/agent/") {
+				handler = requirePrivilegedPaasAuth(adminToken, handler)
+			} else if strings.HasPrefix(route.pattern, "/isp/") {
 				handler = requirePrivilegedPaasAuth(adminToken, handler)
 			} else {
 				handler = requireAccessBearerAuth(adminToken, accessPrivileged, handler)

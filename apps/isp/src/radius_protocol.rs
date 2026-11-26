@@ -24,6 +24,7 @@ pub mod attr_type {
     pub const FRAMED_IP_ADDRESS: u8 = 8;
     pub const FILTER_ID: u8 = 11;
     pub const REPLY_MESSAGE: u8 = 18;
+    pub const VENDOR_SPECIFIC: u8 = 26;
     pub const CALLED_STATION_ID: u8 = 30;
     pub const CALLING_STATION_ID: u8 = 31;
     pub const ACCT_STATUS_TYPE: u8 = 40;
@@ -45,6 +46,152 @@ pub mod acct_status {
     pub const INTERIM_UPDATE: u32 = 3;
     pub const ACCOUNTING_ON: u32 = 7;
     pub const ACCOUNTING_OFF: u32 = 8;
+}
+
+/// RADIUS VSA identity used by RouterOS for `MikroTik-Rate-Limit`.
+pub mod mikrotik {
+    pub const VENDOR_ID: u32 = 14988;
+    pub const RATE_LIMIT_ATTR: u8 = 8;
+    /// A VSA payload is type (1) + length (1) + vendor ID (4) + value, and the
+    /// enclosing RADIUS attribute adds another type/length pair (RFC 2865 §5.26).
+    /// A conforming value therefore cannot exceed 247 bytes.
+    pub const MAX_VALUE_LEN: usize = 247;
+    /// Maximum size for the built rate-limit string (kept well below the VSA bound).
+    pub const MAX_FORMAT_LEN: usize = 64;
+    /// Burst windows are bounded to avoid nonsensical long-duration bursts.
+    pub const MAX_BURST_TIME_SECONDS: u64 = 600;
+    /// Highest rate expressible with a `k` suffix (10 Gbps).
+    pub const MAX_RATE_KBPS: u64 = 10_000_000;
+}
+
+/// Validation errors for values placed into a RADIUS attribute.
+#[derive(Debug, Error, PartialEq, Eq)]
+pub enum AttributeValidationError {
+    #[error("attribute value exceeds the RADIUS VSA bound")]
+    Oversized,
+    #[error("attribute value is malformed or out of range")]
+    InvalidValue,
+}
+
+/// Encodes RFC 2865 §5.26 Vendor-Specific attribute bytes (vendor type,
+/// vendor length, vendor ID, then the vendor value).
+pub fn encode_vsa(vendor_id: u32, vendor_type: u8, value: &[u8]) -> RadiusAttribute {
+    let mut bytes = Vec::with_capacity(6 + value.len());
+    bytes.push(vendor_type);
+    bytes.push((2 + value.len()) as u8);
+    bytes.extend_from_slice(&vendor_id.to_be_bytes());
+    bytes.extend_from_slice(value);
+    RadiusAttribute {
+        attr_type: attr_type::VENDOR_SPECIFIC,
+        value: bytes,
+    }
+}
+
+/// Decodes a VSA value, rejecting malformed vendor-length fields.
+pub fn decode_vsa_value<'a>(
+    attr: &'a RadiusAttribute,
+    vendor_id: u32,
+    vendor_type: u8,
+) -> Option<&'a [u8]> {
+    if attr.attr_type != attr_type::VENDOR_SPECIFIC || attr.value.len() < 6 {
+        return None;
+    }
+    if attr.value[0] != vendor_type {
+        return None;
+    }
+    let vendor = &attr.value[2..6];
+    if u32::from_be_bytes([vendor[0], vendor[1], vendor[2], vendor[3]]) != vendor_id {
+        return None;
+    }
+    // Vendor-Length counts its own 2 bytes plus the 4-byte vendor ID; the
+    // enclosing attribute adds 2 more bytes for type and length.
+    let len = attr.value[1] as usize;
+    if len < 6 || len != attr.value.len().saturating_sub(4) {
+        return None;
+    }
+    Some(&attr.value[6..])
+}
+
+/// Canonical bandwidth profile in kbps. Burst values are optional; `burst_time_seconds`
+/// is only meaningful when a burst rate is present.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct BandwidthProfile {
+    pub download_kbps: u64,
+    pub upload_kbps: u64,
+    pub burst_download_kbps: Option<u64>,
+    pub burst_upload_kbps: Option<u64>,
+    pub burst_time_seconds: Option<u64>,
+}
+
+/// Builds a `MikroTik-Rate-Limit` string in RouterOS's documented order:
+/// `rx-rate/tx-rate [rx-burst/tx-burst [rx-threshold/tx-threshold [rx-time/tx-time]]]`.
+/// `rx` is the subscriber upload and `tx` the subscriber download (router view).
+/// All rates are encoded with a `k` suffix (kbps as documented by RouterOS).
+///
+/// Returns `Err` for any value that is malformed, out of range, or too large
+/// to encode safely in a RADIUS VSA; callers must fail closed.
+pub fn format_mikrotik_rate_limit(
+    profile: &BandwidthProfile,
+) -> Result<String, AttributeValidationError> {
+    let validate_rate = |rate: u64| {
+        if (1..=mikrotik::MAX_RATE_KBPS).contains(&rate) {
+            Ok(rate)
+        } else {
+            Err(AttributeValidationError::InvalidValue)
+        }
+    };
+
+    let upload = validate_rate(profile.upload_kbps)?;
+    let download = validate_rate(profile.download_kbps)?;
+    let rx_rate = format!("{upload}k");
+    let tx_rate = format!("{download}k");
+    let mut fields = vec![format!("{rx_rate}/{tx_rate}")];
+
+    let burst_upload = profile.burst_upload_kbps.map(validate_rate).transpose()?;
+    let burst_download = profile.burst_download_kbps.map(validate_rate).transpose()?;
+    if burst_upload.is_some() != burst_download.is_some() {
+        // RouterOS accepts paired burst fields; a half-specified burst is
+        // ambiguous and must fail closed rather than silently dropped.
+        return Err(AttributeValidationError::InvalidValue);
+    }
+    if let (Some(rx_burst), Some(tx_burst)) = (burst_upload, burst_download) {
+        let rx_burst_rate = format!("{rx_burst}k");
+        let tx_burst_rate = format!("{tx_burst}k");
+        fields.push(format!("{rx_burst_rate}/{tx_burst_rate}"));
+        // With a burst rate and no explicit thresholds RouterOS uses rx/tx-rate
+        // as the burst thresholds (documented default).
+        let seconds = profile.burst_time_seconds.unwrap_or(1);
+        if seconds == 0 || seconds > mikrotik::MAX_BURST_TIME_SECONDS {
+            return Err(AttributeValidationError::InvalidValue);
+        }
+        fields.push(format!("{seconds}s/{seconds}s"));
+    } else if profile.burst_time_seconds.is_some() {
+        return Err(AttributeValidationError::InvalidValue);
+    }
+
+    let value = fields.join(" ");
+    if value.len() > mikrotik::MAX_FORMAT_LEN || value.len() > mikrotik::MAX_VALUE_LEN {
+        return Err(AttributeValidationError::Oversized);
+    }
+    if !value
+        .bytes()
+        .all(|b| b.is_ascii_digit() || b.is_ascii_lowercase() || b == b'/' || b == b' ')
+    {
+        return Err(AttributeValidationError::InvalidValue);
+    }
+    Ok(value)
+}
+
+/// Builds the complete MikroTik-Rate-Limit VSA for a bandwidth profile.
+pub fn mikrotik_rate_limit_vsa(
+    profile: &BandwidthProfile,
+) -> Result<RadiusAttribute, AttributeValidationError> {
+    let value = format_mikrotik_rate_limit(profile)?;
+    Ok(encode_vsa(
+        mikrotik::VENDOR_ID,
+        mikrotik::RATE_LIMIT_ATTR,
+        value.as_bytes(),
+    ))
 }
 
 #[derive(Debug, Error, PartialEq, Eq)]
@@ -133,7 +280,9 @@ pub struct RadiusPacket {
 
 impl RadiusPacket {
     pub fn attribute(&self, attr_type: u8) -> Option<&RadiusAttribute> {
-        self.attributes.iter().find(|attr| attr.attr_type == attr_type)
+        self.attributes
+            .iter()
+            .find(|attr| attr.attr_type == attr_type)
     }
 }
 
@@ -388,6 +537,114 @@ mod tests {
     use super::*;
 
     #[test]
+    fn encodes_mikrotik_rate_limit_vsa_in_routeros_order() {
+        let profile = BandwidthProfile {
+            download_kbps: 50_000,
+            upload_kbps: 10_000,
+            burst_download_kbps: Some(100_000),
+            burst_upload_kbps: Some(20_000),
+            burst_time_seconds: Some(10),
+        };
+        let attr = mikrotik_rate_limit_vsa(&profile).expect("valid profile");
+        assert_eq!(attr.attr_type, attr_type::VENDOR_SPECIFIC);
+        assert_eq!(attr.value[0], mikrotik::RATE_LIMIT_ATTR);
+        assert_eq!(attr.value[1] as usize, attr.value.len() - 4);
+        assert_eq!(&attr.value[2..6], &14988u32.to_be_bytes());
+        assert_eq!(
+            decode_vsa_value(&attr, mikrotik::VENDOR_ID, mikrotik::RATE_LIMIT_ATTR),
+            Some(b"10000k/50000k 20000k/100000k 10s/10s".as_slice())
+        );
+        assert_eq!(
+            format_mikrotik_rate_limit(&BandwidthProfile {
+                download_kbps: 100_000,
+                upload_kbps: 20_000,
+                ..BandwidthProfile::default()
+            })
+            .unwrap(),
+            "20000k/100000k"
+        );
+    }
+
+    #[test]
+    fn rejects_malformed_and_oversized_rate_limit_values() {
+        assert_eq!(
+            format_mikrotik_rate_limit(&BandwidthProfile::default()).unwrap_err(),
+            AttributeValidationError::InvalidValue
+        );
+        assert_eq!(
+            format_mikrotik_rate_limit(&BandwidthProfile {
+                download_kbps: 100,
+                upload_kbps: 0,
+                ..BandwidthProfile::default()
+            })
+            .unwrap_err(),
+            AttributeValidationError::InvalidValue
+        );
+        assert_eq!(
+            format_mikrotik_rate_limit(&BandwidthProfile {
+                download_kbps: 100,
+                upload_kbps: 100,
+                burst_download_kbps: Some(200),
+                ..BandwidthProfile::default()
+            })
+            .unwrap_err(),
+            AttributeValidationError::InvalidValue
+        );
+        assert_eq!(
+            format_mikrotik_rate_limit(&BandwidthProfile {
+                download_kbps: 100,
+                upload_kbps: 100,
+                burst_download_kbps: Some(200),
+                burst_upload_kbps: Some(200),
+                burst_time_seconds: Some(601),
+            })
+            .unwrap_err(),
+            AttributeValidationError::InvalidValue
+        );
+        let max = mikrotik::MAX_RATE_KBPS;
+        assert!(
+            format_mikrotik_rate_limit(&BandwidthProfile {
+                download_kbps: max,
+                upload_kbps: max,
+                ..BandwidthProfile::default()
+            })
+            .is_ok()
+        );
+        assert_eq!(
+            format_mikrotik_rate_limit(&BandwidthProfile {
+                download_kbps: max + 1,
+                upload_kbps: max,
+                ..BandwidthProfile::default()
+            })
+            .unwrap_err(),
+            AttributeValidationError::InvalidValue
+        );
+        assert!(mikrotik::MAX_FORMAT_LEN <= mikrotik::MAX_VALUE_LEN);
+    }
+
+    #[test]
+    fn rejects_malformed_vsa_decoding() {
+        let attr = mikrotik_rate_limit_vsa(&BandwidthProfile {
+            download_kbps: 1000,
+            upload_kbps: 500,
+            ..BandwidthProfile::default()
+        })
+        .unwrap();
+        assert!(decode_vsa_value(&attr, 14988, 8).is_some());
+        assert!(decode_vsa_value(&attr, 9, 8).is_none());
+        assert!(decode_vsa_value(&attr, 14988, 1).is_none());
+        let mut wrong_type = attr.clone();
+        wrong_type.attr_type = attr_type::FILTER_ID;
+        assert!(decode_vsa_value(&wrong_type, 14988, 8).is_none());
+        let mut short = attr.clone();
+        short.value.truncate(5);
+        assert!(decode_vsa_value(&short, 14988, 8).is_none());
+        let mut bad_len = attr.clone();
+        bad_len.value[1] = 255;
+        assert!(decode_vsa_value(&bad_len, 14988, 8).is_none());
+    }
+
+    #[test]
     fn roundtrips_pap_encryption_and_packet_decoding() {
         let secret = b"testing123";
         let req_auth = [7u8; 16];
@@ -406,7 +663,9 @@ mod tests {
         assert_eq!(decoded.code, codes::ACCESS_REQUEST);
         assert_eq!(decoded.identifier, 42);
         assert_eq!(
-            decoded.attribute(attr_type::USER_NAME).map(RadiusAttribute::as_str),
+            decoded
+                .attribute(attr_type::USER_NAME)
+                .map(RadiusAttribute::as_str),
             Some("alice".to_string())
         );
 
@@ -463,7 +722,9 @@ mod tests {
         assert_eq!(decoded.code, codes::DISCONNECT_REQUEST);
         assert_eq!(decoded.identifier, 9);
         assert_eq!(
-            decoded.attribute(attr_type::USER_NAME).map(RadiusAttribute::as_str),
+            decoded
+                .attribute(attr_type::USER_NAME)
+                .map(RadiusAttribute::as_str),
             Some("alice".to_string())
         );
 
@@ -516,9 +777,21 @@ mod tests {
         let mut tampered = ack.clone();
         tampered[4] ^= 0xFF;
         assert!(!verify_response_authenticator(&tampered, &req_auth, secret));
-        assert!(!verify_response_authenticator(&ack, &req_auth, b"bad-secret"));
+        assert!(!verify_response_authenticator(
+            &ack,
+            &req_auth,
+            b"bad-secret"
+        ));
         let wrong_req_auth = [0x5Au8; 16];
-        assert!(!verify_response_authenticator(&ack, &wrong_req_auth, secret));
-        assert!(!verify_response_authenticator(&ack[..10], &req_auth, secret));
+        assert!(!verify_response_authenticator(
+            &ack,
+            &wrong_req_auth,
+            secret
+        ));
+        assert!(!verify_response_authenticator(
+            &ack[..10],
+            &req_auth,
+            secret
+        ));
     }
 }
