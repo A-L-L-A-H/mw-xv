@@ -38,13 +38,9 @@ function transactionHarness(options: {
   const transactionDatabase: OwnerDatabasePort = {
     raw,
     transaction: async <T>(work: (transaction: OwnerDatabasePort) => Promise<T>): Promise<T> => {
-      try {
-        const result = await work(transactionDatabase);
-        committed = true;
-        return result;
-      } catch (error) {
-        throw error;
-      }
+      const result = await work(transactionDatabase);
+      committed = true;
+      return result;
     },
   };
   return { transactionDatabase, raw, statements, isCommitted: () => committed };
