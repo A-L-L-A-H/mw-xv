@@ -22,6 +22,15 @@ import {
   toWorkContractSource,
   type LocalTodoTaskSnapshot,
 } from './sync.js';
+import {
+  buildPlanSyncMigration,
+  hasPlanSyncTaskDelta,
+  normalizeMilestoneStatus,
+  parsePlanSyncPayload,
+  toOrmMilestoneCode,
+  toOrmTaskCode,
+  type PlanSyncResult,
+} from './plan-sync.js';
 
 interface TodoSyncBody {
   readonly default_stage_id?: number;
@@ -410,6 +419,196 @@ export const projectHttpPlugin: AddonHttpPlugin = async (app, options) => {
     });
 
     app.post<{ Params: IdParams }>(
+      `${prefix}/projects/:id/plan-sync`,
+      async (req, reply) => {
+        const ctx = await requireCompanyContext(req, reply, options);
+        if (!ctx) return;
+        if (
+          !canAccess?.(ctx.role, ProjectTask.modelName, 'create', req.auth?.groupPermissions) ||
+          !canAccess?.(ctx.role, ProjectTask.modelName, 'write', req.auth?.groupPermissions)
+        ) {
+          return reply.code(403).send({ success: false, error: 'Plan sync access denied' });
+        }
+        const projectId = parsePositiveIntId(req.params.id);
+        if (!projectId) {
+          return reply.code(400).send({ success: false, error: 'Invalid project ID' });
+        }
+
+        const project = await Project.query().findOne({
+          id: projectId,
+          company_id: ctx.companyId,
+          active: true,
+        });
+        if (!project) {
+          return reply.code(404).send({ success: false, error: 'Project not found' });
+        }
+
+        let payload;
+        try {
+          payload = parsePlanSyncPayload(req.body);
+        } catch (err) {
+          return reply.code(400).send({
+            success: false,
+            error: err instanceof Error ? err.message : 'Invalid plan sync payload',
+          });
+        }
+
+        const defaultStage = await ProjectStage.query()
+          .where({ company_id: ctx.companyId, active: true })
+          .andWhere((qb) => qb.where({ project_id: projectId }).orWhereNull('project_id'))
+          .orderBy('is_closed', 'asc')
+          .orderBy('sequence', 'asc')
+          .orderBy('id', 'asc')
+          .first();
+        if (!defaultStage) {
+          return reply.code(400).send({ success: false, error: 'No active project stage available' });
+        }
+
+        const milestoneIdByCode = new Map<string, number>();
+        const taskIdByCode = new Map<string, number>();
+        const counters: { -readonly [K in keyof PlanSyncResult]: PlanSyncResult[K] } = {
+          milestonesImported: 0,
+          milestonesUpdated: 0,
+          tasksImported: 0,
+          tasksUpdated: 0,
+          dependenciesImported: 0,
+          codeByRaw: {},
+        };
+
+        try {
+          await ProjectTask.transaction(async (trx) => {
+            // 1. Upsert milestones per Wave (open / reached / missed).
+            for (const wave of payload.waves) {
+              const code = toOrmMilestoneCode(wave.code);
+              const existing = await ProjectMilestone.query(trx).findOne({
+                company_id: ctx.companyId,
+                project_id: projectId,
+                code,
+                active: true,
+              });
+              const status = normalizeMilestoneStatus(wave.status);
+              if (existing) {
+                await ProjectMilestone.query(trx)
+                  .findById(existing.id)
+                  .patch({
+                    name: wave.name,
+                    status,
+                    ...(wave.due_date ? { due_date: wave.due_date } : {}),
+                  });
+                counters.milestonesUpdated += 1;
+                milestoneIdByCode.set(code, existing.id);
+              } else {
+                const created = await ProjectMilestone.query(trx).insertAndFetch({
+                  company_id: ctx.companyId,
+                  project_id: projectId,
+                  code,
+                  name: wave.name,
+                  status,
+                  ...(wave.due_date ? { due_date: wave.due_date } : {}),
+                });
+                counters.milestonesImported += 1;
+                milestoneIdByCode.set(code, created.id);
+              }
+            }
+
+            // 2. Upsert tasks parent-first (topological insert order).
+            const migration = buildPlanSyncMigration(payload);
+            for (const item of migration) {
+              const milestoneId = item.milestoneCode
+                ? (milestoneIdByCode.get(item.milestoneCode) ?? null)
+                : null;
+              const parentId = item.parentCode
+                ? (taskIdByCode.get(item.parentCode) ?? null)
+                : null;
+              const existing = await ProjectTask.query(trx)
+                .where({ company_id: ctx.companyId, project_id: projectId, active: true })
+                .andWhere((qb) =>
+                  qb.where({ code: item.code }).orWhere({ external_ref: item.externalRef })
+                )
+                .first();
+
+              // Human-owned stage_id / assignee_id / reviewer_id are never patched.
+              if (existing) {
+                const changed = hasPlanSyncTaskDelta(existing, item, milestoneId, parentId);
+                if (changed) {
+                  await ProjectTask.query(trx).findById(existing.id).patch({
+                    title: item.title,
+                    description: item.description ?? existing.description,
+                    priority: item.priority,
+                    status: item.status,
+                    blocked_reason: item.blockedReason ?? existing.blocked_reason,
+                    estimate_minutes: item.estimateMinutes ?? existing.estimate_minutes,
+                    milestone_id: milestoneId,
+                    parent_id: parentId,
+                    external_ref: item.externalRef,
+                  });
+                }
+                counters.tasksUpdated += 1;
+                taskIdByCode.set(item.code, existing.id);
+              } else {
+                const created = await ProjectTask.query(trx).insertAndFetch({
+                  company_id: ctx.companyId,
+                  project_id: projectId,
+                  stage_id: defaultStage.id,
+                  code: item.code,
+                  external_ref: item.externalRef,
+                  title: item.title,
+                  description: item.description ?? null,
+                  priority: item.priority,
+                  status: item.status,
+                  blocked_reason: item.blockedReason ?? null,
+                  estimate_minutes: item.estimateMinutes ?? null,
+                  milestone_id: milestoneId,
+                  parent_id: parentId,
+                });
+                counters.tasksImported += 1;
+                taskIdByCode.set(item.code, created.id);
+              }
+            }
+
+            // 3. Upsert acyclic dependency edges (kind: 'blocks').
+            for (const item of migration) {
+              const taskId = taskIdByCode.get(item.code);
+              if (!taskId) continue;
+              for (const depCode of item.dependsOn) {
+                const dependsOnId = taskIdByCode.get(depCode);
+                if (!dependsOnId || dependsOnId === taskId) continue;
+                const existingEdge = await ProjectTaskDependency.query(trx).findOne({
+                  company_id: ctx.companyId,
+                  task_id: taskId,
+                  depends_on_id: dependsOnId,
+                  active: true,
+                });
+                if (!existingEdge) {
+                  await ProjectTaskDependency.query(trx).insert({
+                    company_id: ctx.companyId,
+                    task_id: taskId,
+                    depends_on_id: dependsOnId,
+                    kind: 'blocks',
+                  });
+                  counters.dependenciesImported += 1;
+                }
+              }
+            }
+          });
+        } catch (err) {
+          return reply.code(409).send({
+            success: false,
+            error: err instanceof Error ? err.message : 'Plan sync transaction failed',
+          });
+        }
+
+        return {
+          success: true,
+          data: {
+            project_id: projectId,
+            ...counters,
+          },
+        };
+      }
+    );
+
+    app.post<{ Params: IdParams }>(
       `${prefix}/projects/tasks/:id/work-contract`,
       async (req, reply) => {
         const ctx = await requireCompanyContext(req, reply, options);
@@ -455,6 +654,9 @@ export const projectHttpPlugin: AddonHttpPlugin = async (app, options) => {
         }
 
         const body = isRecord(req.body) ? req.body : {};
+        const rawOwnerFiles = Array.isArray(body.owner_files)
+          ? body.owner_files.filter((f): f is string => typeof f === 'string' && f.length > 0)
+          : [];
         const riskOrder: Record<RiskTier, number> = { R0: 0, R1: 1, R2: 2, R3: 3, R4: 4 };
 
         type TransactionOutcome =
@@ -578,6 +780,7 @@ export const projectHttpPlugin: AddonHttpPlugin = async (app, options) => {
               task_id: freshTask.id,
               task_code: freshTask.code,
               external_ref: freshTask.external_ref ?? null,
+              ...(rawOwnerFiles.length > 0 ? { owner_files: rawOwnerFiles } : {}),
             }),
             constraints_json: '{}',
             non_goals_json: '[]',
@@ -609,18 +812,66 @@ export const projectHttpPlugin: AddonHttpPlugin = async (app, options) => {
           }
 
           const contract = await WorkContract.query(trx).insertAndFetch(mutation);
-          await AcceptanceCriterion.query(trx).insert({
-            company_id: ctx.companyId,
-            work_contract_id: contract.id,
-            sequence: 1,
-            code: 'task_completion',
-            title: `Verify ${freshTask.code} completion`,
-            verification_method: 'automated_test',
-            required_evidence_type: 'evidence_bundle',
-            mandatory: true,
-            version: 1,
-            status: 'pending',
-          });
+
+          // T37: hydrate 1 ai.acceptance_criterion row per binary AC when the
+          // caller supplies them (Plan-TaskOS tasks carry acceptance_criteria).
+          // Fall back to the legacy single `task_completion` row so existing
+          // work-contract callers remain 100% compatible.
+          interface HydratedCriterion {
+            readonly code: string;
+            readonly title: string;
+            readonly verification_method: string;
+            readonly required_evidence_type: string;
+            readonly mandatory: boolean;
+            readonly version: number;
+            readonly status: string;
+          }
+          const rawCriteria = Array.isArray(body.acceptance_criteria)
+            ? body.acceptance_criteria
+            : [];
+          const criteria: HydratedCriterion[] = rawCriteria.length > 0
+            ? rawCriteria.flatMap((raw, index) => {
+                const entry: Record<string, unknown> = isRecord(raw) ? raw : { text: raw };
+                const text = typeof entry.text === 'string' && entry.text.trim()
+                  ? entry.text.trim()
+                  : null;
+                if (!text) return [];
+                return [{
+                  code: `ac_${index + 1}`,
+                  title: text.slice(0, 255),
+                  verification_method:
+                    typeof entry.verification_method === 'string'
+                      ? entry.verification_method
+                      : 'automated_test',
+                  required_evidence_type:
+                    typeof entry.required_evidence_type === 'string'
+                      ? entry.required_evidence_type
+                      : 'evidence_bundle',
+                  mandatory: entry.mandatory !== false,
+                  version: 1,
+                  status: entry.done === true ? 'accepted' : 'pending',
+                }];
+              })
+            : [];
+          const hydrated: readonly HydratedCriterion[] = criteria.length > 0
+            ? criteria
+            : [{
+                code: 'task_completion',
+                title: `Verify ${freshTask.code} completion`,
+                verification_method: 'automated_test',
+                required_evidence_type: 'evidence_bundle',
+                mandatory: true,
+                version: 1,
+                status: 'pending',
+              }];
+          for (const [index, criterion] of hydrated.entries()) {
+            await AcceptanceCriterion.query(trx).insert({
+              company_id: ctx.companyId,
+              work_contract_id: contract.id,
+              sequence: index + 1,
+              ...criterion,
+            });
+          }
 
           const loaded = await WorkContract.query(trx)
             .findById(contract.id)
