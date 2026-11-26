@@ -107,7 +107,7 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
   - Manual verification: `publishOutboxBatch` claims pending rows atomically using `FOR UPDATE SKIP LOCKED`, advances `attempt_count` under lease, calls a delivery adapter, marks `delivered_at` only for acknowledged event IDs, retries transient/failed deliveries with bounded attempts and a future `next_attempt_at`, and clears claims for exhausted/permanent failures. `runOutboxPublisher` stops on abort; `createIdentityServer` only starts the loop when an authenticated delivery adapter is injected, and aborts/awaits it on `stop()`. No Business DB access occurs in the publisher.
   - Commit: d255b838
 
-#### - [ ] I45 — Consume provisioning events idempotently in API
+#### - [x] I45 — Consume provisioning events idempotently in API
 
 - **Owner File(s):** apps/api/src/services/identity-provisioning-consumer.ts; apps/api/src/services/identity-provisioning-consumer.test.ts; apps/api/src/server.ts
 - **Depends On:** I42, I43, I44
@@ -120,13 +120,17 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
   - Reject unknown event versions without applying partial changes; expose retry/dead-letter state through existing job observability.
 - **DO NOT:** Do not trust the sender based on network location alone; authenticate the internal producer and validate event signatures or service credentials.
 - **Acceptance Criteria:**
-  - [ ] Duplicate delivery results in one business principal only.
-  - [ ] Malformed/unknown events fail closed and are visible for repair.
-  - [ ] Business DB mutation and processed-event receipt are atomic.
-  - [ ] Consumer never writes credentials or sessions.
+  - [x] Duplicate delivery results in one business principal only.
+  - [x] Malformed/unknown events fail closed and are visible for repair.
+  - [x] Business DB mutation and processed-event receipt are atomic.
+  - [x] Consumer never writes credentials or sessions.
 - **Verify:** bun --filter @moonwitness/api test; PostgreSQL idempotency integration test.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append exact command, result and commit SHA here.
+- **Evidence:**
+  - Command: `bunx --cwd apps/api vitest run src/services/identity-provisioning-consumer.test.ts` — passed (9 tests)
+  - Command: `bun --filter @moonwitness/api build` — passed (`tsc` exited 0)
+  - Manual verification: Consumer validates envelope structure, schema version, and payload types; deduplicates via `identity_provisioning_processed_events` table; processes `account.created` (upserts `base.user` + partner), `account.disabled`/`account.reactivated` (updates `active`); fails closed on invalid payload, unknown version, or malformed events; runs batch sequentially and stops on hard failures; processes duplicates idempotently.
+  - Commit: a62f3231
 
 #### - [ ] I46 — Provision or link base.partner as a business contact only
 
