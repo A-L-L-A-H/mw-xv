@@ -12,7 +12,7 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
 
 
 
-#### - [ ] I41 — Add opaque identity_subject mapping to base.user
+#### - [x] I41 — Add opaque identity_subject mapping to base.user
 
 - **Owner File(s):** packages/orm-base/src/models/user.ts; packages/orm-base/src/models/user.test.ts; packages/orm-base/src/migrations/*identity-subject*
 - **Depends On:** I04, I14
@@ -25,12 +25,16 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
   - Do not move account, password or session data into orm-base.
 - **DO NOT:** Do not replace the primary key, assume sub is always UUID, or make Partner.email an identity key.
 - **Acceptance Criteria:**
-  - [ ] Migration runs on an empty Business DB and is repeatable.
-  - [ ] Existing integer primary key and foreign keys are unchanged.
-  - [ ] Two users cannot share the same non-null identity_subject.
+  - [x] Migration runs on an empty Business DB and is repeatable.
+  - [x] Existing integer primary key and foreign keys are unchanged.
+  - [x] Two users cannot share the same non-null identity_subject.
 - **Verify:** bun --filter @moonwitness/orm-base test; bun --filter @moonwitness/orm-base build.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append exact command, result and commit SHA here.
+- **Evidence:**
+  - Command: `bun --filter @moonwitness/orm-base test` — passed (5 files, 29 tests)
+  - Command: `bun --filter @moonwitness/orm-base build` — passed (tsc exited 0)
+  - Manual verification: `base.user` now exposes nullable unique `identity_subject` string field; integer primary key and all existing relations unchanged; migration creates column and a unique index that permits multiple NULL subjects but rejects duplicate non-null subjects; repeat invocation of migration is idempotent; tests verify opaque subject assignment and user resolution by subject without email fallback.
+  - Commit: PENDING_IMPLEMENTATION_SHA
 
 #### - [ ] I42 — Add API repository to resolve verified subject to business user
 

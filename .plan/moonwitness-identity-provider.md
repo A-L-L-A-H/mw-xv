@@ -121,7 +121,7 @@ Task dependencies are declared inside each playbook. Follow them exactly; the fi
 - [ ] **I40** — Add full OIDC protocol integration tests
 
 ### Wave 4 — Business-user provisioning
-- [ ] **I41** — Add opaque identity_subject mapping to base.user
+- [x] **I41** — Add opaque identity_subject mapping to base.user
 - [ ] **I42** — Add API repository to resolve verified subject to business user
 - [ ] **I43** — Define a versioned Identity-to-Business event contract
 - [ ] **I44** — Publish account lifecycle events through Identity outbox

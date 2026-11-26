@@ -6,6 +6,12 @@ export const User = defineModel('base.user', {
   table: 'users',
   order: 'login asc',
   fields: {
+    identity_subject: fields.string({
+      required: false,
+      unique: true,
+      label: 'Identity Subject',
+      help: 'Opaque OIDC sub identifier mapped from the Identity Provider',
+    }),
     login: fields.string({ required: true, unique: true, label: 'Login' }),
     password: fields.password({ label: 'Password', help: 'Leave empty to keep the current one' }),
     partner: fields.belongsTo(Partner, { required: true, unique: true, label: 'Contact' }),
