@@ -34,9 +34,9 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
   - Command: `bun --filter @moonwitness/orm-base test` — passed (5 files, 29 tests)
   - Command: `bun --filter @moonwitness/orm-base build` — passed (tsc exited 0)
   - Manual verification: `base.user` now exposes nullable unique `identity_subject` string field; integer primary key and all existing relations unchanged; migration creates column and a unique index that permits multiple NULL subjects but rejects duplicate non-null subjects; repeat invocation of migration is idempotent; tests verify opaque subject assignment and user resolution by subject without email fallback.
-  - Commit: b22d0837
+  - Commit: b22d0837 (fix: 128dc685)
 
-#### - [ ] I42 — Add API repository to resolve verified subject to business user
+#### - [x] I42 — Add API repository to resolve verified subject to business user
 
 - **Owner File(s):** apps/api/src/auth/identity-principal-repository.ts; apps/api/src/auth/identity-principal-repository.test.ts
 - **Depends On:** I41
@@ -48,12 +48,17 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
   - Keep token verification outside the repository; repository input must already be a verified subject.
 - **DO NOT:** Do not accept unverified JWT payloads or search by email/login as a fallback.
 - **Acceptance Criteria:**
-  - [ ] Active mapped user resolves to the correct local ID.
-  - [ ] Unknown and inactive subject are rejected.
-  - [ ] No email-based implicit linking is implemented.
+  - [x] Active mapped user resolves to the correct local ID.
+  - [x] Unknown and inactive subject are rejected.
+  - [x] No email-based implicit linking is implemented.
 - **Verify:** bun --filter @moonwitness/api test; bun --filter @moonwitness/api build.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append exact command, result and commit SHA here.
+- **Evidence:**
+  - Command: `bunx --cwd apps/api vitest run src/auth/identity-principal-repository.test.ts dist/auth/identity-principal-repository.test.js` — passed (2 files, 10 tests)
+  - Command: `bunx --cwd apps/api vitest run --exclude tests/postgres.integration.test.ts --exclude tests/postgres.performance.integration.test.ts --exclude tests/whatsapp-attachments-job.postgres.integration.test.ts` — passed (68 passed, 4 skipped, 466 tests)
+  - Command: `bun --filter @moonwitness/api build` — passed (tsc exited 0)
+  - Manual verification: `resolveIdentityPrincipal` and `findActivePrincipalByVerifiedSubject` resolve active `base.user` strictly by `identity_subject`, fail closed on missing (`not_found`), duplicate (`duplicate_subject`), inactive user/partner (`inactive`), or malformed/raw-JWT input (`invalid_subject`), and never fall back to email or login matching.
+  - Commit: 48cdf4e1
 
 #### - [ ] I43 — Define a versioned Identity-to-Business event contract
 
