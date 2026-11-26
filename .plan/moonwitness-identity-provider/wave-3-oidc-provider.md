@@ -29,7 +29,11 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - [ ] Unsupported algorithms/grants are not advertised.
 - **Verify:** bun --filter @moonwitness/id test; provider discovery smoke test.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append exact command, result and commit SHA here.
+- **Evidence:**
+  - **BLOCKER — dependency tidak terpenuhi:** I03 memilih `oidc-provider` (panva/node-oidc-provider) sebagai provider wajib, tetapi `apps/id/package.json` tidak mendeklarasikan dependency tersebut, `bun.lock` tidak memuatnya, dan `require.resolve('oidc-provider')` menghasilkan `MODULE_NOT_FOUND`. `@fastify/middie` tersedia, tetapi tidak dapat dipakai tanpa provider.
+  - Owner File(s) I30 hanya `apps/id/src/oidc/provider.ts`, `apps/id/src/oidc/discovery.test.ts`, dan `apps/id/src/server.ts`; menambahkan `oidc-provider` ke `apps/id/package.json`/`bun.lock` berada di luar scope task dan dilarang oleh aturan owner file.
+  - Perbaikan yang diperlukan: buat task follow-up untuk menambahkan dependency `oidc-provider` versi v8.x/9.x yang kompatibel Node 24 ke manifest apps/id, commit lockfile, lalu ulangi I30 dari awal.
+  - Verification I30 tidak dijalankan karena implementasi tidak dimulai; `bun --filter @moonwitness/id test` dan provider discovery smoke test tidak dapat membuktikan acceptance criteria tanpa provider terpasang.
 
 #### - [ ] I31 — Validate OAuth client registration and redirect URI allowlists
 
