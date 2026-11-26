@@ -251,7 +251,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
     - Manual verification: reuses repository scrypt `hashPassword`/`verifyPassword`; credential verifier separate from account/identifier; algorithm/version metadata; adapter errors redact passwords/hashes; no plaintext fields
     - Commit: 461f42e3 feat(identity): add credential model and password hasher for I16
 
-#### - [ ] I17 — Add identity.session model and expiry indexes
+#### - [x] I17 — Add identity.session model and expiry indexes
 
 - **Owner File(s):** packages/orm-identity/src/models/session.ts; packages/orm-identity/src/models/session.test.ts; apps/id/src/database/migrations/*session*
 - **Depends On:** I14
@@ -263,12 +263,18 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - Keep device/user-agent metadata bounded and redactable.
 - **DO NOT:** Do not persist a raw bearer token or unbounded request headers.
 - **Acceptance Criteria:**
-  - [ ] Session expiry and revocation are enforced by repository operations.
-  - [ ] Indexes support account lookup and expiry pruning.
-  - [ ] Tests cover expired, revoked and active sessions.
+  - [x] Session expiry and revocation are enforced by repository operations.
+  - [x] Indexes support account lookup and expiry pruning.
+  - [x] Tests cover expired, revoked and active sessions.
 - **Verify:** bun --filter @moonwitness/orm-identity test; bun --filter @moonwitness/id test.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
+  - **Evidence:**
+    - Command: bun --filter @moonwitness/orm-identity test — passed (5 files, 15 tests)
+    - Command: bun --filter @moonwitness/id test — passed (6 files, 23 tests)
+    - Command: bun --filter @moonwitness/orm-identity build — passed (tsc exited 0)
+    - Command: bun --filter @moonwitness/id build — passed (tsc exited 0)
+    - Manual verification: digest-only secret, bounded metadata, active/expired/revoked helpers, account+expiry indexes and pruning index; no raw bearer token
+    - Commit: PENDING_I17_COMMIT
 
 #### - [ ] I18 — Add refresh-token family persistence and revocation state
 
