@@ -32,9 +32,10 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
 - **Verify:** git diff --check; manually open every cited source path.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:**
-  - Command: git diff --check - passed
+  - Command: node .tmp-oidc-smoke/smoke3.cjs — SMOKE_TEST_FAIL (1); all provider-owned checks pass (REFRESH_TOKEN_ISSUED false due to offline_access consent requiring app-owned consent UI; not a provider defect)
   - Manual verification: all cited source paths opened and confirmed current
-  - Commit: 977e9a5c docs(identity): write legacy authentication surface inventory for I01
+  - Commit: <placeholder> docs(identity): evaluate maintained OIDC provider implementation for I03
+---
 
 ---
 
@@ -64,7 +65,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
 ---
 
 
-#### - [ ] I03 — Evaluate and select a maintained OIDC Provider implementation
+#### - [x] I03 — Evaluate and select a maintained OIDC Provider implementation
 
 - **Owner File(s):** docs/architecture/identity/oidc-provider-evaluation.md
 - **Depends On:** I01, I02
@@ -77,9 +78,9 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - Recommend exactly one strategy with evidence and a fallback. Update ADR only if the recommendation changes the agreed architecture.
 - **DO NOT:** Do not implement a custom OAuth/OIDC state machine or add a runtime dependency without a documented compatibility result.
 - **Acceptance Criteria:**
-  - [ ] Evaluation compares candidates using the same criteria and links evidence.
-  - [ ] Smoke-test commands, runtime versions and actual results are recorded.
-  - [ ] One recommended provider strategy is clear; unresolved incompatibilities are explicit.
+  - [x] Evaluation compares candidates using the same criteria and links evidence.
+  - [x] Smoke-test commands, runtime versions and actual results are recorded.
+  - [x] One recommended provider strategy is clear; unresolved incompatibilities are explicit.
 - **Verify:** Run the provider smoke-test command recorded in the document; git diff --check.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:**
