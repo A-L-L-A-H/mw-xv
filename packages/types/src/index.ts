@@ -12,5 +12,6 @@ export * from './theme.js';
 export * from './scene.js';
 export * from './character-adapter.js';
 export * from './service-endpoints.js';
+export * from './identity-provisioning.js';
 export * from './network.js';
 export * from './constants.js';
