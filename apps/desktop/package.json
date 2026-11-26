@@ -52,6 +52,7 @@
     "@moonwitness/orm-project": "workspace:*",
     "@moonwitness/orm-storage": "workspace:*",
     "@moonwitness/orm-workflow": "workspace:*",
+    "@moonwitness/plan-taskos": "workspace:*",
     "@moonwitness/types": "workspace:*",
     "better-sqlite3": "^13.0.3",
     "fastify": "^5.12.8",

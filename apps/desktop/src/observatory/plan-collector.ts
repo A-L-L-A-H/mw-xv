@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs';
 import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
+import { discoverPlans, openBrainStore, type BrainStorageDriver } from '@moonwitness/plan-taskos';
 import { clipRedacted } from './io.js';
 import type {
   ObservatoryGitDirtyFile,
@@ -268,6 +269,78 @@ export function buildPlanDag(
   };
 }
 
+/** Optional read-only Brain metadata attached to observatory plans/tasks when a local Brain DB exists. */
+interface BrainTaskMetadata {
+  readonly proofSha256: string | null;
+  readonly attempts: number;
+  readonly leaseOwner: string | null;
+  readonly modelTier: string | null;
+}
+
+interface BrainPlanMetadata {
+  readonly formats: ReadonlyMap<string, 'plan-taskos/v1' | 'legacy-markdown'>;
+  readonly merkleRoots: ReadonlyMap<string, string | null>;
+  readonly tasksByCode: ReadonlyMap<string, BrainTaskMetadata>;
+}
+
+async function readBrainPlanMetadata(
+  repoRoot: string,
+  planIds: readonly string[]
+): Promise<BrainPlanMetadata | null> {
+  const dbPath = path.join(repoRoot, '.plan', '.brain', 'taskos.sqlite');
+  if (!existsSync(dbPath)) return null;
+  let store: BrainStorageDriver | null = null;
+  try {
+    store = await openBrainStore({ dbPath, mode: 'sqlite' });
+    const formats = new Map<string, 'plan-taskos/v1' | 'legacy-markdown'>();
+    const merkleRoots = new Map<string, string | null>();
+    const tasksByCode = new Map<string, BrainTaskMetadata>();
+    for (const planId of planIds) {
+      const manifestRow = store.get(
+        "SELECT value FROM brain_meta WHERE key = ?",
+        `plan:${planId}:format`
+      ) as { value?: string } | undefined;
+      if (manifestRow?.value === 'plan-taskos/v1' || manifestRow?.value === 'legacy-markdown') {
+        formats.set(planId, manifestRow.value);
+      }
+      const rootRow = store.get(
+        "SELECT merkle_root FROM proof_ledger WHERE plan_id = ? ORDER BY recorded_at DESC LIMIT 1",
+        planId
+      ) as { merkle_root?: string } | undefined;
+      merkleRoots.set(planId, rootRow?.merkle_root ?? null);
+    }
+    const nodeRows = store.all(
+      "SELECT code, plan_id, attempts, metadata_json FROM nodes WHERE plan_id IN (" +
+      planIds.map(() => '?').join(',') + ")",
+      ...planIds
+    ) as Array<{ code: string; plan_id: string; attempts: number; metadata_json: string }>;
+    const proofRows = store.all(
+      "SELECT task_code, plan_id, envelope_sha256 FROM proof_ledger"
+    ) as Array<{ task_code: string; plan_id: string; envelope_sha256: string }>;
+    const leaseRows = store.all(
+      "SELECT task_urn, agent_runtime, model_tier FROM leases WHERE released = 0"
+    ) as Array<{ task_urn: string; agent_runtime: string; model_tier: string }>;
+    const proofByKey = new Map(proofRows.map((row) => [`${row.plan_id}:${row.task_code}`, row.envelope_sha256]));
+    const leaseByUrn = new Map(leaseRows.map((row) => [row.task_urn, row]));
+    for (const row of nodeRows) {
+      let metadata: Record<string, unknown> = {};
+      try { metadata = JSON.parse(row.metadata_json) as Record<string, unknown>; } catch { /* ignore malformed metadata */ }
+      const urn = String(metadata.urn ?? '');
+      const lease = urn ? leaseByUrn.get(urn) : undefined;
+      tasksByCode.set(`${row.plan_id}:${row.code}`, {
+        proofSha256: proofByKey.get(`${row.plan_id}:${row.code}`) ?? null,
+        attempts: Number(row.attempts ?? 0),
+        leaseOwner: lease?.agent_runtime ?? null,
+        modelTier: lease?.model_tier ?? null,
+      });
+    }
+    return { formats, merkleRoots, tasksByCode };
+  } catch {
+    return null;
+  } finally {
+    store?.close();
+  }
+}
 export interface CollectedPlansBundle {
   readonly plans: readonly ObservatoryPlanSummary[];
   readonly defaultPlanId: string | null;
@@ -286,6 +359,14 @@ export async function collectPlans(
   const markdownFiles = entries
     .filter((entry) => entry.isFile() && entry.name.endsWith('.md'))
     .map((entry) => entry.name);
+  const v2PlanIds = entries
+    .filter((entry) => entry.isDirectory() && existsSync(path.join(planDir, entry.name, 'manifest.json')))
+    .map((entry) => entry.name);
+
+  // Delegate v2 bundle discovery to @moonwitness/plan-taskos; legacy markdown
+  // plans keep the existing collector path with zero consumer-facing changes.
+  const sdkBundles = v2PlanIds.length > 0 ? await discoverPlans(repoRoot) : [];
+  const brain = await readBrainPlanMetadata(repoRoot, [...v2PlanIds, ...markdownFiles.map((f) => f.replace(/\.md$/iu, ''))]);
 
   const plans: ObservatoryPlanSummary[] = [];
 
@@ -355,6 +436,7 @@ export async function collectPlans(
         spec: detail?.spec ?? '',
         commitSha: null,
         commitSubject: null,
+        ...(brain?.tasksByCode.get(`${planId}:${taskId}`) ?? {}),
       };
       tasks.push(task);
       if (currentWave) {
@@ -389,6 +471,57 @@ export async function collectPlans(
       waves,
       tasks,
       dag: null,
+      ...(brain?.formats.get(planId) ? { format: brain.formats.get(planId) } : {}),
+      ...(brain?.merkleRoots.get(planId) ? { merkleRoot: brain.merkleRoots.get(planId) } : {}),
+    });
+  }
+
+  for (const bundle of sdkBundles) {
+    const planId = bundle.manifest.plan_id;
+    if (plans.some((plan) => plan.id === planId)) continue;
+    const tasks: ObservatoryPlanTask[] = bundle.waves.flatMap((wave) =>
+      wave.tasks.map((task) => ({
+        id: task.code,
+        title: clipRedacted(task.title, 180, knownSecrets),
+        done: task.lifecycle.status === 'done',
+        wave: wave.title,
+        playbook: bundle.source_path,
+        ownerFiles: task.governance.owner_files.join(', '),
+        dependsOn: task.graph.depends_on.join(', '),
+        depIds: [...task.graph.depends_on],
+        dependents: [],
+        dagState: task.lifecycle.status === 'done' ? 'done' : 'blocked',
+        acceptance: task.verification.acceptance_criteria.join(' | '),
+        expected: '',
+        verify: task.verification.commands.map((c) => c.cmd).join(' | '),
+        spec: task.knowledge.spec_files?.join(', ') ?? '',
+        commitSha: null,
+        commitSubject: null,
+        ...(brain?.tasksByCode.get(`${planId}:${task.code}`) ?? {}),
+      }))
+    );
+    const doneCount = tasks.filter((task) => task.done).length;
+    const waves: ObservatoryPlanWave[] = bundle.waves.map((wave) => {
+      const total = wave.tasks.length;
+      const count = wave.tasks.filter((task) => task.lifecycle.status === 'done').length;
+      return { title: wave.title, done: count, total, percent: total > 0 ? Math.round((count / total) * 100) : 0 };
+    });
+    plans.push({
+      id: planId,
+      title: clipRedacted(bundle.manifest.title, 140, knownSecrets),
+      masterFile: `.plan/${planId}.md`,
+      waveFiles: bundle.manifest.waves.map((wave) => wave.wave_file),
+      updatedAt: null,
+      total: tasks.length,
+      done: doneCount,
+      percent: tasks.length > 0 ? Math.round((doneCount / tasks.length) * 1000) / 10 : 0,
+      nextTaskId: tasks.find((task) => !task.done)?.id ?? null,
+      nextTaskTitle: tasks.find((task) => !task.done)?.title ?? null,
+      waves,
+      tasks,
+      dag: null,
+      format: bundle.format,
+      ...(brain?.merkleRoots.get(planId) ? { merkleRoot: brain.merkleRoots.get(planId) } : {}),
     });
   }
 

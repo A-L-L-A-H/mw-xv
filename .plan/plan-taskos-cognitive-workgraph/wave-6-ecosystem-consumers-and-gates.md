@@ -33,7 +33,7 @@
 
 ---
 
-## - [ ] T38 — Upgrade `apps/desktop` Observatory `plan-collector.ts` to Consume `@moonwitness/plan-taskos`
+## - [x] T38 — Upgrade `apps/desktop` Observatory `plan-collector.ts` to Consume `@moonwitness/plan-taskos`
 
 - **Owner File(s):** `apps/desktop/package.json`, `apps/desktop/src/observatory/plan-collector.ts`, `apps/desktop/src/observatory/types.ts`
   - `apps/desktop/package.json` (MODIFY — add `"@moonwitness/plan-taskos": "workspace:*"`)

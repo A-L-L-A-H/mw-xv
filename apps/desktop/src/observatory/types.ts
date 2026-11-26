@@ -108,6 +108,10 @@ export interface ObservatoryPlanTask {
   readonly spec: string;
   commitSha: string | null;
   commitSubject: string | null;
+  readonly proofSha256?: string | null;
+  readonly attempts?: number;
+  readonly leaseOwner?: string | null;
+  readonly modelTier?: string | null;
 }
 
 export interface ObservatoryPlanWave {
@@ -166,6 +170,8 @@ export interface ObservatoryPlanSummary {
   readonly waves: readonly ObservatoryPlanWave[];
   readonly tasks: readonly ObservatoryPlanTask[];
   dag: ObservatoryPlanDag | null;
+  readonly format?: 'plan-taskos/v1' | 'legacy-markdown';
+  readonly merkleRoot?: string | null;
 }
 
 export interface ObservatorySwarmWorker {
