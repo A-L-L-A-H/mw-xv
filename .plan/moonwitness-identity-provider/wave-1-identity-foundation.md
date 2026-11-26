@@ -325,7 +325,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
     - Command: bun --filter @moonwitness/orm-identity build — passed (tsc exited 0)
     - Command: bun --filter @moonwitness/id build — passed (tsc exited 0)
     - Manual verification: public clients cannot hold secrets or use client credentials, wildcard redirects rejected, sorted unique allowlists, disabled clients denied, secret digest hidden from JSON
-    - Commit: PENDING_I19_COMMIT
+    - Commit: cad76f0d feat(identity): add OAuth client registry model for I19
 
 #### - [ ] I20 — Add authorization-code persistence adapter only where provider integration requires it
 
