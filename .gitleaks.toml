@@ -355,7 +355,7 @@ description = "API identity principal repository test: synthetic JWT token fixtu
 regexTarget = "match"
 paths = ["^apps/api/src/auth/identity-principal-repository\\.test\\.ts$"]
 regexes = [
-  '''eyJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJ1c2VyXzEifQ.c2lnbmF0dXJl'''',
+  ',
 ]
 
 [[rules]]
