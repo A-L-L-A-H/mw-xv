@@ -2,6 +2,7 @@ import { buildApp, type BuildAppOptions } from './app.js';
 import { createLogger, type LogLevel } from '@moonwitness/logger';
 import { healthRoutes, type HealthRoutesOptions } from './routes/health.routes.js';
 import { bootstrapRoutes, type BootstrapRoutesOptions } from './routes/bootstrap.routes.js';
+import { setupPageRoutes } from './ui/setup-page.js';
 
 export interface IdentityServerOptions
   extends BuildAppOptions,
@@ -37,6 +38,12 @@ export async function createIdentityServer(options: IdentityServerOptions = {}):
     ...(options.checkMigrations ? { checkMigrations: options.checkMigrations } : {}),
   });
   await app.register(bootstrapRoutes, {
+    bootstrapDatabase: options.bootstrapDatabase,
+    ...(options.hasPlatformOwner ? { hasPlatformOwner: options.hasPlatformOwner } : {}),
+    ...(options.now ? { now: options.now } : {}),
+    ...(options.installationScope ? { installationScope: options.installationScope } : {}),
+  });
+  await app.register(setupPageRoutes, {
     bootstrapDatabase: options.bootstrapDatabase,
     ...(options.hasPlatformOwner ? { hasPlatformOwner: options.hasPlatformOwner } : {}),
     ...(options.now ? { now: options.now } : {}),

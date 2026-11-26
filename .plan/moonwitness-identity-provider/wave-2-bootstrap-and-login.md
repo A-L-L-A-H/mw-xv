@@ -113,7 +113,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - Manual verification: POST `/setup/claim` accepts only bounded fields, requires HTTPS in production, hashes the token once before delegating to the atomic first-owner transaction, returns only generic completion/next-step output, and records only redacted field names in logs; no access token is issued and no public registration route exists.
   - Commit: 0b7c8d54 feat(identity): add single-use bootstrap claim endpoint for I25
 
-#### - [ ] I26 — Add the minimal first-install setup page
+#### - [x] I26 — Add the minimal first-install setup page
 
 - **Owner File(s):** apps/id/src/ui/setup-page.ts; apps/id/src/ui/setup-page.test.ts; apps/id/src/server.ts
 - **Depends On:** I25
@@ -125,12 +125,17 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - Hide or disable the setup route once setup is complete. Keep the page independent of Board's logged-in application shell.
 - **DO NOT:** Do not add a separate full frontend build or client-side authentication SDK for this one-page setup flow.
 - **Acceptance Criteria:**
-  - [ ] Setup form works on a fresh install and is unavailable after bootstrap completion.
-  - [ ] Labels, focus order and errors are accessible.
-  - [ ] Submitted secrets are not written to browser storage, URL or server logs.
+  - [x] Setup form works on a fresh install and is unavailable after bootstrap completion.
+  - [x] Labels, focus order and errors are accessible.
+  - [x] Submitted secrets are not written to browser storage, URL or server logs.
 - **Verify:** bun --filter @moonwitness/id test; run the existing app's browser/smoke test if configured.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append exact command, result and commit SHA here.
+- **Evidence:**
+  - Command: `bun --filter @moonwitness/id test` — passed (12 files, 54 tests)
+  - Command: `bun --filter @moonwitness/id build` — passed (tsc exited 0)
+  - Browser/smoke test: not run; no separate browser or smoke-test script is configured for apps/id. Route-level injection tests cover fresh-install rendering, post-completion unavailability, claim posting, escaping, and absence of browser storage/URL query secrets.
+  - Manual verification: `GET /setup` renders a standalone labelled form with explicit focus order; `POST /setup` forwards fields by POST to `/setup/claim` without query strings or storage; completed installations receive a generic unavailable page; all responses use no-store and no Board shell is imported.
+  - Commit: pending I26 implementation commit
 
 #### - [ ] I27 — Add password verification and login-session service
 
