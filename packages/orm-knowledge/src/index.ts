@@ -211,3 +211,18 @@ export { researchReviewHttpPlugin } from './http-plugins/research-review.plugin.
 export { researchWitnessHttpPlugin } from './http-plugins/research-witness.plugin.js';
 export * from './sharia-mizan-ledger.js';
 export { knowledgeSeedManifest } from './seed-manifest.js';
+export {
+  buildMerkleTree,
+  diffCognitiveGraphs,
+  generateMerkleProof,
+  hashCognitiveNode,
+  mergeCognitiveGraphs,
+  verifyMerkleProof,
+  type CognitiveGraphDelta,
+  type CognitiveGraphSnapshot,
+  type CognitiveNode,
+  type MergeResult,
+  type MerkleProof,
+  type MerkleProofStep,
+  type MerkleTree,
+} from './merkle-cognitive-sync.js';
