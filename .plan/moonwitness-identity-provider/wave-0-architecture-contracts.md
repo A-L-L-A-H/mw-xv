@@ -109,7 +109,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
 - **Evidence:**
   - Command: git diff --check - passed
   - Manual verification: every access-token and ID-token claim traced to ADR-001 (§9 of oidc-contract.md)
-  - Commit: <placeholder> docs(identity): define issuer subject audience token and client contracts for I04
+  - Commit: 6d074d96 docs(identity): define issuer subject audience token and client contracts for I04
 
 #### - [ ] I05 — Define the threat model and Platform/Tenant authorization boundary
 
