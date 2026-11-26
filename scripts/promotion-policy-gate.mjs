@@ -73,13 +73,29 @@ export function verifyChangedPaths(changedFiles, { breakGlass = false } = {}) {
     throw new Error('Policy gate requires a non-empty exact diff scope.');
   const violations = [];
   for (const path of changedFiles) {
+    // Control characters and Unicode private-use code points have no place in
+    // a repository path. The stray `500+pushed` file committed in
+    // 7df5716f reached a gate before any validator rejected its name. Fail
+    // closed here so a routine can never smuggle such a path through the
+    // exact-diff policy gate; this only narrows what is accepted.
+    const hasUnsafeCodePoint =
+      typeof path === 'string' &&
+      [...path].some((char) => {
+        const code = char.codePointAt(0) ?? 0;
+        return code < 0x20 || code === 0x7f || (code >= 0xe000 && code <= 0xf8ff);
+      });
     if (
       typeof path !== 'string' ||
+      hasUnsafeCodePoint ||
       path.startsWith('/') ||
       path.includes('\\') ||
       path.split('/').includes('..')
     )
-      violations.push(`unsafe path: ${String(path)}`);
+      // Escape beyond ASCII so private-use code points cannot be smuggled
+      // into logs or terminal output through an error message.
+      violations.push(
+        `unsafe path: ${JSON.stringify(String(path)).replace(/[^\x20-\x7e]/gu, (char) => `\\u{${char.codePointAt(0).toString(16)}}`)}`
+      );
     if (
       !breakGlass &&
       GOVERNANCE_PATHS.some((prefix) => path === prefix.slice(0, -1) || path.startsWith(prefix))

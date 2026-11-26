@@ -140,6 +140,7 @@
     "promotion:approval-check": "node scripts/check-promotion-approval.mjs",
     "test:promotion-report": "node --test scripts/render-promotion-report.test.mjs",
     "test:ci-gate": "node --test scripts/ci-gate.test.mjs scripts/review-ci-evidence.test.mjs",
+    "test:pipeline-gates": "node --test scripts/ci-gate.test.mjs scripts/review-ci-evidence.test.mjs scripts/release-await-ci.test.mjs scripts/github-rulesets.test.mjs scripts/promotion-policy-gate.test.mjs scripts/roadmap/resolve-gate-failure-issue.test.mjs scripts/roadmap/gate-failure-issue.test.mjs",
     "test:artifact-safety": "node --test scripts/scan-test-reports.test.mjs",
     "test:coverage-policy": "node --test scripts/check-coverage.test.mjs",
     "test:flaky-policy": "node --test scripts/flaky-policy.test.mjs scripts/playwright-flake-reporter.test.mjs",
