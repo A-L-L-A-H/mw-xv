@@ -167,7 +167,7 @@
 
 ---
 
-## - [ ] T44 — Full Workspace Generator Sync, Boundary Gates & Ledger Closeout
+## - [x] T44 — Full Workspace Generator Sync, Boundary Gates & Ledger Closeout
 
 - **Owner File(s):** `docs:generate`, `bun.lock`, `.plan/plan-taskos-cognitive-workgraph.md`
   - Generated docs/diagrams from `docs:generate` & `architecture:generate` (MODIFY if changed)
