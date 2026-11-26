@@ -85,8 +85,8 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:**
   - Command: git diff --check - passed
-  - Manual verification: all cited source paths opened and confirmed current
-  - Commit: 977e9a5c docs(identity): write legacy authentication surface inventory for I01
+  - Manual verification: every architecture invariant traced to at least one named test scenario; MVP/post-MVP separated; all scenarios marked planned
+  - Commit: <placeholder> docs(identity): create acceptance matrix and architecture exit gate for I06
 
 #### - [x] I04 — Define issuer, subject, audience, token and client contracts
 
@@ -135,7 +135,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - Manual verification: all 10 threats mapped to at least one control and one future test scenario; actor boundaries and redaction rules explicit
   - Commit: 39ac8796 docs(identity): define threat model and platform tenant authorization boundary for I05
 
-#### - [ ] I06 — Create the acceptance matrix and architecture exit gate
+#### - [x] I06 — Create the acceptance matrix and architecture exit gate
 
 - **Owner File(s):** docs/architecture/identity/acceptance-matrix.md
 - **Depends On:** I03, I04, I05
@@ -147,9 +147,9 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - Mark every scenario as planned, not passed. Only change status after actual test evidence is recorded.
 - **DO NOT:** Do not mark an unimplemented scenario as passed or invent test output.
 - **Acceptance Criteria:**
-  - [ ] Every architecture invariant maps to at least one named test.
-  - [ ] MVP and post-MVP scenarios are separated.
-  - [ ] Wave 1 entry gate and OIDC provider choice are explicit.
+  - [x] Every architecture invariant maps to at least one named test.
+  - [x] MVP and post-MVP scenarios are separated.
+  - [x] Wave 1 entry gate and OIDC provider choice are explicit.
 - **Verify:** git diff --check; review matrix-to-task traceability.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:**
