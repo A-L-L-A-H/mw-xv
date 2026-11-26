@@ -59,7 +59,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - Command: `bun --filter @moonwitness/id test` — passed (9 files, 40 tests)
   - Command: `bun --filter @moonwitness/id build` — passed (tsc exited 0)
   - Manual verification: `/setup-status` is registered in the Identity server and emits only `{ setupRequired }` with no-store; service checks unconsumed, unrevoked, unexpired tokens with a boolean SQL query and fails closed on database or owner-check errors; an injected platform-owner checker permanently disables setup without leaking account data.
-  - Commit: pending I23 implementation commit
+  - Commit: 56385211 feat(identity): add bootstrap state and setup status for I23
 
 #### - [ ] I24 — Add atomic first Platform Owner creation service
 
