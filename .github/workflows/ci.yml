@@ -140,6 +140,7 @@ jobs:
         run: |
           bun run test:action-pins
           bun run automation:check:action-pins
+          bun run test:pipeline-gates
           bun run automation:check:action-tags
           bun run automation:check:roadmap
           bun run test:release-provenance
