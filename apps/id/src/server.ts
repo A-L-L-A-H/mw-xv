@@ -1,7 +1,8 @@
 import { buildApp, type BuildAppOptions } from './app.js';
 import { createLogger, type LogLevel } from '@moonwitness/logger';
+import { healthRoutes, type HealthRoutesOptions } from './routes/health.routes.js';
 
-export interface IdentityServerOptions extends BuildAppOptions {
+export interface IdentityServerOptions extends BuildAppOptions, HealthRoutesOptions {
   readonly host?: string;
   readonly port?: number;
 }
@@ -23,6 +24,15 @@ export async function createIdentityServer(options: IdentityServerOptions = {}):
     });
 
   const app = await buildApp({ ...options, config: { host, port }, logger });
+  app.decorate('identityHealth', {
+    ...(options.checkDatabase ? { checkDatabase: options.checkDatabase } : {}),
+    ...(options.checkMigrations ? { checkMigrations: options.checkMigrations } : {}),
+  });
+  await app.register(healthRoutes, {
+    ...(options.checkDatabase ? { checkDatabase: options.checkDatabase } : {}),
+    ...(options.checkMigrations ? { checkMigrations: options.checkMigrations } : {}),
+  });
+  await app.ready();
   let started = false;
 
   return {

@@ -129,7 +129,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
     - Manual verification: Knex `pg` factory only reads IDENTITY_DATABASE_URL, rejects equality with DATABASE_URL, supports injected pool settings and closes once without a live database
     - Commit: 1cddc7c5 feat(id): add dedicated identity database connection for I11
 
-#### - [ ] I12 — Add liveness and readiness endpoints
+#### - [x] I12 — Add liveness and readiness endpoints
 
 - **Owner File(s):** apps/id/src/routes/health.routes.ts; apps/id/src/routes/health.routes.test.ts; apps/id/src/server.ts
 - **Depends On:** I09, I10, I11
@@ -141,12 +141,16 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - Use stable response shapes and suitable HTTP status codes consistent with repository health checks.
 - **DO NOT:** Do not expose environment variables, database URLs, stack traces or internal key metadata in public health responses.
 - **Acceptance Criteria:**
-  - [ ] Liveness succeeds without database availability.
-  - [ ] Readiness fails when DB is unavailable or migrations are pending.
-  - [ ] Health responses contain no sensitive fields.
+  - [x] Liveness succeeds without database availability.
+  - [x] Readiness fails when DB is unavailable or migrations are pending.
+  - [x] Health responses contain no sensitive fields.
 - **Verify:** bun --filter @moonwitness/id test; bun --filter @moonwitness/id build.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
+  - **Evidence:**
+    - Command: bun --filter @moonwitness/id test — passed (4 files, 17 tests)
+    - Command: bun --filter @moonwitness/id build — passed (tsc exited 0)
+    - Manual verification: `/livez` never checks dependencies; `/readyz` requires both database and migration probes; failed probes return 503 with only stable status fields and no secrets
+    - Commit: PENDING_I12_COMMIT
 
 #### - [ ] I13 — Add deterministic Identity migration runner
 
