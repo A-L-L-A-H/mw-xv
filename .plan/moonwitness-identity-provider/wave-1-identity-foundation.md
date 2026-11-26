@@ -174,7 +174,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
     - Command: bun --filter @moonwitness/id build — passed (tsc exited 0)
     - Integration harness: not run; POSTGRES_TEST_URL is not configured in this environment (no claim of integration success)
     - Manual verification: Knex Migrator with identity schema/table, ordered migration, repeat apply, status, refusal to rollback; no business migration imports
-    - Commit: PENDING_I13_COMMIT
+    - Commit: 5f5fec5a feat(id): add deterministic identity migration runner for I13
 
 #### - [ ] I14 — Add identity.account model and migration
 
