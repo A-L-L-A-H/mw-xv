@@ -62,7 +62,7 @@ jobs:
             --exit-code 1
       - name: Upload gitleaks report
         if: always()
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: gitleaks-report-${{ github.sha }}
           path: gitleaks-report.json
@@ -85,13 +85,13 @@ jobs:
         with:
           persist-credentials: false
       - name: Initialize CodeQL for ${{ matrix.language }}
-        uses: github/codeql-action/init@d2aacf54c2fbc910db8d7ec338fdb54ea48c692d # v3.39.4
+        uses: github/codeql-action/init@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
         with:
           languages: ${{ matrix.language }}
           queries: security-extended
           config-file: ./.github/codeql/codeql-config.yml
       - name: Run CodeQL static analysis
-        uses: github/codeql-action/analyze@d2aacf54c2fbc910db8d7ec338fdb54ea48c692d # v3.39.4
+        uses: github/codeql-action/analyze@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
         with:
           category: /language:${{ matrix.language }}
 
@@ -131,7 +131,7 @@ jobs:
       - name: Install frozen workspace dependencies
         run: bun install --frozen-lockfile
       - name: Cache Turborepo artifacts
-        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ github.sha }}
@@ -159,7 +159,7 @@ jobs:
           bun --filter @moonwitness/types build
           bun run test:assets
       - name: Cache Playwright Chromium browser
-        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
@@ -214,7 +214,7 @@ jobs:
 
       - name: Upload generated reference outputs for exact reconciliation
         if: always() && steps.build-workspace.outputs.references_generated == 'true'
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: generated-docs-${{ github.sha }}
           path: |
