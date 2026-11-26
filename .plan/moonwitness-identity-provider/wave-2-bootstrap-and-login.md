@@ -137,7 +137,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - Manual verification: `GET /setup` renders a standalone labelled form with explicit focus order; `POST /setup` forwards fields by POST to `/setup/claim` without query strings or storage; completed installations receive a generic unavailable page; all responses use no-store and no Board shell is imported.
   - Commit: 33bce8a7 feat(identity): add first-install setup page for I26
 
-#### - [ ] I27 — Add password verification and login-session service
+#### - [x] I27 — Add password verification and login-session service
 
 - **Owner File(s):** apps/id/src/auth/login-service.ts; apps/id/src/auth/login-service.test.ts
 - **Depends On:** I16, I17
@@ -149,12 +149,16 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - Keep last-login metadata minimal and avoid retaining raw passwords, request headers or excessive device fingerprinting.
 - **DO NOT:** Do not query base.user or base.partner from the Identity service.
 - **Acceptance Criteria:**
-  - [ ] Correct credentials create a session for an active account.
-  - [ ] Wrong password, unknown account and disabled account do not create a session.
-  - [ ] Password verification uses the maintained hasher adapter and has no plaintext logging.
+  - [x] Correct credentials create a session for an active account.
+  - [x] Wrong password, unknown account and disabled account do not create a session.
+  - [x] Password verification uses the maintained hasher adapter and has no plaintext logging.
 - **Verify:** bun --filter @moonwitness/id test; bun --filter @moonwitness/id build.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append exact command, result and commit SHA here.
+- **Evidence:**
+  - Command: `bun --filter @moonwitness/id test` — passed (13 files, 59 tests)
+  - Command: `bun --filter @moonwitness/id build` — passed (tsc exited 0)
+  - Manual verification: identifier normalization follows the Identity contract; account and credential are resolved only from identity tables; password verification uses the maintained scrypt adapter; malformed stored verifiers are rejected; sessions store only a SHA-256 digest with bounded device/userAgent metadata and explicit expiry; unknown account, wrong password, disabled account, malformed credential and database errors all produce the same generic failure without plaintext or verifier leakage.
+  - Commit: pending I27 implementation commit
 
 #### - [ ] I28 — Add login, current-session and logout routes
 
