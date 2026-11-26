@@ -1,0 +1,9 @@
+{
+  "name": "Oversized rate must fail closed",
+  "profile": {
+    "download_kbps": 10000001,
+    "upload_kbps": 20000
+  },
+  "expected_value": "",
+  "expected_error": "attribute value is malformed or out of range"
+}
