@@ -249,7 +249,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
     - Command: bun --filter @moonwitness/orm-identity build — passed (tsc exited 0)
     - Command: bun --filter @moonwitness/id build — passed (tsc exited 0)
     - Manual verification: reuses repository scrypt `hashPassword`/`verifyPassword`; credential verifier separate from account/identifier; algorithm/version metadata; adapter errors redact passwords/hashes; no plaintext fields
-    - Commit: PENDING_I16_COMMIT
+    - Commit: 461f42e3 feat(identity): add credential model and password hasher for I16
 
 #### - [ ] I17 — Add identity.session model and expiry indexes
 
