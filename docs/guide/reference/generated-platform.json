@@ -843,6 +843,11 @@
       "orm:check:seeds": "node scripts/check-orm-default-data.mjs",
       "orm:codegen": "node scripts/orm-codegen.mjs",
       "orm:inspect": "node scripts/orm-inspect.mjs",
+      "plan:lint": "node packages/plan-taskos/dist/cli.js lint",
+      "plan:mcp": "node packages/plan-taskos/dist/cli.js mcp",
+      "plan:next": "node packages/plan-taskos/dist/cli.js next",
+      "plan:reindex": "node packages/plan-taskos/dist/cli.js reindex",
+      "plan:sync": "node packages/plan-taskos/dist/cli.js sync",
       "platform:audit": "node scripts/platform-audit.mjs",
       "preflight:fast": "node scripts/preflight-fast.mjs",
       "prepare": "node -e \"import('node:fs').then(({existsSync})=>{if(existsSync('.git')&&existsSync('scripts/setup-git-hooks.mjs')){return import('./scripts/setup-git-hooks.mjs')}})\"",
@@ -10909,5 +10914,5 @@
       "path": "/whatsapp/readyz"
     }
   ],
-  "generatedFromSha256": "e6056c973317ad954be8a9b05cd6244e2ea3d99dd38fff421cfdfe42f0c6f355"
+  "generatedFromSha256": "da961eb7495692c41dd65a2cef110e285c289c011bba7068af0865f14dc85293"
 }

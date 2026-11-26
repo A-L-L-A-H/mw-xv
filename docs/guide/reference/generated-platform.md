@@ -1,6 +1,6 @@
 # Generated platform reference
 
-Source fingerprint: `e6056c973317ad954be8a9b05cd6244e2ea3d99dd38fff421cfdfe42f0c6f355`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
+Source fingerprint: `da961eb7495692c41dd65a2cef110e285c289c011bba7068af0865f14dc85293`. This reference contains package names, script names and environment variable names only; it does not contain local environment values.
 
 ## Workspace packages and apps
 
@@ -250,6 +250,11 @@ Value categories are inferred from variable names and example syntax; requiredne
 - `pnpm orm:check:seeds`
 - `pnpm orm:codegen`
 - `pnpm orm:inspect`
+- `pnpm plan:lint`
+- `pnpm plan:mcp`
+- `pnpm plan:next`
+- `pnpm plan:reindex`
+- `pnpm plan:sync`
 - `pnpm platform:audit`
 - `pnpm preflight:fast`
 - `pnpm prepare`
