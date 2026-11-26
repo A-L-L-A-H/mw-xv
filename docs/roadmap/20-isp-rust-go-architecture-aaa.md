@@ -23,9 +23,9 @@ Rust is the only implementation language for first-party ISP protocol/server run
 
 ### Acceptance
 
-- [ ] ADR 0019 is accepted and indexed.
-- [ ] Ownership matrix maps all existing ISP/Cloud responsibilities without creating duplicate systems.
-- [ ] No second ORM, business database, control-plane process, or network controller in Rust/TypeScript.
+- [x] ADR 0019 is accepted and indexed.
+- [x] Ownership matrix maps all existing ISP/Cloud responsibilities without creating duplicate systems.
+- [x] No second ORM, business database, control-plane process, or network controller in Rust/TypeScript.
 
 ### Delivery gates
 
@@ -51,9 +51,9 @@ Rust is the only implementation language for first-party ISP protocol/server run
 
 ### Acceptance
 
-- [ ] Schemas validate all positive and negative fixtures.
-- [ ] Tests cover stale generation, duplicate command, unsupported version, timeout, auth failure, and sanitized errors.
-- [ ] No TypeScript handler sends device commands directly.
+- [x] Schemas validate all positive and negative fixtures.
+- [x] Tests cover stale generation, duplicate command, unsupported version, timeout, auth failure, and sanitized errors.
+- [x] No TypeScript handler sends device commands directly.
 
 ### Delivery gates
 
@@ -81,7 +81,7 @@ Rust is the only implementation language for first-party ISP protocol/server run
 
 - [x] Clean clone builds the image without pre-existing Cargo artifacts.
 - [x] docker compose config succeeds and references only existing paths and services.
-- [ ] Container starts RADIUS auth/accounting and private management HTTP using documented configuration.
+- [x] Container starts RADIUS auth/accounting and private management HTTP using documented configuration.
 
 ### Delivery gates
 
@@ -107,9 +107,9 @@ Rust is the only implementation language for first-party ISP protocol/server run
 
 ### Acceptance
 
-- [ ] No untriaged HIGH/CRITICAL Rust advisory remains.
-- [ ] Any exception has owner, rationale and expiry.
-- [ ] Build, tests, clippy and audit pass from clean clone.
+- [x] No untriaged HIGH/CRITICAL Rust advisory remains.
+- [x] Any exception has owner, rationale and expiry.
+- [x] Build, tests, clippy and audit pass from clean clone.
 
 ### Delivery gates
 
@@ -135,9 +135,9 @@ Rust is the only implementation language for first-party ISP protocol/server run
 
 ### Acceptance
 
-- [ ] Forced DB failure sends no Accounting-Response.
-- [ ] After recovery, retransmission is persisted once.
-- [ ] ACK only follows durable commit.
+- [x] Forced DB failure sends no Accounting-Response.
+- [x] After recovery, retransmission is persisted once.
+- [x] ACK only follows durable commit.
 
 ### Delivery gates
 
@@ -163,9 +163,9 @@ Rust is the only implementation language for first-party ISP protocol/server run
 
 ### Acceptance
 
-- [ ] Both directions calculate correct 64-bit totals.
-- [ ] Wrap, Gigawords, duplicate, stale packet, and reboot tests pass.
-- [ ] Quota and invoice reconciliation consume the normalized counter semantics.
+- [x] Both directions calculate correct 64-bit totals.
+- [x] Wrap, Gigawords, duplicate, stale packet, and reboot tests pass.
+- [x] Quota and invoice reconciliation consume the normalized counter semantics.
 
 ### Delivery gates
 
@@ -191,9 +191,9 @@ Rust is the only implementation language for first-party ISP protocol/server run
 
 ### Acceptance
 
-- [ ] Access-Accept contains the expected VSA for each supported profile.
-- [ ] Malformed or oversized values fail closed.
-- [ ] PAP/CHAP and non-MikroTik responses remain compatible.
+- [x] Access-Accept contains the expected VSA for each supported profile.
+- [x] Malformed or oversized values fail closed.
+- [x] PAP/CHAP and non-MikroTik responses remain compatible.
 
 ### Delivery gates
 
@@ -247,9 +247,9 @@ Rust is the only implementation language for first-party ISP protocol/server run
 
 ### Acceptance
 
-- [ ] Go build, go test and go vet pass.
-- [ ] Route matrix rejects unauthorized, wrong-method, unknown and underprivileged calls.
-- [ ] No ISP device-control logic is implemented in Rust or ORM HTTP plugins.
+- [x] Go build, go test and go vet pass.
+- [x] Route matrix rejects unauthorized, wrong-method, unknown and underprivileged calls.
+- [x] No ISP device-control logic is implemented in Rust or ORM HTTP plugins.
 
 ### Delivery gates
 
