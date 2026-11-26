@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "generatedFrom": "apps/*/package.json and packages/*/package.json",
-  "sourceSha256": "a40f4957bc1eb87778de7508e0ad2c3bc1be6be47fb56182d27d94bbe55ee943",
+  "sourceSha256": "7b794268908bc76bcffb47eaab89344ac08f5971258635cc8d66d4380af9b764",
   "packages": [
     {
       "name": "@moonwitness/agent-observability",
@@ -226,6 +226,12 @@
       "manifest": "packages/orm-helpdesk"
     },
     {
+      "name": "@moonwitness/orm-identity",
+      "kind": "package",
+      "version": "1.0.0-rc.1",
+      "manifest": "packages/orm-identity"
+    },
+    {
       "name": "@moonwitness/orm-income-ledger",
       "kind": "package",
       "version": "1.0.0",
@@ -410,6 +416,12 @@
     {
       "from": "@moonwitness/agent-observability",
       "to": "@moonwitness/orm-observability",
+      "kind": "runtime",
+      "manifest": "apps/agent-observability"
+    },
+    {
+      "from": "@moonwitness/agent-observability",
+      "to": "@moonwitness/plan-taskos",
       "kind": "runtime",
       "manifest": "apps/agent-observability"
     },
@@ -817,6 +829,12 @@
     },
     {
       "from": "@moonwitness/desktop",
+      "to": "@moonwitness/plan-taskos",
+      "kind": "runtime",
+      "manifest": "apps/desktop"
+    },
+    {
+      "from": "@moonwitness/desktop",
       "to": "@moonwitness/types",
       "kind": "runtime",
       "manifest": "apps/desktop"
@@ -860,6 +878,12 @@
     {
       "from": "@moonwitness/mcp-moonwitness",
       "to": "@moonwitness/orm",
+      "kind": "runtime",
+      "manifest": "packages/mcp-moonwitness"
+    },
+    {
+      "from": "@moonwitness/mcp-moonwitness",
+      "to": "@moonwitness/plan-taskos",
       "kind": "runtime",
       "manifest": "packages/mcp-moonwitness"
     },
@@ -1242,6 +1266,18 @@
       "manifest": "packages/orm-helpdesk"
     },
     {
+      "from": "@moonwitness/orm-identity",
+      "to": "@moonwitness/orm",
+      "kind": "runtime",
+      "manifest": "packages/orm-identity"
+    },
+    {
+      "from": "@moonwitness/orm-identity",
+      "to": "@moonwitness/types",
+      "kind": "runtime",
+      "manifest": "packages/orm-identity"
+    },
+    {
       "from": "@moonwitness/orm-income-ledger",
       "to": "@moonwitness/orm",
       "kind": "runtime",
@@ -1478,6 +1514,12 @@
     {
       "from": "@moonwitness/orm-project",
       "to": "@moonwitness/orm-workflow",
+      "kind": "runtime",
+      "manifest": "packages/orm-project"
+    },
+    {
+      "from": "@moonwitness/orm-project",
+      "to": "@moonwitness/plan-taskos",
       "kind": "runtime",
       "manifest": "packages/orm-project"
     },

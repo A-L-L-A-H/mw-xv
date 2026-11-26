@@ -102,9 +102,9 @@ Execute strictly **1 micro-task (`Txx`) per cycle** without asking the user any 
 - [x] **T39** — `apps/desktop`: mount read-only Brain endpoints (`/api/desktop/observatory/brain/{search,impact,graph}`) on `apps/desktop/src/local-api-server.ts` + tests
 - [x] **T40** — `tools/agent-observatory`: wire `tools/agent-observatory/server.mjs` to consume `@moonwitness/plan-taskos` Brain DB + Graph/Proof/Episode endpoints + update `server.test.mjs`
 - [x] **T41** — `packages/mcp-moonwitness`: add read-only Plan-TaskOS Brain tools (`plan_status`, `plan_recall`, `plan_impact`) in `packages/mcp-moonwitness/src/{plan-brain,server}.ts` + tests
-- [ ] **T42** — `apps/agent-observability`: add `src/plan-telemetry.ts` emitting OTel spans & metrics for Plan-TaskOS lifecycle events + tests
-- [ ] **T43** — `scripts/tasks/` & `scripts/roadmap/`: add parity test `scripts/tasks/plan-taskos-parity.test.mjs` proving TaskOS v2 + GitHub managed-block parity
-- [ ] **T44** — Run full workspace verification & generator sync (`docs:generate`, `architecture:generate`, `docs:links`, `docker-workspace-manifests`, `ui:check`, `desktop:test`, `test:taskos`, `api:addon:check`) & close Progress Ledger
+- [x] **T42** — `apps/agent-observability`: add `src/plan-telemetry.ts` emitting OTel spans & metrics for Plan-TaskOS lifecycle events + tests
+- [x] **T43** — `scripts/tasks/` & `scripts/roadmap/`: add parity test `scripts/tasks/plan-taskos-parity.test.mjs` proving TaskOS v2 + GitHub managed-block parity
+- [x] **T44** — Run full workspace verification & generator sync (`docs:generate`, `architecture:generate`, `docs:links`, `docker-workspace-manifests`, `ui:check`, `desktop:test`, `test:taskos`, `api:addon:check`) & close Progress Ledger
 
 ---
 
@@ -118,4 +118,4 @@ Execute strictly **1 micro-task (`Txx`) per cycle** without asking the user any 
 | Wave 3 | `T19`–`T23` | `5 / 5` | 2f3f6d11 | `bun --filter @moonwitness/plan-taskos typecheck && bun --filter @moonwitness/plan-taskos build && bun --filter @moonwitness/plan-taskos test` (80/80) |
 | Wave 4 | `T24`–`T30` | `7 / 7` | ced7a0d3 | `build` exit 0 && test 114/114 across 13 files |
 | Wave 5 | `T31`–`T36` | `6 / 6` | c9b72c27 | build + typecheck exit 0; 131/131 tests (15 files); live reindex 209 nodes/205 edges + lint PASS on all 4 plans |
-| Wave 6 | `T37`–`T44` | `5 / 8` | e59e65b2 | build + 15/15 tests + api:addon:check exit 0; build+typecheck+8/8 local-api tests (Brain 401/200) exit 0; Observatory Brain tests 14/14 exit 0; MCP build + 28/28 tests + boundary lockfile gates exit 0 |
+| Wave 6 | `T37`–`T44` | `8 / 8` | c16d5332 | `docs:generate` + `architecture:generate` + `docs:links` exit 0; plan-taskos 131/131, orm-project 15/15, desktop+ai-mcp 14/14, Observatory 14/14, MCP 28/28, observability 5/5, TaskOS validator suite 33/33; Docker manifest, UI, API addon, lockfile dry-run, reindex (209 nodes/205 edges) + plan lint gates exit 0 |
