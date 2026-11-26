@@ -31,3 +31,4 @@ export {
   type PaymentSettlementInput,
   type PaymentSettlementRecord,
 } from './order-to-cash-bridge.js';
+export { accountingHttpPlugin, httpPlugin } from './http-plugin.js';

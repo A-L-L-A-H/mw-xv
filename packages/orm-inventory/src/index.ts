@@ -18,3 +18,4 @@ export {
   type StockValuationResult,
 } from './inventory-engine.js';
 export { inventorySeedManifest, type AddonSeedManifest } from './seed-manifest.js';
+export { inventoryHttpPlugin, httpPlugin } from './http-plugin.js';

@@ -5,12 +5,14 @@ import {
   JournalLine,
   LedgerPosting,
 } from './models/index.js';
+import { httpPlugin } from './http-plugin.js';
 
 export const manifest = defineAddon({
   name: 'accounting',
   version: '1.0.0',
   depends: ['base'],
   models: [Account, JournalEntry, JournalLine, LedgerPosting],
+  httpPlugins: [httpPlugin],
   data: [
     seed(Account, 'accounting.account_cash', {
       code: '1000',

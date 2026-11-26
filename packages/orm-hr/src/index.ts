@@ -25,3 +25,4 @@ export {
   type PayrollCalculationResult,
 } from './hr-engine.js';
 export { hrSeedManifest, type AddonSeedManifest } from './seed-manifest.js';
+export { hrHttpPlugin, httpPlugin } from './http-plugin.js';

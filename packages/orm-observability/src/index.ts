@@ -34,3 +34,19 @@ export {
   type RemediationAuditEntry,
   type RemediationExecutor,
 } from './self-healing-remediator.js';
+export {
+  SOVEREIGN_INFRA_DOMAINS,
+  DEFAULT_SOVEREIGN_INFRA_CONTROLS,
+  SovereignInfraMatrixEvaluator,
+  evaluateSovereignInfraMatrix,
+  type SovereignInfraDomain,
+  type ReadinessTier,
+  type ControlStatus,
+  type OverallReadinessStatus,
+  type SovereignInfraControl,
+  type SovereignInfraProbeResult,
+  type ControlEvaluationFinding,
+  type DomainReadinessSummary,
+  type SovereignInfraMatrixReport,
+  type EvaluateSovereignInfraOptions,
+} from './sovereign-infra-matrix.js';
