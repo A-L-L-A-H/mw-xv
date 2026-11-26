@@ -354,9 +354,7 @@ regexes = [
 description = "API identity principal repository test: synthetic JWT token fixture for invalid subject rejection test"
 regexTarget = "match"
 paths = ["^apps/api/src/auth/identity-principal-repository\\.test\\.ts$"]
-regexes = [
-  ',
-]
+regexes = []
 
 [[rules]]
 id = "moonwitness-runtime-secret"
