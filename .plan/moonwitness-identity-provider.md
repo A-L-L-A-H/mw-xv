@@ -105,7 +105,7 @@ Task dependencies are declared inside each playbook. Follow them exactly; the fi
 - [x] **I26** — Add the minimal first-install setup page
 - [x] **I27** — Add password verification and login-session service
 - [x] **I28** — Add login, current-session and logout routes
-- [ ] **I29** — Add login throttling and brute-force regression tests
+- [x] **I29** — Add login throttling and brute-force regression tests
 
 ### Wave 3 — OIDC provider
 - [ ] **I30** — Publish and verify OIDC discovery metadata

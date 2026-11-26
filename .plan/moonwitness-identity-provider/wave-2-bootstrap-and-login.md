@@ -184,7 +184,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - Manual verification: `POST /auth/login`, `GET /auth/session`, and `POST /auth/logout` are registered by the Identity server; session cookies are HttpOnly, SameSite=Lax, Path=/, bounded to 8 hours and Secure in production; CSRF uses a non-HttpOnly cookie plus matching `x-csrf-token`; logout revokes `identity.session.revoked_at`; login/current-session responses expose no raw session credential or password; revoked/expired/missing sessions fail closed; no `/auth/register`, `/register`, or `/setup/register` route exists.
   - Commit: 640ab08c
 
-#### - [ ] I29 — Add login throttling and brute-force regression tests
+#### - [x] I29 — Add login throttling and brute-force regression tests
 
 - **Owner File(s):** apps/id/src/security/login-rate-limit.ts; apps/id/src/security/login-rate-limit.test.ts; apps/id/src/routes/auth.routes.test.ts
 - **Depends On:** I28
@@ -196,13 +196,17 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - Test rate-limit reset/expiry behavior and concurrent request handling.
 - **DO NOT:** Do not log credentials, expose account existence, or let user-supplied headers spoof the trusted client address.
 - **Acceptance Criteria:**
-  - [ ] Repeated failed logins are throttled.
-  - [ ] Unknown and known accounts have equivalent error behavior.
-  - [ ] Rate limits expire and do not permanently lock an account.
-  - [ ] Tests cover configured trusted-proxy behavior.
+  - [x] Repeated failed logins are throttled.
+  - [x] Unknown and known accounts have equivalent error behavior.
+  - [x] Rate limits expire and do not permanently lock an account.
+  - [x] Tests cover configured trusted-proxy behavior.
 - **Verify:** bun --filter @moonwitness/id test; bun --filter @moonwitness/id build.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append exact command, result and commit SHA here.
+- **Evidence:**
+  - Command: `bun --filter @moonwitness/id test` — passed (15 files, 77 tests)
+  - Command: `bun --filter @moonwitness/id build` — passed (tsc exited 0)
+  - Manual verification: login route records bounded server-side attempts and returns generic 429 with Retry-After when the threshold is reached; claim limiter uses the same privacy-preserving state with a separate window/limit; client keys are HMAC-SHA256 hashed with configured secret and forwarded headers are used only when trustedProxy is explicitly enabled; expired windows are pruned, preventing permanent lockout; constant-time verification helper added with negative tests.
+  - Commit: PENDING_IMPLEMENTATION_SHA
 
 
 

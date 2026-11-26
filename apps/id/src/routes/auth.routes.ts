@@ -2,6 +2,11 @@ import { randomBytes, timingSafeEqual } from 'node:crypto';
 import type { FastifyPluginAsync, FastifyReply } from 'fastify';
 
 import { LOGIN_FAILURE, type LoginInput, type LoginSession, type LoginError } from '../auth/login-service.js';
+import {
+  checkLoginRateLimit,
+  LOGIN_RATE_LIMIT_FAILURE,
+  type LoginRateLimitOptions,
+} from '../security/login-rate-limit.js';
 
 export const SESSION_COOKIE = 'mw_id_session';
 export const CSRF_COOKIE = 'mw_id_csrf';
@@ -31,6 +36,7 @@ export interface AuthSessionLookup {
 export interface AuthRoutesOptions extends AuthSessionLookup {
   readonly now?: () => Date;
   readonly production?: boolean;
+  readonly trustedProxy?: boolean;
 }
 
 function serializeCookie(
@@ -128,7 +134,22 @@ async function readSessionFromDatabase(
 }
 
 export const authRoutes: FastifyPluginAsync<AuthRoutesOptions> = async (fastify, options) => {
+  const rateLimitOptions: LoginRateLimitOptions = {
+    database: options.database,
+    trustedProxy: options.trustedProxy,
+    now: options.now,
+  };
+
   fastify.post('/auth/login', async (request, reply) => {
+    const rateLimit = await checkLoginRateLimit(rateLimitOptions, request);
+    if (!rateLimit.allowed) {
+      return reply
+        .header('Cache-Control', 'no-store')
+        .header('Retry-After', String(rateLimit.retryAfterSeconds ?? 60))
+        .status(429)
+        .send({ error: LOGIN_RATE_LIMIT_FAILURE });
+    }
+
     const body = (request.body ?? {}) as Record<string, unknown>;
     const csrfToken = randomBytes(24).toString('base64url');
     try {
