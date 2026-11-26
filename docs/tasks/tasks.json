@@ -12501,7 +12501,7 @@
       "category": "architecture",
       "type": "feature",
       "priority": "p1",
-      "status": "todo",
+      "status": "done",
       "human": false,
       "owner": null,
       "assignee": null,
@@ -12531,7 +12531,7 @@
         {
           "id": "M19.01-ac-1",
           "text": "Accepted ADR 0019 and ownership matrix",
-          "done": false
+          "done": true
         }
       ],
       "validation": {
@@ -12539,7 +12539,7 @@
         "expected": "All acceptance criteria and evidence proven"
       },
       "evidence": {
-        "paths": [],
+        "paths": ["docs/roadmap/evidence/M19.01.md"],
         "detailFile": "docs/roadmap/20-isp-rust-go-architecture-aaa.md",
         "commitSha": null
       },
@@ -12565,7 +12565,7 @@
       "category": "architecture",
       "type": "feature",
       "priority": "p1",
-      "status": "todo",
+      "status": "done",
       "human": false,
       "owner": null,
       "assignee": null,
@@ -12594,7 +12594,7 @@
         {
           "id": "M19.02-ac-1",
           "text": "Versioned internal contracts and compatibility tests",
-          "done": false
+          "done": true
         }
       ],
       "validation": {
@@ -12602,7 +12602,7 @@
         "expected": "All acceptance criteria and evidence proven"
       },
       "evidence": {
-        "paths": [],
+        "paths": ["docs/roadmap/evidence/M19.02.md"],
         "detailFile": "docs/roadmap/20-isp-rust-go-architecture-aaa.md",
         "commitSha": null
       },
@@ -12628,7 +12628,7 @@
       "category": "architecture",
       "type": "feature",
       "priority": "p1",
-      "status": "todo",
+      "status": "done",
       "human": false,
       "owner": null,
       "assignee": null,
@@ -12646,7 +12646,7 @@
         {
           "id": "M19.03-ac-1",
           "text": "Tracked Cargo.lock and passing clean Docker/Compose build",
-          "done": false
+          "done": true
         }
       ],
       "validation": {
@@ -12680,7 +12680,7 @@
       "category": "architecture",
       "type": "feature",
       "priority": "p1",
-      "status": "todo",
+      "status": "done",
       "human": false,
       "owner": null,
       "assignee": null,
@@ -12698,7 +12698,7 @@
         {
           "id": "M19.04-ac-1",
           "text": "Cargo audit report with no untriaged HIGH/CRITICAL findings",
-          "done": false
+          "done": true
         }
       ],
       "validation": {
@@ -12706,7 +12706,7 @@
         "expected": "All acceptance criteria and evidence proven"
       },
       "evidence": {
-        "paths": [],
+        "paths": ["docs/roadmap/evidence/M19.04.md"],
         "detailFile": "docs/roadmap/20-isp-rust-go-architecture-aaa.md",
         "commitSha": null
       },
@@ -12836,7 +12836,7 @@
       "category": "architecture",
       "type": "feature",
       "priority": "p1",
-      "status": "todo",
+      "status": "done",
       "human": false,
       "owner": null,
       "assignee": null,
@@ -12854,7 +12854,7 @@
         {
           "id": "M19.07-ac-1",
           "text": "MikroTik VSA encoder and Access-Accept golden tests",
-          "done": false
+          "done": true
         }
       ],
       "validation": {
@@ -12862,7 +12862,7 @@
         "expected": "All acceptance criteria and evidence proven"
       },
       "evidence": {
-        "paths": [],
+        "paths": ["docs/roadmap/evidence/M19.07.md"],
         "detailFile": "docs/roadmap/20-isp-rust-go-architecture-aaa.md",
         "commitSha": null
       },
@@ -12940,7 +12940,7 @@
       "category": "architecture",
       "type": "feature",
       "priority": "p1",
-      "status": "todo",
+      "status": "done",
       "human": false,
       "owner": null,
       "assignee": null,
@@ -12958,7 +12958,7 @@
         {
           "id": "M19.09-ac-1",
           "text": "Go ISP package, route matrix and authorization tests",
-          "done": false
+          "done": true
         }
       ],
       "validation": {
@@ -12966,7 +12966,7 @@
         "expected": "All acceptance criteria and evidence proven"
       },
       "evidence": {
-        "paths": [],
+        "paths": ["docs/roadmap/evidence/M19.09.md"],
         "detailFile": "docs/roadmap/20-isp-rust-go-architecture-aaa.md",
         "commitSha": null
       },

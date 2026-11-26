@@ -14,18 +14,18 @@ Rust is the only implementation language for first-party ISP protocol/server run
 - **Priority:** P1
 - **Deliverable:** ADR for exclusive Rust ISP server runtimes and Go network control-plane responsibilities.
 
-### Steps
+### Execution steps
 
 1. Separate server protocols from device orchestration; keep apps/isp and future protocol daemons Rust-only.
 2. Keep apps/control-plane as the sole Go network control plane, stateless and free of a second DB.
 3. Keep packages/orm-isp canonical for ISP data; API/Board remain business/operator surfaces that delegate network actions.
 4. Define edge cache, desired-state, security, and hardware safety boundaries.
 
-### Acceptance
+### Acceptance criteria
 
-- [ ] ADR 0019 is accepted and indexed.
-- [ ] Ownership matrix maps all existing ISP/Cloud responsibilities without creating duplicate systems.
-- [ ] No second ORM, business database, control-plane process, or network controller in Rust/TypeScript.
+- [x] ADR 0019 is accepted and indexed.
+- [x] Ownership matrix maps all existing ISP/Cloud responsibilities without creating duplicate systems.
+- [x] No second ORM, business database, control-plane process, or network controller in Rust/TypeScript.
 
 ### Delivery gates
 
@@ -42,18 +42,18 @@ Rust is the only implementation language for first-party ISP protocol/server run
 - **Priority:** P1
 - **Deliverable:** A versioned contract for Go commands, Rust service config, health/readiness, operation status, and event reconciliation.
 
-### Steps
+### Execution steps
 
 1. Define schema-versioned request/response envelopes with correlation ID, operation ID, idempotency key, config generation, deadline, and typed error code.
 2. Specify private transport authentication, retry classes, timeout, redaction, and compatibility policy.
 3. Separate liveness, readiness, management reachability, and protocol-level health.
 4. Add fixtures and a contract test between a Go client and Rust endpoint.
 
-### Acceptance
+### Acceptance criteria
 
-- [ ] Schemas validate all positive and negative fixtures.
-- [ ] Tests cover stale generation, duplicate command, unsupported version, timeout, auth failure, and sanitized errors.
-- [ ] No TypeScript handler sends device commands directly.
+- [x] Schemas validate all positive and negative fixtures.
+- [x] Tests cover stale generation, duplicate command, unsupported version, timeout, auth failure, and sanitized errors.
+- [x] No TypeScript handler sends device commands directly.
 
 ### Delivery gates
 
@@ -70,18 +70,18 @@ Rust is the only implementation language for first-party ISP protocol/server run
 - **Priority:** P1
 - **Deliverable:** Resolve existing #378 and build the current apps/isp runtime reproducibly.
 
-### Steps
+### Execution steps
 
 1. Unignore and commit the production Cargo.lock for apps/isp.
 2. Align Docker build context, COPY paths, compose service, Dockerfile, runtime env, config and persistent volume.
 3. Remove stale apps/radius references and unused PostgreSQL config claims; document the SQLite edge runtime currently used.
 4. Add clean-clone image build and Compose config tests.
 
-### Acceptance
+### Acceptance criteria
 
 - [x] Clean clone builds the image without pre-existing Cargo artifacts.
 - [x] docker compose config succeeds and references only existing paths and services.
-- [ ] Container starts RADIUS auth/accounting and private management HTTP using documented configuration.
+- [x] Container starts RADIUS auth/accounting and private management HTTP using documented configuration.
 
 ### Delivery gates
 
@@ -98,18 +98,18 @@ Rust is the only implementation language for first-party ISP protocol/server run
 - **Priority:** P1
 - **Deliverable:** Resolve existing #375 using the committed ISP dependency graph.
 
-### Steps
+### Execution steps
 
 1. Re-run cargo audit against the exact tracked lockfile and identify exact dependency paths.
 2. Upgrade libsqlite3-sys and rsa advisories if present and compatible; verify patched version paths.
 3. Evaluate chrono unmaintained warning and replace or document a time-bounded exception.
 4. Run cargo test, clippy, and audit against the final clean dependency graph.
 
-### Acceptance
+### Acceptance criteria
 
-- [ ] No untriaged HIGH/CRITICAL Rust advisory remains.
-- [ ] Any exception has owner, rationale and expiry.
-- [ ] Build, tests, clippy and audit pass from clean clone.
+- [x] No untriaged HIGH/CRITICAL Rust advisory remains.
+- [x] Any exception has owner, rationale and expiry.
+- [x] Build, tests, clippy and audit pass from clean clone.
 
 ### Delivery gates
 
@@ -126,18 +126,18 @@ Rust is the only implementation language for first-party ISP protocol/server run
 - **Priority:** P1
 - **Deliverable:** Prevent acknowledged-but-unpersisted RADIUS accounting events in Rust.
 
-### Steps
+### Execution steps
 
 1. Persist accounting data transactionally before constructing Accounting-Response.
 2. On durable-write failure, do not ACK; allow NAS retransmission and emit bounded diagnostic metrics.
 3. Use unique event/session identity and idempotent update semantics.
 4. Test DB failure, retransmission, and recovery.
 
-### Acceptance
+### Acceptance criteria
 
-- [ ] Forced DB failure sends no Accounting-Response.
-- [ ] After recovery, retransmission is persisted once.
-- [ ] ACK only follows durable commit.
+- [x] Forced DB failure sends no Accounting-Response.
+- [x] After recovery, retransmission is persisted once.
+- [x] ACK only follows durable commit.
 
 ### Delivery gates
 
@@ -154,18 +154,18 @@ Rust is the only implementation language for first-party ISP protocol/server run
 - **Priority:** P1
 - **Deliverable:** Implement live-path Acct-Input/Output-Gigawords handling.
 
-### Steps
+### Execution steps
 
 1. Decode attributes 52 and 53 and combine with 32-bit octet counters as checked 64-bit values.
 2. Persist monotonic totals and handle counter wrap, NAS reboot, and session restart.
 3. Make duplicate/out-of-order interim accounting safe.
 4. Add golden packets around 2^32 and multi-GiB sessions.
 
-### Acceptance
+### Acceptance criteria
 
-- [ ] Both directions calculate correct 64-bit totals.
-- [ ] Wrap, Gigawords, duplicate, stale packet, and reboot tests pass.
-- [ ] Quota and invoice reconciliation consume the normalized counter semantics.
+- [x] Both directions calculate correct 64-bit totals.
+- [x] Wrap, Gigawords, duplicate, stale packet, and reboot tests pass.
+- [x] Quota and invoice reconciliation consume the normalized counter semantics.
 
 ### Delivery gates
 
@@ -182,18 +182,18 @@ Rust is the only implementation language for first-party ISP protocol/server run
 - **Priority:** P1
 - **Deliverable:** Return MikroTik-Rate-Limit rather than misusing Filter-Id as a bandwidth shaper.
 
-### Steps
+### Execution steps
 
 1. Encode Vendor-ID 14988 and attribute type 8 with bounded values.
 2. Map canonical bandwidth profile rates/bursts to documented MikroTik ordering and units.
 3. Keep Filter-Id for policy classification only.
 4. Add packet golden fixtures and RouterOS interoperability tests.
 
-### Acceptance
+### Acceptance criteria
 
-- [ ] Access-Accept contains the expected VSA for each supported profile.
-- [ ] Malformed or oversized values fail closed.
-- [ ] PAP/CHAP and non-MikroTik responses remain compatible.
+- [x] Access-Accept contains the expected VSA for each supported profile.
+- [x] Malformed or oversized values fail closed.
+- [x] PAP/CHAP and non-MikroTik responses remain compatible.
 
 ### Delivery gates
 
@@ -210,14 +210,14 @@ Rust is the only implementation language for first-party ISP protocol/server run
 - **Priority:** P1
 - **Deliverable:** Correct the false-success path where HTTP 200 or sent=false/ack=false can mark an outbox row sent.
 
-### Steps
+### Execution steps
 
 1. Define queued, sent, acknowledged, rejected, timed_out, no_session, and retryable_failure states.
 2. Parse Rust response bodies and require verified Disconnect-ACK before acknowledged state.
 3. Keep NAK details sanitized; implement bounded retry/backoff and idempotency.
 4. Claim outbox work atomically so concurrent workers cannot process the same operation.
 
-### Acceptance
+### Acceptance criteria
 
 - [ ] ack=false is never marked sent/acknowledged.
 - [ ] Only verified ACK completes a disconnect operation.
@@ -238,18 +238,18 @@ Rust is the only implementation language for first-party ISP protocol/server run
 - **Priority:** P1
 - **Deliverable:** Add ISP network control capability inside apps/control-plane; do not create another control-plane process.
 
-### Steps
+### Execution steps
 
 1. Create a focused Go package for ISP control contracts, policies and adapters.
 2. Register a route matrix using the existing authentication and privileged-operation middleware.
 3. Keep service stateless; do not add SQLite tables or persist business records locally.
 4. Add health/readiness and typed ISP operation error mapping.
 
-### Acceptance
+### Acceptance criteria
 
-- [ ] Go build, go test and go vet pass.
-- [ ] Route matrix rejects unauthorized, wrong-method, unknown and underprivileged calls.
-- [ ] No ISP device-control logic is implemented in Rust or ORM HTTP plugins.
+- [x] Go build, go test and go vet pass.
+- [x] Route matrix rejects unauthorized, wrong-method, unknown and underprivileged calls.
+- [x] No ISP device-control logic is implemented in Rust or ORM HTTP plugins.
 
 ### Delivery gates
 
@@ -266,14 +266,14 @@ Rust is the only implementation language for first-party ISP protocol/server run
 - **Priority:** P1
 - **Deliverable:** Make Go own network reconciliation while PostgreSQL/ORM remains the desired-state authority.
 
-### Steps
+### Execution steps
 
 1. Consume tenant-scoped, versioned desired-state snapshots from canonical platform APIs.
 2. Compile deterministic subscriber/NAS/profile/pool plans with idempotency key and generation.
 3. Apply only registered adapter capabilities and report planned/applied/failed/drift states.
 4. Do not persist authoritative subscriber or NAS state in Go SQLite or Rust runtime.
 
-### Acceptance
+### Acceptance criteria
 
 - [ ] Same desired generation is a no-op on repeat.
 - [ ] Stale generation, tenant mismatch and unsupported capability fail closed.
@@ -294,14 +294,14 @@ Rust is the only implementation language for first-party ISP protocol/server run
 - **Priority:** P1
 - **Deliverable:** Create the first vendor adapter in Go and start with discovery only.
 
-### Steps
+### Execution steps
 
 1. Define vendor-neutral NAS interface and read RouterOS identity, version, interfaces, PPP profiles/sessions and health.
 2. Use typed inputs, bounded responses/timeouts, explicit capability versions and credential redaction.
 3. Add fake-device fixtures for success and failure responses.
 4. Do not accept arbitrary CLI text or expose write methods in this task.
 
-### Acceptance
+### Acceptance criteria
 
 - [ ] Discovery returns normalized facts with secrets redacted.
 - [ ] Timeout, bad credentials, malformed responses and unsupported versions are tested.
@@ -322,14 +322,14 @@ Rust is the only implementation language for first-party ISP protocol/server run
 - **Priority:** P1
 - **Deliverable:** Deliver the first guarded subscriber provisioning vertical slice in Go.
 
-### Steps
+### Execution steps
 
 1. Add typed actions for PPP secret/profile, pool binding and rate policy.
 2. Require validated plan plus explicit apply permission; no arbitrary commands.
 3. Use operation identity and canonical audit reference; add compensation for partial failure.
 4. Read back device state after apply and report drift.
 
-### Acceptance
+### Acceptance criteria
 
 - [ ] Dry-run has zero device side effects.
 - [ ] Apply is idempotent and verified by read-back.
@@ -350,14 +350,14 @@ Rust is the only implementation language for first-party ISP protocol/server run
 - **Priority:** P1
 - **Deliverable:** Replace TCP-only health assumptions and connect HA selection to real Go decisions.
 
-### Steps
+### Execution steps
 
 1. Track management, RADIUS auth/accounting, and CoA reachability as separate signals.
 2. Add configurable failure windows, hysteresis, cooldown, maintenance suppression and probe freshness.
 3. Select healthy eligible NAS and reconcile dependent service state safely.
 4. Publish health/failover events through canonical observability and ORM surfaces.
 
-### Acceptance
+### Acceptance criteria
 
 - [ ] TCP management reachability alone cannot make RADIUS healthy.
 - [ ] Flap, stale probe, primary outage, ineligible backup and recovery tests pass.

@@ -90,6 +90,8 @@ test('enforces a non-empty safe diff scope and the governance boundary', () => {
   assert.throws(() => verifyChangedPaths([]), /non-empty/u);
   assert.throws(() => verifyChangedPaths(['../outside']), /unsafe path/u);
   assert.throws(() => verifyChangedPaths(['/absolute/path']), /unsafe path/u);
+  assert.throws(() => verifyChangedPaths(['scripts\\evil']), /unsafe path/u);
+  assert.deepEqual(verifyChangedPaths(['scripts/ok.mjs']), ['scripts/ok.mjs']);
   for (const path of GOVERNANCE_PATHS) {
     const file = path.endsWith('/') ? `${path}rulesets.json` : path;
     assert.throws(() => verifyChangedPaths([file]), /governance plane/u);
@@ -97,6 +99,34 @@ test('enforces a non-empty safe diff scope and the governance boundary', () => {
   assert.deepEqual(verifyChangedPaths(['.github/governance/rulesets.json'], { breakGlass: true }), [
     '.github/governance/rulesets.json',
   ]);
+});
+
+test('rejects control characters and private-use code points in changed paths', () => {
+  // The stray `500+pushed` file (commit 7df5716f) used a private-use
+  // code point. Such names must fail closed at the policy gate, and the error
+  // must remain readable in logs.
+  for (const codePoint of [0x01, 0x1f, 0x7f, 0xe000, 0xf8ff]) {
+    const path = `500+pushed${String.fromCodePoint(codePoint)}`;
+    assert.throws(() => verifyChangedPaths([path]), /unsafe path/u);
+  }
+  const strayed = verifyChangedPaths.toString();
+  assert.match(strayed, /0xe000/u, 'validator must explicitly narrow private-use paths');
+  assert.throws(
+    () => verifyChangedPaths(['scripts/ok.mjs', '500+pushed']),
+    /unsafe path/u
+  );
+  assert.doesNotMatch(
+    (() => {
+      try {
+        verifyChangedPaths(['500+pushed']);
+      } catch (error) {
+        return error.message;
+      }
+      return '';
+    })(),
+    //u,
+    'the rejection message must escape the private-use code point'
+  );
 });
 
 test('the promotion policy workflow is a named merge_group gate on exact SHAs', async () => {

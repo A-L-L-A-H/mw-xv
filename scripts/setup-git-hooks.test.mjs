@@ -67,3 +67,15 @@ test('prepare command in package.json is Docker-safe (guarded by existsSync)', a
   assert.match(pkg.scripts.prepare, /existsSync/u);
   assert.match(pkg.scripts.prepare, /setup-git-hooks/u);
 });
+
+test('pre-push hook is diff-scoped with PRE_PUSH_FULL override and valid shell syntax', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const prePush = await readFile(join(repoRoot, '.githooks', 'pre-push'), 'utf8');
+  assert.match(prePush, /PRE_PUSH_FULL/u);
+  assert.match(prePush, /matches_scope/u);
+  assert.match(prePush, /git diff --name-only/u);
+  assert.match(prePush, /bun run board:ui:check/u);
+  assert.match(prePush, /bun run api:addon:check/u);
+  assert.match(prePush, /node scripts\/check-action-pins\.mjs/u);
+  assert.match(prePush, /node scripts\/tasks\/validate-tasks\.mjs/u);
+});

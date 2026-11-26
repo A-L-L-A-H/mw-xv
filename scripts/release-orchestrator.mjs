@@ -285,6 +285,88 @@ export function decideReleaseAction({
   };
 }
 
+export function decideBootstrapReleaseAction({
+  currentVersion,
+  headSha,
+  devSha,
+  channel,
+  confirmVersion = null,
+}) {
+  if (!shaPattern.test(headSha) || !shaPattern.test(devSha))
+    throw new Error('Release orchestration requires full source and dev commit SHAs.');
+
+  const current = normalizeVersion(currentVersion);
+  const parsed = parseVersion(current);
+  const currentIsStable = parsed.prerelease === null;
+  const confirmation = confirmVersion ? normalizeVersion(confirmVersion) : null;
+  const summary = {
+    channel,
+    source: { headSha, devSha },
+    plan: {
+      status: 'planned',
+      changeKind: 'bootstrap',
+      baselineTag: null,
+      baselineSha: null,
+      currentVersion: null,
+      nextVersion: current,
+      requiresApproval: currentIsStable,
+      approvalGate: currentIsStable ? 'first-stable' : null,
+      publishPolicy: currentIsStable ? 'confirm-stable' : 'automatic',
+      anomalies: [],
+    },
+  };
+
+  if (channel === 'hotfix') {
+    return {
+      status: 'blocked',
+      reason: 'hotfix-requires-stable-baseline',
+      detail: 'No stable release tag exists; a hotfix needs an explicit stable baseline.',
+      ...summary,
+      action: null,
+    };
+  }
+  if (channel === 'rc' && currentIsStable) {
+    return {
+      status: 'blocked',
+      reason: 'bootstrap-channel-mismatch',
+      detail: `Workspace version ${current} is stable; dispatch the stable channel to publish the initial release.`,
+      ...summary,
+      action: null,
+    };
+  }
+  if (channel === 'stable' && !currentIsStable) {
+    return {
+      status: 'blocked',
+      reason: 'bootstrap-channel-mismatch',
+      detail: `Workspace version ${current} is a release candidate; publish the initial RC before stabilizing.`,
+      ...summary,
+      action: null,
+    };
+  }
+  if (currentIsStable && confirmation !== current) {
+    return {
+      status: 'approval-required',
+      reason: 'first-stable-or-stable-release-confirmation',
+      requiredConfirmation: current,
+      ...summary,
+      action: null,
+    };
+  }
+
+  return {
+    status: 'ready',
+    reason: `Bootstrap initial release ${current} from main ${headSha}.`,
+    ...summary,
+    action: {
+      type: 'release',
+      expectedDevSha: null,
+      tag: current,
+      createTag: true,
+      confirmStable: currentIsStable ? current : null,
+    },
+  };
+}
+
 async function readManifestVersion() {
   const manifest = JSON.parse(await readFile(path.join(repositoryRoot, 'package.json'), 'utf8'));
   if (typeof manifest.version !== 'string') throw new Error('Root package version is missing.');
@@ -321,29 +403,43 @@ async function run(options) {
     .split(/\s+/u)[0];
   if (!shaPattern.test(devSha ?? '')) throw new Error('Unable to resolve the current dev SHA.');
 
-  for (const tag of listReleaseTags()) {
+  const localTags = listReleaseTags();
+  for (const tag of localTags) {
     if (!remoteTags.has(tag.tag))
       throw new Error(`Local release tag ${tag.tag} is missing from origin; refresh tags first.`);
   }
 
   const channel = options.get('--channel') ?? 'rc';
-  const plan = resolveReleasePlan({
-    head: headSha,
-    channel,
-    publishedTags,
-    requirePublishedBaseline: true,
-  });
-  const decision = decideReleaseAction({
-    plan,
-    currentVersion: await readManifestVersion(),
-    headSha,
-    devSha,
-    devContained: devContainedIn(headSha, devSha),
-    remoteTags,
-    releases,
-    confirmVersion: options.get('--confirm-version') ?? null,
-    channel,
-  });
+  const currentVersion = await readManifestVersion();
+  const confirmVersion = options.get('--confirm-version') ?? null;
+  let decision;
+  if (localTags.length === 0 && remoteTags.size === 0 && releases.length === 0) {
+    decision = decideBootstrapReleaseAction({
+      currentVersion,
+      headSha,
+      devSha,
+      channel,
+      confirmVersion,
+    });
+  } else {
+    const plan = resolveReleasePlan({
+      head: headSha,
+      channel,
+      publishedTags,
+      requirePublishedBaseline: true,
+    });
+    decision = decideReleaseAction({
+      plan,
+      currentVersion,
+      headSha,
+      devSha,
+      devContained: devContainedIn(headSha, devSha),
+      remoteTags,
+      releases,
+      confirmVersion,
+      channel,
+    });
+  }
   const output = `${JSON.stringify(decision, null, 2)}\n`;
   const outputPath = options.get('--output');
   if (outputPath) await writeFile(path.resolve(outputPath), output);

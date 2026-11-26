@@ -3495,7 +3495,8 @@
       "output": "Accepted ADR 0019 and ownership matrix",
       "detailFile": "docs/roadmap/20-isp-rust-go-architecture-aaa.md",
       "priority": "p1",
-      "status": "todo"
+      "status": "complete",
+      "evidence": "docs/roadmap/evidence/M19.01.md"
     },
     {
       "id": "M19.02",
@@ -3507,7 +3508,8 @@
       "output": "Versioned internal contracts and compatibility tests",
       "detailFile": "docs/roadmap/20-isp-rust-go-architecture-aaa.md",
       "priority": "p1",
-      "status": "todo"
+      "status": "complete",
+      "evidence": "docs/roadmap/evidence/M19.02.md"
     },
     {
       "id": "M19.03",
@@ -3520,7 +3522,7 @@
       "detailFile": "docs/roadmap/20-isp-rust-go-architecture-aaa.md",
       "evidence": "docs/roadmap/evidence/M19.03.md",
       "priority": "p1",
-      "status": "todo"
+      "status": "complete"
     },
     {
       "id": "M19.04",
@@ -3532,7 +3534,8 @@
       "output": "Cargo audit report with no untriaged HIGH/CRITICAL findings",
       "detailFile": "docs/roadmap/20-isp-rust-go-architecture-aaa.md",
       "priority": "p1",
-      "status": "todo"
+      "status": "complete",
+      "evidence": "docs/roadmap/evidence/M19.04.md"
     },
     {
       "id": "M19.05",
@@ -3572,7 +3575,8 @@
       "output": "MikroTik VSA encoder and Access-Accept golden tests",
       "detailFile": "docs/roadmap/20-isp-rust-go-architecture-aaa.md",
       "priority": "p1",
-      "status": "todo"
+      "status": "complete",
+      "evidence": "docs/roadmap/evidence/M19.07.md"
     },
     {
       "id": "M19.08",
@@ -3599,7 +3603,8 @@
       "output": "Go ISP package, route matrix and authorization tests",
       "detailFile": "docs/roadmap/20-isp-rust-go-architecture-aaa.md",
       "priority": "p1",
-      "status": "todo"
+      "status": "complete",
+      "evidence": "docs/roadmap/evidence/M19.09.md"
     },
     {
       "id": "M19.10",
