@@ -34,7 +34,7 @@ Execute one task per cycle in dependency order. Respect Owner File(s). Identity 
   - Command: `bun --filter @moonwitness/orm-base test` — passed (5 files, 29 tests)
   - Command: `bun --filter @moonwitness/orm-base build` — passed (tsc exited 0)
   - Manual verification: `base.user` now exposes nullable unique `identity_subject` string field; integer primary key and all existing relations unchanged; migration creates column and a unique index that permits multiple NULL subjects but rejects duplicate non-null subjects; repeat invocation of migration is idempotent; tests verify opaque subject assignment and user resolution by subject without email fallback.
-  - Commit: PENDING_IMPLEMENTATION_SHA
+  - Commit: b22d0837
 
 #### - [ ] I42 — Add API repository to resolve verified subject to business user
 
