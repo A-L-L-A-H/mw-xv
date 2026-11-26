@@ -899,6 +899,67 @@ func (m *PaasManager) buildDockerRunArgs(req PaasDeployRequest, containerName st
 	return args
 }
 
+func (m *PaasManager) handleAppScale(w http.ResponseWriter, r *http.Request, slug string) {
+	var req struct {
+		Replicas int `json:"replicas"`
+	}
+	if err := json.NewDecoder(io.LimitReader(r.Body, 4096)).Decode(&req); err != nil {
+		writePaasJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid json payload"})
+		return
+	}
+	if req.Replicas < 0 || req.Replicas > 10 {
+		writePaasJSON(w, http.StatusBadRequest, map[string]string{"error": "replicas must be between 0 and 10"})
+		return
+	}
+	app, err := m.getAppFromDB(slug)
+	if err != nil {
+		writePaasJSON(w, http.StatusNotFound, map[string]string{"error": "app not found"})
+		return
+	}
+	status := "scaled"
+	if req.Replicas == 0 {
+		_, _ = m.runner(r.Context(), env("DOCKER_BIN", "docker"), "stop", app.ContainerName)
+		status = "stopped"
+	} else {
+		_, _ = m.runner(r.Context(), env("DOCKER_BIN", "docker"), "start", app.ContainerName)
+	}
+	writePaasJSON(w, http.StatusOK, map[string]any{
+		"slug":     slug,
+		"replicas": req.Replicas,
+		"status":   status,
+	})
+}
+
+// ReapExpiredPreviews removes preview deployments older than maxAge.
+func (m *PaasManager) ReapExpiredPreviews(ctx context.Context, maxAge time.Duration) (int, error) {
+	if maxAge <= 0 {
+		return 0, nil
+	}
+	apps, err := m.listAppsFromDB()
+	if err != nil {
+		return 0, err
+	}
+	cutoff := time.Now().UTC().Add(-maxAge)
+	reaped := 0
+	for _, app := range apps {
+		if !strings.HasPrefix(app.Slug, "preview-") {
+			continue
+		}
+		updatedAt, err := time.Parse(time.RFC3339, app.UpdatedAt)
+		if err != nil {
+			continue
+		}
+		if updatedAt.Before(cutoff) {
+			if _, err := m.runner(ctx, env("DOCKER_BIN", "docker"), "rm", "-f", app.ContainerName); err != nil {
+				continue
+			}
+			_, _ = m.db.Exec("DELETE FROM paas_apps WHERE slug = ?", app.Slug)
+			reaped++
+		}
+	}
+	return reaped, nil
+}
+
 func (m *PaasManager) handleAppSubroutes() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		sub := strings.TrimPrefix(r.URL.Path, "/paas/apps/")
@@ -984,6 +1045,12 @@ func (m *PaasManager) handleAppSubroutes() http.HandlerFunc {
 				return
 			}
 			m.handleAppRedeploy(w, r, slug)
+		case "scale":
+			if r.Method != http.MethodPost {
+				writePaasJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
+				return
+			}
+			m.handleAppScale(w, r, slug)
 		case "env":
 			if r.Method != http.MethodPut && r.Method != http.MethodPatch {
 				writePaasJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})

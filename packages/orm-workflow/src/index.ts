@@ -53,3 +53,4 @@ export type {
   SlaStage,
   ValidatedSagaDag,
 } from './saga-engine.js';
+export { seedWorkflowDefinitions, workflowSeedManifest } from './seed-manifest.js';

@@ -286,3 +286,4 @@ export {
   type HaDrillPhaseResult,
   type HaDrillRtoMetrics,
 } from './ha-drill.js';
+export { cloudSeedManifest, seedCloudProviders, type AddonSeedManifest } from './seed-manifest.js';

@@ -210,3 +210,4 @@ export { researchPrivacyHttpPlugin } from './http-plugins/research-privacy.plugi
 export { researchReviewHttpPlugin } from './http-plugins/research-review.plugin.js';
 export { researchWitnessHttpPlugin } from './http-plugins/research-witness.plugin.js';
 export * from './sharia-mizan-ledger.js';
+export { knowledgeSeedManifest } from './seed-manifest.js';

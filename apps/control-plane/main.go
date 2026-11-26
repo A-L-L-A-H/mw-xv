@@ -115,6 +115,8 @@ var controlPlaneRouteMatrix = []controlPlaneRoute{
 	{pattern: "/isp/operations/plan", family: "isp-control", access: accessAuthenticated, methods: []string{http.MethodPost}},
 	{pattern: "/isp/admin/reload", family: "isp-control", access: accessPrivileged, methods: []string{http.MethodPost}},
 	{pattern: "/a2a/delegate", family: "a2a-federation", access: accessA2APeer, methods: []string{http.MethodPost}},
+	{pattern: "/a2a/metrics", family: "a2a-federation", access: accessAuthenticated, methods: []string{http.MethodGet}},
+	{pattern: "/a2a/status", family: "a2a-federation", access: accessAuthenticated, methods: []string{http.MethodGet}},
 }
 
 func controlPlaneAccessForPattern(pattern string) (controlPlaneAccess, bool) {
@@ -400,6 +402,8 @@ func buildMux(db *sql.DB, dockerBin, adminToken string) http.Handler {
 		"/isp/operations/plan":      ispHandler.HandleOperation,
 		"/isp/admin/reload":         ispHandler.HandleOperation,
 		"/a2a/delegate":             a2aMgr.HandleDelegate(),
+		"/a2a/metrics":              a2aMgr.HandleMetrics(),
+		"/a2a/status":               a2aMgr.HandleStatus(),
 	}
 
 	for _, route := range controlPlaneRouteMatrix {

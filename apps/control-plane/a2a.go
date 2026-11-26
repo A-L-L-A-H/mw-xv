@@ -18,6 +18,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 )
 
@@ -131,6 +132,12 @@ type A2AManager struct {
 	peerRegistrations []A2APeerRegistration
 	peerCA            *x509.CertPool
 	nowFunc           func() time.Time
+
+	requestsTotal      atomic.Int64
+	forwardedTotal     atomic.Int64
+	rejectedTotal      atomic.Int64
+	forwardErrorsTotal atomic.Int64
+	lastForwardUnix    atomic.Int64
 }
 
 // NewA2AManager creates an A2AManager with explicit configuration. An empty
@@ -791,6 +798,7 @@ func (m *A2AManager) HandleDelegate() http.HandlerFunc {
 			writeA2AError(w, http.StatusMethodNotAllowed, "METHOD_NOT_ALLOWED", "method not allowed")
 			return
 		}
+		m.requestsTotal.Add(1)
 
 		body, err := io.ReadAll(io.LimitReader(r.Body, maxA2ABodyBytes))
 		if err != nil {
@@ -803,6 +811,7 @@ func (m *A2AManager) HandleDelegate() http.HandlerFunc {
 			rej = m.verifyTransportPeer(r, env)
 		}
 		if rej != nil {
+			m.rejectedTotal.Add(1)
 			redactedMsg := RedactA2ASecret(rej.message, m.signingSecret)
 			log.Printf("a2a delegate rejected reason=%s remote=%s msg=%s", SanitizeLogValue(rej.reasonCode), SanitizeLogValue(r.RemoteAddr), SanitizeLogValue(redactedMsg))
 			writeA2AError(w, rej.status, rej.reasonCode, redactedMsg)
@@ -815,15 +824,61 @@ func (m *A2AManager) HandleDelegate() http.HandlerFunc {
 
 		receipt, fwdRej := m.forward(ctx, body, r.Header, env)
 		if fwdRej != nil {
+			m.forwardErrorsTotal.Add(1)
 			log.Printf("a2a delegate forward failed reason=%s messageId=%s", SanitizeLogValue(fwdRej.reasonCode), SanitizeLogValue(RedactA2ASecret(env.MessageID, m.signingSecret)))
 			writeA2AError(w, fwdRej.status, fwdRej.reasonCode, fwdRej.message)
 			return
 		}
 
+		m.forwardedTotal.Add(1)
+		m.lastForwardUnix.Store(m.nowFunc().Unix())
 		log.Printf("a2a delegate forwarded messageId=%s companyId=%d", SanitizeLogValue(RedactA2ASecret(receipt.MessageID, m.signingSecret)), receipt.CompanyID)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusAccepted)
 		_ = json.NewEncoder(w).Encode(receipt)
+	}
+}
+
+// HandleMetrics serves GET /a2a/metrics with atomic forwarding counters.
+func (m *A2AManager) HandleMetrics() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			writeA2AError(w, http.StatusMethodNotAllowed, "METHOD_NOT_ALLOWED", "method not allowed")
+			return
+		}
+		var lastForwardAt *string
+		if ts := m.lastForwardUnix.Load(); ts > 0 {
+			formatted := time.Unix(ts, 0).UTC().Format(time.RFC3339)
+			lastForwardAt = &formatted
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"requestsTotal":      m.requestsTotal.Load(),
+			"forwardedTotal":     m.forwardedTotal.Load(),
+			"rejectedTotal":      m.rejectedTotal.Load(),
+			"forwardErrorsTotal": m.forwardErrorsTotal.Load(),
+			"lastForwardAt":      lastForwardAt,
+		})
+	}
+}
+
+// HandleStatus serves GET /a2a/status with non-secret federation readiness.
+func (m *A2AManager) HandleStatus() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			writeA2AError(w, http.StatusMethodNotAllowed, "METHOD_NOT_ALLOWED", "method not allowed")
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"configured":        m.forwardOrigin != "" && m.signingSecret != "",
+			"forwardOrigin":     m.forwardOrigin,
+			"expectedCompanyID": m.expectedCompanyID,
+			"peerCount":         len(m.peerRegistrations),
+			"hasPeerCA":         m.peerCA != nil,
+		})
 	}
 }
 
