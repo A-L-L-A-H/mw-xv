@@ -111,7 +111,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:** after completion, append exact command, result and commit SHA here.
 
-#### - [ ] I35 — Add asymmetric signing-key provider abstraction
+#### - [x] I35 — Add asymmetric signing-key provider abstraction
 
 - **Owner File(s):** apps/id/src/security/signing-key-provider.ts; apps/id/src/security/signing-key-provider.test.ts; apps/id/src/database/migrations/*signing-key*; packages/orm-identity/src/models/signing-key-metadata.ts
 - **Depends On:** I04, I14, I03
@@ -123,13 +123,20 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - Restrict signing algorithms to a documented allowlist compatible with the selected provider and resource-server verifier.
 - **DO NOT:** Do not implement signing algorithms or JOSE primitives manually, store raw production private keys in the database, or silently fall back to development keys.
 - **Acceptance Criteria:**
-  - [ ] Provider interface has injectable test implementation.
-  - [ ] Production config fails when no valid key provider is configured.
-  - [ ] Key metadata contains no private key material.
-  - [ ] Only approved asymmetric algorithms are allowed.
+  - [x] Provider interface has injectable test implementation.
+  - [x] Production config fails when no valid key provider is configured.
+  - [x] Key metadata contains no private key material.
+  - [x] Only approved asymmetric algorithms are allowed.
 - **Verify:** bun --filter @moonwitness/id test; bun --filter @moonwitness/orm-identity test.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append exact command, result and commit SHA here.
+- **Evidence:**
+  - Command: `bun --filter @moonwitness/id test` — passed (16 files, 81 tests)
+  - Command: `bun --filter @moonwitness/id build` — passed (tsc exited 0)
+  - Command: `bun --filter @moonwitness/orm-identity test` — passed (10 files, 42 tests)
+  - Command: `bun --filter @moonwitness/orm-identity build` — passed (tsc exited 0)
+  - Manual verification: SigningKeyProvider exposes injectable external adapter plus explicitly opt-in development-only provider; production fails closed when no external provider/config is supplied; public JWK validation and database CHECK constraint reject private JWK parameters and PEM private keys; only RS256 and ES256 are allowed; migration 012 stores only public JWK metadata, provider id, kid, status, activation/retirement/expiry timestamps and contains no private key column.
+  - Note: I30 remains blocked because `oidc-provider` is not installed and `apps/id/package.json` is outside I35 ownership. I35 dependencies (I03, I04, I14) are satisfied and no protocol endpoints were added.
+  - Commit: PENDING_IMPLEMENTATION_SHA
 
 #### - [ ] I36 — Publish JWKS and active public keys
 

@@ -113,7 +113,7 @@ Task dependencies are declared inside each playbook. Follow them exactly; the fi
 - [ ] **I32** — Validate authorization requests and state/nonce requirements
 - [ ] **I33** — Enforce PKCE S256 for public clients
 - [ ] **I34** — Bind authorization codes to client, redirect, PKCE and nonce
-- [ ] **I35** — Add asymmetric signing-key provider abstraction
+- [x] **I35** — Add asymmetric signing-key provider abstraction
 - [ ] **I36** — Publish JWKS and active public keys
 - [ ] **I37** — Complete Authorization Code token exchange
 - [ ] **I38** — Complete refresh rotation and replay-family revocation
