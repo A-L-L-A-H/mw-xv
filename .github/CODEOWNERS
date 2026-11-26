@@ -1,6 +1,8 @@
 # One repository maintainer currently has write access: @bjo163.
 # These assignments request focused review on security, data, workflow and release boundaries.
 /.github/ @bjo163
+/.githooks/ @bjo163
+/.agents/rules/autonomous-git-release-lock.md @bjo163
 /apps/api/src/auth/ @bjo163
 /apps/api/src/ @bjo163
 /apps/api/src/config/env.ts @bjo163
