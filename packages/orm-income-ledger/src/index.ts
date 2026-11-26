@@ -45,3 +45,5 @@ export function computeAllocationSplit(
 
   return result;
 }
+
+export { incomeLedgerSeedManifest } from './seed-manifest.js';

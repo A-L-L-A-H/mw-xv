@@ -14,3 +14,5 @@ export * from './helpdesk-engine.js';
 export * from './views.js';
 export * from './http-plugin.js';
 export { manifest } from './manifest.js';
+
+export { helpdeskSeedManifest } from './seed-manifest.js';

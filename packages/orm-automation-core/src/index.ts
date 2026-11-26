@@ -37,3 +37,5 @@ export type {
   AutomationActionContext,
   AutomationActionInput,
 } from './actions/types.js';
+
+export { automationCoreSeedManifest } from './seed-manifest.js';

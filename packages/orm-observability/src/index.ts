@@ -22,3 +22,5 @@ export {
   QoderCorrelation,
   IngestCredential,
 } from './models.js';
+
+export { observabilitySeedManifest } from './seed-manifest.js';

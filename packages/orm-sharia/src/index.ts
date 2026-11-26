@@ -26,3 +26,5 @@ export {
   type WaqfMerkleInput,
   type WaqfMerkleResult,
 } from './sharia-engine.js';
+
+export { shariaSeedManifest } from './seed-manifest.js';

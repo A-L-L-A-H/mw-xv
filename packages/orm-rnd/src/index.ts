@@ -22,3 +22,5 @@ export {
 export { views } from './views.js';
 export { RND_SEED_VERSION, countRndRows, seedRnd, RndSeedOptions } from './seed.js';
 export { canTransitionHypothesis, validateTrl } from './domain.js';
+
+export { rndSeedManifest } from './seed-manifest.js';
