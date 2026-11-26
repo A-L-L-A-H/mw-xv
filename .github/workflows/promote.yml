@@ -23,6 +23,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 55
     permissions:
+      actions: write
       contents: write
       checks: read
       issues: write
@@ -71,12 +72,23 @@ jobs:
             exit 0
           fi
           ahead="$(git rev-list --count "${base_sha}..${EXPECTED_SHA}")"
+          behind="$(git rev-list --count "${EXPECTED_SHA}..${base_sha}")"
           if [[ "$ahead" == "0" ]]; then
             echo 'stale=true' >> "$GITHUB_OUTPUT"
             exit 0
           fi
           echo "stale=false" >> "$GITHUB_OUTPUT"
           echo "base_sha=$base_sha" >> "$GITHUB_OUTPUT"
+          echo "behind=$behind" >> "$GITHUB_OUTPUT"
+      - name: Auto-sync main into dev when promotion branch is behind
+        if: steps.stale.outputs.stale != 'true' && steps.stale.outputs.behind != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh workflow run sync-main-to-dev.yml --repo "$GH_REPO" --ref main
+          echo "Dispatched sync-main-to-dev.yml because dev is behind main by ${{ steps.stale.outputs.behind }} commit(s)." >> "$GITHUB_STEP_SUMMARY"
       - name: Create or find the promotion pull request
         id: pr
         if: steps.stale.outputs.stale != 'true'

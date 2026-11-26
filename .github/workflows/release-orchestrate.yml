@@ -135,6 +135,7 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           INPUT_CHANNEL: ${{ inputs.channel || '' }}
           CONFIRM_VERSION: ${{ inputs.confirm_version || '' }}
+          AUTONOMOUS_STABLE_RELEASE: ${{ vars.AUTONOMOUS_STABLE_RELEASE || 'false' }}
           SOURCE_SHA: ${{ steps.source.outputs.source }}
           RUNNER_TEMP: ${{ runner.temp }}
         run: |
@@ -142,12 +143,18 @@ jobs:
           if [[ "$EVENT_NAME" == "workflow_run" ]]; then
             version="$(jq -r '.version' package.json)"
             if [[ "$version" != *-rc.* ]]; then
-              echo "### Release orchestration" >> "$GITHUB_STEP_SUMMARY"
-              echo "Main version $version is stable; stable and hotfix publication require an explicit dispatch with confirm_version." >> "$GITHUB_STEP_SUMMARY"
-              echo "manual-required=true" >> "$GITHUB_OUTPUT"
-              exit 0
+              if [[ "$AUTONOMOUS_STABLE_RELEASE" == "true" ]]; then
+                CHANNEL=stable
+                CONFIRM_VERSION="v${version#v}"
+              else
+                echo "### Release orchestration" >> "$GITHUB_STEP_SUMMARY"
+                echo "Main version $version is stable; stable and hotfix publication require an explicit dispatch with confirm_version." >> "$GITHUB_STEP_SUMMARY"
+                echo "manual-required=true" >> "$GITHUB_OUTPUT"
+                exit 0
+              fi
+            else
+              CHANNEL=rc
             fi
-            CHANNEL=rc
           else
             CHANNEL="$INPUT_CHANNEL"
           fi

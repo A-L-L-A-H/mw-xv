@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+  decideBootstrapReleaseAction,
   decideReleaseAction,
   normalizeVersion,
   parseReleases,
@@ -228,4 +229,47 @@ test('blocks a workspace version that matches neither baseline nor plan', () => 
   const decision = decide({ currentVersion: '1.0.1' });
   assert.equal(decision.status, 'blocked');
   assert.equal(decision.reason, 'version-mismatch');
+});
+
+test('bootstraps the initial release when no release tags exist yet', () => {
+  const rcBootstrap = decideBootstrapReleaseAction({
+    currentVersion: '1.0.0-rc.1',
+    headSha,
+    devSha,
+    channel: 'rc',
+  });
+  assert.equal(rcBootstrap.status, 'ready');
+  assert.equal(rcBootstrap.action.type, 'release');
+  assert.equal(rcBootstrap.action.tag, 'v1.0.0-rc.1');
+  assert.equal(rcBootstrap.action.createTag, true);
+  assert.equal(rcBootstrap.action.confirmStable, null);
+
+  const stableUnconfirmed = decideBootstrapReleaseAction({
+    currentVersion: '1.0.0',
+    headSha,
+    devSha,
+    channel: 'stable',
+  });
+  assert.equal(stableUnconfirmed.status, 'approval-required');
+  assert.equal(stableUnconfirmed.requiredConfirmation, 'v1.0.0');
+
+  const stableConfirmed = decideBootstrapReleaseAction({
+    currentVersion: '1.0.0',
+    headSha,
+    devSha,
+    channel: 'stable',
+    confirmVersion: 'v1.0.0',
+  });
+  assert.equal(stableConfirmed.status, 'ready');
+  assert.equal(stableConfirmed.action.tag, 'v1.0.0');
+  assert.equal(stableConfirmed.action.confirmStable, 'v1.0.0');
+
+  const hotfixBlocked = decideBootstrapReleaseAction({
+    currentVersion: '1.0.0-rc.1',
+    headSha,
+    devSha,
+    channel: 'hotfix',
+  });
+  assert.equal(hotfixBlocked.status, 'blocked');
+  assert.equal(hotfixBlocked.reason, 'hotfix-requires-stable-baseline');
 });
