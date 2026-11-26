@@ -274,7 +274,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
     - Command: bun --filter @moonwitness/orm-identity build — passed (tsc exited 0)
     - Command: bun --filter @moonwitness/id build — passed (tsc exited 0)
     - Manual verification: digest-only secret, bounded metadata, active/expired/revoked helpers, account+expiry indexes and pruning index; no raw bearer token
-    - Commit: PENDING_I17_COMMIT
+    - Commit: 76d720e8 feat(identity): add session model and expiry indexes for I17
 
 #### - [ ] I18 — Add refresh-token family persistence and revocation state
 
