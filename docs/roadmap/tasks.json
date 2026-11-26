@@ -3557,7 +3557,7 @@
       "output": "64-bit accounting with rollover and Gigawords fixtures",
       "detailFile": "docs/roadmap/20-isp-rust-go-architecture-aaa.md",
       "priority": "p1",
-      "status": "in_progress",
+      "status": "complete",
       "evidence": "docs/roadmap/evidence/M19.06.md"
     },
     {
