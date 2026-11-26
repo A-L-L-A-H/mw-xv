@@ -199,7 +199,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
     - Command: bun --filter @moonwitness/orm-identity build — passed (tsc exited 0)
     - Command: bun --filter @moonwitness/id build — passed (tsc exited 0)
     - Manual verification: identity schema `account` table uses UUID primary key, opaque unique subject, status/timestamps and status index; no password, CRM or permission fields; model lifecycle tests verify immutable subject
-    - Commit: PENDING_I14_COMMIT
+    - Commit: 8d95e2a5 feat(identity): add identity account model and migration for I14
 
 #### - [ ] I15 — Add identity.identifier model and uniqueness constraints
 
