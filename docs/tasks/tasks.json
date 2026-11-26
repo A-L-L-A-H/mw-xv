@@ -12732,7 +12732,7 @@
       "category": "architecture",
       "type": "feature",
       "priority": "p1",
-      "status": "todo",
+      "status": "done",
       "human": false,
       "owner": null,
       "assignee": null,
@@ -12750,7 +12750,7 @@
         {
           "id": "M19.05-ac-1",
           "text": "Durable accounting ACK contract and failure-injection tests",
-          "done": false
+          "done": true
         }
       ],
       "validation": {
@@ -12758,7 +12758,7 @@
         "expected": "All acceptance criteria and evidence proven"
       },
       "evidence": {
-        "paths": [],
+        "paths": ["docs/roadmap/evidence/M19.05.md"],
         "detailFile": "docs/roadmap/20-isp-rust-go-architecture-aaa.md",
         "commitSha": null
       },
@@ -12784,7 +12784,7 @@
       "category": "architecture",
       "type": "feature",
       "priority": "p1",
-      "status": "todo",
+      "status": "doing",
       "human": false,
       "owner": null,
       "assignee": null,
@@ -12810,7 +12810,7 @@
         "expected": "All acceptance criteria and evidence proven"
       },
       "evidence": {
-        "paths": [],
+        "paths": ["docs/roadmap/evidence/M19.06.md"],
         "detailFile": "docs/roadmap/20-isp-rust-go-architecture-aaa.md",
         "commitSha": null
       },

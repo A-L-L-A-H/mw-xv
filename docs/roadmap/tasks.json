@@ -3544,7 +3544,8 @@
       "output": "Durable accounting ACK contract and failure-injection tests",
       "detailFile": "docs/roadmap/20-isp-rust-go-architecture-aaa.md",
       "priority": "p1",
-      "status": "todo"
+      "status": "complete",
+      "evidence": "docs/roadmap/evidence/M19.05.md"
     },
     {
       "id": "M19.06",
@@ -3556,7 +3557,8 @@
       "output": "64-bit accounting with rollover and Gigawords fixtures",
       "detailFile": "docs/roadmap/20-isp-rust-go-architecture-aaa.md",
       "priority": "p1",
-      "status": "todo"
+      "status": "in_progress",
+      "evidence": "docs/roadmap/evidence/M19.06.md"
     },
     {
       "id": "M19.07",
