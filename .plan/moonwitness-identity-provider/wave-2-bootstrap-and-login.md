@@ -36,7 +36,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - Command: `bun --filter @moonwitness/id test` — passed (8 files, 36 tests)
   - Command: `bun --filter @moonwitness/id build` — passed (tsc exited 0)
   - Manual verification: digest-only bootstrap token model, partial unique index for one active token per installation scope, atomic consume restricted to unconsumed/unrevoked/unexpired rows, operator-only `bootstrap:token` script with one-time stdout raw token and redacted errors; no public HTTP route was added.
-  - Commit: pending I22 implementation commit
+  - Commit: a5abf8cc feat(identity): add bootstrap token operator CLI for I22; ccc9f913 fix(identity): preserve bootstrap error cause for I22
 
 #### - [ ] I23 — Add bootstrap-state service and setup-status endpoint
 
