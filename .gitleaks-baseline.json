@@ -2994,8 +2994,8 @@
     "EndLine": 60,
     "StartColumn": 12,
     "EndColumn": 67,
-    "Match": "token = 'REDACTED'",
-    "Secret": "REDACTED",
+    "Match": "token = 'eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxIn0.signature'",
+    "Secret": "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxIn0.signature",
     "File": "packages/orm-identity/src/models/audit-event.test.ts",
     "SymlinkFile": "",
     "Commit": "7ede0f8e5ff60898a3c0307a052c6af5289a8658",
@@ -3007,5 +3007,26 @@
     "Message": "feat(identity): add audit event and outbox models for I21",
     "Tags": [],
     "Fingerprint": "7ede0f8e5ff60898a3c0307a052c6af5289a8658:packages/orm-identity/src/models/audit-event.test.ts:generic-api-key:60"
+  },
+  {
+    "RuleID": "jwt",
+    "Description": "Uncovered a JSON Web Token, which may lead to unauthorized access to web applications and sensitive user data.",
+    "StartLine": 175,
+    "EndLine": 175,
+    "StartColumn": 9,
+    "EndColumn": 65,
+    "Match": "eyJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJ1c2VyXzEifQ.c2lnbmF0dXJl'",
+    "Secret": "eyJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJ1c2VyXzEifQ.c2lnbmF0dXJl",
+    "File": "apps/api/src/auth/identity-principal-repository.test.ts",
+    "SymlinkFile": "",
+    "Commit": "48cdf4e1258ecf0ace80342e987060ce7cbf3694",
+    "Link": "https://github.com/A-L-L-A-H/mw-xv/blob/48cdf4e1258ecf0ace80342e987060ce7cbf3694/apps/api/src/auth/identity-principal-repository.test.ts#L175",
+    "Entropy": 4.605851,
+    "Author": "MoonWitness Dev",
+    "Email": "dev@moonwitness.local",
+    "Date": "2026-11-26T10:30:45Z",
+    "Message": "feat(api): add identity principal repository for verified subjects (I42)",
+    "Tags": [],
+    "Fingerprint": "48cdf4e1258ecf0ace80342e987060ce7cbf3694:apps/api/src/auth/identity-principal-repository.test.ts:jwt:175"
   }
 ]
