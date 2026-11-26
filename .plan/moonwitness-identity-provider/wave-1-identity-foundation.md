@@ -104,7 +104,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
     - Command: bun --filter @moonwitness/id test — passed (2 files, 10 tests)
     - Command: bun --filter @moonwitness/id build — passed (tsc exited 0)
     - Manual verification: immutable typed config; explicit key-provider mode; no DATABASE_URL fallback; production requires HTTPS non-local issuer and external keys; all errors redact credentials/query values
-    - Commit: PENDING_I10_COMMIT
+    - Commit: 3240f374 feat(id): add strict identity environment validation for I10
 
 #### - [ ] I11 — Add a dedicated Identity PostgreSQL connection
 
