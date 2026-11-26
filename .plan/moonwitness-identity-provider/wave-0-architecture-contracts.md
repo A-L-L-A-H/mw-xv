@@ -111,7 +111,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - Manual verification: every access-token and ID-token claim traced to ADR-001 (§9 of oidc-contract.md)
   - Commit: 6d074d96 docs(identity): define issuer subject audience token and client contracts for I04
 
-#### - [ ] I05 — Define the threat model and Platform/Tenant authorization boundary
+#### - [x] I05 — Define the threat model and Platform/Tenant authorization boundary
 
 - **Owner File(s):** docs/architecture/identity/security-model.md
 - **Depends On:** I02
@@ -125,15 +125,15 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - Map each threat to at least one mitigation and a test scenario.
 - **DO NOT:** Do not define an all-powerful admin shortcut or treat x-company-id as proof of membership.
 - **Acceptance Criteria:**
-  - [ ] Each listed threat has a concrete control and a future test case.
-  - [ ] Actor types and privilege boundaries are unambiguous.
-  - [ ] Security logging and secret-redaction rules are testable.
+  - [x] Each listed threat has a concrete control and a future test case.
+  - [x] Actor types and privilege boundaries are unambiguous.
+  - [x] Security logging and secret-redaction rules are testable.
 - **Verify:** git diff --check; review each threat/control pair.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
 - **Evidence:**
   - Command: git diff --check - passed
-  - Manual verification: all cited source paths opened and confirmed current
-  - Commit: 977e9a5c docs(identity): write legacy authentication surface inventory for I01
+  - Manual verification: all 10 threats mapped to at least one control and one future test scenario; actor boundaries and redaction rules explicit
+  - Commit: <placeholder> docs(identity): define threat model and platform tenant authorization boundary for I05
 
 #### - [ ] I06 — Create the acceptance matrix and architecture exit gate
 
