@@ -158,7 +158,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - Command: `bun --filter @moonwitness/id test` — passed (13 files, 59 tests)
   - Command: `bun --filter @moonwitness/id build` — passed (tsc exited 0)
   - Manual verification: identifier normalization follows the Identity contract; account and credential are resolved only from identity tables; password verification uses the maintained scrypt adapter; malformed stored verifiers are rejected; sessions store only a SHA-256 digest with bounded device/userAgent metadata and explicit expiry; unknown account, wrong password, disabled account, malformed credential and database errors all produce the same generic failure without plaintext or verifier leakage.
-  - Commit: pending I27 implementation commit
+  - Commit: 409d1275 feat(identity): add login session service for I27
 
 #### - [ ] I28 — Add login, current-session and logout routes
 
