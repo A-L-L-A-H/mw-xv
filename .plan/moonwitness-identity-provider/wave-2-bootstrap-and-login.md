@@ -182,7 +182,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - Command: `bun --filter @moonwitness/id test` — passed (14 files, 64 tests)
   - Command: `bun --filter @moonwitness/id build` — passed (tsc exited 0)
   - Manual verification: `POST /auth/login`, `GET /auth/session`, and `POST /auth/logout` are registered by the Identity server; session cookies are HttpOnly, SameSite=Lax, Path=/, bounded to 8 hours and Secure in production; CSRF uses a non-HttpOnly cookie plus matching `x-csrf-token`; logout revokes `identity.session.revoked_at`; login/current-session responses expose no raw session credential or password; revoked/expired/missing sessions fail closed; no `/auth/register`, `/register`, or `/setup/register` route exists.
-  - Commit: PENDING_IMPLEMENTATION_SHA
+  - Commit: 640ab08c
 
 #### - [ ] I29 — Add login throttling and brute-force regression tests
 
