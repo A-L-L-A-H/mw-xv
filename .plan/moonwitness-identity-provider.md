@@ -94,7 +94,7 @@ Task dependencies are declared inside each playbook. Follow them exactly; the fi
 - [x] **I17** — Add identity.session model and expiry indexes
 - [x] **I18** — Add refresh-token family persistence and revocation state
 - [x] **I19** — Add OAuth client registry model
-- [ ] **I20** — Add authorization-code persistence adapter only where provider integration requires it
+- [x] **I20** — Add authorization-code persistence adapter only where provider integration requires it
 - [ ] **I21** — Add Identity audit-event and transactional-outbox models
 
 ### Wave 2 — Bootstrap and login

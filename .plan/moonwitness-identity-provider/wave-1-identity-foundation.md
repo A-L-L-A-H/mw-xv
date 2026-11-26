@@ -327,7 +327,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
     - Manual verification: public clients cannot hold secrets or use client credentials, wildcard redirects rejected, sorted unique allowlists, disabled clients denied, secret digest hidden from JSON
     - Commit: cad76f0d feat(identity): add OAuth client registry model for I19
 
-#### - [ ] I20 — Add authorization-code persistence adapter only where provider integration requires it
+#### - [x] I20 — Add authorization-code persistence adapter only where provider integration requires it
 
 - **Owner File(s):** apps/id/src/oidc/authorization-code-store.ts; apps/id/src/oidc/authorization-code-store.test.ts; apps/id/src/database/migrations/*authorization-code*
 - **Depends On:** I14, I19, I03
@@ -339,12 +339,18 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - Ensure code records are bound to client and expiry through the provider contract.
 - **DO NOT:** Do not duplicate protocol state or invent a homegrown authorization code format.
 - **Acceptance Criteria:**
-  - [ ] Exactly one authoritative authorization-code implementation exists.
-  - [ ] Provider adapter conformance tests prove single-use and expiry behavior.
-  - [ ] Any omitted table has a documented reason.
+  - [x] Exactly one authoritative authorization-code implementation exists.
+  - [x] Provider adapter conformance tests prove single-use and expiry behavior.
+  - [x] Any omitted table has a documented reason.
 - **Verify:** bun --filter @moonwitness/id test; selected provider integration smoke test.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
+- **Evidence:**
+  - Provider inspection: `oidc-provider@9.15.1` owns `AuthorizationCode` model state, 60-second default `ttl.AuthorizationCode`, and adapter lifecycle (`upsert`, `find`, `consume`, `destroy`, `revokeByGrantId`). No authorization-code table was created because duplicating that provider-owned state would create a second authoritative implementation; production must inject the documented persistent adapter instead of using the in-memory default.
+  - Command: `bun --filter @moonwitness/id test` — passed (7 files, 32 tests)
+  - Command: `bun --filter @moonwitness/id build` — passed (tsc exited 0)
+  - Command: `node $env:TEMP/mw-oidc-smoke-915/smoke.cjs` — passed (`SMOKE_TEST_PASS`; discovery, PKCE S256, single-use exchange, refresh replay rejection, JWKS, client credentials)
+  - Manual verification: adapter conformance tests cover provider-scope instantiation, opaque handles, expiry, single-use consumption, client binding, grant revocation, and secret redaction; no custom code format or duplicate protocol state was introduced.
+  - Commit: pending I20 implementation commit
 
 #### - [ ] I21 — Add Identity audit-event and transactional-outbox models
 
