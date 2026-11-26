@@ -12,17 +12,18 @@ import { MetricTile } from '@moonwitness/ui/components/metric-tile';
 import { PageHeader } from '@moonwitness/ui/components/page-header';
 import { Panel } from '@moonwitness/ui/components/panel';
 import { Skeleton } from '@moonwitness/ui/components/skeleton';
-import { client, type ModelSummary } from '@/lib/client';
+import { client } from '@/lib/client';
+import type { ModelInfo } from '@moonwitness/client';
 import { modelAddon, modelLabel } from '@/lib/models';
 import { scopedQueryKey } from '@/lib/query-scope';
 
 export interface AddonSummary {
   readonly addon: string;
-  readonly models: readonly ModelSummary[];
+  readonly models: readonly ModelInfo[];
 }
 
-export function groupModelsByAddon(models: readonly ModelSummary[]): readonly AddonSummary[] {
-  const grouped = new Map<string, ModelSummary[]>();
+export function groupModelsByAddon(models: readonly ModelInfo[]): readonly AddonSummary[] {
+  const grouped = new Map<string, ModelInfo[]>();
   for (const item of models) {
     const addon = modelAddon(item.model);
     const list = grouped.get(addon) ?? [];
@@ -40,7 +41,7 @@ export function groupModelsByAddon(models: readonly ModelSummary[]): readonly Ad
 export function AddonConsolePage({ addon }: { readonly addon?: string }) {
   const modelsQuery = useQuery({
     queryKey: scopedQueryKey(['models', 'list']),
-    queryFn: async () => client.listModels(),
+    queryFn: async () => client.getModels(),
   });
 
   const addons = useMemo(
@@ -111,7 +112,7 @@ export function AddonConsolePage({ addon }: { readonly addon?: string }) {
                         {entry.addon}
                       </h2>
                     </div>
-                    <Badge variant="outline">{entry.models.length} models</Badge>
+                    <Badge variant="default">{entry.models.length} models</Badge>
                   </div>
                   <p className="text-xs text-ink-muted">
                     {entry.models
@@ -140,7 +141,7 @@ export function AddonConsolePage({ addon }: { readonly addon?: string }) {
     return (
       <div className="space-y-6">
         <Breadcrumbs
-          items={[{ label: 'Addon Consoles', to: '/board/addons' }, { label: addon }]}
+          items={[{ label: 'Addon Consoles', href: '/board/addons' }, { label: addon }]}
         />
         <EmptyState
           title={`Addon "${addon}" not found`}
@@ -158,7 +159,7 @@ export function AddonConsolePage({ addon }: { readonly addon?: string }) {
   return (
     <div className="space-y-6">
       <Breadcrumbs
-        items={[{ label: 'Addon Consoles', to: '/board/addons' }, { label: activeAddon.addon }]}
+        items={[{ label: 'Addon Consoles', href: '/board/addons' }, { label: activeAddon.addon }]}
       />
 
       <PageHeader

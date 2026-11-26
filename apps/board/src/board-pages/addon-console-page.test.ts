@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test';
+import { describe, expect, it } from 'vitest';
 import { groupModelsByAddon, type AddonModelSummary } from './addon-console-helpers';
 
 const SAMPLE_MODELS: readonly AddonModelSummary[] = [

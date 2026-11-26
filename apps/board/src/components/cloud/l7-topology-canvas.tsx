@@ -177,7 +177,7 @@ export function L7TopologyCanvas({
         <div className="flex items-center gap-2">
           <GlobeIcon className="size-4 text-ink-muted" />
           <h3 className="font-mono text-xs uppercase tracking-[0.2em] text-ink-muted">{title}</h3>
-          <Badge variant="outline">
+          <Badge variant="default">
             {positionedNodes.length} nodes · {filtered.edges.length} L7 links
           </Badge>
         </div>
@@ -189,7 +189,7 @@ export function L7TopologyCanvas({
                 key={proto}
                 type="button"
                 size="sm"
-                variant={protocolFilter === proto ? 'primary' : 'ghost'}
+                variant={protocolFilter === proto ? 'default' : 'ghost'}
                 onClick={() => setProtocolFilter(proto)}
               >
                 {proto}
@@ -203,7 +203,7 @@ export function L7TopologyCanvas({
                 key={health}
                 type="button"
                 size="sm"
-                variant={healthFilter === health ? 'primary' : 'ghost'}
+                variant={healthFilter === health ? 'default' : 'ghost'}
                 onClick={() => setHealthFilter(health)}
               >
                 {health}

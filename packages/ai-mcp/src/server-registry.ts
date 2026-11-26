@@ -146,8 +146,15 @@ export function validateAgainstSchema(
   return { valid: errors.length === 0, errors };
 }
 
+interface StoredToolEntry {
+  readonly name: string;
+  readonly description: string;
+  readonly inputSchema: McpToolSchema;
+  readonly handler: (input: unknown) => Promise<unknown> | unknown;
+}
+
 export class McpServerRegistry {
-  private readonly tools = new Map<string, McpToolEntry<never, unknown>>();
+  private readonly tools = new Map<string, StoredToolEntry>();
   private readonly resources = new Map<string, McpResourceEntry>();
   private readonly prompts = new Map<string, McpPromptEntry>();
 
@@ -160,7 +167,12 @@ export class McpServerRegistry {
         name: entry.name,
       });
     }
-    this.tools.set(entry.name, entry);
+    this.tools.set(entry.name, {
+      name: entry.name,
+      description: entry.description,
+      inputSchema: entry.inputSchema,
+      handler: (input: unknown) => entry.handler(input as TInput),
+    });
     return this;
   }
 

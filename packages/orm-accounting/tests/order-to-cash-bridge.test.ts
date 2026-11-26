@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test';
+import { describe, expect, it } from 'vitest';
 import { OrderToCashBridge } from '../src/order-to-cash-bridge.js';
 
 describe('OrderToCashBridge', () => {

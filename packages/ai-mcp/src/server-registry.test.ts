@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test';
+import { describe, expect, it } from 'vitest';
 import { McpRegistryError, McpServerRegistry, validateAgainstSchema } from './server-registry.js';
 
 describe('server-registry', () => {

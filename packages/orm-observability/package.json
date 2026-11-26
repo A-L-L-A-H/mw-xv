@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@moonwitness/orm": "workspace:*",
+    "@moonwitness/orm-base": "workspace:*",
     "better-sqlite3": "^13.0.3",
     "knex": "^3.3.0"
   },

@@ -1,4 +1,4 @@
-export { manifest, rndSeedManifest } from './manifest.js';
+export { manifest } from './manifest.js';
 export {
   ResearchProgram,
   Hypothesis,

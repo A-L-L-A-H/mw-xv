@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test';
+import { describe, expect, it } from 'vitest';
 import { lintAbacRbacPolicies } from './abac-rbac-lint.js';
 
 describe('abac-rbac-lint', () => {
