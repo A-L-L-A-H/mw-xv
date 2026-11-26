@@ -2,34 +2,39 @@ mod radius_protocol;
 
 use anyhow::Result;
 use axum::{
+    Json, Router,
     extract::{Path, Request, State},
     http::StatusCode,
     middleware::{self, Next},
     response::Response,
     routing::{get, post},
-    Json, Router,
 };
 use clap::Parser;
 use hmac::{Hmac, Mac};
-use radius_protocol::{
-    acct_status, attr_type, codes, constant_time_eq, decode_packet, decrypt_pap_password,
-    encode_disconnect_request, encode_response, verify_accounting_authenticator,
-    verify_chap_password, verify_response_authenticator, RadiusAttribute,
-};
 use radius_protocol::attr_type as at;
+use radius_protocol::{
+    BandwidthProfile, RadiusAttribute, acct_status, attr_type, codes, constant_time_eq,
+    decode_packet, decrypt_pap_password, encode_disconnect_request, encode_response,
+    mikrotik_rate_limit_vsa, verify_accounting_authenticator, verify_chap_password,
+    verify_response_authenticator,
+};
 use sha2::Sha256;
 use sqlx::Row;
 use std::net::{Ipv4Addr, SocketAddr};
 use std::str::FromStr;
-use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
 use tokio::net::UdpSocket;
 use tokio::signal;
 use tracing::{debug, info, warn};
 
 #[derive(Parser, Debug)]
-#[command(name = "moonwitness-isp", version, about = "MoonWitness ISP & RADIUS Server")]
+#[command(
+    name = "moonwitness-isp",
+    version,
+    about = "MoonWitness ISP & RADIUS Server"
+)]
 struct Cli {
     #[arg(long, default_value = "0.0.0.0:1812")]
     radius_addr: String,
@@ -64,7 +69,8 @@ async fn main() -> Result<()> {
     let http_addr: SocketAddr = cli.http_addr.parse()?;
 
     let radius_db = db.clone();
-    let radius_handle = tokio::spawn(async move { run_radius_server(radius_addr, radius_db).await });
+    let radius_handle =
+        tokio::spawn(async move { run_radius_server(radius_addr, radius_db).await });
 
     let acct_db = db.clone();
     let acct_handle = tokio::spawn(async move { run_acct_server(acct_addr, acct_db).await });
@@ -72,7 +78,8 @@ async fn main() -> Result<()> {
     let http_db = db.clone();
     let admin_token = resolve_admin_token(cfg.admin_token.as_deref(), &cli.db_path)?;
     info!("Admin API bearer token resolved (source-verified, not logged)");
-    let http_handle = tokio::spawn(async move { run_http_server(http_addr, http_db, admin_token).await });
+    let http_handle =
+        tokio::spawn(async move { run_http_server(http_addr, http_db, admin_token).await });
 
     info!(
         "MoonWitness ISP server started (auth={}, acct={}, http={})",
@@ -157,8 +164,8 @@ fn resolve_admin_token(configured: Option<&str>, db_path: &str) -> Result<String
                 .filter(|v| !v.is_empty())
         });
     if let Some(secret) = internal_secret {
-        let mut mac = Hmac::<Sha256>::new_from_slice(secret.as_bytes())
-            .expect("HMAC accepts any key length");
+        let mut mac =
+            Hmac::<Sha256>::new_from_slice(secret.as_bytes()).expect("HMAC accepts any key length");
         mac.update(ADMIN_TOKEN_MESSAGE);
         return Ok(hex::encode(mac.finalize().into_bytes()));
     }
@@ -544,7 +551,11 @@ impl Database {
 
     /// Mark matching active sessions as terminated after a successful RFC 5176
     /// Disconnect-ACK (terminate cause 6 = Admin-Reset per RFC 2866 §5.4.6).
-    async fn mark_sessions_terminated(&self, username: &str, session_id: Option<&str>) -> Result<()> {
+    async fn mark_sessions_terminated(
+        &self,
+        username: &str,
+        session_id: Option<&str>,
+    ) -> Result<()> {
         sqlx::query(
             "UPDATE radius_sessions
              SET status = 'terminated', terminate_cause = 6, stopped_at = datetime('now'), updated_at = datetime('now')
@@ -627,7 +638,8 @@ impl Database {
             .await?;
         } else if rows.is_empty() {
             // No deltas to apply - this is a replay of an already-accumulated request
-            self.quota_duplicate_accumulations.fetch_add(1, Ordering::Relaxed);
+            self.quota_duplicate_accumulations
+                .fetch_add(1, Ordering::Relaxed);
         }
 
         // 2. Raise the high-water mark to the counters just accounted for.
@@ -787,7 +799,13 @@ async fn process_access_request(db: &Database, raw: &[u8], src_ip: &str) -> Opti
                 .map(RadiusAttribute::as_str)
                 .unwrap_or_else(|| "unknown".to_string());
             let _ = db
-                .log_auth(None, &username, false, src_ip, "Unknown or disabled NAS client")
+                .log_auth(
+                    None,
+                    &username,
+                    false,
+                    src_ip,
+                    "Unknown or disabled NAS client",
+                )
                 .await;
             return None;
         }
@@ -811,7 +829,10 @@ async fn process_access_request(db: &Database, raw: &[u8], src_ip: &str) -> Opti
             codes::ACCESS_REJECT,
             packet.identifier,
             &packet.authenticator,
-            &[RadiusAttribute::string(attr_type::REPLY_MESSAGE, "Missing User-Name")],
+            &[RadiusAttribute::string(
+                attr_type::REPLY_MESSAGE,
+                "Missing User-Name",
+            )],
             secret,
         ));
     }
@@ -839,7 +860,10 @@ async fn process_access_request(db: &Database, raw: &[u8], src_ip: &str) -> Opti
                 codes::ACCESS_REJECT,
                 packet.identifier,
                 &packet.authenticator,
-                &[RadiusAttribute::string(attr_type::REPLY_MESSAGE, "Internal error")],
+                &[RadiusAttribute::string(
+                    attr_type::REPLY_MESSAGE,
+                    "Internal error",
+                )],
                 secret,
             ));
         }
@@ -883,7 +907,13 @@ async fn process_access_request(db: &Database, raw: &[u8], src_ip: &str) -> Opti
 
     if !authenticated {
         let _ = db
-            .log_auth(Some(nas.id), &username, false, src_ip, "Authentication failed")
+            .log_auth(
+                Some(nas.id),
+                &username,
+                false,
+                src_ip,
+                "Authentication failed",
+            )
             .await;
         return Some(encode_response(
             codes::ACCESS_REJECT,
@@ -900,19 +930,16 @@ async fn process_access_request(db: &Database, raw: &[u8], src_ip: &str) -> Opti
     // Quota enforcement: reset if cadence window elapsed, then check limit.
     db.maybe_reset_quota(&username).await.ok()?;
     db.accumulate_quota_usage(&username).await.ok()?;
-    let fresh_usage: Option<i64> = sqlx::query_scalar(
-        "SELECT quota_used_bytes FROM subscribers WHERE username = ?1",
-    )
-    .bind(&username)
-    .fetch_optional(&db.pool)
-    .await
-    .ok()?;
+    let fresh_usage: Option<i64> =
+        sqlx::query_scalar("SELECT quota_used_bytes FROM subscribers WHERE username = ?1")
+            .bind(&username)
+            .fetch_optional(&db.pool)
+            .await
+            .ok()?;
     let quota_limit = subscriber.quota_bytes;
     if quota_limit > 0 && fresh_usage.unwrap_or(0) >= quota_limit {
         db.quota_exceeded_rejects.fetch_add(1, Ordering::Relaxed);
-        let _ = db
-            .mark_quota_disconnect(&username)
-            .await;
+        let _ = db.mark_quota_disconnect(&username).await;
         let _ = db
             .log_auth(
                 Some(nas.id),
@@ -934,12 +961,34 @@ async fn process_access_request(db: &Database, raw: &[u8], src_ip: &str) -> Opti
         ));
     }
 
+    // Filter-Id identifies the policy/profile for the NAS; bandwidth shaping
+    // belongs exclusively to MikroTik-Rate-Limit (M19.07). Connection types
+    // come from a closed set in our schema; bound the value defensively.
+    let filter_id = format!("policy-{}", subscriber.connection_type);
+    let filter_id = if filter_id.len() > 64 || !filter_id.is_ascii() {
+        "policy-unknown".to_string()
+    } else {
+        filter_id
+    };
+    // Never emit a malformed rate limit: an out-of-range profile is a config
+    // error, so fail closed rather than fall back to shaping via Filter-Id.
+    let rate_limit = mikrotik_rate_limit_vsa(&BandwidthProfile {
+        download_kbps: subscriber.download_kbps.max(0) as u64,
+        upload_kbps: subscriber.upload_kbps.max(0) as u64,
+        ..BandwidthProfile::default()
+    })
+    .map_err(|err| {
+        warn!(
+            "Refusing Access-Accept for {}: invalid bandwidth profile ({:?})",
+            username, err
+        );
+        err
+    })
+    .ok()?;
     let mut reply_attrs = vec![
         RadiusAttribute::string(attr_type::REPLY_MESSAGE, "Access-Accept"),
-        RadiusAttribute::string(
-            attr_type::FILTER_ID,
-            &format!("{}k/{}k", subscriber.download_kbps, subscriber.upload_kbps),
-        ),
+        RadiusAttribute::string(attr_type::FILTER_ID, &filter_id),
+        rate_limit,
     ];
     if let Some(ip_str) = subscriber.framed_ip.as_deref() {
         if let Ok(ip) = ip_str.parse::<Ipv4Addr>() {
@@ -1050,8 +1099,7 @@ async fn process_accounting_request(db: &Database, raw: &[u8], src_ip: &str) -> 
             "Accounting write failed; withholding Accounting-Response for session {} from {}: {}",
             session_id, src_ip, err
         );
-        db.accounting_acks_withheld
-            .fetch_add(1, Ordering::Relaxed);
+        db.accounting_acks_withheld.fetch_add(1, Ordering::Relaxed);
         return None;
     }
 
@@ -1091,7 +1139,8 @@ async fn run_acct_server(addr: SocketAddr, db: Database) -> Result<()> {
         match socket.recv_from(&mut buf).await {
             Ok((len, src)) => {
                 let src_ip = src.ip().to_string();
-                if let Some(response) = process_accounting_request(&db, &buf[..len], &src_ip).await {
+                if let Some(response) = process_accounting_request(&db, &buf[..len], &src_ip).await
+                {
                     let _ = socket.send_to(&response, src).await;
                 }
             }
@@ -1105,13 +1154,22 @@ fn build_http_router(db: Database, admin_token: String) -> Router {
     let protected = Router::new()
         .route("/api/clients", get(list_clients).post(create_client))
         .route("/api/clients/{ip}/rotate-secret", post(rotate_secret))
-        .route("/api/subscribers", get(list_subscribers).post(upsert_subscriber))
-        .route("/api/subscribers/{username}/suspend", post(suspend_subscriber))
+        .route(
+            "/api/subscribers",
+            get(list_subscribers).post(upsert_subscriber),
+        )
+        .route(
+            "/api/subscribers/{username}/suspend",
+            post(suspend_subscriber),
+        )
         .route("/api/sessions", get(list_sessions))
         .route("/api/sessions/disconnect", post(disconnect_session))
         .route("/api/stats", get(get_stats))
         .route("/metrics", get(get_metrics))
-        .route_layer(middleware::from_fn_with_state(state.clone(), require_bearer_auth));
+        .route_layer(middleware::from_fn_with_state(
+            state.clone(),
+            require_bearer_auth,
+        ));
     Router::new()
         .route("/health", get(health))
         .merge(protected)
@@ -1268,13 +1326,20 @@ async fn disconnect_session(
         (Some(ip), Some(sid)) => (Some(ip.clone()), Some(sid.clone())),
         _ => {
             let session = db
-                .find_active_session(&payload.username, payload.nas_ip.as_deref(), payload.framed_ip.as_deref())
+                .find_active_session(
+                    &payload.username,
+                    payload.nas_ip.as_deref(),
+                    payload.framed_ip.as_deref(),
+                )
                 .await
                 .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
             match session {
                 Some(row) => (
                     payload.nas_ip.clone().or(row.nas_ip.clone()),
-                    payload.acct_session_id.clone().or(Some(row.session_id.clone())),
+                    payload
+                        .acct_session_id
+                        .clone()
+                        .or(Some(row.session_id.clone())),
                 ),
                 None => (payload.nas_ip.clone(), payload.acct_session_id.clone()),
             }
@@ -1309,7 +1374,15 @@ async fn disconnect_session(
         }
     };
 
-    match send_disconnect_request(target, &nas_ip, &nas.secret, session_id.as_deref(), &payload).await {
+    match send_disconnect_request(
+        target,
+        &nas_ip,
+        &nas.secret,
+        session_id.as_deref(),
+        &payload,
+    )
+    .await
+    {
         Ok(ack) => {
             if ack {
                 if let Err(err) = db
@@ -1353,9 +1426,15 @@ async fn send_disconnect_request(
     let socket = UdpSocket::bind(bind_addr).await?;
     socket.connect(target).await?;
 
-    let mut attributes = vec![RadiusAttribute::string(attr_type::USER_NAME, &payload.username)];
+    let mut attributes = vec![RadiusAttribute::string(
+        attr_type::USER_NAME,
+        &payload.username,
+    )];
     if let Some(session_id) = session_id {
-        attributes.push(RadiusAttribute::string(attr_type::ACCT_SESSION_ID, session_id));
+        attributes.push(RadiusAttribute::string(
+            attr_type::ACCT_SESSION_ID,
+            session_id,
+        ));
     }
     if let Some(framed_ip) = payload.framed_ip.as_deref() {
         if let Ok(ip) = framed_ip.parse::<Ipv4Addr>() {
@@ -1366,11 +1445,14 @@ async fn send_disconnect_request(
     let packet = encode_disconnect_request(1, &attributes, secret.as_bytes());
     socket.send(&packet).await?;
 
-    let request_authenticator: [u8; 16] = packet[4..20].try_into().expect("authenticator is 16 bytes");
+    let request_authenticator: [u8; 16] =
+        packet[4..20].try_into().expect("authenticator is 16 bytes");
     let mut buf = [0u8; 4096];
     let (len, _src) = tokio::time::timeout(Duration::from_millis(1500), socket.recv_from(&mut buf))
         .await
-        .map_err(|_| anyhow::anyhow!("timed out waiting for Disconnect-ACK/NAK from {}", nas_ip))??;
+        .map_err(|_| {
+            anyhow::anyhow!("timed out waiting for Disconnect-ACK/NAK from {}", nas_ip)
+        })??;
 
     let reply = &buf[..len];
     let decoded = decode_packet(reply)
@@ -1438,7 +1520,12 @@ mod tests {
     use super::*;
     use bytes::{BufMut, BytesMut};
     use md5::{Digest, Md5};
-    use radius_protocol::{encrypt_pap_password, sign_accounting_request};
+    use radius_protocol::{
+        decode_vsa_value, encrypt_pap_password, mikrotik, mikrotik_rate_limit_vsa,
+        sign_accounting_request,
+    };
+    use serde::Deserialize;
+    use std::path::PathBuf;
 
     async fn test_db() -> (tempfile::TempDir, Database) {
         let dir = tempfile::tempdir().unwrap();
@@ -1446,6 +1533,156 @@ mod tests {
         let db = Database::new(db_path.to_str().unwrap()).await.unwrap();
         db.migrate().await.unwrap();
         (dir, db)
+    }
+
+    #[derive(Deserialize)]
+    struct RateLimitFixture {
+        name: String,
+        profile: FixtureProfile,
+        expected_value: String,
+        #[serde(default)]
+        expected_error: Option<String>,
+    }
+
+    #[derive(Deserialize)]
+    struct FixtureProfile {
+        download_kbps: u64,
+        upload_kbps: u64,
+        #[serde(default)]
+        burst_download_kbps: Option<u64>,
+        #[serde(default)]
+        burst_upload_kbps: Option<u64>,
+        #[serde(default)]
+        burst_time_seconds: Option<u64>,
+    }
+
+    impl From<&FixtureProfile> for BandwidthProfile {
+        fn from(p: &FixtureProfile) -> Self {
+            BandwidthProfile {
+                download_kbps: p.download_kbps,
+                upload_kbps: p.upload_kbps,
+                burst_download_kbps: p.burst_download_kbps,
+                burst_upload_kbps: p.burst_upload_kbps,
+                burst_time_seconds: p.burst_time_seconds,
+            }
+        }
+    }
+
+    fn rate_limit_fixture(name: &str) -> RateLimitFixture {
+        let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("tests/fixtures")
+            .join(name);
+        let text = std::fs::read_to_string(&path)
+            .unwrap_or_else(|e| panic!("fixture {} unreadable: {}", path.display(), e));
+        serde_json::from_str(&text)
+            .unwrap_or_else(|e| panic!("fixture {} invalid: {}", path.display(), e))
+    }
+
+    #[test]
+    fn mikrotik_rate_limit_fixtures_match_routeros_value_and_bounds() {
+        for name in [
+            "mikrotik_rate_limit_basic.json",
+            "mikrotik_rate_limit_burst.json",
+            "mikrotik_rate_limit_oversized.json",
+        ] {
+            let fixture = rate_limit_fixture(name);
+            let profile = BandwidthProfile::from(&fixture.profile);
+            match mikrotik_rate_limit_vsa(&profile) {
+                Ok(attr) => {
+                    assert!(fixture.expected_error.is_none(), "{}", fixture.name);
+                    assert_eq!(attr.attr_type, attr_type::VENDOR_SPECIFIC);
+                    assert_eq!(attr.value[0], mikrotik::RATE_LIMIT_ATTR);
+                    assert_eq!(&attr.value[2..6], &14988u32.to_be_bytes());
+                    assert_eq!(
+                        decode_vsa_value(&attr, mikrotik::VENDOR_ID, mikrotik::RATE_LIMIT_ATTR),
+                        Some(fixture.expected_value.as_bytes())
+                    );
+                }
+                Err(err) => assert_eq!(
+                    Some(err.to_string()),
+                    fixture.expected_error,
+                    "{}",
+                    fixture.name
+                ),
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn access_accept_carries_policy_filter_id_and_mikrotik_vsa() {
+        let (_dir, db) = test_db().await;
+        db.upsert_client("RouterOS NAS", "127.0.0.1", "nas-secret-1234")
+            .await
+            .unwrap();
+        db.upsert_subscriber(&UpsertSubscriberRequest {
+            username: "pppoe-user".to_string(),
+            password: "correct-horse-password".to_string(),
+            connection_type: Some("pppoe".to_string()),
+            framed_ip: None,
+            download_kbps: Some(50_000),
+            upload_kbps: Some(10_000),
+            status: Some("active".to_string()),
+        })
+        .await
+        .unwrap();
+
+        let request = build_pap_access_request(
+            7,
+            "pppoe-user",
+            "correct-horse-password",
+            b"nas-secret-1234",
+        );
+        let raw = process_access_request(&db, &request, "127.0.0.1")
+            .await
+            .expect("Access-Accept produced");
+        let accept = decode_packet(&raw).unwrap();
+        assert_eq!(accept.code, codes::ACCESS_ACCEPT);
+        assert_eq!(
+            accept
+                .attribute(attr_type::FILTER_ID)
+                .map(radius_protocol::RadiusAttribute::as_str),
+            Some("policy-pppoe".to_string())
+        );
+        let vsa = accept
+            .attributes
+            .iter()
+            .find(|a| a.attr_type == attr_type::VENDOR_SPECIFIC)
+            .expect("MikroTik VSA present");
+        assert_eq!(
+            decode_vsa_value(vsa, mikrotik::VENDOR_ID, mikrotik::RATE_LIMIT_ATTR),
+            Some("10000k/50000k".as_bytes())
+        );
+    }
+
+    #[tokio::test]
+    async fn invalid_bandwidth_profile_fails_closed_without_access_accept() {
+        let (_dir, db) = test_db().await;
+        db.upsert_client("RouterOS NAS", "127.0.0.1", "nas-secret-1234")
+            .await
+            .unwrap();
+        db.upsert_subscriber(&UpsertSubscriberRequest {
+            username: "bad-profile".to_string(),
+            password: "correct-horse-password".to_string(),
+            connection_type: Some("pppoe".to_string()),
+            framed_ip: None,
+            download_kbps: Some(0),
+            upload_kbps: Some(10_000),
+            status: Some("active".to_string()),
+        })
+        .await
+        .unwrap();
+
+        let request = build_pap_access_request(
+            8,
+            "bad-profile",
+            "correct-horse-password",
+            b"nas-secret-1234",
+        );
+        assert!(
+            process_access_request(&db, &request, "127.0.0.1")
+                .await
+                .is_none()
+        );
     }
 
     fn build_accounting_request(
@@ -1475,12 +1712,7 @@ mod tests {
         pkt.to_vec()
     }
 
-    fn build_pap_access_request(
-        id: u8,
-        username: &str,
-        password: &str,
-        secret: &[u8],
-    ) -> Vec<u8> {
+    fn build_pap_access_request(id: u8, username: &str, password: &str, secret: &[u8]) -> Vec<u8> {
         let req_auth = [0x11u8; 16];
         let encrypted = encrypt_pap_password(password, &req_auth, secret);
         let mut attrs = BytesMut::new();
@@ -1776,7 +2008,7 @@ mod tests {
     #[tokio::test]
     async fn http_router_enforces_bearer_auth_and_allows_health() {
         use axum::body::Body;
-        use axum::http::{header, Request};
+        use axum::http::{Request, header};
         use tower::ServiceExt;
 
         let (_dir, db) = test_db().await;
@@ -1839,8 +2071,8 @@ mod tests {
 
     #[tokio::test]
     async fn disconnect_session_sends_rfc5176_packet_and_marks_session_terminated() {
-        use axum::body::{to_bytes, Body};
-        use axum::http::{header, Method, Request};
+        use axum::body::{Body, to_bytes};
+        use axum::http::{Method, Request, header};
         use tower::ServiceExt;
 
         let (_dir, db) = test_db().await;
@@ -1872,11 +2104,13 @@ mod tests {
             let req = decode_packet(&buf[..len]).unwrap();
             assert_eq!(req.code, codes::DISCONNECT_REQUEST);
             assert_eq!(
-                req.attribute(attr_type::USER_NAME).map(RadiusAttribute::as_str),
+                req.attribute(attr_type::USER_NAME)
+                    .map(RadiusAttribute::as_str),
                 Some("fiber-cust-9".to_string())
             );
             assert_eq!(
-                req.attribute(attr_type::ACCT_SESSION_ID).map(RadiusAttribute::as_str),
+                req.attribute(attr_type::ACCT_SESSION_ID)
+                    .map(RadiusAttribute::as_str),
                 Some("sess-coa-900".to_string())
             );
             let ack = encode_response(
@@ -2016,9 +2250,17 @@ mod tests {
             .await
             .unwrap();
 
-        let octets = [(50_000u64, 50_000u64), (100_000, 100_000), (200_000, 200_000)];
+        let octets = [
+            (50_000u64, 50_000u64),
+            (100_000, 100_000),
+            (200_000, 200_000),
+        ];
         for (i, (input, output)) in octets.iter().enumerate() {
-            let status_type = if i == 0 { acct_status::START } else { acct_status::INTERIM_UPDATE };
+            let status_type = if i == 0 {
+                acct_status::START
+            } else {
+                acct_status::INTERIM_UPDATE
+            };
             db.record_accounting(
                 "sess-delta-001",
                 "delta-user",
@@ -2115,7 +2357,8 @@ mod tests {
         .unwrap();
 
         // First request triggers reset, should accept
-        let req = build_pap_access_request(11, "cadence-user", "cadence-pass", b"cadence-secret-123");
+        let req =
+            build_pap_access_request(11, "cadence-user", "cadence-pass", b"cadence-secret-123");
         let resp = decode_packet(
             &process_access_request(&db, &req, "127.0.0.1")
                 .await
@@ -2125,10 +2368,12 @@ mod tests {
         assert_eq!(resp.code, codes::ACCESS_ACCEPT);
 
         // Usage should be reset to 0
-        let usage: i64 = sqlx::query_scalar("SELECT quota_used_bytes FROM subscribers WHERE username = 'cadence-user'")
-            .fetch_one(db.pool())
-            .await
-            .unwrap();
+        let usage: i64 = sqlx::query_scalar(
+            "SELECT quota_used_bytes FROM subscribers WHERE username = 'cadence-user'",
+        )
+        .fetch_one(db.pool())
+        .await
+        .unwrap();
         assert_eq!(usage, 0);
     }
 
@@ -2185,17 +2430,23 @@ mod tests {
         assert_eq!(sessions_after[0].terminate_cause, Some(6));
 
         // Subsequent auth from same NAS with OLD secret should fail
-        let req_old = build_pap_access_request(12, "rotate-user", "rotate-pass", b"rotate-secret-old");
+        let req_old =
+            build_pap_access_request(12, "rotate-user", "rotate-pass", b"rotate-secret-old");
         let resp_old = decode_packet(
             &process_access_request(&db, &req_old, "127.0.0.1")
                 .await
                 .unwrap(),
         )
         .unwrap();
-        assert_eq!(resp_old.code, codes::ACCESS_REJECT, "Old secret should not authenticate");
+        assert_eq!(
+            resp_old.code,
+            codes::ACCESS_REJECT,
+            "Old secret should not authenticate"
+        );
 
         // Auth with NEW secret should work
-        let req_new = build_pap_access_request(13, "rotate-user", "rotate-pass", b"rotate-secret-new");
+        let req_new =
+            build_pap_access_request(13, "rotate-user", "rotate-pass", b"rotate-secret-new");
         let resp_new = decode_packet(
             &process_access_request(&db, &req_new, "127.0.0.1")
                 .await
@@ -2208,7 +2459,9 @@ mod tests {
     #[tokio::test]
     async fn accounting_request_with_db_failure_does_not_ack() {
         let (_dir, db) = test_db().await;
-        db.upsert_client("test-nas", "127.0.0.1", "secret").await.unwrap();
+        db.upsert_client("test-nas", "127.0.0.1", "secret")
+            .await
+            .unwrap();
 
         // Simulate a durable-write failure by closing the underlying pool so
         // every write path errors at the connection layer.
@@ -2243,7 +2496,9 @@ mod tests {
         let db_path = dir.path().join("isp_retrans.db");
         let db = Database::new(db_path.to_str().unwrap()).await.unwrap();
         db.migrate().await.unwrap();
-        db.upsert_client("test-nas", "127.0.0.1", "secret").await.unwrap();
+        db.upsert_client("test-nas", "127.0.0.1", "secret")
+            .await
+            .unwrap();
 
         // 1. DB unavailable: NAS sends Accounting-Request, server must not ACK.
         db.pool.close().await;
@@ -2281,7 +2536,10 @@ mod tests {
 
         let sessions = recovered.list_sessions().await.unwrap();
         assert_eq!(
-            sessions.iter().filter(|s| s.session_id == "sess-retrans-001").count(),
+            sessions
+                .iter()
+                .filter(|s| s.session_id == "sess-retrans-001")
+                .count(),
             1,
             "Retransmission must persist exactly one session row"
         );
@@ -2349,8 +2607,21 @@ mod tests {
         .unwrap();
 
         // START
-        let req = build_accounting_request(21, "giga-user", "sess-giga-001", acct_status::START, 0, 0, 0, b"giga-secret-12");
-        assert!(process_accounting_request(&db, &req, "127.0.0.1").await.is_some());
+        let req = build_accounting_request(
+            21,
+            "giga-user",
+            "sess-giga-001",
+            acct_status::START,
+            0,
+            0,
+            0,
+            b"giga-secret-12",
+        );
+        assert!(
+            process_accounting_request(&db, &req, "127.0.0.1")
+                .await
+                .is_some()
+        );
 
         // INTERIM: input wrapped twice (2 GiGa + 2e9 low), output 5 GiGa + 3e9.
         let mut pkt = BytesMut::new();
@@ -2360,7 +2631,8 @@ mod tests {
         pkt.extend_from_slice(&[0u8; 16]);
         RadiusAttribute::string(attr_type::USER_NAME, "giga-user").encode(&mut pkt);
         RadiusAttribute::string(attr_type::ACCT_SESSION_ID, "sess-giga-001").encode(&mut pkt);
-        RadiusAttribute::u32(attr_type::ACCT_STATUS_TYPE, acct_status::INTERIM_UPDATE).encode(&mut pkt);
+        RadiusAttribute::u32(attr_type::ACCT_STATUS_TYPE, acct_status::INTERIM_UPDATE)
+            .encode(&mut pkt);
         RadiusAttribute::u32(attr_type::ACCT_INPUT_OCTETS, 2_000_000_000).encode(&mut pkt);
         RadiusAttribute::u32(attr_type::ACCT_OUTPUT_OCTETS, 3_000_000_000).encode(&mut pkt);
         RadiusAttribute::u32(attr_type::ACCT_INPUT_GIGAWORDS, 2).encode(&mut pkt);
@@ -2369,7 +2641,11 @@ mod tests {
         let total = pkt.len() as u16;
         pkt[2..4].copy_from_slice(&total.to_be_bytes());
         sign_accounting_request(&mut pkt, b"giga-secret-12");
-        assert!(process_accounting_request(&db, &pkt, "127.0.0.1").await.is_some());
+        assert!(
+            process_accounting_request(&db, &pkt, "127.0.0.1")
+                .await
+                .is_some()
+        );
 
         // STOP at >2^32 total each direction, advancing past the interim totals:
         // input 6 GiGa + 5e9 low, output 5 GiGa + 3e9 low. Low 32-bit values are
@@ -2391,7 +2667,11 @@ mod tests {
         let total = stop.len() as u16;
         stop[2..4].copy_from_slice(&total.to_be_bytes());
         sign_accounting_request(&mut stop, b"giga-secret-12");
-        assert!(process_accounting_request(&db, &stop, "127.0.0.1").await.is_some());
+        assert!(
+            process_accounting_request(&db, &stop, "127.0.0.1")
+                .await
+                .is_some()
+        );
 
         let sessions = db.list_sessions().await.unwrap();
         assert_eq!(sessions.len(), 1);
@@ -2399,7 +2679,10 @@ mod tests {
         // 6 * 2^32 + 5e9 low bits (the low u32 is 5_000_000_000 mod 2^32 = 705_032_704).
         let expected_input = 6i64 * (1i64 << 32) + 705_032_704i64;
         assert_eq!(sess.acct_input_octets64, expected_input);
-        assert_eq!(sess.acct_output_octets64, 5i64 * (1i64 << 32) + 3_000_000_000i64);
+        assert_eq!(
+            sess.acct_output_octets64,
+            5i64 * (1i64 << 32) + 3_000_000_000i64
+        );
         assert_eq!(sess.status, "closed");
     }
 
@@ -2417,10 +2700,12 @@ mod tests {
         })
         .await
         .unwrap();
-        sqlx::query("UPDATE subscribers SET quota_bytes = 10000000000 WHERE username = 'giga-quota'")
-            .execute(db.pool())
-            .await
-            .unwrap();
+        sqlx::query(
+            "UPDATE subscribers SET quota_bytes = 10000000000 WHERE username = 'giga-quota'",
+        )
+        .execute(db.pool())
+        .await
+        .unwrap();
 
         // Interim with 1 GiGa wrap in each direction + 100MB low bits each.
         db.record_accounting(
@@ -2440,11 +2725,12 @@ mod tests {
         .unwrap();
         db.accumulate_quota_usage("giga-quota").await.unwrap();
 
-        let usage: i64 =
-            sqlx::query_scalar("SELECT quota_used_bytes FROM subscribers WHERE username = 'giga-quota'")
-                .fetch_one(db.pool())
-                .await
-                .unwrap();
+        let usage: i64 = sqlx::query_scalar(
+            "SELECT quota_used_bytes FROM subscribers WHERE username = 'giga-quota'",
+        )
+        .fetch_one(db.pool())
+        .await
+        .unwrap();
         // Must include the wrapped high bits: (2^32 + 1e8) * 2, not 2e8.
         assert_eq!(usage, 2i64 * ((1i64 << 32) + 100_000_000));
     }
@@ -2473,7 +2759,10 @@ mod tests {
         .unwrap();
 
         // A replayed older interim, then an exact duplicate, must be no-ops.
-        for (input, output, time) in [(1_000_000_000i64, 500_000_000i64, 1200i64), (5_000_000_000, 3_000_000_000, 3600)] {
+        for (input, output, time) in [
+            (1_000_000_000i64, 500_000_000i64, 1200i64),
+            (5_000_000_000, 3_000_000_000, 3600),
+        ] {
             db.record_accounting(
                 session,
                 user,
