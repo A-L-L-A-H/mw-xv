@@ -12784,7 +12784,7 @@
       "category": "architecture",
       "type": "feature",
       "priority": "p1",
-      "status": "doing",
+      "status": "done",
       "human": false,
       "owner": null,
       "assignee": null,
@@ -12802,7 +12802,7 @@
         {
           "id": "M19.06-ac-1",
           "text": "64-bit accounting with rollover and Gigawords fixtures",
-          "done": false
+          "done": true
         }
       ],
       "validation": {

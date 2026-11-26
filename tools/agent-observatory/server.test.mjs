@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
+import { existsSync } from 'node:fs';
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import test from 'node:test';
+import { pathToFileURL } from 'node:url';
 import {
   analyzeTrajectoryHealth,
   buildFlowGraph,
@@ -172,6 +174,162 @@ test('buildFlowGraph and computeAnalytics synthesize real topology and analytics
   assert.equal(analytics.runtimeBreakdown[0].cacheHitPct, 80);
   assert.equal(analytics.toolFrequency[0].name, 'edit_file');
   assert.equal(analytics.activityBuckets.length, 24);
+});
+
+
+async function createBrainRepoFixture() {
+  const sdkPath = path.resolve('packages/plan-taskos/dist/index.js');
+  assert.ok(existsSync(sdkPath), 'plan-taskos dist must be built before Brain API tests');
+  const sdk = await import(pathToFileURL(sdkPath).href);
+  const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'mw-obs-brain-'));
+  const planId = 'brain-demo';
+  const planDir = path.join(repoRoot, '.plan', planId);
+  const wavesDir = path.join(planDir, 'waves');
+  await mkdir(wavesDir, { recursive: true });
+  const manifest = {
+    schema_version: '1.0.0',
+    plan_id: planId,
+    title: 'Brain Demo',
+    repo: { org: 'demo', name: 'demo', target_branch: 'dev' },
+    adr_file: `.plan/${planId}/ADR.md`,
+    execution_policy: {
+      max_attempts_per_task: 3,
+      default_model_tier: 'flash',
+      escalation_chain: ['flash'],
+      require_clean_scope: true,
+      auto_commit: true,
+    },
+    projections: {
+      github_fold_mode: 'task',
+      taskos_project: 'demo',
+      orm_project_code: 'demo',
+    },
+    waves: [{ id: `${planId}:W1`, title: 'Wave 1', wave_file: 'waves/w1.json', depends_on: [] }],
+    documents: [],
+  };
+  const taskUrn = `urn:mw:work:demo:demo:${planId}:W1/${planId}.W1_T01`;
+  const task = {
+    urn: taskUrn,
+    code: `${planId}.W1_T01`,
+    kind: 'task',
+    title: 'Implement demo',
+    lifecycle: { status: 'todo', delivery_stage: 'local', attempts: 0, model_tier: 'flash' },
+    governance: { owner_files: ['src/demo.ts'], owner_globs: [], invariants: [] },
+    graph: { depends_on: [] },
+    verification: { commands: [{ cmd: 'bun test' }], acceptance_criteria: ['AC1'] },
+    knowledge: { spec_files: [], adr_files: [] },
+    projections: { taskos_code: `${planId}.W1_T01` },
+  };
+  await writeFile(path.join(planDir, 'manifest.json'), JSON.stringify(manifest), 'utf8');
+  await writeFile(
+    path.join(wavesDir, 'w1.json'),
+    JSON.stringify({
+      schema_version: '1.0.0',
+      plan_id: planId,
+      wave_id: `${planId}:W1`,
+      title: 'Wave 1',
+      tasks: [task],
+    }),
+    'utf8'
+  );
+  const dbPath = path.join(repoRoot, '.plan', '.brain', 'taskos.sqlite');
+  const seedStore = await sdk.openBrainStore({ dbPath, mode: 'sqlite' });
+  try {
+    sdk.initializeBrainSchema(seedStore);
+    await sdk.reindexBrainFromRepo(seedStore, repoRoot);
+    seedStore.run(
+      'INSERT INTO brain_meta (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value;',
+      `plan:${planId}:format`,
+      'plan-taskos/v1'
+    );
+    seedStore.run(
+      `INSERT INTO proof_ledger (envelope_sha256, task_urn, task_code, plan_id, wave_id, verify_exit_code, merkle_root)
+       VALUES (?, ?, ?, ?, ?, 0, ?)`,
+      'a'.repeat(64),
+      taskUrn,
+      task.code,
+      planId,
+      `${planId}:W1`,
+      'b'.repeat(64)
+    );
+    seedStore.run(
+      `INSERT INTO leases (lease_id, task_urn, agent_runtime, session_id, model_tier, expires_at)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      'lease-demo-1',
+      taskUrn,
+      'claude',
+      'sess-demo-1',
+      'flash',
+      '2099-01-01T00:00:00.000Z'
+    );
+  } finally {
+    seedStore.close();
+  }
+  return { repoRoot, sdk, planId, taskUrn };
+}
+
+test('Observatory Brain APIs and plan discovery surface v2 bundles and read-only Brain data', async () => {
+  const fixture = await createBrainRepoFixture();
+  const tmpHome = await mkdtemp(path.join(os.tmpdir(), 'mw-obs-brain-home-'));
+  const handle = await createObservatoryServer({
+    host: '127.0.0.1',
+    port: 0,
+    repo: fixture.repoRoot,
+    homeDir: tmpHome,
+    enableNetworkProbes: false,
+    enableAntigravityApi: false,
+    enableBackgroundTimers: false,
+  });
+  try {
+    const baseUrl = `http://127.0.0.1:${handle.address.port}`;
+    const plansResult = await collectPlans(fixture.repoRoot);
+    const v2Plan = plansResult.plans.find((entry) => entry.id === fixture.planId);
+    assert.ok(v2Plan, 'v2 plan bundle must be discovered');
+    assert.equal(v2Plan.format, 'plan-taskos/v1');
+    assert.equal(v2Plan.total, 1);
+    assert.equal(v2Plan.tasks[0].attempts, 0);
+    assert.equal(v2Plan.tasks[0].modelTier, 'flash');
+    assert.equal(v2Plan.proofSha256, 'a'.repeat(64));
+    assert.equal(v2Plan.merkleRoot, 'b'.repeat(64));
+    assert.equal(v2Plan.episodesCount, 0);
+
+    const searchResp = await fetch(`${baseUrl}/api/brain/search?q=demo`);
+    assert.equal(searchResp.status, 200);
+    assert.equal(searchResp.headers.get('cache-control'), 'no-store');
+    const search = await searchResp.json();
+    assert.ok(Array.isArray(search.results));
+    assert.ok(search.results.some((row) => row.urn === fixture.taskUrn));
+
+    const impactResp = await fetch(
+      `${baseUrl}/api/brain/impact?target=${encodeURIComponent(fixture.taskUrn)}`
+    );
+    assert.equal(impactResp.status, 200);
+    const impact = await impactResp.json();
+    assert.equal(impact.target, fixture.taskUrn);
+    assert.equal(impact.impactedTasks.length, 1);
+
+    const graphResp = await fetch(
+      `${baseUrl}/api/brain/graph?planId=${encodeURIComponent(fixture.planId)}`
+    );
+    assert.equal(graphResp.status, 200);
+    const graph = await graphResp.json();
+    assert.ok(graph.nodes.some((node) => node.urn === fixture.taskUrn));
+    assert.ok(Array.isArray(graph.edges));
+
+    const episodesResp = await fetch(`${baseUrl}/api/brain/episodes`);
+    assert.equal(episodesResp.status, 200);
+    const episodes = await episodesResp.json();
+    assert.equal(episodes.count, 0);
+    assert.equal(episodes.plans[fixture.planId].format, 'plan-taskos/v1');
+    assert.equal(episodes.plans[fixture.planId].merkleRoot, 'b'.repeat(64));
+
+    const missingTargetResp = await fetch(`${baseUrl}/api/brain/impact`);
+    assert.equal(missingTargetResp.status, 400);
+  } finally {
+    await handle.stop();
+    await rm(tmpHome, { recursive: true, force: true });
+    await rm(fixture.repoRoot, { recursive: true, force: true });
+  }
 });
 
 test('Observatory HTTP server serves static p5 bundle, state, export, SSRF-guarded probe, and SSE cleanly', async () => {

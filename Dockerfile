@@ -48,6 +48,7 @@ COPY packages/orm-governance/package.json ./packages/orm-governance/package.json
 COPY packages/orm-helpdesk/package.json ./packages/orm-helpdesk/package.json
 COPY packages/orm-income-ledger/package.json ./packages/orm-income-ledger/package.json
 COPY packages/orm-integration/package.json ./packages/orm-integration/package.json
+COPY packages/orm-identity/package.json ./packages/orm-identity/package.json
 COPY packages/orm-isp/package.json ./packages/orm-isp/package.json
 COPY packages/orm-knowledge/package.json ./packages/orm-knowledge/package.json
 COPY packages/orm-notification/package.json ./packages/orm-notification/package.json

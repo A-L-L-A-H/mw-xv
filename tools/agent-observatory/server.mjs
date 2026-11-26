@@ -8,12 +8,13 @@ import { Socket } from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { promisify } from 'node:util';
 
 const execFileAsync = promisify(execFile);
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(SCRIPT_DIR, '../..');
+const PLAN_TASKOS_DIST = path.join(REPO_ROOT, 'packages', 'plan-taskos', 'dist', 'index.js');
 const PUBLIC_DIR = path.join(SCRIPT_DIR, 'public');
 const VENDOR_P5_PATH = path.join(REPO_ROOT, 'vendor', 'p5', 'p5.min.js');
 const MW_ASSETS_DIR = path.join(REPO_ROOT, 'packages', 'assets');
@@ -529,6 +530,105 @@ export function buildPlanDag(tasks, waves, activeSessions = [], dirtyFiles = [])
   };
 }
 
+/** Lazy, graceful import of the pure plan-taskos SDK (works before `dist/` exists). */
+async function loadPlanTaskosSdk() {
+  try {
+    if (!existsSync(PLAN_TASKOS_DIST)) return null;
+    return await import(pathToFileURL(PLAN_TASKOS_DIST).href);
+  } catch {
+    return null;
+  }
+}
+
+/** Read-only Brain metadata for observatory plans (never writes to Git). */
+async function readBrainOverlay(repoRoot) {
+  const sdk = await loadPlanTaskosSdk();
+  if (!sdk) return null;
+  const dbPath = path.join(repoRoot, '.plan', '.brain', 'taskos.sqlite');
+  if (!existsSync(dbPath)) return null;
+  let store = null;
+  try {
+    store = await sdk.openBrainStore({ dbPath, mode: 'sqlite' });
+    const meta = {};
+    const formats = store.all('SELECT key, value FROM brain_meta WHERE key LIKE ?', 'plan:%:format');
+    for (const row of formats) {
+      const planId = String(row.key).slice('plan:'.length, -':format'.length);
+      meta[planId] = { format: String(row.value), merkleRoot: null };
+    }
+    for (const row of store.all('SELECT plan_id, merkle_root FROM proof_ledger ORDER BY recorded_at DESC')) {
+      meta[row.plan_id] ??= { format: null, merkleRoot: null };
+      meta[row.plan_id].merkleRoot ??= row.merkle_root || null;
+    }
+    const episodes = store.get('SELECT COUNT(*) AS count FROM episodic_memory');
+    const episodesCount = Number(episodes?.count ?? 0);
+    return { sdk, store, meta, episodesCount };
+  } catch {
+    store?.close();
+    return null;
+  }
+}
+
+/**
+ * Read-only per-plan Brain overlay. Every query is best-effort because a
+ * partially indexed or stale SQLite file must never break plan discovery.
+ */
+function readPlanBrainDetails(store, planId) {
+  const value = (sql, ...params) => {
+    try {
+      const row = store.get(sql, ...params);
+      return row && typeof row === 'object' ? row : null;
+    } catch {
+      return null;
+    }
+  };
+  return {
+    proofSha256: value(
+      'SELECT envelope_sha256 FROM proof_ledger WHERE plan_id = ? ORDER BY recorded_at DESC LIMIT 1;',
+      planId
+    )?.envelope_sha256 ?? null,
+    merkleRoot: value(
+      'SELECT merkle_root FROM proof_ledger WHERE plan_id = ? ORDER BY recorded_at DESC LIMIT 1;',
+      planId
+    )?.merkle_root ?? null,
+    };
+}
+
+/**
+ * Enrich already-discovered plans with read-only Brain metadata. Never writes
+ * to the SQLite file or Git, and returns the plans unchanged if the Brain is absent.
+ */
+async function attachBrainMetadata(repoRoot, plans) {
+  const overlay = await readBrainOverlay(repoRoot);
+  if (!overlay) return plans;
+  try {
+    const { store, meta } = overlay;
+    const leaseRows = store.all(
+      'SELECT task_urn, agent_runtime, model_tier FROM leases WHERE released = 0;'
+    );
+    const leasesByUrn = new Map();
+    for (const row of Array.isArray(leaseRows) ? leaseRows : []) {
+      const urn = String(row.task_urn);
+      leasesByUrn.set(urn, row);
+      leasesByUrn.set(urn.slice(urn.lastIndexOf('/') + 1), row);
+    }
+    for (const plan of plans) {
+      const details = readPlanBrainDetails(store, plan.id);
+      plan.proofSha256 = details.proofSha256;
+      plan.merkleRoot = details.merkleRoot ?? meta[plan.id]?.merkleRoot ?? null;
+      plan.format = meta[plan.id]?.format ?? plan.format ?? null;
+      plan.episodesCount = overlay.episodesCount;
+      for (const task of plan.tasks) {
+        const lease = leasesByUrn.get(task.urn) ?? leasesByUrn.get(task.id);
+        task.leaseOwner = lease ? String(lease.agent_runtime) : null;
+        task.modelTier = lease?.model_tier ? String(lease.model_tier) : (task.modelTier ?? null);
+      }
+    }
+    return plans;
+  } finally {
+    overlay.store.close();
+  }
+}
+
 export async function collectPlans(repoRoot) {
   const planDir = path.join(repoRoot, '.plan');
   if (!existsSync(planDir)) return { plans: [], defaultPlanId: null };
@@ -649,6 +749,65 @@ export async function collectPlans(repoRoot) {
     });
   }
 
+  // T40: surface v2 bundles discovered by @moonwitness/plan-taskos alongside
+  // legacy markdown plans. The SDK also maps legacy markdown plans into the
+  // same bundle shape, so only `plan-taskos/v1` bundles are additive here.
+  const sdk = await loadPlanTaskosSdk();
+  if (sdk) {
+    const bundles = await sdk.discoverPlans(repoRoot);
+    for (const bundle of bundles) {
+      if (bundle.format !== 'plan-taskos/v1') continue;
+      const planId = bundle.manifest.plan_id;
+      if (plans.some((planEntry) => planEntry.id === planId)) continue;
+      const tasks = bundle.waves.flatMap((wave) =>
+        wave.tasks.map((task) => ({
+          urn: task.urn,
+          id: task.code,
+          title: task.title,
+          done: task.lifecycle.status === 'done',
+          wave: wave.title,
+          playbook: bundle.source_path,
+          ownerFiles: task.governance.owner_files.join(', '),
+          dependsOn: task.graph.depends_on.join(', '),
+          depIds: [...task.graph.depends_on],
+          dependents: [],
+          dagState: task.lifecycle.status === 'done' ? 'done' : 'blocked',
+          acceptance: task.verification.acceptance_criteria.join(' | '),
+          expected: '',
+          verify: task.verification.commands.map((cmd) => cmd.cmd).join(' | '),
+          spec: task.knowledge.spec_files?.join(', ') || '',
+          commitSha: null,
+          commitSubject: null,
+          proofSha256: null,
+          attempts: task.lifecycle.attempts,
+          leaseOwner: null,
+          modelTier: task.lifecycle.model_tier || null,
+        }))
+      );
+      const doneCount = tasks.filter((task) => task.done).length;
+      plans.push({
+        id: planId,
+        title: bundle.manifest.title,
+        masterFile: `.plan/${planId}.md`,
+        waveFiles: bundle.manifest.waves.map((wave) => wave.wave_file),
+        updatedAt: null,
+        total: tasks.length,
+        done: doneCount,
+        percent: tasks.length > 0 ? Math.round((doneCount / tasks.length) * 1000) / 10 : 0,
+        nextTaskId: tasks.find((task) => !task.done)?.id || null,
+        nextTaskTitle: tasks.find((task) => !task.done)?.title || null,
+        waves: bundle.waves.map((wave) => {
+          const total = wave.tasks.length;
+          const done = wave.tasks.filter((task) => task.lifecycle.status === 'done').length;
+          return { title: wave.title, done, total, percent: total > 0 ? Math.round((done / total) * 100) : 0 };
+        }),
+        tasks,
+        dag: null,
+        format: bundle.format,
+      });
+    }
+  }
+  await attachBrainMetadata(repoRoot, plans);
   plans.sort((left, right) => (right.updatedAt || '').localeCompare(left.updatedAt || ''));
   const preferred =
     plans.find((planEntry) => planEntry.id === 'coolify-sovereign-paas-single-db') ||
@@ -4467,6 +4626,43 @@ export async function createObservatoryServer(options = {}) {
         'Content-Type': 'application/json; charset=utf-8',
       });
       httpResponse.end(JSON.stringify(docPayload));
+      return;
+    }
+
+    if (reqUrl.pathname.startsWith('/api/brain/')) {
+      const overlay = await readBrainOverlay(repoRoot);
+      let result = { error: 'Brain index unavailable' };
+      let status = 503;
+      try {
+        if (overlay) {
+          const { sdk, store } = overlay;
+          if (reqUrl.pathname === '/api/brain/search') {
+            const query = reqUrl.searchParams.get('q') || '';
+            result = query
+              ? await sdk.hybridRecall(store, { query, limit: 15 })
+              : { mode: 'lexical_only', results: [] };
+            status = 200;
+          } else if (reqUrl.pathname === '/api/brain/impact') {
+            const target = reqUrl.searchParams.get('target') || '';
+            result = target ? sdk.queryBlastRadiusImpact(store, target) : { error: 'Missing target' };
+            status = target ? 200 : 400;
+          } else if (reqUrl.pathname === '/api/brain/graph') {
+            const planId = reqUrl.searchParams.get('planId') || undefined;
+            result = sdk.exportSubgraph(store, { ...(planId ? { planId } : {}) });
+            status = 200;
+          } else if (reqUrl.pathname === '/api/brain/episodes') {
+            result = { count: overlay.episodesCount, plans: overlay.meta };
+            status = 200;
+          }
+        }
+      } finally {
+        overlay?.store.close();
+      }
+      httpResponse.writeHead(status, {
+        ...SECURITY_HEADERS,
+        'Content-Type': 'application/json; charset=utf-8',
+      });
+      httpResponse.end(JSON.stringify(result));
       return;
     }
 

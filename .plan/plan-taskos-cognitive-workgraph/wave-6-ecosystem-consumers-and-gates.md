@@ -77,7 +77,7 @@
 
 ---
 
-## - [ ] T40 — Wire Standalone `tools/agent-observatory/server.mjs` to `@moonwitness/plan-taskos` Brain DB
+## - [x] T40 — Wire Standalone `tools/agent-observatory/server.mjs` to `@moonwitness/plan-taskos` Brain DB
 
 - **Owner File(s):** `tools/agent-observatory/server.mjs`, `tools/agent-observatory/server.test.mjs`
   - `tools/agent-observatory/server.mjs` (MODIFY)
@@ -101,7 +101,7 @@
 
 ---
 
-## - [ ] T41 — Add Read-Only Plan-TaskOS Brain Tools to `packages/mcp-moonwitness`
+## - [x] T41 — Add Read-Only Plan-TaskOS Brain Tools to `packages/mcp-moonwitness`
 
 - **Owner File(s):** `packages/mcp-moonwitness/package.json`, `packages/mcp-moonwitness/src/plan-brain.ts`, `packages/mcp-moonwitness/src/server.ts`, `packages/mcp-moonwitness/tests/plan-brain.test.ts`
   - `packages/mcp-moonwitness/package.json` (MODIFY — add `"@moonwitness/plan-taskos": "workspace:*"`)
@@ -126,7 +126,7 @@
 
 ---
 
-## - [ ] T42 — Add OpenTelemetry Plan-TaskOS Lifecycle Spans & Metrics in `apps/agent-observability`
+## - [x] T42 — Add OpenTelemetry Plan-TaskOS Lifecycle Spans & Metrics in `apps/agent-observability`
 
 - **Owner File(s):** `apps/agent-observability/package.json`, `apps/agent-observability/src/plan-telemetry.ts`, `apps/agent-observability/src/index.ts`, `apps/agent-observability/tests/plan-telemetry.test.ts`
   - `apps/agent-observability/package.json` (MODIFY — add `"@moonwitness/plan-taskos": "workspace:*"`)
@@ -148,7 +148,7 @@
 
 ---
 
-## - [ ] T43 — Add TaskOS v2 & GitHub Sync Parity Verification Test (`scripts/tasks/plan-taskos-parity.test.mjs`)
+## - [x] T43 — Add TaskOS v2 & GitHub Sync Parity Verification Test (`scripts/tasks/plan-taskos-parity.test.mjs`)
 
 - **Owner File(s):** `scripts/tasks/plan-taskos-parity.test.mjs`
   - `scripts/tasks/plan-taskos-parity.test.mjs` (CREATE)
@@ -167,7 +167,7 @@
 
 ---
 
-## - [ ] T44 — Full Workspace Generator Sync, Boundary Gates & Ledger Closeout
+## - [x] T44 — Full Workspace Generator Sync, Boundary Gates & Ledger Closeout
 
 - **Owner File(s):** `docs:generate`, `bun.lock`, `.plan/plan-taskos-cognitive-workgraph.md`
   - Generated docs/diagrams from `docs:generate` & `architecture:generate` (MODIFY if changed)

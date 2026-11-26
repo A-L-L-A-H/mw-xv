@@ -21,6 +21,7 @@
       "version": "1.0.0-rc.1",
       "dependencies": {
         "@moonwitness/orm-observability": "workspace:*",
+        "@moonwitness/plan-taskos": "workspace:*",
         "@opentelemetry/api": "1.10.0",
         "@opentelemetry/api-logs": "0.223.0",
         "@opentelemetry/exporter-logs-otlp-http": "0.301.2",
@@ -456,6 +457,7 @@
       },
       "dependencies": {
         "@moonwitness/orm": "workspace:*",
+        "@moonwitness/plan-taskos": "workspace:*",
         "@moonwitness/types": "workspace:*",
       },
       "devDependencies": {

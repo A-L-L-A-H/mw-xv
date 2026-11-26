@@ -46,7 +46,7 @@ describe('MoonWitnessMcpServer protocol', () => {
     expect(response.result).toEqual({});
   });
 
-  it('lists exactly the six read-only tools with R0 annotations', async () => {
+  it('lists all nine read-only tools with R0 annotations', async () => {
     const server = new MoonWitnessMcpServer();
     const response = await server.handleRequest({ jsonrpc: '2.0', id: 3, method: 'tools/list' });
     const tools = (
@@ -61,6 +61,9 @@ describe('MoonWitnessMcpServer protocol', () => {
       'mw_count',
       'mw_taskos_summary',
       'mw_api_health',
+      'plan_status',
+      'plan_recall',
+      'plan_impact',
     ]);
     for (const tool of tools) {
       expect(tool.annotations.readOnly).toBe(true);
@@ -108,7 +111,7 @@ describe('MoonWitnessMcpServer protocol', () => {
     const text = (response.result as { content: Array<{ text: string }> }).content[0].text;
     const summary = JSON.parse(text) as { format: string; totalTasks: number };
     expect(summary.format).toBe('moonwitness-tasks/v2');
-    expect(summary.totalTasks).toBe(637);
+    expect(summary.totalTasks).toBe(715);
   });
 
   it('probes health against an unreachable port and reports ok:false without throwing', async () => {
@@ -180,10 +183,10 @@ describe('taskos summary', () => {
     const summary = await summarizeTaskos(path.join(repoRoot, 'docs', 'tasks', 'tasks.json'));
     expect(summary.format).toBe('moonwitness-tasks/v2');
     expect(summary.schemaVersion).toBe('2.0.0');
-    expect(summary.totalTasks).toBe(637);
-    expect(summary.byStatus['done']).toBe(468);
-    expect(summary.byProject['moonwitness']).toBe(528);
-    expect(summary.byPriority['p1']).toBe(283);
+    expect(summary.totalTasks).toBe(715);
+    expect(summary.byStatus['done']).toBe(484);
+    expect(summary.byProject['moonwitness']).toBe(606);
+    expect(summary.byPriority['p1']).toBe(327);
   });
 });
 
