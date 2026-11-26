@@ -38,7 +38,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - Manual verification: digest-only bootstrap token model, partial unique index for one active token per installation scope, atomic consume restricted to unconsumed/unrevoked/unexpired rows, operator-only `bootstrap:token` script with one-time stdout raw token and redacted errors; no public HTTP route was added.
   - Commit: a5abf8cc feat(identity): add bootstrap token operator CLI for I22; ccc9f913 fix(identity): preserve bootstrap error cause for I22
 
-#### - [ ] I23 — Add bootstrap-state service and setup-status endpoint
+#### - [x] I23 — Add bootstrap-state service and setup-status endpoint
 
 - **Owner File(s):** apps/id/src/bootstrap/bootstrap-state.ts; apps/id/src/bootstrap/bootstrap-state.test.ts; apps/id/src/routes/bootstrap.routes.ts; apps/id/src/server.ts
 - **Depends On:** I22, I11, I14
@@ -50,12 +50,16 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - Add a GET setup-status route and wire it into apps/id server.
 - **DO NOT:** Do not return whether a particular email/account exists or expose bootstrap-token metadata.
 - **Acceptance Criteria:**
-  - [ ] Fresh DB reports setup required only when a valid bootstrap token is available.
-  - [ ] Consumed/expired token or existing Platform Owner disables setup.
-  - [ ] Route response is stable and contains no secret details.
+  - [x] Fresh DB reports setup required only when a valid bootstrap token is available. 
+  - [x] Consumed/expired token or existing Platform Owner disables setup. 
+  - [x] Route response is stable and contains no secret details. 
 - **Verify:** bun --filter @moonwitness/id test; bun --filter @moonwitness/id build.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append exact command, result and commit SHA here.
+- **Evidence:**
+  - Command: `bun --filter @moonwitness/id test` — passed (9 files, 40 tests)
+  - Command: `bun --filter @moonwitness/id build` — passed (tsc exited 0)
+  - Manual verification: `/setup-status` is registered in the Identity server and emits only `{ setupRequired }` with no-store; service checks unconsumed, unrevoked, unexpired tokens with a boolean SQL query and fails closed on database or owner-check errors; an injected platform-owner checker permanently disables setup without leaking account data.
+  - Commit: pending I23 implementation commit
 
 #### - [ ] I24 — Add atomic first Platform Owner creation service
 
