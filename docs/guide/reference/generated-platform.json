@@ -918,6 +918,7 @@
       "test:knowledge-cli:built": "node --test scripts/knowledge/validate.test.mjs scripts/knowledge/snapshot.test.mjs scripts/knowledge/legacy-inventory.test.mjs scripts/knowledge/ingest.test.mjs scripts/knowledge/revelation-identity.test.mjs scripts/knowledge/rebuild.test.mjs",
       "test:maintenance-incidents": "node --test scripts/maintenance-incident.test.mjs",
       "test:package-manager": "node --test scripts/package-manager.test.mjs",
+      "test:pipeline-gates": "node --test scripts/ci-gate.test.mjs scripts/review-ci-evidence.test.mjs scripts/release-await-ci.test.mjs scripts/github-rulesets.test.mjs scripts/promotion-policy-gate.test.mjs scripts/roadmap/resolve-gate-failure-issue.test.mjs scripts/roadmap/gate-failure-issue.test.mjs",
       "test:platform-audit": "node --test scripts/platform-audit.test.mjs",
       "test:promotion-policy": "node --test scripts/git-range.test.mjs scripts/promotion-risk.test.mjs scripts/promotion-approval.test.mjs",
       "test:promotion-report": "node --test scripts/render-promotion-report.test.mjs",
@@ -10925,5 +10926,5 @@
       "path": "/whatsapp/readyz"
     }
   ],
-  "generatedFromSha256": "1e277a3d66c195621721ffad0b8473264ac094e67634e183324c9eef73ecbf97"
+  "generatedFromSha256": "40de80590b1bc75044fa7b4741ac05b6c105d62641e3e7d04532a5786c7d1ae1"
 }
