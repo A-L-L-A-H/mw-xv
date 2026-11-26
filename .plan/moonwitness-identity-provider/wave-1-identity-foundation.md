@@ -81,7 +81,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
     - Command: bun --filter @moonwitness/id build — passed (tsc exited 0)
     - Command: bun --filter @moonwitness/id test — passed (1 file, 3 tests)
     - Manual verification: Node 24 Fastify service with build/dev/start/test scripts; injectable logger, config and database; no business routes/addon imports; smoke tests cover startup/shutdown
-    - Commit: PENDING_I09_COMMIT
+    - Commit: 589c4c59 feat(id): scaffold apps/id service entry point for I09
 
 #### - [ ] I10 — Add strict Identity environment and configuration validation
 
