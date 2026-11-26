@@ -425,6 +425,26 @@ export const CLOUD_ROUTE_ACCESS_MATRIX: readonly CloudRouteAccessRule[] = Object
     feature: 'provisioning',
     resourceId: false,
   },
+  {
+    method: 'GET',
+    path: '/api/cloud/system/update',
+    operation: 'control_plane.services',
+    model: 'cloud.app',
+    permission: 'read',
+    adminOnly: true,
+    feature: 'controlPlane',
+    resourceId: false,
+  },
+  {
+    method: 'POST',
+    path: '/api/cloud/system/update/apply',
+    operation: 'provisioning.request',
+    model: 'cloud.app',
+    permission: 'write',
+    adminOnly: true,
+    feature: 'controlPlane',
+    resourceId: false,
+  },
 ]);
 
 const AMBIGUOUS_TIMEOUT_MARKER = 'PROVIDER_TIMEOUT_AMBIGUOUS';
@@ -587,8 +607,12 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
 
     // Per-route rate limits, activated by @fastify/rate-limit when the host app
     // registers it with `global: false` (see packages/orm-observability/src/http-plugin.ts).
-    const READ_RATE_LIMIT = { config: { rateLimit: { max: 120, timeWindow: '1 minute' } } } as const;
-    const WRITE_RATE_LIMIT = { config: { rateLimit: { max: 30, timeWindow: '1 minute' } } } as const;
+    const READ_RATE_LIMIT = {
+      config: { rateLimit: { max: 120, timeWindow: '1 minute' } },
+    } as const;
+    const WRITE_RATE_LIMIT = {
+      config: { rateLimit: { max: 30, timeWindow: '1 minute' } },
+    } as const;
 
     const mark = (
       operation: CloudOperation,
@@ -754,213 +778,324 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       return { success: true, data: readCloudReadiness(validation) };
     });
 
-    fastify.post<{ Params: { id: string } }>('/api/cloud/apps/:id/deploy', WRITE_RATE_LIMIT, async (req, reply) => {
-      const rule = ruleFor('/api/cloud/apps/:id/deploy');
-      const ctx = requireAuthorizedModelAccess(req, reply, rule);
-      if (!ctx) return;
-      if (!requireFeature(reply, rule)) return;
-      if (!requireToken(reply, rule)) return;
+    fastify.post<{ Params: { id: string } }>(
+      '/api/cloud/apps/:id/deploy',
+      WRITE_RATE_LIMIT,
+      async (req, reply) => {
+        const rule = ruleFor('/api/cloud/apps/:id/deploy');
+        const ctx = requireAuthorizedModelAccess(req, reply, rule);
+        if (!ctx) return;
+        if (!requireFeature(reply, rule)) return;
+        if (!requireToken(reply, rule)) return;
 
-      const appId = parsePositiveId(req.params.id);
-      if (!appId) {
-        mark(rule.operation, 'invalid');
-        return reply.code(400).send({ success: false, error: 'Invalid cloud app ID' });
-      }
-      const cloudApp = await scopedApp(appId, ctx.companyId);
-      if (!cloudApp) {
-        mark(rule.operation, 'denied');
-        return reply.code(404).send({ success: false, error: 'Cloud app not found' });
-      }
-
-      let idempotencyKey: string | undefined;
-      let storeKey: string | undefined;
-      let fingerprint: string | undefined;
-      let pendingReservationId: string | undefined;
-      try {
-        idempotencyKey = readIdempotencyKey(req);
-        if (idempotencyKey) {
-          storeKey = idempotencyStoreKey(ctx.companyId, idempotencyKey);
-          fingerprint = idempotencyPayloadFingerprint({
-            appId: cloudApp.id,
-            image: cloudApp.image,
-            imageTag: cloudApp.image_tag,
-            targetId: cloudApp.deployment_target_id,
-            env: parseEnvVars(cloudApp.env_vars),
-            volumes: parseVolumes(cloudApp.volumes),
-            hostPort: cloudApp.host_port,
-            port: cloudApp.port,
-            domain: cloudApp.domain,
-          });
+        const appId = parsePositiveId(req.params.id);
+        if (!appId) {
+          mark(rule.operation, 'invalid');
+          return reply.code(400).send({ success: false, error: 'Invalid cloud app ID' });
         }
-      } catch (error) {
-        mark(rule.operation, 'invalid');
-        return reply.code(400).send({
-          success: false,
-          code: error instanceof CloudIdempotencyError ? error.code : 'INVALID_IDEMPOTENCY_KEY',
-          error: error instanceof Error ? error.message : 'Invalid idempotency key',
-        });
-      }
-
-      const performDeploy = async (): Promise<DeployOutcome> => {
-        if (cloudApp.subscription_id) {
-          const subscription = await Subscription.query().findOne({
-            id: cloudApp.subscription_id,
-            company_id: ctx.companyId,
-            active: true,
-          });
-          if (!subscription || subscription.state !== 'active') {
-            mark(rule.operation, 'denied');
-            return {
-              statusCode: 402,
-              body: {
-                success: false,
-                code: 'SUBSCRIPTION_INACTIVE',
-                error: subscription
-                  ? 'Linked subscription is not active'
-                  : 'Linked subscription is missing',
-              },
-            };
-          }
+        const cloudApp = await scopedApp(appId, ctx.companyId);
+        if (!cloudApp) {
+          mark(rule.operation, 'denied');
+          return reply.code(404).send({ success: false, error: 'Cloud app not found' });
         }
 
-        // Reservation boundary: the quota ledger is the capacity authority. A
-        // missing ledger is a safe no-op; a configured ledger fails closed.
-        if (quotaLedger) {
-          const imageRefForQuota = `${cloudApp.image}:${cloudApp.image_tag ?? 'latest'}`;
-          const reservationKey =
-            storeKey ??
-            idempotencyStoreKey(
-              ctx.companyId,
-              idempotencyPayloadFingerprint({
-                appId: cloudApp.id,
-                imageRef: imageRefForQuota,
-                targetId: cloudApp.deployment_target_id,
-              })
-            );
-          try {
-            const outcome = await quotaLedger.reserve({
-              scope: { companyId: ctx.companyId, resource: 'cloud.app.deploy' },
-              idempotencyKey: reservationKey,
-              units: quotaUnits,
-              capacity: quotaCapacity,
+        let idempotencyKey: string | undefined;
+        let storeKey: string | undefined;
+        let fingerprint: string | undefined;
+        let pendingReservationId: string | undefined;
+        try {
+          idempotencyKey = readIdempotencyKey(req);
+          if (idempotencyKey) {
+            storeKey = idempotencyStoreKey(ctx.companyId, idempotencyKey);
+            fingerprint = idempotencyPayloadFingerprint({
+              appId: cloudApp.id,
+              image: cloudApp.image,
+              imageTag: cloudApp.image_tag,
+              targetId: cloudApp.deployment_target_id,
+              env: parseEnvVars(cloudApp.env_vars),
+              volumes: parseVolumes(cloudApp.volumes),
+              hostPort: cloudApp.host_port,
+              port: cloudApp.port,
+              domain: cloudApp.domain,
             });
-            if (!outcome.allowed || !outcome.reservation) {
+          }
+        } catch (error) {
+          mark(rule.operation, 'invalid');
+          return reply.code(400).send({
+            success: false,
+            code: error instanceof CloudIdempotencyError ? error.code : 'INVALID_IDEMPOTENCY_KEY',
+            error: error instanceof Error ? error.message : 'Invalid idempotency key',
+          });
+        }
+
+        const performDeploy = async (): Promise<DeployOutcome> => {
+          if (cloudApp.subscription_id) {
+            const subscription = await Subscription.query().findOne({
+              id: cloudApp.subscription_id,
+              company_id: ctx.companyId,
+              active: true,
+            });
+            if (!subscription || subscription.state !== 'active') {
               mark(rule.operation, 'denied');
               return {
                 statusCode: 402,
                 body: {
                   success: false,
-                  code: outcome.code ?? 'PAAS_QUOTA_RESERVATION_EXCEEDED',
-                  error: 'Provisioning quota exceeded',
+                  code: 'SUBSCRIPTION_INACTIVE',
+                  error: subscription
+                    ? 'Linked subscription is not active'
+                    : 'Linked subscription is missing',
                 },
               };
             }
-            pendingReservationId = outcome.reservation.id;
-          } catch {
-            mark(rule.operation, 'denied');
-            return {
-              statusCode: 503,
-              body: {
-                success: false,
-                code: 'CLOUD_QUOTA_UNAVAILABLE',
-                error: 'Provisioning quota is unavailable',
-              },
-            };
           }
-        }
 
-        const assignedTarget = await scopedTarget(cloudApp.deployment_target_id, ctx.companyId);
-        let effectiveTarget = assignedTarget;
-        if (assignedTarget?.ha_group && assignedTarget.health_status === 'offline') {
-          const peers = await CloudDeploymentTarget.query().where({
-            company_id: ctx.companyId,
-            ha_group: assignedTarget.ha_group,
-            active: true,
-          });
-          effectiveTarget = selectHealthyDeploymentTarget(peers) ?? assignedTarget;
-        }
-
-        const server = await scopedServer(effectiveTarget?.server_id, ctx.companyId);
-        const provider = await scopedProvider(server?.provider_id, ctx.companyId);
-        const imageRef = `${cloudApp.image}:${cloudApp.image_tag ?? 'latest'}`;
-        const startedAt = new Date().toISOString().slice(0, 19);
-        const deployment = await CloudDeployment.query().insertAndFetch({
-          company_id: ctx.companyId,
-          app_id: cloudApp.id,
-          version: storeKey && fingerprint ? `idem:${storeKey}:${fingerprint}` : undefined,
-          image_tag: cloudApp.image_tag ?? 'latest',
-          status: 'pending',
-          trigger: 'manual',
-          started_at: startedAt,
-        });
-
-        const finalize = async (patch: Record<string, unknown>, outcome: DeployOutcome) => {
-          await CloudDeployment.query().findById(deployment.id).patch(patch);
-          return outcome;
-        };
-
-        // State transitions go through CLOUD-B's state machine; terminal states
-        // cannot be overwritten by late/out-of-order provider events.
-        const transitionStatus = (
-          kind:
-            | 'provider_started'
-            | 'provider_succeeded'
-            | 'provider_failed'
-            | 'provider_timeout'
-            | 'provider_cancelled',
-          providerCorrelationId?: string
-        ) => {
-          const transition = applyDeploymentEvent(toDeploymentState(deployment.status), {
-            kind,
-            observedAt: new Date().toISOString(),
-            providerCorrelationId,
-          });
-          return {
-            status: storableDeploymentStatus(transition.to),
-            terminalProtected: transition.terminalProtected,
-            changed: transition.changed,
-          };
-        };
-
-        if (provider?.type === 'coolify') {
-          const secrets = [provider.secret_key, provider.access_key, resolvedToken];
-          const quality = classifySecret(provider.secret_key ?? provider.access_key ?? undefined);
-          if (quality !== 'ok') {
-            mark(rule.operation, 'denied', 'coolify');
-            return finalize(
-              {
-                status: transitionStatus('provider_failed').status,
-                error_message: 'COOLIFY_CREDENTIALS_INVALID',
-                completed_at: new Date().toISOString().slice(0, 19),
-              },
-              {
+          // Reservation boundary: the quota ledger is the capacity authority. A
+          // missing ledger is a safe no-op; a configured ledger fails closed.
+          if (quotaLedger) {
+            const imageRefForQuota = `${cloudApp.image}:${cloudApp.image_tag ?? 'latest'}`;
+            const reservationKey =
+              storeKey ??
+              idempotencyStoreKey(
+                ctx.companyId,
+                idempotencyPayloadFingerprint({
+                  appId: cloudApp.id,
+                  imageRef: imageRefForQuota,
+                  targetId: cloudApp.deployment_target_id,
+                })
+              );
+            try {
+              const outcome = await quotaLedger.reserve({
+                scope: { companyId: ctx.companyId, resource: 'cloud.app.deploy' },
+                idempotencyKey: reservationKey,
+                units: quotaUnits,
+                capacity: quotaCapacity,
+              });
+              if (!outcome.allowed || !outcome.reservation) {
+                mark(rule.operation, 'denied');
+                return {
+                  statusCode: 402,
+                  body: {
+                    success: false,
+                    code: outcome.code ?? 'PAAS_QUOTA_RESERVATION_EXCEEDED',
+                    error: 'Provisioning quota exceeded',
+                  },
+                };
+              }
+              pendingReservationId = outcome.reservation.id;
+            } catch {
+              mark(rule.operation, 'denied');
+              return {
                 statusCode: 503,
                 body: {
                   success: false,
-                  code: 'CLOUD_TOKEN_MISSING',
-                  error: 'Provider credentials are missing or invalid',
+                  code: 'CLOUD_QUOTA_UNAVAILABLE',
+                  error: 'Provisioning quota is unavailable',
                 },
-              }
-            );
+              };
+            }
           }
-          try {
-            const coolifyEndpoint = trimTrailingSlashes(
-              provider.endpoint ?? effectiveTarget?.api_url ?? 'https://coolify.moonwitness.local'
-            );
-            assertProbeTarget(coolifyEndpoint, requestPolicy);
-            const coolifyResult = await deployViaCoolify({
-              endpoint: coolifyEndpoint,
-              token: (provider.secret_key ?? provider.access_key)!,
-              appUuid: cloudApp.coolify_uuid ?? cloudApp.name,
-              fetchImpl,
+
+          const assignedTarget = await scopedTarget(cloudApp.deployment_target_id, ctx.companyId);
+          let effectiveTarget = assignedTarget;
+          if (assignedTarget?.ha_group && assignedTarget.health_status === 'offline') {
+            const peers = await CloudDeploymentTarget.query().where({
+              company_id: ctx.companyId,
+              ha_group: assignedTarget.ha_group,
+              active: true,
             });
-            mark(rule.operation, 'success', 'coolify');
+            effectiveTarget = selectHealthyDeploymentTarget(peers) ?? assignedTarget;
+          }
+
+          const server = await scopedServer(effectiveTarget?.server_id, ctx.companyId);
+          const provider = await scopedProvider(server?.provider_id, ctx.companyId);
+          const imageRef = `${cloudApp.image}:${cloudApp.image_tag ?? 'latest'}`;
+          const startedAt = new Date().toISOString().slice(0, 19);
+          const deployment = await CloudDeployment.query().insertAndFetch({
+            company_id: ctx.companyId,
+            app_id: cloudApp.id,
+            version: storeKey && fingerprint ? `idem:${storeKey}:${fingerprint}` : undefined,
+            image_tag: cloudApp.image_tag ?? 'latest',
+            status: 'pending',
+            trigger: 'manual',
+            started_at: startedAt,
+          });
+
+          const finalize = async (patch: Record<string, unknown>, outcome: DeployOutcome) => {
+            await CloudDeployment.query().findById(deployment.id).patch(patch);
+            return outcome;
+          };
+
+          // State transitions go through CLOUD-B's state machine; terminal states
+          // cannot be overwritten by late/out-of-order provider events.
+          const transitionStatus = (
+            kind:
+              | 'provider_started'
+              | 'provider_succeeded'
+              | 'provider_failed'
+              | 'provider_timeout'
+              | 'provider_cancelled',
+            providerCorrelationId?: string
+          ) => {
+            const transition = applyDeploymentEvent(toDeploymentState(deployment.status), {
+              kind,
+              observedAt: new Date().toISOString(),
+              providerCorrelationId,
+            });
+            return {
+              status: storableDeploymentStatus(transition.to),
+              terminalProtected: transition.terminalProtected,
+              changed: transition.changed,
+            };
+          };
+
+          if (provider?.type === 'coolify') {
+            const secrets = [provider.secret_key, provider.access_key, resolvedToken];
+            const quality = classifySecret(provider.secret_key ?? provider.access_key ?? undefined);
+            if (quality !== 'ok') {
+              mark(rule.operation, 'denied', 'coolify');
+              return finalize(
+                {
+                  status: transitionStatus('provider_failed').status,
+                  error_message: 'COOLIFY_CREDENTIALS_INVALID',
+                  completed_at: new Date().toISOString().slice(0, 19),
+                },
+                {
+                  statusCode: 503,
+                  body: {
+                    success: false,
+                    code: 'CLOUD_TOKEN_MISSING',
+                    error: 'Provider credentials are missing or invalid',
+                  },
+                }
+              );
+            }
+            try {
+              const coolifyEndpoint = trimTrailingSlashes(
+                provider.endpoint ?? effectiveTarget?.api_url ?? 'https://coolify.moonwitness.local'
+              );
+              assertProbeTarget(coolifyEndpoint, requestPolicy);
+              const coolifyResult = await deployViaCoolify({
+                endpoint: coolifyEndpoint,
+                token: (provider.secret_key ?? provider.access_key)!,
+                appUuid: cloudApp.coolify_uuid ?? cloudApp.name,
+                fetchImpl,
+              });
+              mark(rule.operation, 'success', 'coolify');
+              const completedAt = new Date().toISOString().slice(0, 19);
+              const succeeded = transitionStatus(
+                'provider_succeeded',
+                coolifyResult.deploymentUuid
+              );
+              const updated = await CloudDeployment.query().patchAndFetchById(deployment.id, {
+                status: succeeded.status,
+                container_id: coolifyResult.deploymentUuid ?? null,
+                log: redactSecrets(coolifyResult.message, secrets),
+                completed_at: completedAt,
+              });
+              return {
+                statusCode: 201,
+                body: {
+                  success: true,
+                  data: {
+                    deploymentId: updated.id,
+                    status: updated.status,
+                    containerId: updated.container_id,
+                    provider: 'coolify',
+                    ...(idempotencyKey ? { idempotencyKey, replayed: false } : {}),
+                  },
+                },
+              };
+            } catch (error) {
+              const ambiguous = isTimeout(error);
+              mark(rule.operation, ambiguous ? 'timeout' : 'failed', 'coolify');
+              const completedAt = new Date().toISOString().slice(0, 19);
+              const safeLog = safeErrorText(error, secrets, 'Provider deployment failed');
+              if (ambiguous) {
+                const timedOut = transitionStatus('provider_timeout');
+                const retryPlan = planDeploymentRetry({
+                  deploymentId: deployment.id,
+                  state: toDeploymentState(timedOut.status),
+                  attempts: 0,
+                });
+                return await finalize(
+                  {
+                    status: timedOut.status,
+                    error_message: AMBIGUOUS_TIMEOUT_MARKER,
+                    log: safeLog,
+                    completed_at: completedAt,
+                  },
+                  {
+                    statusCode: 202,
+                    body: {
+                      success: true,
+                      ambiguous: true,
+                      code: AMBIGUOUS_TIMEOUT_MARKER,
+                      error:
+                        'Provider outcome is unknown; retry with the same idempotency key to reconcile',
+                      retryIdempotencyKey: retryPlan.idempotencyKey,
+                      data: { deploymentId: deployment.id, status: timedOut.status },
+                    },
+                  }
+                );
+              }
+              return await finalize(
+                {
+                  status: transitionStatus('provider_failed').status,
+                  error_message: safeLog,
+                  completed_at: completedAt,
+                },
+                {
+                  statusCode: 502,
+                  body: { success: false, error: 'Deployment provider request failed' },
+                }
+              );
+            }
+          }
+
+          const agentUrl = trimTrailingSlashes(
+            options.controlPlaneUrl ?? effectiveTarget?.api_url ?? defaultAgentUrl
+          );
+          const ports =
+            cloudApp.host_port && cloudApp.port ? [`${cloudApp.host_port}:${cloudApp.port}`] : [];
+          try {
+            const res = await controlPlaneFetch(`${agentUrl}/api/deploy`, {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({
+                name: cloudApp.name,
+                image: imageRef,
+                ports,
+                volumes: parseVolumes(cloudApp.volumes),
+                env: parseEnvVars(cloudApp.env_vars),
+                restart: 'unless-stopped',
+              }),
+              signal: AbortSignal.timeout(30_000),
+            });
+
+            if (!res.ok) {
+              mark(rule.operation, 'failed', 'docker_agent');
+              return finalize(
+                {
+                  status: transitionStatus('provider_failed').status,
+                  completed_at: new Date().toISOString().slice(0, 19),
+                  error_message: `Control plane deploy failed (${res.status})`,
+                },
+                {
+                  statusCode: 502,
+                  body: { success: false, error: `Control plane deploy failed (${res.status})` },
+                }
+              );
+            }
+
+            const result = (await res.json()) as { id?: string };
+            mark(rule.operation, 'success', 'docker_agent');
             const completedAt = new Date().toISOString().slice(0, 19);
-            const succeeded = transitionStatus('provider_succeeded', coolifyResult.deploymentUuid);
+            const succeeded = transitionStatus('provider_succeeded', result.id);
             const updated = await CloudDeployment.query().patchAndFetchById(deployment.id, {
               status: succeeded.status,
-              container_id: coolifyResult.deploymentUuid ?? null,
-              log: redactSecrets(coolifyResult.message, secrets),
+              container_id: result.id ?? null,
+              log: `Deployed ${imageRef} via Docker Agent`,
               completed_at: completedAt,
             });
             return {
@@ -971,16 +1106,15 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
                   deploymentId: updated.id,
                   status: updated.status,
                   containerId: updated.container_id,
-                  provider: 'coolify',
                   ...(idempotencyKey ? { idempotencyKey, replayed: false } : {}),
                 },
               },
             };
           } catch (error) {
             const ambiguous = isTimeout(error);
-            mark(rule.operation, ambiguous ? 'timeout' : 'failed', 'coolify');
+            mark(rule.operation, ambiguous ? 'timeout' : 'failed', 'docker_agent');
             const completedAt = new Date().toISOString().slice(0, 19);
-            const safeLog = safeErrorText(error, secrets, 'Provider deployment failed');
+            const safeLog = safeErrorText(error, [resolvedToken], 'Control plane is unreachable');
             if (ambiguous) {
               const timedOut = transitionStatus('provider_timeout');
               const retryPlan = planDeploymentRetry({
@@ -1015,219 +1149,123 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
                 error_message: safeLog,
                 completed_at: completedAt,
               },
-              {
-                statusCode: 502,
-                body: { success: false, error: 'Deployment provider request failed' },
-              }
+              { statusCode: 502, body: { success: false, error: 'Control plane is unreachable' } }
             );
           }
-        }
-
-        const agentUrl = trimTrailingSlashes(
-          options.controlPlaneUrl ?? effectiveTarget?.api_url ?? defaultAgentUrl
-        );
-        const ports =
-          cloudApp.host_port && cloudApp.port ? [`${cloudApp.host_port}:${cloudApp.port}`] : [];
-        try {
-          const res = await controlPlaneFetch(`${agentUrl}/api/deploy`, {
-            method: 'POST',
-            headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({
-              name: cloudApp.name,
-              image: imageRef,
-              ports,
-              volumes: parseVolumes(cloudApp.volumes),
-              env: parseEnvVars(cloudApp.env_vars),
-              restart: 'unless-stopped',
-            }),
-            signal: AbortSignal.timeout(30_000),
-          });
-
-          if (!res.ok) {
-            mark(rule.operation, 'failed', 'docker_agent');
-            return finalize(
-              {
-                status: transitionStatus('provider_failed').status,
-                completed_at: new Date().toISOString().slice(0, 19),
-                error_message: `Control plane deploy failed (${res.status})`,
-              },
-              {
-                statusCode: 502,
-                body: { success: false, error: `Control plane deploy failed (${res.status})` },
-              }
-            );
-          }
-
-          const result = (await res.json()) as { id?: string };
-          mark(rule.operation, 'success', 'docker_agent');
-          const completedAt = new Date().toISOString().slice(0, 19);
-          const succeeded = transitionStatus('provider_succeeded', result.id);
-          const updated = await CloudDeployment.query().patchAndFetchById(deployment.id, {
-            status: succeeded.status,
-            container_id: result.id ?? null,
-            log: `Deployed ${imageRef} via Docker Agent`,
-            completed_at: completedAt,
-          });
           return {
-            statusCode: 201,
-            body: {
-              success: true,
-              data: {
-                deploymentId: updated.id,
-                status: updated.status,
-                containerId: updated.container_id,
-                ...(idempotencyKey ? { idempotencyKey, replayed: false } : {}),
-              },
-            },
+            statusCode: 502,
+            body: { success: false, error: 'Control plane is unreachable' },
           };
-        } catch (error) {
-          const ambiguous = isTimeout(error);
-          mark(rule.operation, ambiguous ? 'timeout' : 'failed', 'docker_agent');
-          const completedAt = new Date().toISOString().slice(0, 19);
-          const safeLog = safeErrorText(error, [resolvedToken], 'Control plane is unreachable');
-          if (ambiguous) {
-            const timedOut = transitionStatus('provider_timeout');
-            const retryPlan = planDeploymentRetry({
-              deploymentId: deployment.id,
-              state: toDeploymentState(timedOut.status),
-              attempts: 0,
-            });
-            return await finalize(
-              {
-                status: timedOut.status,
-                error_message: AMBIGUOUS_TIMEOUT_MARKER,
-                log: safeLog,
-                completed_at: completedAt,
-              },
-              {
-                statusCode: 202,
+        };
+
+        let outcome: DeployOutcome;
+        if (storeKey && fingerprint) {
+          outcome = await withCloudKeyedLock(storeKey, async () => {
+            const existing = await findIdempotentDeployment(ctx.companyId, cloudApp.id, storeKey);
+            if (existing) {
+              const existingFingerprint = existing.version?.split(':')[2];
+              if (existingFingerprint !== fingerprint) {
+                mark(rule.operation, 'conflict');
+                return {
+                  statusCode: 409,
+                  body: {
+                    success: false,
+                    code: 'IDEMPOTENCY_PAYLOAD_CONFLICT',
+                    error: 'Idempotency key was already used with a different payload',
+                  },
+                };
+              }
+              const ambiguous = existing.error_message === AMBIGUOUS_TIMEOUT_MARKER;
+              const reconciliation = reconcileDeploymentOutcome(
+                {
+                  state: toDeploymentState(existing.status),
+                  providerCorrelationId: existing.container_id ?? undefined,
+                  attempts: 1,
+                },
+                ambiguous ? 'ambiguous' : 'running'
+              );
+              mark(rule.operation, 'success');
+              return {
+                statusCode: ambiguous ? 202 : 200,
                 body: {
                   success: true,
-                  ambiguous: true,
-                  code: AMBIGUOUS_TIMEOUT_MARKER,
-                  error:
-                    'Provider outcome is unknown; retry with the same idempotency key to reconcile',
-                  retryIdempotencyKey: retryPlan.idempotencyKey,
-                  data: { deploymentId: deployment.id, status: timedOut.status },
-                },
-              }
-            );
-          }
-          return await finalize(
-            {
-              status: transitionStatus('provider_failed').status,
-              error_message: safeLog,
-              completed_at: completedAt,
-            },
-            { statusCode: 502, body: { success: false, error: 'Control plane is unreachable' } }
-          );
-        }
-        return { statusCode: 502, body: { success: false, error: 'Control plane is unreachable' } };
-      };
-
-      let outcome: DeployOutcome;
-      if (storeKey && fingerprint) {
-        outcome = await withCloudKeyedLock(storeKey, async () => {
-          const existing = await findIdempotentDeployment(ctx.companyId, cloudApp.id, storeKey);
-          if (existing) {
-            const existingFingerprint = existing.version?.split(':')[2];
-            if (existingFingerprint !== fingerprint) {
-              mark(rule.operation, 'conflict');
-              return {
-                statusCode: 409,
-                body: {
-                  success: false,
-                  code: 'IDEMPOTENCY_PAYLOAD_CONFLICT',
-                  error: 'Idempotency key was already used with a different payload',
+                  replayed: true,
+                  reconciliationRequired:
+                    ambiguous &&
+                    (reconciliation.state === 'unknown' || reconciliation.needsOperatorReview),
+                  ...(ambiguous ? { code: AMBIGUOUS_TIMEOUT_MARKER } : {}),
+                  data: {
+                    deploymentId: existing.id,
+                    status: existing.status,
+                    containerId: existing.container_id ?? null,
+                    ...(idempotencyKey ? { idempotencyKey } : {}),
+                  },
                 },
               };
             }
-            const ambiguous = existing.error_message === AMBIGUOUS_TIMEOUT_MARKER;
-            const reconciliation = reconcileDeploymentOutcome(
-              {
-                state: toDeploymentState(existing.status),
-                providerCorrelationId: existing.container_id ?? undefined,
-                attempts: 1,
-              },
-              ambiguous ? 'ambiguous' : 'running'
+            return performDeploy();
+          });
+        } else {
+          outcome = await performDeploy();
+        }
+
+        if (pendingReservationId && quotaLedger) {
+          try {
+            await quotaLedger.settle(
+              pendingReservationId,
+              outcome.statusCode === 201 ? 'success' : 'failure'
             );
-            mark(rule.operation, 'success');
-            return {
-              statusCode: ambiguous ? 202 : 200,
+          } catch {
+            mark(rule.operation, 'denied');
+            outcome = {
+              statusCode: 503,
               body: {
-                success: true,
-                replayed: true,
-                reconciliationRequired:
-                  ambiguous &&
-                  (reconciliation.state === 'unknown' || reconciliation.needsOperatorReview),
-                ...(ambiguous ? { code: AMBIGUOUS_TIMEOUT_MARKER } : {}),
-                data: {
-                  deploymentId: existing.id,
-                  status: existing.status,
-                  containerId: existing.container_id ?? null,
-                  ...(idempotencyKey ? { idempotencyKey } : {}),
-                },
+                success: false,
+                code: 'CLOUD_QUOTA_SETTLEMENT_FAILED',
+                error: 'Provisioning quota could not be settled',
               },
             };
           }
-          return performDeploy();
-        });
-      } else {
-        outcome = await performDeploy();
-      }
-
-      if (pendingReservationId && quotaLedger) {
-        try {
-          await quotaLedger.settle(
-            pendingReservationId,
-            outcome.statusCode === 201 ? 'success' : 'failure'
-          );
-        } catch {
-          mark(rule.operation, 'denied');
-          outcome = {
-            statusCode: 503,
-            body: {
-              success: false,
-              code: 'CLOUD_QUOTA_SETTLEMENT_FAILED',
-              error: 'Provisioning quota could not be settled',
-            },
-          };
         }
+        return reply.code(outcome.statusCode).send(outcome.body);
       }
-      return reply.code(outcome.statusCode).send(outcome.body);
-    });
+    );
 
-    fastify.delete<{ Params: { id: string } }>('/api/cloud/apps/:id', WRITE_RATE_LIMIT, async (req, reply) => {
-      const rule = ruleFor('/api/cloud/apps/:id');
-      const ctx = requireAuthorizedModelAccess(req, reply, rule);
-      if (!ctx) return;
-      if (!requireFeature(reply, rule)) return;
-      if (!requireToken(reply, rule)) return;
-      const appId = parsePositiveId(req.params.id);
-      if (!appId) {
-        mark(rule.operation, 'invalid');
-        return reply.code(400).send({ success: false, error: 'Invalid cloud app ID' });
+    fastify.delete<{ Params: { id: string } }>(
+      '/api/cloud/apps/:id',
+      WRITE_RATE_LIMIT,
+      async (req, reply) => {
+        const rule = ruleFor('/api/cloud/apps/:id');
+        const ctx = requireAuthorizedModelAccess(req, reply, rule);
+        if (!ctx) return;
+        if (!requireFeature(reply, rule)) return;
+        if (!requireToken(reply, rule)) return;
+        const appId = parsePositiveId(req.params.id);
+        if (!appId) {
+          mark(rule.operation, 'invalid');
+          return reply.code(400).send({ success: false, error: 'Invalid cloud app ID' });
+        }
+        const cloudApp = await scopedApp(appId, ctx.companyId);
+        if (!cloudApp) {
+          mark(rule.operation, 'denied');
+          return reply.code(404).send({ success: false, error: 'Cloud app not found' });
+        }
+        const now = new Date().toISOString().slice(0, 19);
+        await CloudApp.query().findById(cloudApp.id).patch({ active: false, is_active: false });
+        await CloudDeployment.query().insert({
+          company_id: ctx.companyId,
+          app_id: cloudApp.id,
+          image_tag: cloudApp.image_tag ?? 'latest',
+          status: 'stopped',
+          trigger: 'agent',
+          started_at: now,
+          completed_at: now,
+          log: 'Cloud app deactivated by company administrator',
+        });
+        mark(rule.operation, 'success');
+        return { success: true, data: { id: cloudApp.id, status: 'stopped' } };
       }
-      const cloudApp = await scopedApp(appId, ctx.companyId);
-      if (!cloudApp) {
-        mark(rule.operation, 'denied');
-        return reply.code(404).send({ success: false, error: 'Cloud app not found' });
-      }
-      const now = new Date().toISOString().slice(0, 19);
-      await CloudApp.query().findById(cloudApp.id).patch({ active: false, is_active: false });
-      await CloudDeployment.query().insert({
-        company_id: ctx.companyId,
-        app_id: cloudApp.id,
-        image_tag: cloudApp.image_tag ?? 'latest',
-        status: 'stopped',
-        trigger: 'agent',
-        started_at: now,
-        completed_at: now,
-        log: 'Cloud app deactivated by company administrator',
-      });
-      mark(rule.operation, 'success');
-      return { success: true, data: { id: cloudApp.id, status: 'stopped' } };
-    });
+    );
 
     fastify.post<{ Params: { id: string } }>(
       '/api/cloud/subscriptions/:id/enforce',
@@ -1591,23 +1629,35 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       }
     });
 
-    fastify.get<{ Params: { id: string } }>('/api/cloud/paas/templates/:id', READ_RATE_LIMIT, async (req, reply) => {
-      const rule = ruleFor('/api/cloud/paas/templates/:id');
-      const ctx = requireAuthorizedModelAccess(req, reply, rule);
-      if (!ctx) return;
-      if (!requireFeature(reply, rule)) return;
-      if (!requireToken(reply, rule)) return;
+    fastify.get<{ Params: { id: string } }>(
+      '/api/cloud/paas/templates/:id',
+      READ_RATE_LIMIT,
+      async (req, reply) => {
+        const rule = ruleFor('/api/cloud/paas/templates/:id');
+        const ctx = requireAuthorizedModelAccess(req, reply, rule);
+        if (!ctx) return;
+        if (!requireFeature(reply, rule)) return;
+        if (!requireToken(reply, rule)) return;
 
-      const { id } = req.params;
-      const detail = getCoolifyTemplateDetail(id);
-      if (!detail) {
-        return reply.code(404).send({ success: false, error: `Template ${id} not found` });
+        const { id } = req.params;
+        const detail = getCoolifyTemplateDetail(id);
+        if (!detail) {
+          return reply.code(404).send({ success: false, error: `Template ${id} not found` });
+        }
+        mark(rule.operation, 'success');
+        return { success: true, data: detail };
       }
-      mark(rule.operation, 'success');
-      return { success: true, data: detail };
-    });
+    );
 
-    fastify.post<{ Body: { slug?: string; tenantId?: string; env?: Record<string, string>; domain?: string; port?: number } }>('/api/cloud/paas/templates/deploy', WRITE_RATE_LIMIT, async (req, reply) => {
+    fastify.post<{
+      Body: {
+        slug?: string;
+        tenantId?: string;
+        env?: Record<string, string>;
+        domain?: string;
+        port?: number;
+      };
+    }>('/api/cloud/paas/templates/deploy', WRITE_RATE_LIMIT, async (req, reply) => {
       const rule = ruleFor('/api/cloud/paas/templates/deploy');
       const ctx = requireAuthorizedModelAccess(req, reply, rule);
       if (!ctx) return;
@@ -1626,7 +1676,9 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       }
       if (detail.compatibility === 'restricted') {
         mark(rule.operation, 'invalid');
-        return reply.code(400).send({ success: false, error: `Template ${slug} is restricted and cannot be deployed` });
+        return reply
+          .code(400)
+          .send({ success: false, error: `Template ${slug} is restricted and cannot be deployed` });
       }
 
       const resolvedDomain = domain;
@@ -1640,7 +1692,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
           slug,
           tenantId: tenantId ?? 'default',
           composeYaml: detail.composeYaml,
-          defaultPort: Number(port ?? (detail.port ?? 8080)) || 8080,
+          defaultPort: Number(port ?? detail.port ?? 8080) || 8080,
           primaryDomain: resolvedDomain,
           ...(previewPort !== undefined ? { previewPort } : {}),
           existingEnv: {},
@@ -1662,7 +1714,8 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
         let target = await CloudDeploymentTarget.query()
           .where({ company_id: ctx.companyId, is_active: true })
           .first();
-        if (!target) target = await CloudDeploymentTarget.query().findOne({ company_id: ctx.companyId });
+        if (!target)
+          target = await CloudDeploymentTarget.query().findOne({ company_id: ctx.companyId });
         if (!target) target = await CloudDeploymentTarget.query().first();
         if (!target) {
           target = await CloudDeploymentTarget.query().insertAndFetch({
@@ -1678,7 +1731,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
           company_id: ctx.companyId,
           deployment_target_id: target.id,
           image: `mw-paas-${slug}:latest`,
-          port: Number(port ?? (detail.port ?? 8080)) || 8080,
+          port: Number(port ?? detail.port ?? 8080) || 8080,
           domain: resolvedDomain ?? null,
           host_port: previewPort ?? null,
           env_vars: { ...compiled.env, ...(env ?? {}) },
@@ -1710,7 +1763,10 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
         await reconcileCaddyWithAgent({ token: resolvedToken });
 
         mark(rule.operation, 'success');
-        return reply.code(201).send({ success: true, data: { slug, image: `mw-paas-${slug}:latest`, domain: resolvedDomain, previewPort } });
+        return reply.code(201).send({
+          success: true,
+          data: { slug, image: `mw-paas-${slug}:latest`, domain: resolvedDomain, previewPort },
+        });
       } catch (error) {
         mark(rule.operation, 'failed', 'mesh');
         return reply.code(502).send({
@@ -1754,7 +1810,8 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       if (!resolvedDomain) {
         previewPort = (await allocatePreviewPort()) ?? undefined;
       }
-      const targetPort = typeof body.port === 'number' && Number.isInteger(body.port) ? body.port : 3000;
+      const targetPort =
+        typeof body.port === 'number' && Number.isInteger(body.port) ? body.port : 3000;
 
       try {
         assertProbeTarget(defaultAgentUrl, requestPolicy);
@@ -1779,9 +1836,7 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
           .where({ company_id: ctx.companyId, is_active: true })
           .first();
         if (!target) {
-          target = await CloudDeploymentTarget.query()
-            .where({ company_id: ctx.companyId })
-            .first();
+          target = await CloudDeploymentTarget.query().where({ company_id: ctx.companyId }).first();
         }
         if (!target) {
           target = await CloudDeploymentTarget.query().first();
@@ -1864,380 +1919,392 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       }
     });
 
-    fastify.post<{ Body: { slug?: string; tenantId?: string; composeSpec?: string; env?: Record<string, string>; domain?: string; port?: number } }>(
-      '/api/cloud/paas/apps/deploy-compose',
-      WRITE_RATE_LIMIT,
-      async (req, reply) => {
-        const rule = ruleFor('/api/cloud/paas/apps/deploy-compose');
-        const ctx = requireAuthorizedModelAccess(req, reply, rule);
-        if (!ctx) return;
-        if (!requireFeature(reply, rule)) return;
-        if (!requireToken(reply, rule)) return;
+    fastify.post<{
+      Body: {
+        slug?: string;
+        tenantId?: string;
+        composeSpec?: string;
+        env?: Record<string, string>;
+        domain?: string;
+        port?: number;
+      };
+    }>('/api/cloud/paas/apps/deploy-compose', WRITE_RATE_LIMIT, async (req, reply) => {
+      const rule = ruleFor('/api/cloud/paas/apps/deploy-compose');
+      const ctx = requireAuthorizedModelAccess(req, reply, rule);
+      if (!ctx) return;
+      if (!requireFeature(reply, rule)) return;
+      if (!requireToken(reply, rule)) return;
 
-        const { slug, tenantId, composeSpec, env, domain, port } = req.body ?? {};
-        if (!slug || !composeSpec) {
-          mark(rule.operation, 'invalid');
-          return reply.code(400).send({ success: false, error: 'slug and composeSpec are required' });
-        }
-        if (!PAAS_SLUG_PATTERN.test(slug)) {
-          mark(rule.operation, 'invalid');
-          return reply.code(400).send({ success: false, error: 'Invalid slug format' });
-        }
-
-        const resolvedDomain =
-          typeof domain === 'string' && domain.trim() ? domain.trim() : undefined;
-        let previewPort: number | undefined;
-        if (!resolvedDomain) {
-          previewPort = (await allocatePreviewPort()) ?? undefined;
-        }
-        const targetPort = typeof port === 'number' && Number.isInteger(port) ? port : 3000;
-
-        try {
-          assertProbeTarget(defaultAgentUrl, requestPolicy);
-          await compileCoolifyCompose({
-            slug,
-            tenantId: tenantId ?? 'default',
-            composeYaml: composeSpec,
-            defaultPort: targetPort,
-            primaryDomain: resolvedDomain,
-            ...(previewPort !== undefined ? { previewPort } : {}),
-            existingEnv: {},
-            userEnv: env,
-          });
-
-          await upAgentCompose({ endpoint: defaultAgentUrl, slug, composeSpec, env });
-
-          // Find or create deployment target for the company
-          let target = await CloudDeploymentTarget.query()
-            .where({ company_id: ctx.companyId, is_active: true })
-            .first();
-          if (!target) {
-            target = await CloudDeploymentTarget.query()
-              .where({ company_id: ctx.companyId })
-              .first();
-          }
-          if (!target) {
-            target = await CloudDeploymentTarget.query().first();
-          }
-          if (!target) {
-            target = await CloudDeploymentTarget.query().insertAndFetch({
-              company_id: ctx.companyId,
-              name: 'default-paas-target',
-              environment: 'production',
-              api_url: defaultAgentUrl,
-              is_active: true,
-            });
-          }
-
-          let cloudApp = await CloudApp.query().findOne({ name: slug });
-          if (cloudApp) {
-            cloudApp = await CloudApp.query().patchAndFetchById(cloudApp.id, {
-              company_id: ctx.companyId,
-              deployment_target_id: target.id,
-              image: `mw-paas-${slug}:latest`,
-              port: targetPort,
-              domain: resolvedDomain,
-              host_port: previewPort ?? null,
-              env_vars: env ?? {},
-              compose_spec: composeSpec,
-              git_repo: null,
-              managed_by: 'paas',
-              deploy_mode: 'compose',
-              is_active: true,
-              active: true,
-            });
-          } else {
-            cloudApp = await CloudApp.query().insertAndFetch({
-              company_id: ctx.companyId,
-              deployment_target_id: target.id,
-              name: slug,
-              image: `mw-paas-${slug}:latest`,
-              port: targetPort,
-              domain: resolvedDomain,
-              host_port: previewPort ?? null,
-              env_vars: env ?? {},
-              compose_spec: composeSpec,
-              git_repo: null,
-              managed_by: 'paas',
-              deploy_mode: 'compose',
-              is_active: true,
-              active: true,
-            });
-          }
-
-          await CloudDeployment.query().insert({
-            company_id: ctx.companyId,
-            app_id: cloudApp.id,
-            version: `mw-paas-${slug}:latest`,
-            image_tag: 'latest',
-            status: 'running',
-            container_id: slug,
-            trigger: 'agent',
-            log: 'Deployed via compose',
-            started_at: new Date().toISOString(),
-          });
-
-          await reconcileCaddyWithAgent({ token: resolvedToken });
-
-          mark(rule.operation, 'success');
-          return reply.code(201).send({
-            success: true,
-            data: { slug, image: `mw-paas-${slug}:latest`, domain: resolvedDomain, previewPort },
-          });
-        } catch (error) {
-          mark(rule.operation, 'failed', 'mesh');
-          return reply.code(502).send({
-            success: false,
-            error: safeErrorText(
-              error,
-              [resolvedToken, ...Object.values(env ?? {})],
-              'Compose deploy failed'
-            ),
-          });
-        }
+      const { slug, tenantId, composeSpec, env, domain, port } = req.body ?? {};
+      if (!slug || !composeSpec) {
+        mark(rule.operation, 'invalid');
+        return reply.code(400).send({ success: false, error: 'slug and composeSpec are required' });
       }
-    );
+      if (!PAAS_SLUG_PATTERN.test(slug)) {
+        mark(rule.operation, 'invalid');
+        return reply.code(400).send({ success: false, error: 'Invalid slug format' });
+      }
 
-    fastify.post<{ Body: { slug?: string; tenantId?: string; gitRepo?: string; branch?: string; dockerfilePath?: string; domain?: string; port?: number; env?: Record<string, string> } }>(
-      '/api/cloud/paas/apps/deploy-git',
-      WRITE_RATE_LIMIT,
-      async (req, reply) => {
-        const rule = ruleFor('/api/cloud/paas/apps/deploy-git');
-        const ctx = requireAuthorizedModelAccess(req, reply, rule);
-        if (!ctx) return;
-        if (!requireFeature(reply, rule)) return;
-        if (!requireToken(reply, rule)) return;
+      const resolvedDomain =
+        typeof domain === 'string' && domain.trim() ? domain.trim() : undefined;
+      let previewPort: number | undefined;
+      if (!resolvedDomain) {
+        previewPort = (await allocatePreviewPort()) ?? undefined;
+      }
+      const targetPort = typeof port === 'number' && Number.isInteger(port) ? port : 3000;
 
-        const { slug, tenantId, gitRepo, branch, dockerfilePath, domain, port, env } = req.body ?? {};
-        if (!slug || !gitRepo) {
-          mark(rule.operation, 'invalid');
-          return reply.code(400).send({ success: false, error: 'slug and gitRepo are required' });
+      try {
+        assertProbeTarget(defaultAgentUrl, requestPolicy);
+        await compileCoolifyCompose({
+          slug,
+          tenantId: tenantId ?? 'default',
+          composeYaml: composeSpec,
+          defaultPort: targetPort,
+          primaryDomain: resolvedDomain,
+          ...(previewPort !== undefined ? { previewPort } : {}),
+          existingEnv: {},
+          userEnv: env,
+        });
+
+        await upAgentCompose({ endpoint: defaultAgentUrl, slug, composeSpec, env });
+
+        // Find or create deployment target for the company
+        let target = await CloudDeploymentTarget.query()
+          .where({ company_id: ctx.companyId, is_active: true })
+          .first();
+        if (!target) {
+          target = await CloudDeploymentTarget.query().where({ company_id: ctx.companyId }).first();
         }
-        if (!PAAS_SLUG_PATTERN.test(slug)) {
-          mark(rule.operation, 'invalid');
-          return reply.code(400).send({ success: false, error: 'Invalid slug format' });
+        if (!target) {
+          target = await CloudDeploymentTarget.query().first();
         }
-        if (!/^https:\/\/[^\s]+$/iu.test(gitRepo)) {
-          mark(rule.operation, 'invalid');
-          return reply.code(400).send({ success: false, error: 'gitRepo must be a valid HTTPS URL' });
+        if (!target) {
+          target = await CloudDeploymentTarget.query().insertAndFetch({
+            company_id: ctx.companyId,
+            name: 'default-paas-target',
+            environment: 'production',
+            api_url: defaultAgentUrl,
+            is_active: true,
+          });
         }
 
-        const resolvedDomain =
-          typeof domain === 'string' && domain.trim() ? domain.trim() : undefined;
-        let previewPort: number | undefined;
-        if (!resolvedDomain) {
-          previewPort = (await allocatePreviewPort()) ?? undefined;
-        }
-        const targetPort = typeof port === 'number' && Number.isInteger(port) ? port : 3000;
-
-        try {
-          assertProbeTarget(defaultAgentUrl, requestPolicy);
-
-          // Generate webhook secret only on initial creation
-          const existingApp = await CloudApp.query().findOne({ name: slug });
-          const isNewApp = !existingApp;
-          const webhookSecret = existingApp?.webhook_secret ?? randomBytes(24).toString('hex');
-
-          const result = await deployAgentGit({
-            endpoint: defaultAgentUrl,
-            token: resolvedToken,
-            slug,
-            tenantId: tenantId ?? `company-${ctx.companyId}`,
-            gitRepo,
-            ...(branch ? { branch } : {}),
-            ...(dockerfilePath ? { dockerfilePath } : {}),
+        let cloudApp = await CloudApp.query().findOne({ name: slug });
+        if (cloudApp) {
+          cloudApp = await CloudApp.query().patchAndFetchById(cloudApp.id, {
+            company_id: ctx.companyId,
+            deployment_target_id: target.id,
+            image: `mw-paas-${slug}:latest`,
             port: targetPort,
             domain: resolvedDomain,
-            env,
-            fetchImpl,
-            timeoutMs: 120_000,
+            host_port: previewPort ?? null,
+            env_vars: env ?? {},
+            compose_spec: composeSpec,
+            git_repo: null,
+            managed_by: 'paas',
+            deploy_mode: 'compose',
+            is_active: true,
+            active: true,
           });
-
-          // Find or create deployment target for the company
-          let target = await CloudDeploymentTarget.query()
-            .where({ company_id: ctx.companyId, is_active: true })
-            .first();
-          if (!target) {
-            target = await CloudDeploymentTarget.query()
-              .where({ company_id: ctx.companyId })
-              .first();
-          }
-          if (!target) {
-            target = await CloudDeploymentTarget.query().first();
-          }
-          if (!target) {
-            target = await CloudDeploymentTarget.query().insertAndFetch({
-              company_id: ctx.companyId,
-              name: 'default-paas-target',
-              environment: 'production',
-              api_url: defaultAgentUrl,
-              is_active: true,
-            });
-          }
-
-          let cloudApp = await CloudApp.query().findOne({ name: slug });
-          if (cloudApp) {
-            cloudApp = await CloudApp.query().patchAndFetchById(cloudApp.id, {
-              company_id: ctx.companyId,
-              deployment_target_id: target.id,
-              image: result.image,
-              port: targetPort,
-              domain: resolvedDomain,
-              host_port: previewPort ?? null,
-              env_vars: env ?? {},
-              compose_spec: '',
-              git_repo: gitRepo,
-              git_branch: branch ?? null,
-              dockerfile_path: dockerfilePath ?? null,
-              webhook_secret: webhookSecret,
-              managed_by: 'paas',
-              deploy_mode: 'git',
-              is_active: true,
-              active: true,
-            });
-          } else {
-            cloudApp = await CloudApp.query().insertAndFetch({
-              company_id: ctx.companyId,
-              deployment_target_id: target.id,
-              name: slug,
-              image: result.image,
-              port: targetPort,
-              domain: resolvedDomain,
-              host_port: previewPort ?? null,
-              env_vars: env ?? {},
-              compose_spec: '',
-              git_repo: gitRepo,
-              git_branch: branch ?? null,
-              dockerfile_path: dockerfilePath ?? null,
-              webhook_secret: webhookSecret,
-              managed_by: 'paas',
-              deploy_mode: 'git',
-              is_active: true,
-              active: true,
-            });
-          }
-
-          await CloudDeployment.query().insert({
+        } else {
+          cloudApp = await CloudApp.query().insertAndFetch({
             company_id: ctx.companyId,
-            app_id: cloudApp.id,
-            version: result.commitSha || 'latest',
-            image_tag: 'latest',
-            status: 'running',
-            container_id: result.containerId,
-            trigger: 'agent',
-            log: `Git deploy from ${gitRepo} (${result.branch || branch || 'default'}@${result.commitSha || 'HEAD'})`,
-            started_at: new Date().toISOString(),
-          });
-
-          await reconcileCaddyWithAgent({ token: resolvedToken });
-
-          mark(rule.operation, 'success');
-          // Return webhookUrl & webhookSecret ONLY on initial creation
-          const baseData: Record<string, unknown> = {
-            slug,
-            image: result.image,
+            deployment_target_id: target.id,
+            name: slug,
+            image: `mw-paas-${slug}:latest`,
+            port: targetPort,
             domain: resolvedDomain,
-            previewPort,
-            commitSha: result.commitSha,
-          };
-          if (isNewApp) {
-            baseData.webhookUrl = `/api/cloud/paas/webhooks/github/${slug}`;
-            baseData.webhookSecret = webhookSecret;
-          }
-          return reply.code(201).send({ success: true, data: baseData });
-        } catch (error) {
-          mark(rule.operation, 'failed', 'mesh');
-          return reply.code(502).send({
-            success: false,
-            error: safeErrorText(
-              error,
-              [resolvedToken, ...Object.values(env ?? {})],
-              'Git deploy failed'
-            ),
+            host_port: previewPort ?? null,
+            env_vars: env ?? {},
+            compose_spec: composeSpec,
+            git_repo: null,
+            managed_by: 'paas',
+            deploy_mode: 'compose',
+            is_active: true,
+            active: true,
           });
         }
+
+        await CloudDeployment.query().insert({
+          company_id: ctx.companyId,
+          app_id: cloudApp.id,
+          version: `mw-paas-${slug}:latest`,
+          image_tag: 'latest',
+          status: 'running',
+          container_id: slug,
+          trigger: 'agent',
+          log: 'Deployed via compose',
+          started_at: new Date().toISOString(),
+        });
+
+        await reconcileCaddyWithAgent({ token: resolvedToken });
+
+        mark(rule.operation, 'success');
+        return reply.code(201).send({
+          success: true,
+          data: { slug, image: `mw-paas-${slug}:latest`, domain: resolvedDomain, previewPort },
+        });
+      } catch (error) {
+        mark(rule.operation, 'failed', 'mesh');
+        return reply.code(502).send({
+          success: false,
+          error: safeErrorText(
+            error,
+            [resolvedToken, ...Object.values(env ?? {})],
+            'Compose deploy failed'
+          ),
+        });
       }
-    );
+    });
 
-    fastify.post<{ Params: { slug: string }; Headers: { 'x-hub-signature-256'?: string }; Body: unknown }>(
-      '/api/cloud/paas/webhooks/github/:slug',
-      WRITE_RATE_LIMIT,
-      async (req, reply) => {
-        const rule = ruleFor('/api/cloud/paas/webhooks/github/:slug');
-        const ctx = requireAuthorizedModelAccess(req, reply, rule);
-        if (!ctx) return;
-        if (!requireFeature(reply, rule)) return;
+    fastify.post<{
+      Body: {
+        slug?: string;
+        tenantId?: string;
+        gitRepo?: string;
+        branch?: string;
+        dockerfilePath?: string;
+        domain?: string;
+        port?: number;
+        env?: Record<string, string>;
+      };
+    }>('/api/cloud/paas/apps/deploy-git', WRITE_RATE_LIMIT, async (req, reply) => {
+      const rule = ruleFor('/api/cloud/paas/apps/deploy-git');
+      const ctx = requireAuthorizedModelAccess(req, reply, rule);
+      if (!ctx) return;
+      if (!requireFeature(reply, rule)) return;
+      if (!requireToken(reply, rule)) return;
 
-        const slug = req.params.slug.trim();
-        if (!PAAS_SLUG_PATTERN.test(slug)) {
-          mark(rule.operation, 'invalid');
-          return reply.code(400).send({ success: false, error: 'Invalid slug format' });
-        }
-
-        const cloudApp = await CloudApp.query().findOne({ name: slug });
-        if (!cloudApp || !cloudApp.webhook_secret || !cloudApp.git_repo) {
-          mark(rule.operation, 'invalid');
-          return reply.code(404).send({ success: false, error: `App ${slug} not found or not configured for git deploys` });
-        }
-
-        // Constant-time HMAC-SHA256 verification against stored webhook_secret
-        const signatureHeader = req.headers['x-hub-signature-256'];
-        if (typeof signatureHeader !== 'string' || !signatureHeader.startsWith('sha256=')) {
-          mark(rule.operation, 'denied');
-          return reply.code(401).send({ success: false, error: 'Missing or invalid signature' });
-        }
-        const rawBody = typeof req.body === 'string' ? req.body : JSON.stringify(req.body ?? {});
-        const expected = createHmac('sha256', cloudApp.webhook_secret).update(rawBody).digest('hex');
-        const received = signatureHeader.slice('sha256='.length);
-        const expectedBuf = Buffer.from(expected, 'utf8');
-        const receivedBuf = Buffer.from(received, 'utf8');
-        if (
-          expectedBuf.length !== receivedBuf.length ||
-          !timingSafeEqual(expectedBuf, receivedBuf)
-        ) {
-          mark(rule.operation, 'denied');
-          return reply.code(401).send({ success: false, error: 'Invalid signature' });
-        }
-
-        try {
-          assertProbeTarget(defaultAgentUrl, requestPolicy);
-          const result = await deployAgentGit({
-            endpoint: defaultAgentUrl,
-            token: resolvedToken,
-            slug,
-            tenantId: `company-${cloudApp.company_id}`,
-            gitRepo: cloudApp.git_repo,
-            ...(cloudApp.git_branch ? { branch: cloudApp.git_branch } : {}),
-            ...(cloudApp.dockerfile_path ? { dockerfilePath: cloudApp.dockerfile_path } : {}),
-            port: cloudApp.port ?? 3000,
-            domain: cloudApp.domain ?? undefined,
-            fetchImpl,
-            timeoutMs: 120_000,
-          });
-
-          await CloudDeployment.query().insert({
-            company_id: cloudApp.company_id,
-            app_id: cloudApp.id,
-            version: result.commitSha || 'latest',
-            image_tag: 'latest',
-            status: 'running',
-            container_id: result.containerId,
-            trigger: 'webhook',
-            log: `Webhook-triggered git deploy from ${cloudApp.git_repo} (${result.commitSha || 'HEAD'})`,
-            started_at: new Date().toISOString(),
-          });
-
-          mark(rule.operation, 'success');
-          return { success: true, data: { slug, commitSha: result.commitSha, status: 'deployed' } };
-        } catch (error) {
-          mark(rule.operation, 'failed', 'mesh');
-          return reply.code(502).send({
-            success: false,
-            error: safeErrorText(error, [resolvedToken, cloudApp.webhook_secret], 'Webhook git deploy failed'),
-          });
-        }
+      const { slug, tenantId, gitRepo, branch, dockerfilePath, domain, port, env } = req.body ?? {};
+      if (!slug || !gitRepo) {
+        mark(rule.operation, 'invalid');
+        return reply.code(400).send({ success: false, error: 'slug and gitRepo are required' });
       }
-    );
+      if (!PAAS_SLUG_PATTERN.test(slug)) {
+        mark(rule.operation, 'invalid');
+        return reply.code(400).send({ success: false, error: 'Invalid slug format' });
+      }
+      if (!/^https:\/\/[^\s]+$/iu.test(gitRepo)) {
+        mark(rule.operation, 'invalid');
+        return reply.code(400).send({ success: false, error: 'gitRepo must be a valid HTTPS URL' });
+      }
+
+      const resolvedDomain =
+        typeof domain === 'string' && domain.trim() ? domain.trim() : undefined;
+      let previewPort: number | undefined;
+      if (!resolvedDomain) {
+        previewPort = (await allocatePreviewPort()) ?? undefined;
+      }
+      const targetPort = typeof port === 'number' && Number.isInteger(port) ? port : 3000;
+
+      try {
+        assertProbeTarget(defaultAgentUrl, requestPolicy);
+
+        // Generate webhook secret only on initial creation
+        const existingApp = await CloudApp.query().findOne({ name: slug });
+        const isNewApp = !existingApp;
+        const webhookSecret = existingApp?.webhook_secret ?? randomBytes(24).toString('hex');
+
+        const result = await deployAgentGit({
+          endpoint: defaultAgentUrl,
+          token: resolvedToken,
+          slug,
+          tenantId: tenantId ?? `company-${ctx.companyId}`,
+          gitRepo,
+          ...(branch ? { branch } : {}),
+          ...(dockerfilePath ? { dockerfilePath } : {}),
+          port: targetPort,
+          domain: resolvedDomain,
+          env,
+          fetchImpl,
+          timeoutMs: 120_000,
+        });
+
+        // Find or create deployment target for the company
+        let target = await CloudDeploymentTarget.query()
+          .where({ company_id: ctx.companyId, is_active: true })
+          .first();
+        if (!target) {
+          target = await CloudDeploymentTarget.query().where({ company_id: ctx.companyId }).first();
+        }
+        if (!target) {
+          target = await CloudDeploymentTarget.query().first();
+        }
+        if (!target) {
+          target = await CloudDeploymentTarget.query().insertAndFetch({
+            company_id: ctx.companyId,
+            name: 'default-paas-target',
+            environment: 'production',
+            api_url: defaultAgentUrl,
+            is_active: true,
+          });
+        }
+
+        let cloudApp = await CloudApp.query().findOne({ name: slug });
+        if (cloudApp) {
+          cloudApp = await CloudApp.query().patchAndFetchById(cloudApp.id, {
+            company_id: ctx.companyId,
+            deployment_target_id: target.id,
+            image: result.image,
+            port: targetPort,
+            domain: resolvedDomain,
+            host_port: previewPort ?? null,
+            env_vars: env ?? {},
+            compose_spec: '',
+            git_repo: gitRepo,
+            git_branch: branch ?? null,
+            dockerfile_path: dockerfilePath ?? null,
+            webhook_secret: webhookSecret,
+            managed_by: 'paas',
+            deploy_mode: 'git',
+            is_active: true,
+            active: true,
+          });
+        } else {
+          cloudApp = await CloudApp.query().insertAndFetch({
+            company_id: ctx.companyId,
+            deployment_target_id: target.id,
+            name: slug,
+            image: result.image,
+            port: targetPort,
+            domain: resolvedDomain,
+            host_port: previewPort ?? null,
+            env_vars: env ?? {},
+            compose_spec: '',
+            git_repo: gitRepo,
+            git_branch: branch ?? null,
+            dockerfile_path: dockerfilePath ?? null,
+            webhook_secret: webhookSecret,
+            managed_by: 'paas',
+            deploy_mode: 'git',
+            is_active: true,
+            active: true,
+          });
+        }
+
+        await CloudDeployment.query().insert({
+          company_id: ctx.companyId,
+          app_id: cloudApp.id,
+          version: result.commitSha || 'latest',
+          image_tag: 'latest',
+          status: 'running',
+          container_id: result.containerId,
+          trigger: 'agent',
+          log: `Git deploy from ${gitRepo} (${result.branch || branch || 'default'}@${result.commitSha || 'HEAD'})`,
+          started_at: new Date().toISOString(),
+        });
+
+        await reconcileCaddyWithAgent({ token: resolvedToken });
+
+        mark(rule.operation, 'success');
+        // Return webhookUrl & webhookSecret ONLY on initial creation
+        const baseData: Record<string, unknown> = {
+          slug,
+          image: result.image,
+          domain: resolvedDomain,
+          previewPort,
+          commitSha: result.commitSha,
+        };
+        if (isNewApp) {
+          baseData.webhookUrl = `/api/cloud/paas/webhooks/github/${slug}`;
+          baseData.webhookSecret = webhookSecret;
+        }
+        return reply.code(201).send({ success: true, data: baseData });
+      } catch (error) {
+        mark(rule.operation, 'failed', 'mesh');
+        return reply.code(502).send({
+          success: false,
+          error: safeErrorText(
+            error,
+            [resolvedToken, ...Object.values(env ?? {})],
+            'Git deploy failed'
+          ),
+        });
+      }
+    });
+
+    fastify.post<{
+      Params: { slug: string };
+      Headers: { 'x-hub-signature-256'?: string };
+      Body: unknown;
+    }>('/api/cloud/paas/webhooks/github/:slug', WRITE_RATE_LIMIT, async (req, reply) => {
+      const rule = ruleFor('/api/cloud/paas/webhooks/github/:slug');
+      const ctx = requireAuthorizedModelAccess(req, reply, rule);
+      if (!ctx) return;
+      if (!requireFeature(reply, rule)) return;
+
+      const slug = req.params.slug.trim();
+      if (!PAAS_SLUG_PATTERN.test(slug)) {
+        mark(rule.operation, 'invalid');
+        return reply.code(400).send({ success: false, error: 'Invalid slug format' });
+      }
+
+      const cloudApp = await CloudApp.query().findOne({ name: slug });
+      if (!cloudApp || !cloudApp.webhook_secret || !cloudApp.git_repo) {
+        mark(rule.operation, 'invalid');
+        return reply.code(404).send({
+          success: false,
+          error: `App ${slug} not found or not configured for git deploys`,
+        });
+      }
+
+      // Constant-time HMAC-SHA256 verification against stored webhook_secret
+      const signatureHeader = req.headers['x-hub-signature-256'];
+      if (typeof signatureHeader !== 'string' || !signatureHeader.startsWith('sha256=')) {
+        mark(rule.operation, 'denied');
+        return reply.code(401).send({ success: false, error: 'Missing or invalid signature' });
+      }
+      const rawBody = typeof req.body === 'string' ? req.body : JSON.stringify(req.body ?? {});
+      const expected = createHmac('sha256', cloudApp.webhook_secret).update(rawBody).digest('hex');
+      const received = signatureHeader.slice('sha256='.length);
+      const expectedBuf = Buffer.from(expected, 'utf8');
+      const receivedBuf = Buffer.from(received, 'utf8');
+      if (expectedBuf.length !== receivedBuf.length || !timingSafeEqual(expectedBuf, receivedBuf)) {
+        mark(rule.operation, 'denied');
+        return reply.code(401).send({ success: false, error: 'Invalid signature' });
+      }
+
+      try {
+        assertProbeTarget(defaultAgentUrl, requestPolicy);
+        const result = await deployAgentGit({
+          endpoint: defaultAgentUrl,
+          token: resolvedToken,
+          slug,
+          tenantId: `company-${cloudApp.company_id}`,
+          gitRepo: cloudApp.git_repo,
+          ...(cloudApp.git_branch ? { branch: cloudApp.git_branch } : {}),
+          ...(cloudApp.dockerfile_path ? { dockerfilePath: cloudApp.dockerfile_path } : {}),
+          port: cloudApp.port ?? 3000,
+          domain: cloudApp.domain ?? undefined,
+          fetchImpl,
+          timeoutMs: 120_000,
+        });
+
+        await CloudDeployment.query().insert({
+          company_id: cloudApp.company_id,
+          app_id: cloudApp.id,
+          version: result.commitSha || 'latest',
+          image_tag: 'latest',
+          status: 'running',
+          container_id: result.containerId,
+          trigger: 'webhook',
+          log: `Webhook-triggered git deploy from ${cloudApp.git_repo} (${result.commitSha || 'HEAD'})`,
+          started_at: new Date().toISOString(),
+        });
+
+        mark(rule.operation, 'success');
+        return { success: true, data: { slug, commitSha: result.commitSha, status: 'deployed' } };
+      } catch (error) {
+        mark(rule.operation, 'failed', 'mesh');
+        return reply.code(502).send({
+          success: false,
+          error: safeErrorText(
+            error,
+            [resolvedToken, cloudApp.webhook_secret],
+            'Webhook git deploy failed'
+          ),
+        });
+      }
+    });
 
     fastify.post<{ Params: { slug: string; action: string } }>(
       '/api/cloud/paas/apps/:slug/:action',
@@ -2448,7 +2515,13 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
         const { slug } = req.params;
         try {
           const app = await CloudApp.query()
-            .where({ name: slug, company_id: ctx.companyId, managed_by: 'paas', is_active: true, active: true })
+            .where({
+              name: slug,
+              company_id: ctx.companyId,
+              managed_by: 'paas',
+              is_active: true,
+              active: true,
+            })
             .first();
           if (!app) {
             return reply.code(404).send({ success: false, error: `App ${slug} not found` });
@@ -2460,7 +2533,11 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
             const containers = await listAgentContainers({ endpoint: defaultAgentUrl, fetchImpl });
             const found = containers.find((c) => (c.slug ?? c.name) === slug);
             if (found) {
-              containerState = { state: found.state, status: found.status, containerId: found.containerId };
+              containerState = {
+                state: found.state,
+                status: found.status,
+                containerId: found.containerId,
+              };
             }
           } catch {
             // Swallow agent errors; proceed with PostgreSQL state only
@@ -2503,109 +2580,110 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       }
     );
 
-    fastify.post<{ Params: { slug: string }; Body: { env?: Record<string, string>; merge?: boolean; redeploy?: boolean } }>(
-      '/api/cloud/paas/apps/:slug/env',
-      WRITE_RATE_LIMIT,
-      async (req, reply) => {
-        const rule = ruleFor('/api/cloud/paas/apps/:slug/env');
-        const ctx = requireAuthorizedModelAccess(req, reply, rule);
-        if (!ctx) return;
-        if (!requireFeature(reply, rule)) return;
-        if (!requireToken(reply, rule)) return;
+    fastify.post<{
+      Params: { slug: string };
+      Body: { env?: Record<string, string>; merge?: boolean; redeploy?: boolean };
+    }>('/api/cloud/paas/apps/:slug/env', WRITE_RATE_LIMIT, async (req, reply) => {
+      const rule = ruleFor('/api/cloud/paas/apps/:slug/env');
+      const ctx = requireAuthorizedModelAccess(req, reply, rule);
+      if (!ctx) return;
+      if (!requireFeature(reply, rule)) return;
+      if (!requireToken(reply, rule)) return;
 
-        const slug = req.params.slug.trim();
-        if (!PAAS_SLUG_PATTERN.test(slug)) {
-          mark(rule.operation, 'invalid');
-          return reply.code(400).send({ success: false, error: 'Invalid PaaS app slug' });
-        }
-        const body = req.body ?? {};
-        const incomingEnv =
-          body.env && typeof body.env === 'object' && !Array.isArray(body.env)
-            ? Object.fromEntries(
-                Object.entries(body.env as Record<string, unknown>).map(([k, v]) => [k, String(v)])
-              )
-            : null;
-        if (!incomingEnv) {
-          mark(rule.operation, 'invalid');
-          return reply.code(400).send({ success: false, error: 'env must be an object' });
-        }
-
-        const cloudApp = await CloudApp.query().findOne({
-          name: slug,
-          company_id: ctx.companyId,
-          managed_by: 'paas',
-          is_active: true,
-        });
-        if (!cloudApp) {
-          mark(rule.operation, 'invalid');
-          return reply.code(404).send({ success: false, error: `App ${slug} not found` });
-        }
-
-        try {
-          // Merge env: never overwrite an existing secret with the [REDACTED] placeholder
-          const existingEnv: Record<string, string> =
-            cloudApp.env_vars && typeof cloudApp.env_vars === 'object' && !Array.isArray(cloudApp.env_vars)
-              ? { ...(cloudApp.env_vars as Record<string, string>) }
-              : {};
-          const merge = body.merge !== false;
-          const mergedEnv: Record<string, string> = merge ? { ...existingEnv } : {};
-          for (const [key, value] of Object.entries(incomingEnv)) {
-            if (value === '[REDACTED]' && existingEnv[key] && existingEnv[key] !== '[REDACTED]') {
-              // Preserve the stored secret; the redaction placeholder must never corrupt it
-              mergedEnv[key] = existingEnv[key];
-            } else {
-              mergedEnv[key] = value;
-            }
-          }
-
-          await CloudApp.query().findById(cloudApp.id).patch({ env_vars: mergedEnv });
-
-          // Trigger redeploy on the stateless agent (unless explicitly disabled)
-          if (body.redeploy !== false) {
-            assertProbeTarget(defaultAgentUrl, requestPolicy);
-            if (cloudApp.deploy_mode === 'compose' && cloudApp.compose_spec) {
-              await upAgentCompose({
-                endpoint: defaultAgentUrl,
-                slug,
-                composeSpec: cloudApp.compose_spec,
-                env: mergedEnv,
-              });
-            } else {
-              await runAgentContainer({
-                endpoint: defaultAgentUrl,
-                token: resolvedToken,
-                slug,
-                image: cloudApp.image,
-                port: cloudApp.port ?? 3000,
-                domain: cloudApp.domain ?? undefined,
-                env: mergedEnv,
-                fetchImpl,
-                timeoutMs: 60_000,
-              });
-            }
-          }
-
-          // Return redacted env (values replaced with [REDACTED])
-          const redactedEnv: Record<string, string> = {};
-          for (const key of Object.keys(mergedEnv)) {
-            redactedEnv[key] = '[REDACTED]';
-          }
-
-          mark(rule.operation, 'success');
-          return { success: true, data: { slug, env: redactedEnv } };
-        } catch (error) {
-          mark(rule.operation, 'failed', 'mesh');
-          return reply.code(502).send({
-            success: false,
-            error: safeErrorText(
-              error,
-              [resolvedToken, ...Object.values(incomingEnv)],
-              'PaaS env update failed'
-            ),
-          });
-        }
+      const slug = req.params.slug.trim();
+      if (!PAAS_SLUG_PATTERN.test(slug)) {
+        mark(rule.operation, 'invalid');
+        return reply.code(400).send({ success: false, error: 'Invalid PaaS app slug' });
       }
-    );
+      const body = req.body ?? {};
+      const incomingEnv =
+        body.env && typeof body.env === 'object' && !Array.isArray(body.env)
+          ? Object.fromEntries(
+              Object.entries(body.env as Record<string, unknown>).map(([k, v]) => [k, String(v)])
+            )
+          : null;
+      if (!incomingEnv) {
+        mark(rule.operation, 'invalid');
+        return reply.code(400).send({ success: false, error: 'env must be an object' });
+      }
+
+      const cloudApp = await CloudApp.query().findOne({
+        name: slug,
+        company_id: ctx.companyId,
+        managed_by: 'paas',
+        is_active: true,
+      });
+      if (!cloudApp) {
+        mark(rule.operation, 'invalid');
+        return reply.code(404).send({ success: false, error: `App ${slug} not found` });
+      }
+
+      try {
+        // Merge env: never overwrite an existing secret with the [REDACTED] placeholder
+        const existingEnv: Record<string, string> =
+          cloudApp.env_vars &&
+          typeof cloudApp.env_vars === 'object' &&
+          !Array.isArray(cloudApp.env_vars)
+            ? { ...(cloudApp.env_vars as Record<string, string>) }
+            : {};
+        const merge = body.merge !== false;
+        const mergedEnv: Record<string, string> = merge ? { ...existingEnv } : {};
+        for (const [key, value] of Object.entries(incomingEnv)) {
+          if (value === '[REDACTED]' && existingEnv[key] && existingEnv[key] !== '[REDACTED]') {
+            // Preserve the stored secret; the redaction placeholder must never corrupt it
+            mergedEnv[key] = existingEnv[key];
+          } else {
+            mergedEnv[key] = value;
+          }
+        }
+
+        await CloudApp.query().findById(cloudApp.id).patch({ env_vars: mergedEnv });
+
+        // Trigger redeploy on the stateless agent (unless explicitly disabled)
+        if (body.redeploy !== false) {
+          assertProbeTarget(defaultAgentUrl, requestPolicy);
+          if (cloudApp.deploy_mode === 'compose' && cloudApp.compose_spec) {
+            await upAgentCompose({
+              endpoint: defaultAgentUrl,
+              slug,
+              composeSpec: cloudApp.compose_spec,
+              env: mergedEnv,
+            });
+          } else {
+            await runAgentContainer({
+              endpoint: defaultAgentUrl,
+              token: resolvedToken,
+              slug,
+              image: cloudApp.image,
+              port: cloudApp.port ?? 3000,
+              domain: cloudApp.domain ?? undefined,
+              env: mergedEnv,
+              fetchImpl,
+              timeoutMs: 60_000,
+            });
+          }
+        }
+
+        // Return redacted env (values replaced with [REDACTED])
+        const redactedEnv: Record<string, string> = {};
+        for (const key of Object.keys(mergedEnv)) {
+          redactedEnv[key] = '[REDACTED]';
+        }
+
+        mark(rule.operation, 'success');
+        return { success: true, data: { slug, env: redactedEnv } };
+      } catch (error) {
+        mark(rule.operation, 'failed', 'mesh');
+        return reply.code(502).send({
+          success: false,
+          error: safeErrorText(
+            error,
+            [resolvedToken, ...Object.values(incomingEnv)],
+            'PaaS env update failed'
+          ),
+        });
+      }
+    });
 
     fastify.post<{ Params: { slug: string }; Body: { domain?: string } }>(
       '/api/cloud/paas/apps/:slug/domain',
@@ -2649,7 +2727,10 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
               (settings.whatsappDomain && lowerDomain === settings.whatsappDomain.toLowerCase())
             ) {
               mark(rule.operation, 'invalid');
-              return reply.code(400).send({ success: false, error: 'Domain collides with instance or WhatsApp domain' });
+              return reply.code(400).send({
+                success: false,
+                error: 'Domain collides with instance or WhatsApp domain',
+              });
             }
             const collision = await CloudApp.query()
               .where({ managed_by: 'paas', is_active: true })
@@ -2657,19 +2738,25 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
               .first();
             if (collision && collision.id !== cloudApp.id) {
               mark(rule.operation, 'invalid');
-              return reply.code(400).send({ success: false, error: 'Domain is already used by another active app' });
+              return reply
+                .code(400)
+                .send({ success: false, error: 'Domain is already used by another active app' });
             }
           }
 
-          await CloudApp.query().findById(cloudApp.id).patch({
-            domain: domain || null,
-            ...(domain ? { host_port: null } : {}),
-          });
+          await CloudApp.query()
+            .findById(cloudApp.id)
+            .patch({
+              domain: domain || null,
+              ...(domain ? { host_port: null } : {}),
+            });
 
           // Recompile & redeploy compose apps, preserving stored secrets
           if (cloudApp.deploy_mode === 'compose' && cloudApp.compose_spec) {
             const preservedEnv: Record<string, string> =
-              cloudApp.env_vars && typeof cloudApp.env_vars === 'object' && !Array.isArray(cloudApp.env_vars)
+              cloudApp.env_vars &&
+              typeof cloudApp.env_vars === 'object' &&
+              !Array.isArray(cloudApp.env_vars)
                 ? { ...(cloudApp.env_vars as Record<string, string>) }
                 : {};
             await compileCoolifyCompose({
@@ -2728,7 +2815,9 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
           });
           if (!res.ok) {
             mark(rule.operation, 'failed', 'mesh');
-            return reply.code(res.status).send({ success: false, error: 'Logs stream unavailable' });
+            return reply
+              .code(res.status)
+              .send({ success: false, error: 'Logs stream unavailable' });
           }
           const body = await readBoundedResponseBody(res);
           if (!body.ok) {
@@ -2762,7 +2851,9 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
         });
         if (!res.ok) {
           mark(rule.operation, 'failed', 'mesh');
-          return reply.code(502).send({ success: false, error: `Backups list failed (${res.status})` });
+          return reply
+            .code(502)
+            .send({ success: false, error: `Backups list failed (${res.status})` });
         }
         const payload = (await res.json()) as { backups?: unknown[] };
         const list = Array.isArray(payload.backups) ? payload.backups.map(normalizeBackup) : [];
@@ -2836,7 +2927,9 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
         });
         if (!res.ok) {
           mark(rule.operation, 'failed', 'mesh');
-          return reply.code(res.status).send({ success: false, error: `Restore failed (${res.status})` });
+          return reply
+            .code(res.status)
+            .send({ success: false, error: `Restore failed (${res.status})` });
         }
         const payload = (await res.json()) as Record<string, unknown>;
         mark(rule.operation, 'success', 'mesh');
@@ -2851,226 +2944,346 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
     });
 
     fastify.get('/api/cloud/paas/settings', READ_RATE_LIMIT, async (req, reply) => {
-    const rule = ruleFor('/api/cloud/paas/settings');
-    const ctx = requireAuthorizedModelAccess(req, reply, rule);
-    if (!ctx) return;
-    if (!requireFeature(reply, rule)) return;
-    if (!requireToken(reply, rule)) return;
+      const rule = ruleFor('/api/cloud/paas/settings');
+      const ctx = requireAuthorizedModelAccess(req, reply, rule);
+      if (!ctx) return;
+      if (!requireFeature(reply, rule)) return;
+      if (!requireToken(reply, rule)) return;
 
-    try {
-      const settings = await readPaasInstanceSettings();
-      const spec = await buildDeclarativeCaddySpec();
-      mark(rule.operation, 'success');
-      return {
-        success: true,
-        data: {
-          ...settings,
-          routes: spec.routes,
-          previewListeners: spec.previewListeners,
-          hasPreviewApps: spec.previewListeners.length > 0,
-        },
+      try {
+        const settings = await readPaasInstanceSettings();
+        const spec = await buildDeclarativeCaddySpec();
+        mark(rule.operation, 'success');
+        return {
+          success: true,
+          data: {
+            ...settings,
+            routes: spec.routes,
+            previewListeners: spec.previewListeners,
+            hasPreviewApps: spec.previewListeners.length > 0,
+          },
+        };
+      } catch (error) {
+        mark(rule.operation, 'failed', 'mesh');
+        return reply.code(502).send({
+          success: false,
+          error: safeErrorText(error, [resolvedToken], 'PaaS settings read failed'),
+        });
+      }
+    });
+    fastify.post<{
+      Body: {
+        instanceDomain?: string;
+        wildcardDomain?: string;
+        whatsappDomain?: string;
+        expectedIpv4?: string;
+        checkHttps?: boolean;
       };
-    } catch (error) {
-      mark(rule.operation, 'failed', 'mesh');
-      return reply.code(502).send({
-        success: false,
-        error: safeErrorText(error, [resolvedToken], 'PaaS settings read failed'),
-      });
-    }
-  });
-  fastify.post<{
-    Body: {
-      instanceDomain?: string;
-      wildcardDomain?: string;
-      whatsappDomain?: string;
-      expectedIpv4?: string;
-      checkHttps?: boolean;
-    };
-  }>('/api/cloud/paas/settings/verify-dns', WRITE_RATE_LIMIT, async (req, reply) => {
-    const rule = ruleFor('/api/cloud/paas/settings/verify-dns');
-    const ctx = requireAuthorizedModelAccess(req, reply, rule);
-    if (!ctx) return;
-    if (!requireFeature(reply, rule)) return;
-    if (!requireToken(reply, rule)) return;
+    }>('/api/cloud/paas/settings/verify-dns', WRITE_RATE_LIMIT, async (req, reply) => {
+      const rule = ruleFor('/api/cloud/paas/settings/verify-dns');
+      const ctx = requireAuthorizedModelAccess(req, reply, rule);
+      if (!ctx) return;
+      if (!requireFeature(reply, rule)) return;
+      if (!requireToken(reply, rule)) return;
 
-    const { instanceDomain, wildcardDomain, whatsappDomain, expectedIpv4, checkHttps } =
-      req.body;
-    try {
-      const data = await verifyAgentDns({
+      const { instanceDomain, wildcardDomain, whatsappDomain, expectedIpv4, checkHttps } = req.body;
+      try {
+        const data = await verifyAgentDns({
+          endpoint: defaultAgentUrl,
+          fetchImpl,
+          ...(instanceDomain !== undefined ? { instanceDomain } : {}),
+          ...(wildcardDomain !== undefined ? { wildcardDomain } : {}),
+          ...(whatsappDomain !== undefined ? { whatsappDomain } : {}),
+          ...(expectedIpv4 !== undefined ? { expectedIpv4 } : {}),
+          ...(checkHttps !== undefined ? { checkHttps } : {}),
+        });
+        mark(rule.operation, 'success');
+        return { success: true, data };
+      } catch (error) {
+        mark(rule.operation, 'failed', 'mesh');
+        return reply.code(502).send({
+          success: false,
+          error: safeErrorText(error, [resolvedToken], 'DNS verification failed'),
+        });
+      }
+    });
+    fastify.post<{
+      Body: {
+        instanceDomain?: string;
+        wildcardDomain?: string;
+        whatsappDomain?: string;
+        publicPort?: number;
+        publicPortEnabled?: boolean;
+        publicIpv4?: string;
+      };
+    }>('/api/cloud/paas/settings/apply', WRITE_RATE_LIMIT, async (req, reply) => {
+      const rule = ruleFor('/api/cloud/paas/settings/apply');
+      const ctx = requireAuthorizedModelAccess(req, reply, rule);
+      if (!ctx) return;
+      if (!requireFeature(reply, rule)) return;
+      if (!requireToken(reply, rule)) return;
+
+      const {
+        instanceDomain,
+        wildcardDomain,
+        whatsappDomain,
+        publicPort,
+        publicPortEnabled,
+        publicIpv4,
+      } = req.body;
+
+      // Validate settings inputs before acting on them: the TLS-lockdown guard below
+      // must run on an effective, server-side-defaulted value, not on raw user input.
+      if (publicPortEnabled !== undefined && typeof publicPortEnabled !== 'boolean') {
+        mark(rule.operation, 'invalid');
+        return reply
+          .code(400)
+          .send({ success: false, error: 'publicPortEnabled must be a boolean' });
+      }
+      if (
+        publicPort !== undefined &&
+        (!Number.isSafeInteger(publicPort) || publicPort < 1 || publicPort > 65535)
+      ) {
+        mark(rule.operation, 'invalid');
+        return reply
+          .code(400)
+          .send({ success: false, error: 'publicPort must be an integer between 1 and 65535' });
+      }
+      const nextPublicPortEnabled = publicPortEnabled ?? true;
+
+      // Run the DNS/TLS verification unconditionally so a caller cannot bypass the
+      // security check by choosing not to disable the public port. The result is only
+      // enforced when the port is actually being disabled.
+      const dns = await verifyAgentDns({
         endpoint: defaultAgentUrl,
         fetchImpl,
-        ...(instanceDomain !== undefined ? { instanceDomain } : {}),
-        ...(wildcardDomain !== undefined ? { wildcardDomain } : {}),
-        ...(whatsappDomain !== undefined ? { whatsappDomain } : {}),
-        ...(expectedIpv4 !== undefined ? { expectedIpv4 } : {}),
-        ...(checkHttps !== undefined ? { checkHttps } : {}),
+        instanceDomain,
+        checkHttps: true,
       });
-      mark(rule.operation, 'success');
-      return { success: true, data };
-    } catch (error) {
-      mark(rule.operation, 'failed', 'mesh');
-      return reply.code(502).send({
-        success: false,
-        error: safeErrorText(error, [resolvedToken], 'DNS verification failed'),
-      });
-    }
-  });
-  fastify.post<{
-    Body: {
-      instanceDomain?: string;
-      wildcardDomain?: string;
-      whatsappDomain?: string;
-      publicPort?: number;
-      publicPortEnabled?: boolean;
-      publicIpv4?: string;
-    };
-  }>('/api/cloud/paas/settings/apply', WRITE_RATE_LIMIT, async (req, reply) => {
-    const rule = ruleFor('/api/cloud/paas/settings/apply');
-    const ctx = requireAuthorizedModelAccess(req, reply, rule);
-    if (!ctx) return;
-    if (!requireFeature(reply, rule)) return;
-    if (!requireToken(reply, rule)) return;
+      const httpsReady = dns.httpsReady as
+        { reachable?: boolean; tlsVerified?: boolean } | undefined;
 
-    const { instanceDomain, wildcardDomain, whatsappDomain, publicPort, publicPortEnabled, publicIpv4 } =
-      req.body;
+      // TLS lockdown guard: disabling the public port requires a reachable,
+      // certificate-verified HTTPS /readyz on the instance domain, otherwise we
+      // would lock ourselves out of the control plane.
+      if (nextPublicPortEnabled === false && (!httpsReady?.reachable || !httpsReady?.tlsVerified)) {
+        mark(rule.operation, 'denied');
+        return reply.code(400).send({
+          success: false,
+          error:
+            'Refusing to disable the public port: HTTPS /readyz is not reachable or TLS verification failed on the instance domain',
+        });
+      }
 
-    // Validate settings inputs before acting on them: the TLS-lockdown guard below
-    // must run on an effective, server-side-defaulted value, not on raw user input.
-    if (
-      publicPortEnabled !== undefined &&
-      typeof publicPortEnabled !== 'boolean'
-    ) {
-      mark(rule.operation, 'invalid');
-      return reply.code(400).send({ success: false, error: 'publicPortEnabled must be a boolean' });
-    }
-    if (
-      publicPort !== undefined &&
-      (!Number.isSafeInteger(publicPort) || publicPort < 1 || publicPort > 65535)
-    ) {
-      mark(rule.operation, 'invalid');
-      return reply.code(400).send({ success: false, error: 'publicPort must be an integer between 1 and 65535' });
-    }
-    const nextPublicPortEnabled = publicPortEnabled ?? true;
-
-    // Run the DNS/TLS verification unconditionally so a caller cannot bypass the
-    // security check by choosing not to disable the public port. The result is only
-    // enforced when the port is actually being disabled.
-    const dns = await verifyAgentDns({
-      endpoint: defaultAgentUrl,
-      fetchImpl,
-      instanceDomain,
-      checkHttps: true,
+      try {
+        await savePaasInstanceSettings({
+          instanceDomain,
+          wildcardDomain,
+          whatsappDomain,
+          publicPort,
+          publicPortEnabled: nextPublicPortEnabled,
+          publicIpv4,
+        });
+        await reconcileCaddyWithAgent({ token: resolvedToken });
+        mark(rule.operation, 'success');
+        return { success: true, data: { ok: true } };
+      } catch (error) {
+        mark(rule.operation, 'failed', 'mesh');
+        return reply.code(502).send({
+          success: false,
+          error: safeErrorText(error, [resolvedToken], 'PaaS settings apply failed'),
+        });
+      }
     });
-    const httpsReady = dns.httpsReady as { reachable?: boolean; tlsVerified?: boolean } | undefined;
+    fastify.post<{ Body: { wildcardDomain?: string } }>(
+      '/api/cloud/paas/settings/promote-wildcard',
+      WRITE_RATE_LIMIT,
+      async (req, reply) => {
+        const rule = ruleFor('/api/cloud/paas/settings/promote-wildcard');
+        const ctx = requireAuthorizedModelAccess(req, reply, rule);
+        if (!ctx) return;
+        if (!requireFeature(reply, rule)) return;
+        if (!requireToken(reply, rule)) return;
 
-    // TLS lockdown guard: disabling the public port requires a reachable,
-    // certificate-verified HTTPS /readyz on the instance domain, otherwise we
-    // would lock ourselves out of the control plane.
-    if (nextPublicPortEnabled === false && (!httpsReady?.reachable || !httpsReady?.tlsVerified)) {
-      mark(rule.operation, 'denied');
-      return reply.code(400).send({
-        success: false,
-        error:
-          'Refusing to disable the public port: HTTPS /readyz is not reachable or TLS verification failed on the instance domain',
-      });
-    }
-
-    try {
-      await savePaasInstanceSettings({ instanceDomain, wildcardDomain, whatsappDomain, publicPort, publicPortEnabled: nextPublicPortEnabled, publicIpv4 });
-      await reconcileCaddyWithAgent({ token: resolvedToken });
-      mark(rule.operation, 'success');
-      return { success: true, data: { ok: true } };
-    } catch (error) {
-      mark(rule.operation, 'failed', 'mesh');
-      return reply.code(502).send({
-        success: false,
-        error: safeErrorText(error, [resolvedToken], 'PaaS settings apply failed'),
-      });
-    }
-  });
-  fastify.post<{ Body: { wildcardDomain?: string } }>('/api/cloud/paas/settings/promote-wildcard', WRITE_RATE_LIMIT, async (req, reply) => {
-    const rule = ruleFor('/api/cloud/paas/settings/promote-wildcard');
-    const ctx = requireAuthorizedModelAccess(req, reply, rule);
-    if (!ctx) return;
-    if (!requireFeature(reply, rule)) return;
-    if (!requireToken(reply, rule)) return;
-
-    const { wildcardDomain } = req.body;
-    if (!wildcardDomain || typeof wildcardDomain !== 'string' || !isValidPublicDomain(wildcardDomain)) {
-      mark(rule.operation, 'invalid');
-      return reply.code(400).send({ success: false, error: 'wildcardDomain is required and must be a valid public domain' });
-    }
-
-    try {
-      const apps: string[] = [];
-      await promotePreviewAppsToWildcard({
-        wildcardDomain,
-        upAgentCompose: async (slug, env) => {
-          // Use the stored compiled compose spec (with volume declarations + inline files)
-          // so the agent's compose up does not fail on an empty spec.
-          const appRow = await CloudApp.query().findOne({ name: slug });
-          const composeSpec = appRow?.compose_spec;
-          if (!composeSpec) {
-            apps.push(slug);
-            return;
-          }
-          const res = await controlPlaneFetch(`${defaultAgentUrl}/agent/compose/up`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ slug, composeSpec, env }),
+        const { wildcardDomain } = req.body;
+        if (
+          !wildcardDomain ||
+          typeof wildcardDomain !== 'string' ||
+          !isValidPublicDomain(wildcardDomain)
+        ) {
+          mark(rule.operation, 'invalid');
+          return reply.code(400).send({
+            success: false,
+            error: 'wildcardDomain is required and must be a valid public domain',
           });
-          if (!res.ok) throw new Error(`compose up failed: ${res.status}`);
-          apps.push(slug);
-        },
-      });
-      // Record promoted apps for the response by re-reading newly promoted apps.
-      mark(rule.operation, 'success');
-      return { success: true, data: { promotedCount: apps.length, apps } };
-    } catch (error) {
-      mark(rule.operation, 'failed', 'mesh');
-      return reply.code(502).send({
-        success: false,
-        error: safeErrorText(error, [resolvedToken], 'promote-wildcard failed'),
-      });
-    }
-  });
-  fastify.get('/api/cloud/paas/mesh/status', READ_RATE_LIMIT, async (req, reply) => {
-    const rule = ruleFor('/api/cloud/paas/mesh/status');
-    const ctx = requireAuthorizedModelAccess(req, reply, rule);
-    if (!ctx) return;
-    if (!requireFeature(reply, rule)) return;
-    if (!requireToken(reply, rule)) return;
+        }
 
-    try {
-      const mesh = await fetchAgentMeshStatus({ endpoint: defaultAgentUrl, fetchImpl });
-      const containers = await listAgentContainers({ endpoint: defaultAgentUrl, fetchImpl });
-      const spec = await buildDeclarativeCaddySpec();
-      mark(rule.operation, 'success');
-      return {
-        success: true,
-        data: {
-          mesh,
-          containers,
-          routes: spec.routes,
-          previewListeners: spec.previewListeners,
-        },
-      };
-    } catch (error) {
-      mark(rule.operation, 'failed', 'mesh');
-      return reply.code(502).send({
-        success: false,
-        error: safeErrorText(error, [resolvedToken], 'mesh status failed'),
-      });
-    }
-  });
-  fastify.addHook('onReady', async () => {
-    if (process.env.NODE_ENV === 'production' && process.env.MW_CONTROL_PLANE_URL) {
-      // Non-blocking boot reconciliation: reconcile Caddy from PostgreSQL state.
-      void reconcileCaddyWithAgent({ token: resolvedToken }).catch(() => {
-        // Swallowed intentionally: boot must not fail if the agent is not yet reachable.
-      });
-    }
-  });
+        try {
+          const apps: string[] = [];
+          await promotePreviewAppsToWildcard({
+            wildcardDomain,
+            upAgentCompose: async (slug, env) => {
+              // Use the stored compiled compose spec (with volume declarations + inline files)
+              // so the agent's compose up does not fail on an empty spec.
+              const appRow = await CloudApp.query().findOne({ name: slug });
+              const composeSpec = appRow?.compose_spec;
+              if (!composeSpec) {
+                apps.push(slug);
+                return;
+              }
+              const res = await controlPlaneFetch(`${defaultAgentUrl}/agent/compose/up`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ slug, composeSpec, env }),
+              });
+              if (!res.ok) throw new Error(`compose up failed: ${res.status}`);
+              apps.push(slug);
+            },
+          });
+          // Record promoted apps for the response by re-reading newly promoted apps.
+          mark(rule.operation, 'success');
+          return { success: true, data: { promotedCount: apps.length, apps } };
+        } catch (error) {
+          mark(rule.operation, 'failed', 'mesh');
+          return reply.code(502).send({
+            success: false,
+            error: safeErrorText(error, [resolvedToken], 'promote-wildcard failed'),
+          });
+        }
+      }
+    );
+    fastify.get('/api/cloud/paas/mesh/status', READ_RATE_LIMIT, async (req, reply) => {
+      const rule = ruleFor('/api/cloud/paas/mesh/status');
+      const ctx = requireAuthorizedModelAccess(req, reply, rule);
+      if (!ctx) return;
+      if (!requireFeature(reply, rule)) return;
+      if (!requireToken(reply, rule)) return;
+
+      try {
+        const mesh = await fetchAgentMeshStatus({ endpoint: defaultAgentUrl, fetchImpl });
+        const containers = await listAgentContainers({ endpoint: defaultAgentUrl, fetchImpl });
+        const spec = await buildDeclarativeCaddySpec();
+        mark(rule.operation, 'success');
+        return {
+          success: true,
+          data: {
+            mesh,
+            containers,
+            routes: spec.routes,
+            previewListeners: spec.previewListeners,
+          },
+        };
+      } catch (error) {
+        mark(rule.operation, 'failed', 'mesh');
+        return reply.code(502).send({
+          success: false,
+          error: safeErrorText(error, [resolvedToken], 'mesh status failed'),
+        });
+      }
+    });
+    fastify.get<{ Querystring: { force?: string } }>(
+      '/api/cloud/system/update',
+      READ_RATE_LIMIT,
+      async (req, reply) => {
+        const rule = ruleFor('/api/cloud/system/update');
+        const ctx = requireAuthorizedModelAccess(req, reply, rule);
+        if (!ctx) return;
+        if (!requireFeature(reply, rule)) return;
+        if (!requireToken(reply, rule)) return;
+
+        const force = req.query?.force === 'true' || req.query?.force === '1';
+        try {
+          const cpResponse = await controlPlaneFetch(
+            `${defaultAgentUrl}/paas/system/update${force ? '?force=true' : ''}`,
+            { headers: controlPlaneAuthHeaders(resolvedToken) }
+          );
+          const bounded = await readBoundedResponseBody(cpResponse, 64 * 1024);
+          const bodyText = bounded.ok ? bounded.text : '';
+          if (!cpResponse.ok) {
+            mark(rule.operation, 'failed', 'docker_agent');
+            return reply
+              .code(cpResponse.status >= 400 && cpResponse.status < 600 ? cpResponse.status : 502)
+              .send({
+                success: false,
+                error: redactSecrets(bodyText || `Control plane returned ${cpResponse.status}`, [
+                  resolvedToken,
+                ]),
+              });
+          }
+          const updatePayload = JSON.parse(bodyText || '{}') as Record<string, unknown>;
+          mark(rule.operation, 'success', 'docker_agent');
+          return { success: true, data: updatePayload };
+        } catch (error) {
+          mark(rule.operation, 'failed', 'docker_agent');
+          return reply.code(502).send({
+            success: false,
+            error: safeErrorText(error, [resolvedToken], 'Unable to check system updates'),
+          });
+        }
+      }
+    );
+    fastify.post<{ Body: { version?: string } }>(
+      '/api/cloud/system/update/apply',
+      WRITE_RATE_LIMIT,
+      async (req, reply) => {
+        const rule = ruleFor('/api/cloud/system/update/apply');
+        const ctx = requireAuthorizedModelAccess(req, reply, rule);
+        if (!ctx) return;
+        if (!requireFeature(reply, rule)) return;
+        if (!requireToken(reply, rule)) return;
+
+        const version = typeof req.body?.version === 'string' ? req.body.version.trim() : undefined;
+        try {
+          const cpResponse = await controlPlaneFetch(
+            `${defaultAgentUrl}/paas/system/update/apply`,
+            {
+              method: 'POST',
+              headers: controlPlaneAuthHeaders(resolvedToken, {
+                'Content-Type': 'application/json',
+              }),
+              body: JSON.stringify(version ? { version } : {}),
+            }
+          );
+          const bounded = await readBoundedResponseBody(cpResponse, 64 * 1024);
+          const bodyText = bounded.ok ? bounded.text : '';
+          let parsedPayload: Record<string, unknown> = {};
+          try {
+            parsedPayload = bodyText ? (JSON.parse(bodyText) as Record<string, unknown>) : {};
+          } catch {
+            parsedPayload = { raw: redactSecrets(bodyText, [resolvedToken]) };
+          }
+          if (!cpResponse.ok) {
+            mark(rule.operation, cpResponse.status === 409 ? 'conflict' : 'failed', 'docker_agent');
+            return reply
+              .code(cpResponse.status >= 400 && cpResponse.status < 600 ? cpResponse.status : 502)
+              .send({
+                success: false,
+                error: redactSecrets(
+                  String(parsedPayload.error ?? `Update apply failed (${cpResponse.status})`),
+                  [resolvedToken]
+                ),
+                data: parsedPayload.status ?? parsedPayload,
+              });
+          }
+          mark(rule.operation, 'success', 'docker_agent');
+          return reply.code(cpResponse.status).send({ success: true, data: parsedPayload });
+        } catch (error) {
+          mark(rule.operation, 'failed', 'docker_agent');
+          return reply.code(502).send({
+            success: false,
+            error: safeErrorText(error, [resolvedToken], 'Unable to start system update'),
+          });
+        }
+      }
+    );
+    fastify.addHook('onReady', async () => {
+      if (process.env.NODE_ENV === 'production' && process.env.MW_CONTROL_PLANE_URL) {
+        // Non-blocking boot reconciliation: reconcile Caddy from PostgreSQL state.
+        void reconcileCaddyWithAgent({ token: resolvedToken }).catch(() => {
+          // Swallowed intentionally: boot must not fail if the agent is not yet reachable.
+        });
+      }
+    });
   };
 }
 

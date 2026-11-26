@@ -16,6 +16,7 @@ import { useDesktopBridge } from '@/lib/desktop-bridge';
 import { scopedQueryKey } from '@/lib/query-scope';
 import { MeshFleetDrawer } from '@/components/ai/mesh-fleet-drawer';
 import { PaasStudioPanel } from '@/components/cloud/paas-studio-panel';
+import { PlatformUpdatePanel } from '@/components/cloud/platform-update-panel';
 
 interface CloudHealthPayload {
   controlPlane: 'connected' | 'unreachable';
@@ -305,9 +306,7 @@ export function CloudIspPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricTile
           label="Docker Agent"
-          value={
-            cloudHealthQuery.data?.controlPlane ?? (cloudHealthQuery.isLoading ? '...' : '—')
-          }
+          value={cloudHealthQuery.data?.controlPlane ?? (cloudHealthQuery.isLoading ? '...' : '—')}
           detail={`Docker: ${cloudHealthQuery.data?.docker ?? 'unknown'}`}
           error={cloudHealthQuery.isError ? cloudHealthQuery.error?.message : undefined}
         />
@@ -321,7 +320,11 @@ export function CloudIspPage() {
           label="NAS Devices"
           value={String(ispHealthQuery.data?.nasCount ?? nasQuery.data?.length ?? 0)}
           detail={ispHealthQuery.isError && nasQuery.isError ? 'Load failed' : 'Active gateways'}
-          error={(ispHealthQuery.isError || nasQuery.isError) ? (ispHealthQuery.error?.message ?? nasQuery.error?.message) : undefined}
+          error={
+            ispHealthQuery.isError || nasQuery.isError
+              ? (ispHealthQuery.error?.message ?? nasQuery.error?.message)
+              : undefined
+          }
         />
         <MetricTile
           label="Live Sessions"
@@ -336,6 +339,8 @@ export function CloudIspPage() {
       </div>
 
       {isDesktop ? <MeshFleetDrawer /> : null}
+
+      <PlatformUpdatePanel />
 
       <PaasStudioPanel apiBase={isDesktop ? '/api/desktop/paas' : '/api/cloud/paas'} />
 
