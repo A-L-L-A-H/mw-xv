@@ -2952,25 +2952,27 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
     }
     const nextPublicPortEnabled = publicPortEnabled ?? true;
 
+    // Run the DNS/TLS verification unconditionally so a caller cannot bypass the
+    // security check by choosing not to disable the public port. The result is only
+    // enforced when the port is actually being disabled.
+    const dns = await verifyAgentDns({
+      endpoint: defaultAgentUrl,
+      fetchImpl,
+      instanceDomain,
+      checkHttps: true,
+    });
+    const httpsReady = dns.httpsReady as { reachable?: boolean; tlsVerified?: boolean } | undefined;
+
     // TLS lockdown guard: disabling the public port requires a reachable,
     // certificate-verified HTTPS /readyz on the instance domain, otherwise we
     // would lock ourselves out of the control plane.
-    if (nextPublicPortEnabled === false) {
-      const dns = await verifyAgentDns({
-        endpoint: defaultAgentUrl,
-        fetchImpl,
-        instanceDomain,
-        checkHttps: true,
+    if (nextPublicPortEnabled === false && (!httpsReady?.reachable || !httpsReady?.tlsVerified)) {
+      mark(rule.operation, 'denied');
+      return reply.code(400).send({
+        success: false,
+        error:
+          'Refusing to disable the public port: HTTPS /readyz is not reachable or TLS verification failed on the instance domain',
       });
-      const httpsReady = dns.httpsReady as { reachable?: boolean; tlsVerified?: boolean } | undefined;
-      if (!httpsReady?.reachable || !httpsReady?.tlsVerified) {
-        mark(rule.operation, 'denied');
-        return reply.code(400).send({
-          success: false,
-          error:
-            'Refusing to disable the public port: HTTPS /readyz is not reachable or TLS verification failed on the instance domain',
-        });
-      }
     }
 
     try {

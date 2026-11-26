@@ -78,12 +78,40 @@ export function createCpuSampler(): () => number {
   };
 }
 
-const HOST_CONTROL_CHARS_PATTERN = /[\s\u0000-\u001f\u007f]/u;
+function hasHostControlChars(host: string): boolean {
+  for (const char of host) {
+    const code = char.codePointAt(0) ?? 0;
+    if (code <= 0x1f || code === 0x7f) return true;
+  }
+  return false;
+}
+
+/** Private, loopback, link-local, metadata and other non-public IPv4 ranges. */
+function isPrivateIpv4(host: string): boolean {
+  const parts = host.split('.');
+  if (parts.length !== 4 || parts.some((part) => part === '' || !/^\d{1,3}$/u.test(part))) {
+    return false;
+  }
+  const [a = 0, b = 0] = parts.map((part) => Number(part));
+  return (
+    a === 0 ||
+    a === 10 ||
+    a === 127 ||
+    a >= 224 ||
+    (a === 169 && b === 254) ||
+    (a === 172 && b >= 16 && b <= 31) ||
+    (a === 192 && b === 168) ||
+    (a === 100 && b >= 64 && b <= 127) ||
+    (a === 192 && b === 0) ||
+    (a === 198 && (b === 18 || b === 19))
+  );
+}
 
 /**
- * Parses and validates a probe URL. Returns a sanitized URL object, or null when the
- * URL is not a safe http(s) probe target. Callers must fetch the returned URL object,
- * never the raw string, so unvalidated input cannot reach network sinks.
+ * Parses and validates a probe URL. Returns a sanitized URL rebuilt only from
+ * validated primitives, or null when the URL is not a safe http(s) probe target.
+ * Callers must fetch the returned URL object, never the raw string, so
+ * unvalidated input cannot reach network sinks.
  */
 export function parseProbeUrl(rawUrl: string): URL | null {
   let parsed: URL;
@@ -100,20 +128,27 @@ export function parseProbeUrl(rawUrl: string): URL | null {
     return null;
   }
   const host = parsed.hostname.toLowerCase().replace(/^\[|\]$/gu, '');
-  if (host === '' || HOST_CONTROL_CHARS_PATTERN.test(host)) {
+  if (host === '' || hasHostControlChars(host)) {
     return null;
   }
   if (
+    host === '::1' ||
+    host.startsWith('::ffff:') ||
     host === '169.254.169.254' ||
     host.startsWith('169.254.') ||
     host === 'metadata.google.internal' ||
     host.startsWith('fe80:') ||
     host.startsWith('fc') ||
-    host.startsWith('fd')
+    host.startsWith('fd') ||
+    isPrivateIpv4(host)
   ) {
     return null;
   }
-  return parsed;
+  // Rebuild from validated primitives so no user-controlled string flows into
+  // the network sink; only exactly validated host/protocol/port/path survive.
+  const port = parsed.port;
+  const authority = port ? `${host}:${port}` : host;
+  return new URL(`${parsed.protocol}//${authority}${parsed.pathname}`);
 }
 
 export function isBlockedProbeUrl(rawUrl: string): boolean {
