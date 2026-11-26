@@ -145,10 +145,15 @@ export function parseProbeUrl(rawUrl: string): URL | null {
     return null;
   }
   // Rebuild from validated primitives so no user-controlled string flows into
-  // the network sink; only exactly validated host/protocol/port/path survive.
-  const port = parsed.port;
-  const authority = port ? `${host}:${port}` : host;
-  return new URL(`${parsed.protocol}//${authority}${parsed.pathname}`);
+  // the network sink; only validated protocol/host/port/path/query survive.
+  // IPv6 hosts need their bracket delimiter restored for URL authority syntax.
+  const authority = host.includes(':') ? `[${host}]` : host;
+  const portSuffix = parsed.port ? `:${parsed.port}` : '';
+  try {
+    return new URL(`${parsed.protocol}//${authority}${portSuffix}${parsed.pathname}${parsed.search}`);
+  } catch {
+    return null;
+  }
 }
 
 export function isBlockedProbeUrl(rawUrl: string): boolean {
