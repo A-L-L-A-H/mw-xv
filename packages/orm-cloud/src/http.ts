@@ -27,22 +27,17 @@ import {
   controlAgentContainer,
   deployAgentGit,
   fetchAgentContainerStats,
-  fetchAgentMeshStatus,
   fetchMeshNodeMetrics,
   listAgentContainers,
   listMeshPaasApps,
   runAgentContainer,
   upAgentCompose,
-  verifyAgentDns,
 } from './providers/moonwitness-mesh.js';
 import type { PaasQuotaReservationLedger } from './quota.js';
 import {
   allocatePreviewPort,
-  buildDeclarativeCaddySpec,
   isValidPublicDomain,
-  promotePreviewAppsToWildcard,
   readPaasInstanceSettings,
-  savePaasInstanceSettings,
   reconcileCaddyWithAgent,
 } from './paas-state.js';
 import { compileCoolifyCompose } from './coolify-compose-compiler.js';
@@ -70,6 +65,9 @@ import {
   type CloudProviderLabel,
 } from './auth.js';
 import type { ProbeTargetPolicy } from './probe.js';
+import { registerPaasBackupRoutes } from './routes/paas-backups.js';
+import { registerPaasSettingsAndMeshRoutes } from './routes/paas-settings.js';
+import { registerSystemUpdateRoutes } from './routes/system-update.js';
 
 export interface CloudHttpPluginOptions extends CloudConfigInput {
   readonly fetchImpl?: typeof fetch;
@@ -1530,18 +1528,6 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
     });
 
     const PAAS_SLUG_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,46}[a-z0-9])?$/u;
-    const normalizeBackup = (raw: unknown) => {
-      const item = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
-      const sizeBytes = typeof item.sizeBytes === 'number' ? item.sizeBytes : 0;
-      return {
-        id: String(item.id ?? ''),
-        filename: String(item.filename ?? `${String(item.id ?? 'backup')}.dump`),
-        createdAt: String(item.createdAt ?? new Date().toISOString()),
-        sizeMb: Math.max(0.01, Number((sizeBytes / 1_048_576).toFixed(2))),
-        sha256: String(item.sha256 ?? ''),
-        verified: true,
-      };
-    };
 
     fastify.get('/api/cloud/paas/metrics', READ_RATE_LIMIT, async (req, reply) => {
       const rule = ruleFor('/api/cloud/paas/metrics');
@@ -2839,443 +2825,21 @@ export function createCloudHttpPlugin(options: CloudHttpPluginOptions = {}): Add
       }
     );
 
-    fastify.get('/api/cloud/paas/backups', READ_RATE_LIMIT, async (req, reply) => {
-      const rule = ruleFor('/api/cloud/paas/backups');
-      const ctx = requireAuthorizedModelAccess(req, reply, rule);
-      if (!ctx) return;
-      if (!requireFeature(reply, rule)) return;
-      if (!requireToken(reply, rule)) return;
-      try {
-        const res = await controlPlaneFetch(`${defaultAgentUrl}/paas/backups`, {
-          signal: AbortSignal.timeout(10_000),
-        });
-        if (!res.ok) {
-          mark(rule.operation, 'failed', 'mesh');
-          return reply
-            .code(502)
-            .send({ success: false, error: `Backups list failed (${res.status})` });
-        }
-        const payload = (await res.json()) as { backups?: unknown[] };
-        const list = Array.isArray(payload.backups) ? payload.backups.map(normalizeBackup) : [];
-        mark(rule.operation, 'success', 'mesh');
-        return { success: true, data: list };
-      } catch (error) {
-        mark(rule.operation, 'offline', 'mesh');
-        return reply.code(502).send({
-          success: false,
-          error: safeErrorText(error, [resolvedToken], 'Control plane backups unreachable'),
-        });
-      }
-    });
-
-    fastify.post('/api/cloud/paas/backups/postgres', WRITE_RATE_LIMIT, async (req, reply) => {
-      const rule = ruleFor('/api/cloud/paas/backups/postgres');
-      const ctx = requireAuthorizedModelAccess(req, reply, rule);
-      if (!ctx) return;
-      if (!requireFeature(reply, rule)) return;
-      if (!requireToken(reply, rule)) return;
-      try {
-        const res = await controlPlaneFetch(`${defaultAgentUrl}/paas/backups/postgres`, {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: '{}',
-          signal: AbortSignal.timeout(60_000),
-        });
-        if (!res.ok) {
-          mark(rule.operation, 'failed', 'mesh');
-          return reply.code(502).send({ success: false, error: `Backup failed (${res.status})` });
-        }
-        const manifest = await res.json();
-        mark(rule.operation, 'success', 'mesh');
-        return reply.code(201).send({ success: true, data: normalizeBackup(manifest) });
-      } catch (error) {
-        mark(rule.operation, 'failed', 'mesh');
-        return reply.code(502).send({
-          success: false,
-          error: safeErrorText(error, [resolvedToken], 'PostgreSQL backup failed'),
-        });
-      }
-    });
-
-    fastify.post('/api/cloud/paas/backups/restore', WRITE_RATE_LIMIT, async (req, reply) => {
-      const rule = ruleFor('/api/cloud/paas/backups/restore');
-      const ctx = requireAuthorizedModelAccess(req, reply, rule);
-      if (!ctx) return;
-      if (!requireFeature(reply, rule)) return;
-      if (!requireToken(reply, rule)) return;
-      const body = (req.body && typeof req.body === 'object' ? req.body : {}) as {
-        id?: unknown;
-        backupId?: unknown;
-        dryRun?: unknown;
-      };
-      const id =
-        typeof body.id === 'string' && body.id.trim()
-          ? body.id.trim()
-          : typeof body.backupId === 'string' && body.backupId.trim()
-            ? body.backupId.trim()
-            : '';
-      if (!id) {
-        mark(rule.operation, 'invalid', 'mesh');
-        return reply.code(400).send({ success: false, error: 'Backup id is required' });
-      }
-      try {
-        const res = await controlPlaneFetch(`${defaultAgentUrl}/paas/backups/restore`, {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ id, dryRun: body.dryRun !== false }),
-          signal: AbortSignal.timeout(60_000),
-        });
-        if (!res.ok) {
-          mark(rule.operation, 'failed', 'mesh');
-          return reply
-            .code(res.status)
-            .send({ success: false, error: `Restore failed (${res.status})` });
-        }
-        const payload = (await res.json()) as Record<string, unknown>;
-        mark(rule.operation, 'success', 'mesh');
-        return { success: true, data: { ...payload, ok: true, verified: true } };
-      } catch (error) {
-        mark(rule.operation, 'failed', 'mesh');
-        return reply.code(502).send({
-          success: false,
-          error: safeErrorText(error, [resolvedToken], 'PostgreSQL restore failed'),
-        });
-      }
-    });
-
-    fastify.get('/api/cloud/paas/settings', READ_RATE_LIMIT, async (req, reply) => {
-      const rule = ruleFor('/api/cloud/paas/settings');
-      const ctx = requireAuthorizedModelAccess(req, reply, rule);
-      if (!ctx) return;
-      if (!requireFeature(reply, rule)) return;
-      if (!requireToken(reply, rule)) return;
-
-      try {
-        const settings = await readPaasInstanceSettings();
-        const spec = await buildDeclarativeCaddySpec();
-        mark(rule.operation, 'success');
-        return {
-          success: true,
-          data: {
-            ...settings,
-            routes: spec.routes,
-            previewListeners: spec.previewListeners,
-            hasPreviewApps: spec.previewListeners.length > 0,
-          },
-        };
-      } catch (error) {
-        mark(rule.operation, 'failed', 'mesh');
-        return reply.code(502).send({
-          success: false,
-          error: safeErrorText(error, [resolvedToken], 'PaaS settings read failed'),
-        });
-      }
-    });
-    fastify.post<{
-      Body: {
-        instanceDomain?: string;
-        wildcardDomain?: string;
-        whatsappDomain?: string;
-        expectedIpv4?: string;
-        checkHttps?: boolean;
-      };
-    }>('/api/cloud/paas/settings/verify-dns', WRITE_RATE_LIMIT, async (req, reply) => {
-      const rule = ruleFor('/api/cloud/paas/settings/verify-dns');
-      const ctx = requireAuthorizedModelAccess(req, reply, rule);
-      if (!ctx) return;
-      if (!requireFeature(reply, rule)) return;
-      if (!requireToken(reply, rule)) return;
-
-      const { instanceDomain, wildcardDomain, whatsappDomain, expectedIpv4, checkHttps } = req.body;
-      try {
-        const data = await verifyAgentDns({
-          endpoint: defaultAgentUrl,
-          fetchImpl,
-          ...(instanceDomain !== undefined ? { instanceDomain } : {}),
-          ...(wildcardDomain !== undefined ? { wildcardDomain } : {}),
-          ...(whatsappDomain !== undefined ? { whatsappDomain } : {}),
-          ...(expectedIpv4 !== undefined ? { expectedIpv4 } : {}),
-          ...(checkHttps !== undefined ? { checkHttps } : {}),
-        });
-        mark(rule.operation, 'success');
-        return { success: true, data };
-      } catch (error) {
-        mark(rule.operation, 'failed', 'mesh');
-        return reply.code(502).send({
-          success: false,
-          error: safeErrorText(error, [resolvedToken], 'DNS verification failed'),
-        });
-      }
-    });
-    fastify.post<{
-      Body: {
-        instanceDomain?: string;
-        wildcardDomain?: string;
-        whatsappDomain?: string;
-        publicPort?: number;
-        publicPortEnabled?: boolean;
-        publicIpv4?: string;
-      };
-    }>('/api/cloud/paas/settings/apply', WRITE_RATE_LIMIT, async (req, reply) => {
-      const rule = ruleFor('/api/cloud/paas/settings/apply');
-      const ctx = requireAuthorizedModelAccess(req, reply, rule);
-      if (!ctx) return;
-      if (!requireFeature(reply, rule)) return;
-      if (!requireToken(reply, rule)) return;
-
-      const {
-        instanceDomain,
-        wildcardDomain,
-        whatsappDomain,
-        publicPort,
-        publicPortEnabled,
-        publicIpv4,
-      } = req.body;
-
-      // Validate settings inputs before acting on them: the TLS-lockdown guard below
-      // must run on an effective, server-side-defaulted value, not on raw user input.
-      if (publicPortEnabled !== undefined && typeof publicPortEnabled !== 'boolean') {
-        mark(rule.operation, 'invalid');
-        return reply
-          .code(400)
-          .send({ success: false, error: 'publicPortEnabled must be a boolean' });
-      }
-      if (
-        publicPort !== undefined &&
-        (!Number.isSafeInteger(publicPort) || publicPort < 1 || publicPort > 65535)
-      ) {
-        mark(rule.operation, 'invalid');
-        return reply
-          .code(400)
-          .send({ success: false, error: 'publicPort must be an integer between 1 and 65535' });
-      }
-      const nextPublicPortEnabled = publicPortEnabled ?? true;
-
-      // Run the DNS/TLS verification unconditionally so a caller cannot bypass the
-      // security check by choosing not to disable the public port. The result is only
-      // enforced when the port is actually being disabled.
-      const dns = await verifyAgentDns({
-        endpoint: defaultAgentUrl,
-        fetchImpl,
-        instanceDomain,
-        checkHttps: true,
-      });
-      const httpsReady = dns.httpsReady as
-        { reachable?: boolean; tlsVerified?: boolean } | undefined;
-
-      // TLS lockdown guard: disabling the public port requires a reachable,
-      // certificate-verified HTTPS /readyz on the instance domain, otherwise we
-      // would lock ourselves out of the control plane.
-      if (nextPublicPortEnabled === false && (!httpsReady?.reachable || !httpsReady?.tlsVerified)) {
-        mark(rule.operation, 'denied');
-        return reply.code(400).send({
-          success: false,
-          error:
-            'Refusing to disable the public port: HTTPS /readyz is not reachable or TLS verification failed on the instance domain',
-        });
-      }
-
-      try {
-        await savePaasInstanceSettings({
-          instanceDomain,
-          wildcardDomain,
-          whatsappDomain,
-          publicPort,
-          publicPortEnabled: nextPublicPortEnabled,
-          publicIpv4,
-        });
-        await reconcileCaddyWithAgent({ token: resolvedToken });
-        mark(rule.operation, 'success');
-        return { success: true, data: { ok: true } };
-      } catch (error) {
-        mark(rule.operation, 'failed', 'mesh');
-        return reply.code(502).send({
-          success: false,
-          error: safeErrorText(error, [resolvedToken], 'PaaS settings apply failed'),
-        });
-      }
-    });
-    fastify.post<{ Body: { wildcardDomain?: string } }>(
-      '/api/cloud/paas/settings/promote-wildcard',
-      WRITE_RATE_LIMIT,
-      async (req, reply) => {
-        const rule = ruleFor('/api/cloud/paas/settings/promote-wildcard');
-        const ctx = requireAuthorizedModelAccess(req, reply, rule);
-        if (!ctx) return;
-        if (!requireFeature(reply, rule)) return;
-        if (!requireToken(reply, rule)) return;
-
-        const { wildcardDomain } = req.body;
-        if (
-          !wildcardDomain ||
-          typeof wildcardDomain !== 'string' ||
-          !isValidPublicDomain(wildcardDomain)
-        ) {
-          mark(rule.operation, 'invalid');
-          return reply.code(400).send({
-            success: false,
-            error: 'wildcardDomain is required and must be a valid public domain',
-          });
-        }
-
-        try {
-          const apps: string[] = [];
-          await promotePreviewAppsToWildcard({
-            wildcardDomain,
-            upAgentCompose: async (slug, env) => {
-              // Use the stored compiled compose spec (with volume declarations + inline files)
-              // so the agent's compose up does not fail on an empty spec.
-              const appRow = await CloudApp.query().findOne({ name: slug });
-              const composeSpec = appRow?.compose_spec;
-              if (!composeSpec) {
-                apps.push(slug);
-                return;
-              }
-              const res = await controlPlaneFetch(`${defaultAgentUrl}/agent/compose/up`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ slug, composeSpec, env }),
-              });
-              if (!res.ok) throw new Error(`compose up failed: ${res.status}`);
-              apps.push(slug);
-            },
-          });
-          // Record promoted apps for the response by re-reading newly promoted apps.
-          mark(rule.operation, 'success');
-          return { success: true, data: { promotedCount: apps.length, apps } };
-        } catch (error) {
-          mark(rule.operation, 'failed', 'mesh');
-          return reply.code(502).send({
-            success: false,
-            error: safeErrorText(error, [resolvedToken], 'promote-wildcard failed'),
-          });
-        }
-      }
-    );
-    fastify.get('/api/cloud/paas/mesh/status', READ_RATE_LIMIT, async (req, reply) => {
-      const rule = ruleFor('/api/cloud/paas/mesh/status');
-      const ctx = requireAuthorizedModelAccess(req, reply, rule);
-      if (!ctx) return;
-      if (!requireFeature(reply, rule)) return;
-      if (!requireToken(reply, rule)) return;
-
-      try {
-        const mesh = await fetchAgentMeshStatus({ endpoint: defaultAgentUrl, fetchImpl });
-        const containers = await listAgentContainers({ endpoint: defaultAgentUrl, fetchImpl });
-        const spec = await buildDeclarativeCaddySpec();
-        mark(rule.operation, 'success');
-        return {
-          success: true,
-          data: {
-            mesh,
-            containers,
-            routes: spec.routes,
-            previewListeners: spec.previewListeners,
-          },
-        };
-      } catch (error) {
-        mark(rule.operation, 'failed', 'mesh');
-        return reply.code(502).send({
-          success: false,
-          error: safeErrorText(error, [resolvedToken], 'mesh status failed'),
-        });
-      }
-    });
-    fastify.get<{ Querystring: { force?: string } }>(
-      '/api/cloud/system/update',
-      READ_RATE_LIMIT,
-      async (req, reply) => {
-        const rule = ruleFor('/api/cloud/system/update');
-        const ctx = requireAuthorizedModelAccess(req, reply, rule);
-        if (!ctx) return;
-        if (!requireFeature(reply, rule)) return;
-        if (!requireToken(reply, rule)) return;
-
-        const force = req.query?.force === 'true' || req.query?.force === '1';
-        try {
-          const cpResponse = await controlPlaneFetch(
-            `${defaultAgentUrl}/paas/system/update${force ? '?force=true' : ''}`,
-            { headers: controlPlaneAuthHeaders(resolvedToken) }
-          );
-          const bounded = await readBoundedResponseBody(cpResponse, 64 * 1024);
-          const bodyText = bounded.ok ? bounded.text : '';
-          if (!cpResponse.ok) {
-            mark(rule.operation, 'failed', 'docker_agent');
-            return reply
-              .code(cpResponse.status >= 400 && cpResponse.status < 600 ? cpResponse.status : 502)
-              .send({
-                success: false,
-                error: redactSecrets(bodyText || `Control plane returned ${cpResponse.status}`, [
-                  resolvedToken,
-                ]),
-              });
-          }
-          const updatePayload = JSON.parse(bodyText || '{}') as Record<string, unknown>;
-          mark(rule.operation, 'success', 'docker_agent');
-          return { success: true, data: updatePayload };
-        } catch (error) {
-          mark(rule.operation, 'failed', 'docker_agent');
-          return reply.code(502).send({
-            success: false,
-            error: safeErrorText(error, [resolvedToken], 'Unable to check system updates'),
-          });
-        }
-      }
-    );
-    fastify.post<{ Body: { version?: string } }>(
-      '/api/cloud/system/update/apply',
-      WRITE_RATE_LIMIT,
-      async (req, reply) => {
-        const rule = ruleFor('/api/cloud/system/update/apply');
-        const ctx = requireAuthorizedModelAccess(req, reply, rule);
-        if (!ctx) return;
-        if (!requireFeature(reply, rule)) return;
-        if (!requireToken(reply, rule)) return;
-
-        const version = typeof req.body?.version === 'string' ? req.body.version.trim() : undefined;
-        try {
-          const cpResponse = await controlPlaneFetch(
-            `${defaultAgentUrl}/paas/system/update/apply`,
-            {
-              method: 'POST',
-              headers: controlPlaneAuthHeaders(resolvedToken, {
-                'Content-Type': 'application/json',
-              }),
-              body: JSON.stringify(version ? { version } : {}),
-            }
-          );
-          const bounded = await readBoundedResponseBody(cpResponse, 64 * 1024);
-          const bodyText = bounded.ok ? bounded.text : '';
-          let parsedPayload: Record<string, unknown> = {};
-          try {
-            parsedPayload = bodyText ? (JSON.parse(bodyText) as Record<string, unknown>) : {};
-          } catch {
-            parsedPayload = { raw: redactSecrets(bodyText, [resolvedToken]) };
-          }
-          if (!cpResponse.ok) {
-            mark(rule.operation, cpResponse.status === 409 ? 'conflict' : 'failed', 'docker_agent');
-            return reply
-              .code(cpResponse.status >= 400 && cpResponse.status < 600 ? cpResponse.status : 502)
-              .send({
-                success: false,
-                error: redactSecrets(
-                  String(parsedPayload.error ?? `Update apply failed (${cpResponse.status})`),
-                  [resolvedToken]
-                ),
-                data: parsedPayload.status ?? parsedPayload,
-              });
-          }
-          mark(rule.operation, 'success', 'docker_agent');
-          return reply.code(cpResponse.status).send({ success: true, data: parsedPayload });
-        } catch (error) {
-          mark(rule.operation, 'failed', 'docker_agent');
-          return reply.code(502).send({
-            success: false,
-            error: safeErrorText(error, [resolvedToken], 'Unable to start system update'),
-          });
-        }
-      }
-    );
+    const routeCtx = {
+      fastify,
+      defaultAgentUrl,
+      resolvedToken,
+      fetchImpl,
+      ruleFor,
+      requireAuthorizedModelAccess,
+      requireFeature,
+      requireToken,
+      mark,
+      controlPlaneFetch,
+    };
+    registerPaasBackupRoutes(routeCtx);
+    registerPaasSettingsAndMeshRoutes(routeCtx);
+    registerSystemUpdateRoutes(routeCtx);
     fastify.addHook('onReady', async () => {
       if (process.env.NODE_ENV === 'production' && process.env.MW_CONTROL_PLANE_URL) {
         // Non-blocking boot reconciliation: reconcile Caddy from PostgreSQL state.

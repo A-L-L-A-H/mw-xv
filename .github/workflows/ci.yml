@@ -158,6 +158,15 @@ jobs:
           bun run api:addon:check
           bun --filter @moonwitness/types build
           bun run test:assets
+      - name: Cache Playwright Chromium browser
+        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
+      - name: Verify asset bounds, shared UI, and documentation links
+        run: |
           bunx playwright install chromium
           bun run assets:check:bounds
           bun run test:ui

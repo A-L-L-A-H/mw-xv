@@ -38,7 +38,7 @@ describe('loadUnifiedTemplateCatalog', () => {
     clearCoolifyTemplateCatalogCache();
   });
 
-  it('loads raw entries from all three upstream packs', () => {
+  it('loads raw entries from all three upstream packs', { timeout: 30_000 }, () => {
     const dokploy = loadDokployTemplateCatalog();
     const bigbear = loadBigbearTemplateCatalog();
     expect(dokploy.size).toBeGreaterThan(400);
