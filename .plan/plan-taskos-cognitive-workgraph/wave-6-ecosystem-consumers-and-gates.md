@@ -77,7 +77,7 @@
 
 ---
 
-## - [ ] T40 — Wire Standalone `tools/agent-observatory/server.mjs` to `@moonwitness/plan-taskos` Brain DB
+## - [x] T40 — Wire Standalone `tools/agent-observatory/server.mjs` to `@moonwitness/plan-taskos` Brain DB
 
 - **Owner File(s):** `tools/agent-observatory/server.mjs`, `tools/agent-observatory/server.test.mjs`
   - `tools/agent-observatory/server.mjs` (MODIFY)
