@@ -118,4 +118,4 @@ Execute strictly **1 micro-task (`Txx`) per cycle** without asking the user any 
 | Wave 3 | `T19`–`T23` | `5 / 5` | 2f3f6d11 | `bun --filter @moonwitness/plan-taskos typecheck && bun --filter @moonwitness/plan-taskos build && bun --filter @moonwitness/plan-taskos test` (80/80) |
 | Wave 4 | `T24`–`T30` | `7 / 7` | ced7a0d3 | `build` exit 0 && test 114/114 across 13 files |
 | Wave 5 | `T31`–`T36` | `6 / 6` | c9b72c27 | build + typecheck exit 0; 131/131 tests (15 files); live reindex 209 nodes/205 edges + lint PASS on all 4 plans |
-| Wave 6 | `T37`–`T44` | `4 / 8` | PENDING_SHA | build + 15/15 tests + api:addon:check exit 0; build+typecheck+8/8 local-api tests (Brain 401/200) exit 0; Observatory Brain tests 14/14 exit 0 |
+| Wave 6 | `T37`–`T44` | `4 / 8` | 85d04180 | build + 15/15 tests + api:addon:check exit 0; build+typecheck+8/8 local-api tests (Brain 401/200) exit 0; Observatory Brain tests 14/14 exit 0 |
