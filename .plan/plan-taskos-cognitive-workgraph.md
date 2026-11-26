@@ -103,7 +103,7 @@ Execute strictly **1 micro-task (`Txx`) per cycle** without asking the user any 
 - [x] **T40** — `tools/agent-observatory`: wire `tools/agent-observatory/server.mjs` to consume `@moonwitness/plan-taskos` Brain DB + Graph/Proof/Episode endpoints + update `server.test.mjs`
 - [x] **T41** — `packages/mcp-moonwitness`: add read-only Plan-TaskOS Brain tools (`plan_status`, `plan_recall`, `plan_impact`) in `packages/mcp-moonwitness/src/{plan-brain,server}.ts` + tests
 - [x] **T42** — `apps/agent-observability`: add `src/plan-telemetry.ts` emitting OTel spans & metrics for Plan-TaskOS lifecycle events + tests
-- [ ] **T43** — `scripts/tasks/` & `scripts/roadmap/`: add parity test `scripts/tasks/plan-taskos-parity.test.mjs` proving TaskOS v2 + GitHub managed-block parity
+- [x] **T43** — `scripts/tasks/` & `scripts/roadmap/`: add parity test `scripts/tasks/plan-taskos-parity.test.mjs` proving TaskOS v2 + GitHub managed-block parity
 - [ ] **T44** — Run full workspace verification & generator sync (`docs:generate`, `architecture:generate`, `docs:links`, `docker-workspace-manifests`, `ui:check`, `desktop:test`, `test:taskos`, `api:addon:check`) & close Progress Ledger
 
 ---

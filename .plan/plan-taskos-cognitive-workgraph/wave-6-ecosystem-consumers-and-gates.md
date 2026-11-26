@@ -148,7 +148,7 @@
 
 ---
 
-## - [ ] T43 — Add TaskOS v2 & GitHub Sync Parity Verification Test (`scripts/tasks/plan-taskos-parity.test.mjs`)
+## - [x] T43 — Add TaskOS v2 & GitHub Sync Parity Verification Test (`scripts/tasks/plan-taskos-parity.test.mjs`)
 
 - **Owner File(s):** `scripts/tasks/plan-taskos-parity.test.mjs`
   - `scripts/tasks/plan-taskos-parity.test.mjs` (CREATE)
