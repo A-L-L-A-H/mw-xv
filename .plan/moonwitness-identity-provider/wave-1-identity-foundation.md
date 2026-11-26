@@ -226,7 +226,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
     - Manual verification: email/username normalization, unique (type, value) DB constraint, account FK, verification/primary flags, no Partner reference or email auto-link
     - Commit: 395d36de feat(identity): add identity identifier model and constraints for I15
 
-#### - [ ] I16 — Add identity.credential and password-hash adapter
+#### - [x] I16 — Add identity.credential and password-hash adapter
 
 - **Owner File(s):** packages/orm-identity/src/models/credential.ts; apps/id/src/security/password-hasher.ts; apps/id/src/security/password-hasher.test.ts; apps/id/src/database/migrations/*credential*
 - **Depends On:** I14
@@ -238,12 +238,18 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - Ensure credential lookup does not reveal whether an account exists.
 - **DO NOT:** Do not implement a password hash algorithm manually or store plaintext/password-reversible values.
 - **Acceptance Criteria:**
-  - [ ] Credential records reference an account and have algorithm/version metadata.
-  - [ ] Hasher tests cover correct password, wrong password and malformed stored hash.
-  - [ ] Logs and thrown errors never contain supplied passwords or hashes.
+  - [x] Credential records reference an account and have algorithm/version metadata.
+  - [x] Hasher tests cover correct password, wrong password and malformed stored hash.
+  - [x] Logs and thrown errors never contain supplied passwords or hashes.
 - **Verify:** bun --filter @moonwitness/orm-identity test; bun --filter @moonwitness/id test.
 - **Expected Output:** The task passes all acceptance criteria and verification; only task-owned files change.
-- **Evidence:** after completion, append the exact command, result and commit SHA to this task section.
+  - **Evidence:**
+    - Command: bun --filter @moonwitness/orm-identity test — passed (4 files, 13 tests)
+    - Command: bun --filter @moonwitness/id test — passed (6 files, 23 tests)
+    - Command: bun --filter @moonwitness/orm-identity build — passed (tsc exited 0)
+    - Command: bun --filter @moonwitness/id build — passed (tsc exited 0)
+    - Manual verification: reuses repository scrypt `hashPassword`/`verifyPassword`; credential verifier separate from account/identifier; algorithm/version metadata; adapter errors redact passwords/hashes; no plaintext fields
+    - Commit: PENDING_I16_COMMIT
 
 #### - [ ] I17 — Add identity.session model and expiry indexes
 

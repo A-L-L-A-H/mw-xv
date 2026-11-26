@@ -90,7 +90,7 @@ Task dependencies are declared inside each playbook. Follow them exactly; the fi
 - [x] **I13** — Add deterministic Identity migration runner
 - [x] **I14** — Add identity.account model and migration
 - [x] **I15** — Add identity.identifier model and uniqueness constraints
-- [ ] **I16** — Add identity.credential and password-hash adapter
+- [x] **I16** — Add identity.credential and password-hash adapter
 - [ ] **I17** — Add identity.session model and expiry indexes
 - [ ] **I18** — Add refresh-token family persistence and revocation state
 - [ ] **I19** — Add OAuth client registry model

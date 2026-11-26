@@ -31,3 +31,9 @@ export const IDENTITY_MODELS: ReadonlyArray<IdentityModelEntry> = Object.freeze(
 export function findIdentityModel(name: string): IdentityModelEntry | undefined {
   return IDENTITY_MODELS.find((model) => model.name === name);
 }
+
+export {
+  hashIdentityPassword,
+  verifyIdentityPassword,
+  type IdentityPasswordHash,
+} from './password-hash.js';
