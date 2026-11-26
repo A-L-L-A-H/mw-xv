@@ -56,7 +56,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - Command: bun --filter @moonwitness/orm-identity build — passed (tsc exited 0)
   - Command: bun --filter @moonwitness/orm-identity test — passed (1 file, 5 tests, 175ms; includes a mocked-knex assertion that no DB connection occurs during module import)
   - Manual verification: public barrel exports IDENTITY_PACKAGE_NAME, IdentityModelEntry, IDENTITY_MODELS (frozen, empty), findIdentityModel; no private implementation files exported; no business addon registration; vitest.config.ts mirrors orm-* package tooling pattern
-  - Commit: <placeholder> feat(identity): add orm-identity public exports tests and build checks for I08
+  - Commit: d5e4b67c feat(identity): add orm-identity public exports tests and build checks for I08
 
 #### - [ ] I09 — Scaffold apps/id service entry point
 
