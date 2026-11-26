@@ -33,7 +33,7 @@ Execute one task at a time in listed dependency order. Inspect only the task-own
   - Command: bun install --lockfile-only — passed (1060 packages resolved, lockfile saved)
   - Command: bun --filter @moonwitness/orm-identity build — passed (tsc exited 0)
   - Manual verification: package name, engines.node=24.x, type=module, exports, build/test scripts mirror orm-base conventions; dependencies limited to orm/types/objection + dev tooling; no apps/api or UI dependency; data-model-only
-  - Commit: <placeholder> feat(identity): scaffold orm-identity package for I07
+  - Commit: 84863466 feat(identity): scaffold orm-identity package for I07
 
 #### - [ ] I08 — Add ORM package exports, tests and build checks
 
