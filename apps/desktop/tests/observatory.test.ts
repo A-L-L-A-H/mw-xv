@@ -12,6 +12,7 @@ import {
 import { DesktopObservatoryService } from '../src/observatory/service.js';
 import {
   isBlockedProbeUrl,
+  parseProbeUrl,
   probeHttpTarget,
   readGitCommitDetail,
 } from '../src/observatory/infra-collector.js';
@@ -498,8 +499,14 @@ describe('DesktopObservatoryService & v3 collectors', () => {
     expect(await readGitCommitDetail(repoDir, 'not-a-sha;rm -rf')).toBeNull();
 
     expect(isBlockedProbeUrl('http://169.254.169.254/latest/meta-data')).toBe(true);
+    expect(isBlockedProbeUrl('http://127.0.0.1:8000/readyz')).toBe(true);
+    expect(isBlockedProbeUrl('http://10.0.0.5/readyz')).toBe(true);
+    expect(isBlockedProbeUrl('http://[::1]/readyz')).toBe(true);
+    expect(isBlockedProbeUrl('http://[::ffff:127.0.0.1]/readyz')).toBe(true);
     expect(isBlockedProbeUrl('file:///etc/passwd')).toBe(true);
     expect(isBlockedProbeUrl('https://apps.moonwitness.biz.id/readyz')).toBe(false);
+    expect(isBlockedProbeUrl('http://[2001:4860:4860::8888]/readyz')).toBe(false);
+    expect(parseProbeUrl('https://example.test/readyz?verbose=1')?.search).toBe('?verbose=1');
 
     const blocked = await probeHttpTarget({
       id: 'meta',

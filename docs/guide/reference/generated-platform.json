@@ -281,6 +281,12 @@
       "scripts": ["build", "test"]
     },
     {
+      "name": "@moonwitness/orm-identity",
+      "version": "1.0.0-rc.1",
+      "directory": "packages/orm-identity",
+      "scripts": ["build", "test"]
+    },
+    {
       "name": "@moonwitness/orm-income-ledger",
       "version": "1.0.0",
       "directory": "packages/orm-income-ledger",
@@ -662,6 +668,10 @@
     "@moonwitness/orm-helpdesk": {
       "build": "tsc",
       "test": "vitest run"
+    },
+    "@moonwitness/orm-identity": {
+      "build": "tsc",
+      "test": "tsc -p tsconfig.check.json && vitest run"
     },
     "@moonwitness/orm-income-ledger": {
       "build": "tsc",
@@ -10914,5 +10924,5 @@
       "path": "/whatsapp/readyz"
     }
   ],
-  "generatedFromSha256": "da961eb7495692c41dd65a2cef110e285c289c011bba7068af0865f14dc85293"
+  "generatedFromSha256": "4d42f3a9756e43100fb6dccaa454a9d1d085d714fba3707a7f848cb2739f069f"
 }

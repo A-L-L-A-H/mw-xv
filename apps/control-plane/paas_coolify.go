@@ -95,6 +95,19 @@ func (m *PaasManager) composeStackDir(slug string) string {
 	return filepath.Join(base, "stacks", slug)
 }
 
+// ensureValidStackSlug guards every filesystem path derived from a slug against
+// traversal and injection: slugs reaching composeStackDir must be strict PaaS
+// slugs (lowercase alnum + dashes, no dots or separators).
+func ensureValidStackSlug(slug string) error {
+	if slug == "" {
+		return errors.New("slug is required")
+	}
+	if !paasSlugPattern.MatchString(slug) {
+		return fmt.Errorf("slug must match ^[a-z0-9](?:[a-z0-9-]{0,46}[a-z0-9])?$: %q", slug)
+	}
+	return nil
+}
+
 func (m *PaasManager) cleanupComposeStack(ctx context.Context, slug string) {
 	stackDir := m.composeStackDir(slug)
 	composeFile := filepath.Join(stackDir, "docker-compose.yml")
@@ -669,6 +682,9 @@ func (m *PaasManager) handleHostServices() http.HandlerFunc {
 }
 
 func (m *PaasManager) runComposeUp(ctx context.Context, slug, composeSpec string, envMap map[string]string) error {
+	if err := ValidatePaasSlug(slug); err != nil {
+		return fmt.Errorf("invalid slug: %w", err)
+	}
 	stackDir := m.composeStackDir(slug)
 	if err := os.MkdirAll(stackDir, 0o750); err != nil {
 		return fmt.Errorf("create stack dir: %w", err)

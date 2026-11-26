@@ -6,7 +6,7 @@
 
 ---
 
-## - [ ] T37 — Wire `packages/orm-project` Plan-TaskOS Sync & 1:1 `ai.acceptance_criterion` Hydration
+## - [x] T37 — Wire `packages/orm-project` Plan-TaskOS Sync & 1:1 `ai.acceptance_criterion` Hydration
 
 - **Owner File(s):** `packages/orm-project/package.json`, `packages/orm-project/src/plan-sync.ts`, `packages/orm-project/src/http-plugin.ts`, `packages/orm-project/tests/plan-sync.test.ts`
   - `packages/orm-project/package.json` (MODIFY — add `"@moonwitness/plan-taskos": "workspace:*"`)

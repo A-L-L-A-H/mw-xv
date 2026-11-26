@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'no
 import path from 'node:path';
 import Fastify, { type FastifyInstance, type FastifyRequest } from 'fastify';
 import cors from '@fastify/cors';
+import rateLimit from '@fastify/rate-limit';
 import type { Knex } from 'knex';
 import {
   Environment,
@@ -331,6 +332,10 @@ function loadInitialDesktopMode(
 }
 
 function persistDesktopMode(desktopHomeDir: string | null, mode: DesktopExperienceMode): void {
+  // Allowlist: only known mode strings may ever be written to mode.json.
+  if (!isDesktopExperienceMode(mode)) {
+    return;
+  }
   if (!desktopHomeDir || desktopHomeDir === ':memory:') {
     return;
   }
@@ -373,8 +378,9 @@ function safeTokenEquals(expected: string, actual: string): boolean {
 function extractBearerToken(req: FastifyRequest): string | null {
   const header = req.headers.authorization;
   if (typeof header !== 'string') return null;
-  const match = /^Bearer\s+(.+)$/iu.exec(header.trim());
-  return match?.[1]?.trim() ?? null;
+  const trimmed = header.trim();
+  if (!trimmed.startsWith('Bearer ')) return null;
+  return trimmed.slice(7).trim() || null;
 }
 
 async function insertAndGetId(
@@ -723,6 +729,22 @@ export async function startLocalApiServer(
       'x-request-id',
     ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  });
+
+  // @fastify/rate-limit is compiled against a different fastify patch release
+  // than this workspace, so its plugin signature is structurally incompatible
+  // with the app instance. Adapt the instance parameter without changing
+  // runtime behaviour (same pattern as the cors plugin adaptation above).
+  const rateLimitPlugin = rateLimit as unknown as (
+    instance: FastifyInstance,
+    options: Parameters<typeof rateLimit>[1],
+    done: Parameters<typeof rateLimit>[2]
+  ) => void;
+
+  await app.register(rateLimitPlugin, {
+    global: true,
+    max: 300,
+    timeWindow: '1 minute',
   });
 
   app.setErrorHandler((error, request, reply) => {
@@ -1438,6 +1460,20 @@ export async function startLocalApiServer(
       return reply.code(404).send({
         success: false,
         error: 'TaskOS source file docs/tasks/tasks.json not found.',
+      });
+    }
+
+    // Containment check: the chosen source must resolve inside this repository
+    // (cwd) so that a request-supplied sourcePath cannot escape it.
+    const repoRoot = path.resolve(process.cwd());
+    const resolvedSourceNormalized = path.resolve(resolvedSource);
+    if (
+      resolvedSourceNormalized !== repoRoot &&
+      !resolvedSourceNormalized.startsWith(repoRoot + path.sep)
+    ) {
+      return reply.code(403).send({
+        success: false,
+        error: 'Import source path must stay inside the repository.',
       });
     }
 
@@ -3115,20 +3151,28 @@ export async function startLocalApiServer(
         if (candidate !== distWebRoot && !candidate.startsWith(distPrefix)) {
           return reply.code(403).send({ success: false, error: 'Forbidden path' });
         }
-        if (existsSync(candidate) && statSync(candidate).isFile()) {
+        // Read the file directly and let the read decide existence/type, so the
+        // check and the use cannot race on the file system.
+        let content: Buffer;
+        try {
+          content = readFileSync(candidate);
+        } catch {
+          content = Buffer.alloc(0);
+        }
+        if (content.byteLength > 0) {
           const ext = path.extname(candidate).toLowerCase();
           const mime = STATIC_MIME_TYPES[ext] ?? 'application/octet-stream';
           reply.header('X-Content-Type-Options', 'nosniff');
           reply.header('Content-Type', mime);
           if (ext === '.html') {
             reply.header('Cache-Control', 'no-store');
-            const html = readFileSync(candidate, 'utf8').replace(
+            const html = content.toString('utf8').replace(
               '</head>',
               '<script>window.__MW_DESKTOP_API_URL__=window.location.origin;</script></head>'
             );
             return reply.code(200).send(html);
           }
-          return reply.code(200).send(readFileSync(candidate));
+          return reply.code(200).send(content);
         }
         // Requests targeting a file extension that does not exist must return 404, never SPA HTML
         if (path.extname(relPath).length > 0) {

@@ -110,12 +110,49 @@ export interface ParsedOpenCodeParts {
   readonly events: readonly ObservatoryEvent[];
 }
 
+const EMPTY_CLAUDE_SUMMARY: ParsedClaudeSummary = {
+  title: '',
+  model: '',
+  cwd: '',
+  gitBranch: '',
+  lastAction: '',
+  lastTool: '',
+  lastError: '',
+  errorCount: 0,
+  hasRecentError: false,
+  inputTokens: 0,
+  cacheTokens: 0,
+  outputTokens: 0,
+  turns: 0,
+  lastTimestamp: '',
+  subagents: [],
+  toolCounts: {},
+  events: [],
+};
+
 export interface MagpieTelemetryBundle {
   readonly sessions: readonly InternalObservatorySession[];
   readonly summary: ObservatoryMagpieSummary;
 }
 
 const MAX_FULL_SCAN_BYTES = 25 * 1024 * 1024;
+
+/**
+ * Returns the name unchanged when it is a safe single path segment (no separators,
+ * no traversal, bounded length), or null otherwise. Used to keep directory-listing
+ * and user-derived names out of path expressions.
+ */
+function safeSegment(name: string): string | null {
+  if (!/^[A-Za-z0-9._-]{1,128}$/u.test(name)) return null;
+  if (name === '.' || name === '..') return null;
+  return name;
+}
+
+function resolveInside(parentDir: string, child: string): string | null {
+  const resolvedParent = path.resolve(parentDir) + path.sep;
+  const resolvedChild = path.resolve(child);
+  return resolvedChild.startsWith(resolvedParent) ? resolvedChild : null;
+}
 
 export function createEmptyMagpieSummary(): ObservatoryMagpieSummary {
   return {
@@ -257,6 +294,12 @@ export class ExternalAgentsCollector {
       detailMode ? DEFAULT_DETAIL_TAIL_BYTES : DEFAULT_TAIL_CHUNK_BYTES
     );
 
+    // Session ids reach path.join below; they come from directory listings and
+    // session records, so confine them to a strict segment before building paths.
+    if (safeSegment(sessionId) === null) {
+      return EMPTY_CLAUDE_SUMMARY;
+    }
+
     let title = '';
     let model = '';
     let requestedModel = '';
@@ -276,8 +319,11 @@ export class ExternalAgentsCollector {
     const events: ObservatoryEvent[] = [];
     const toolCounts: Record<string, number> = {};
 
-    const customTitlePath = path.join(projectDir, sessionId, 'custom-title.json');
-    if (existsSync(customTitlePath)) {
+    const customTitlePath = resolveInside(
+      projectDir,
+      path.join(projectDir, sessionId, 'custom-title.json')
+    );
+    if (customTitlePath && existsSync(customTitlePath)) {
       const rawTitle = await readFile(customTitlePath, 'utf8').catch(() => '');
       const parsedTitle = safeJsonParse<Record<string, unknown>>(rawTitle.trim());
       if (parsedTitle && typeof parsedTitle.customTitle === 'string') {
@@ -405,10 +451,12 @@ export class ExternalAgentsCollector {
       }
     }
 
-    const subDir = path.join(projectDir, sessionId, 'subagents');
-    if (existsSync(subDir)) {
+    const subDir = resolveInside(projectDir, path.join(projectDir, sessionId, 'subagents'));
+    if (subDir && existsSync(subDir)) {
       const subFiles = await readdir(subDir).catch(() => []);
-      for (const fileName of subFiles.filter((f) => f.endsWith('.jsonl')).slice(0, 15)) {
+      for (const rawName of subFiles.filter((f) => f.endsWith('.jsonl')).slice(0, 15)) {
+        const fileName = safeSegment(rawName);
+        if (!fileName) continue;
         const subId = fileName.replace(/\.jsonl$/iu, '');
         const subStat = await stat(path.join(subDir, fileName)).catch(() => null);
         if (!subagents.some((sub) => sub.id === subId)) {

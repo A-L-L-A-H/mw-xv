@@ -1,6 +1,12 @@
 const MAX_REDACTION_DEPTH = 12;
 const MAX_ERROR_CAUSE_DEPTH = 5;
 
+// Keys are headers (x-api-key), env var names, and bracket notations.
+// Restrict property writes to that character set so a hostile payload
+// cannot inject arbitrary object property names.
+const SAFE_KEY_PATTERN = /^[A-Za-z0-9][A-Za-z0-9 ._:\/\-\[\]()@]{0,255}$/u;
+const UNSAFE_KEY_MARKER = '[unsafe-key-redacted]';
+
 const SENSITIVE_KEY_PATTERN =
   /^(?:authorization|proxy-authorization|x-api-key|api[-_]?key|secret|password|token|access_token|refresh_token|cookie|set-cookie|credential|credentials)$/iu;
 
@@ -137,11 +143,24 @@ function redactValueInternal(
   }
 
   const out: Record<string, unknown> = {};
+  let unsafeKeyIndex = 0;
   for (const [key, propVal] of Object.entries(value as Record<string, unknown>)) {
-    if (SENSITIVE_KEY_PATTERN.test(key)) {
-      out[key] = '[redacted]';
+    const redactedVal = SENSITIVE_KEY_PATTERN.test(key)
+      ? '[redacted]'
+      : redactValueInternal(propVal, registeredSecrets, depth + 1, seen);
+
+    if (
+      key !== '__proto__' &&
+      key !== 'prototype' &&
+      key !== 'constructor' &&
+      SAFE_KEY_PATTERN.test(key)
+    ) {
+      out[key] = redactedVal;
     } else {
-      out[key] = redactValueInternal(propVal, registeredSecrets, depth + 1, seen);
+      const safeKey =
+        unsafeKeyIndex === 0 ? UNSAFE_KEY_MARKER : `${UNSAFE_KEY_MARKER}_${unsafeKeyIndex}`;
+      unsafeKeyIndex += 1;
+      out[safeKey] = redactedVal;
     }
   }
   return out;
@@ -228,11 +247,26 @@ export function createRedactor(
     },
     redactHeaders(headers: Readonly<Record<string, string>>): Record<string, string> {
       const sanitized: Record<string, string> = {};
+      let unsafeHeaderIndex = 0;
       for (const [key, value] of Object.entries(headers)) {
-        if (SENSITIVE_KEY_PATTERN.test(key)) {
-          sanitized[key] = '[redacted]';
+        const redactedVal = SENSITIVE_KEY_PATTERN.test(key)
+          ? '[redacted]'
+          : redactStringWithSecrets(value, registeredSecrets);
+
+        if (
+          key !== '__proto__' &&
+          key !== 'prototype' &&
+          key !== 'constructor' &&
+          SAFE_KEY_PATTERN.test(key)
+        ) {
+          sanitized[key] = redactedVal;
         } else {
-          sanitized[key] = redactStringWithSecrets(value, registeredSecrets);
+          const safeKey =
+            unsafeHeaderIndex === 0
+              ? UNSAFE_KEY_MARKER
+              : `${UNSAFE_KEY_MARKER}_${unsafeHeaderIndex}`;
+          unsafeHeaderIndex += 1;
+          sanitized[safeKey] = redactedVal;
         }
       }
       return sanitized;

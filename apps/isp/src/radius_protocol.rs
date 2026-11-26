@@ -27,11 +27,14 @@ pub mod attr_type {
     pub const CALLED_STATION_ID: u8 = 30;
     pub const CALLING_STATION_ID: u8 = 31;
     pub const ACCT_STATUS_TYPE: u8 = 40;
+    pub const ACCT_DELAY_TIME: u8 = 41;
     pub const ACCT_INPUT_OCTETS: u8 = 42;
     pub const ACCT_OUTPUT_OCTETS: u8 = 43;
     pub const ACCT_SESSION_ID: u8 = 44;
     pub const ACCT_SESSION_TIME: u8 = 46;
     pub const ACCT_TERMINATE_CAUSE: u8 = 49;
+    pub const ACCT_INPUT_GIGAWORDS: u8 = 52;
+    pub const ACCT_OUTPUT_GIGAWORDS: u8 = 53;
     pub const CHAP_CHALLENGE: u8 = 60;
 }
 

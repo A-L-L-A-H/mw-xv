@@ -24,6 +24,7 @@
     "@moonwitness/orm-notification": "workspace:*",
     "@moonwitness/orm-organization": "workspace:*",
     "@moonwitness/orm-workflow": "workspace:*",
+    "@moonwitness/plan-taskos": "workspace:*",
     "@moonwitness/types": "workspace:*",
     "objection": "^3.1.5"
   },

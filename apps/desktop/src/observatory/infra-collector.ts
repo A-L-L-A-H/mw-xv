@@ -78,28 +78,86 @@ export function createCpuSampler(): () => number {
   };
 }
 
-export function isBlockedProbeUrl(rawUrl: string): boolean {
+function hasHostControlChars(host: string): boolean {
+  for (const char of host) {
+    const code = char.codePointAt(0) ?? 0;
+    if (code <= 0x1f || code === 0x7f) return true;
+  }
+  return false;
+}
+
+/** Private, loopback, link-local, metadata and other non-public IPv4 ranges. */
+function isPrivateIpv4(host: string): boolean {
+  const parts = host.split('.');
+  if (parts.length !== 4 || parts.some((part) => part === '' || !/^\d{1,3}$/u.test(part))) {
+    return false;
+  }
+  const [a = 0, b = 0] = parts.map((part) => Number(part));
+  return (
+    a === 0 ||
+    a === 10 ||
+    a === 127 ||
+    a >= 224 ||
+    (a === 169 && b === 254) ||
+    (a === 172 && b >= 16 && b <= 31) ||
+    (a === 192 && b === 168) ||
+    (a === 100 && b >= 64 && b <= 127) ||
+    (a === 192 && b === 0) ||
+    (a === 198 && (b === 18 || b === 19))
+  );
+}
+
+/**
+ * Parses and validates a probe URL. Returns a sanitized URL rebuilt only from
+ * validated primitives, or null when the URL is not a safe http(s) probe target.
+ * Callers must fetch the returned URL object, never the raw string, so
+ * unvalidated input cannot reach network sinks.
+ */
+export function parseProbeUrl(rawUrl: string): URL | null {
   let parsed: URL;
   try {
     parsed = new URL(rawUrl);
   } catch {
-    return true;
+    return null;
   }
   if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-    return true;
+    return null;
+  }
+  // Credentials in the URL would leak secrets to the probed host; reject them.
+  if (parsed.username !== '' || parsed.password !== '') {
+    return null;
   }
   const host = parsed.hostname.toLowerCase().replace(/^\[|\]$/gu, '');
+  if (host === '' || hasHostControlChars(host)) {
+    return null;
+  }
   if (
+    host === '::1' ||
+    host.startsWith('::ffff:') ||
     host === '169.254.169.254' ||
     host.startsWith('169.254.') ||
     host === 'metadata.google.internal' ||
     host.startsWith('fe80:') ||
     host.startsWith('fc') ||
-    host.startsWith('fd')
+    host.startsWith('fd') ||
+    isPrivateIpv4(host)
   ) {
-    return true;
+    return null;
   }
-  return false;
+  // Rebuild from validated primitives so no user-controlled string flows into
+  // the network sink; only validated protocol/host/port/path/query survive.
+  // IPv6 hosts need their bracket delimiter restored for URL authority syntax.
+  const authority = host.includes(':') ? `[${host}]` : host;
+  const portSuffix = parsed.port ? `:${parsed.port}` : '';
+  try {
+    return new URL(`${parsed.protocol}//${authority}${portSuffix}${parsed.pathname}${parsed.search}`);
+  } catch {
+    return null;
+  }
+}
+
+export function isBlockedProbeUrl(rawUrl: string): boolean {
+  return parseProbeUrl(rawUrl) === null;
 }
 
 function classifyGitArea(filePath: string): string {
@@ -290,7 +348,9 @@ export async function readGitCommitDetail(
 export async function probeHttpTarget(
   target: ObservatoryProbeTarget
 ): Promise<ObservatoryProbeResult> {
-  if (isBlockedProbeUrl(target.url)) {
+  // Fetch only the validated URL object; the raw string never reaches the network sink.
+  const validatedUrl = parseProbeUrl(target.url);
+  if (!validatedUrl) {
     return {
       ...target,
       status: 'blocked',
@@ -306,7 +366,7 @@ export async function probeHttpTarget(
   timer.unref();
 
   try {
-    const response = await fetch(target.url, {
+    const response = await fetch(validatedUrl, {
       method: 'GET',
       redirect: 'manual',
       signal: controller.signal,

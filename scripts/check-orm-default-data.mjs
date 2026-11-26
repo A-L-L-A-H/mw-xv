@@ -11,6 +11,11 @@ const packagesDir = path.join(root, 'packages');
 // the business addon registry, so it has no Addon manifest to validate.
 const EXCLUDED_DIRS = new Set(['orm-base', 'orm-cli', 'orm-automation-core', 'orm-identity']);
 
+// Identity-owned packages are data-model-only: importing them must not register
+// models with the business addon registry, so they intentionally export no
+// Addon manifest and carry no seed data.
+const MANIFEST_EXEMPT_DIRS = new Set(['orm-identity']);
+
 function resolveManifestExport(mod, pkgName) {
   const candidates = [
     mod.manifest,
@@ -63,6 +68,9 @@ async function main() {
       throw new Error(
         `Built entrypoint missing for packages/${dirName} (${entryRelative}). Run \`pnpm build\` first.`
       );
+    }
+    if (MANIFEST_EXEMPT_DIRS.has(dirName)) {
+      continue;
     }
     const mod = await import(pathToFileURL(entryPath).href);
     const manifest = resolveManifestExport(mod, pkgJson.name ?? dirName);

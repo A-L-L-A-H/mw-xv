@@ -48,6 +48,10 @@ function validateXmlWellFormed(svgContent, relPath) {
     .replace(/<!DOCTYPE[\s\S]*?>/gi, '')
     .replace(/<!\[CDATA\[[\s\S]*?\]\]>/g, '');
 
+  assert(!cleaned.includes('<!--'), `${relPath}: contains unterminated comment`);
+  assert(!cleaned.includes('<?'), `${relPath}: contains unterminated processing instruction`);
+  assert(!cleaned.includes('<!'), `${relPath}: contains unterminated declaration`);
+
   const badAmp = cleaned.match(/&(?!(?:amp|lt|gt|quot|apos|#\d+|#x[0-9a-fA-F]+);)/);
   assert(!badAmp, `${relPath}: contains unescaped '&' character`);
 

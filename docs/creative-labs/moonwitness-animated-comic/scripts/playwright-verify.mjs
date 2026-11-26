@@ -87,8 +87,9 @@ function startStaticServer(rootDir) {
         });
         fs.createReadStream(targetPath).pipe(res);
       } catch (err) {
+        console.error(err);
         res.writeHead(500);
-        res.end(String(err));
+        res.end('Internal server error');
       }
     });
     server.on('error', reject);

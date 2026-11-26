@@ -1,5 +1,6 @@
 import { readdir, readFile } from "node:fs/promises";
-import { join, resolve, sep as pathSep } from "node:path";
+import { join, resolve, sep as pathSep, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
 import type { LoadedPlanBundle, PlanManifest, WaveDefinition, PlanTaskIR, DocumentNodeIR, ProofEnvelope } from "./types.js";
 import { normalizeRepoPath, globMatchesPath } from "./paths.js";
@@ -9,6 +10,8 @@ const Ajv2020Module: any = createRequire(import.meta.url)("ajv/dist/2020.js");
 import * as formatsModule from "ajv-formats";
 
 type Ajv2020 = InstanceType<typeof Ajv2020Module>;
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 interface ValidationIssue {
   readonly code: string;
@@ -188,24 +191,28 @@ export async function validatePlanBundle(
   const errors: ValidationIssue[] = [];
   const warnings: ValidationIssue[] = [];
 
-  // 1. Schema conformance
-  const manifestErrors = validateSchema(manifestValidator, bundle.manifest, "manifest");
-  errors.push(...manifestErrors);
+  // 1. Schema conformance. The JSON schemas describe authored v2 bundles only;
+  // legacy-markdown bundles are synthesized views with placeholder manifest fields
+  // (repo identity, adr_file), so v2 AJV errors there are false positives.
+  if (bundle.format === "plan-taskos/v1") {
+    const manifestErrors = validateSchema(manifestValidator, bundle.manifest, "manifest");
+    errors.push(...manifestErrors);
 
-  for (const wave of bundle.waves) {
-    const waveErrors = validateSchema(waveValidator, wave, `wave ${wave.wave_id}`).map((e) => ({
-      ...e,
-      waveId: wave.wave_id,
-    }));
-    errors.push(...waveErrors);
-  }
+    for (const wave of bundle.waves) {
+      const waveErrors = validateSchema(waveValidator, wave, `wave ${wave.wave_id}`).map((e) => ({
+        ...e,
+        waveId: wave.wave_id,
+      }));
+      errors.push(...waveErrors);
+    }
 
-  for (const doc of bundle.documents) {
-    const docErrors = validateSchema(documentValidator, doc, `document ${doc.slug}`).map((e) => ({
-      ...e,
-      path: doc.path,
-    }));
-    errors.push(...docErrors);
+    for (const doc of bundle.documents) {
+      const docErrors = validateSchema(documentValidator, doc, `document ${doc.slug}`).map((e) => ({
+        ...e,
+        path: doc.path,
+      }));
+      errors.push(...docErrors);
+    }
   }
 
   // 2. Unique URN and code across all waves; depends_on targets exist

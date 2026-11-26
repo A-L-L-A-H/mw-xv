@@ -48,7 +48,9 @@
         <iframe src="${fullSrc}" title="${title}" loading="lazy" allow="fullscreen"></iframe>
       `;
 
+      const expectedOrigin = new URL(fullSrc, window.location.href).origin;
       window.addEventListener('message', (evt) => {
+        if (evt.origin !== expectedOrigin) return;
         if (evt.data && evt.data.source === 'mw-comic-lab') {
           this.dispatchEvent(new CustomEvent(evt.data.type, { detail: evt.data.payload }));
         }
