@@ -85,7 +85,7 @@ Execute one micro-task per cycle in dependency order. Inspect only the task-owne
   - Command: `bun --filter @moonwitness/id build` — passed (tsc exited 0)
   - PostgreSQL concurrency test: not run; no isolated Identity PostgreSQL harness is configured in this environment. Database-level singleton guard is present via `identity_platform_owner_singleton`, and transaction/duplicate tests use deterministic mocks.
   - Manual verification: capability model supports only `platform_owner`; migration adds account/capability uniqueness and a global partial unique index; first-owner service consumes the bootstrap token and inserts account, verified identifier, hashed credential, and capability in one transaction, returning only `accountSubject` and `bootstrapCompleted`; failures produce a generic error with no password hash, verifier, account email, or token details.
-  - Commit: pending I24 implementation commit
+  - Commit: f1494de7 feat(identity): add atomic first owner service for I24; 5366ef06 fix(identity): simplify first owner test harness for I24
 
 #### - [ ] I25 — Add single-use bootstrap claim endpoint
 
