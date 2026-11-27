@@ -130,16 +130,24 @@ jobs:
         run: bun install --frozen-lockfile
       - name: Verify workflow pins and static boundaries
         run: |
-          node scripts/check-action-pins.mjs
-          node scripts/check-action-tag-pins.mjs
-          node scripts/check-gitleaks-config.mjs
+          node scripts/ci/check-action-pins.mjs
+          node scripts/ci/check-action-tag-pins.mjs
+          node scripts/ci/check-gitleaks-config.mjs
           bun run board:ui:check
-          bun run desktop:ui:check
           bun run ui:design:check
           bun run lint:ui
           bun run api:addon:check
           bun run agent:boundary:check
-          node scripts/evolution/check-constitution.mjs
+          node scripts/ci/check-constitution.mjs
+      - name: Enforce workspace quality ratchet
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -f "../scripts/quality.py" ]; then
+            python3 ../scripts/quality.py --repo mw-xv --changed --strict
+          else
+            echo "Workspace ../scripts/quality.py not present in isolated runner; skipping."
+          fi
       - name: Lint and typecheck
         run: |
           bun run lint

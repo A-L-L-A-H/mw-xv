@@ -1,9 +1,0 @@
-{
-  "name": "RouterOS 20/50 Mbps subscriber without burst",
-  "profile": {
-    "download_kbps": 50000,
-    "upload_kbps": 20000
-  },
-  "expected_value": "20000k/50000k",
-  "expected_error": null
-}

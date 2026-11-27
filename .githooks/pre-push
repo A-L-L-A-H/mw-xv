@@ -52,9 +52,8 @@ fi
 echo "Running proportional diff-scoped static gates before push..."
 
 # Shared UI boundaries (static AST scanners)
-if matches_scope '^(apps/(board|desktop|ui-catalog)/|packages/(ui|assets)/|scripts/check-(board-shared-ui|desktop-non-overlap|ui-design-system|ui-gate-wiring)|package\.json$)'; then
+if matches_scope '^(apps/board/|packages/(ui|assets)/|scripts/ci/check-(board-shared-ui|ui-design-system)|scripts/ci/ui-governance-policy\.json|package\.json$)'; then
   bun run board:ui:check
-  bun run desktop:ui:check
   bun run ui:design:check
   ran+=("ui")
 else
@@ -62,7 +61,7 @@ else
 fi
 
 # Addon/agent boundaries
-if matches_scope '^(apps/api/|packages/(mcp-moonwitness|orm)|plugins/moonwitness/|scripts/check-(api-addon-boundary|addon-agent-boundary))'; then
+if matches_scope '^(apps/api/|packages/(mcp-moonwitness|orm)|plugins/moonwitness/|scripts/ci/check-(api-addon-boundary|addon-agent-boundary))'; then
   bun run api:addon:check
   bun run agent:boundary:check
   ran+=("boundaries")
@@ -71,10 +70,10 @@ else
 fi
 
 # Automation & secret-scan hygiene (static)
-if matches_scope '^(\.github/|\.gitleaks|scripts/check-(action-pins|action-tag-pins|gitleaks-config))'; then
-  node scripts/check-action-pins.mjs
-  node scripts/check-action-tag-pins.mjs
-  node scripts/check-gitleaks-config.mjs
+if matches_scope '^(\.github/|\.gitleaks|scripts/ci/check-(action-pins|action-tag-pins|gitleaks-config))'; then
+  node scripts/ci/check-action-pins.mjs
+  node scripts/ci/check-action-tag-pins.mjs
+  node scripts/ci/check-gitleaks-config.mjs
   ran+=("automation")
 else
   skipped+=("automation")

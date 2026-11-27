@@ -4,10 +4,17 @@ set -eu
 echo "Running pre-commit verification gates..."
 
 # Run constitution check and fast preflight
-node scripts/evolution/check-constitution.mjs
-node scripts/preflight-fast.mjs
+node scripts/ci/check-constitution.mjs
+node scripts/ci/preflight-fast.mjs
+
+# Enforce workspace quality ratchet on changed files when available
+if [ -f "../scripts/quality.py" ]; then
+  python ../scripts/quality.py --repo mw-xv --changed --strict
+else
+  echo "Workspace quality.py not present; skipping strict ratchet."
+fi
 
 # Best-effort auto-fix for changed files (never blocks; fixes then continues)
-scripts/autofix/run-autofix.sh
+scripts/dev/run-autofix.sh
 
 echo "Pre-commit checks passed successfully."

@@ -8,8 +8,8 @@
     "node": "24.x"
   },
   "scripts": {
-    "dev": "node ../../scripts/copy-board-public-assets.mjs && next dev -p 5173",
-    "build": "node ../../scripts/copy-board-public-assets.mjs && next build",
+    "dev": "node ../../scripts/build/copy-board-public-assets.mjs && next dev -p 5173",
+    "build": "node ../../scripts/build/copy-board-public-assets.mjs && next build",
     "start": "node ../../scripts/prepare-board-standalone.mjs && node ../../scripts/start-board.mjs",
     "start:built": "node ../../scripts/prepare-board-standalone.mjs && node ../../scripts/start-board.mjs",
     "typecheck": "tsc --noEmit",
