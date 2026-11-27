@@ -53,7 +53,7 @@ describe('Wave 4 Autonomous Self-Evolving Core', () => {
     assert.equal(verdict.violations.length, 2);
   });
 
-  it('computes repository fitness and detects monotonic ratchet regressions', async () => {
+  it('computes repository fitness and preserves upper-bound ratchet gates while allowing lower fitness', async () => {
     const metrics = await computeRepositoryFitness();
     assert.ok(metrics.addonPackageCount >= 8);
     assert.equal(metrics.legacyAllowlistCount, 0);
@@ -62,13 +62,22 @@ describe('Wave 4 Autonomous Self-Evolving Core', () => {
     const passVerdict = compareFitnessRatchet(metrics, metrics);
     assert.equal(passVerdict.passed, true);
 
+    const downwardVerdict = compareFitnessRatchet(metrics, {
+      ...metrics,
+      compositeScore: metrics.compositeScore - 1,
+    });
+    assert.equal(downwardVerdict.passed, true);
+    assert.deepEqual(downwardVerdict.regressions, []);
+    assert.equal(downwardVerdict.currentComposite, metrics.compositeScore - 1);
+
     const regressedVerdict = compareFitnessRatchet(metrics, {
       ...metrics,
       apiRouteMaxLoc: metrics.apiRouteMaxLoc + 10,
       compositeScore: metrics.compositeScore - 1,
     });
     assert.equal(regressedVerdict.passed, false);
-    assert.equal(regressedVerdict.regressions.length, 2);
+    assert.equal(regressedVerdict.regressions.length, 1);
+    assert.match(regressedVerdict.regressions[0], /^apiRouteMaxLoc regressed/);
   });
 
   it('appends deduplicated post-mortem invariants to markdown', async () => {

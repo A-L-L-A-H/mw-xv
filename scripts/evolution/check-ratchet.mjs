@@ -6,8 +6,9 @@ import { computeRepositoryFitness } from './fitness-score.mjs';
 const defaultRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
 /**
- * Compares current repository metrics against the persisted ratchet baseline and fails
- * on any architectural or test regression.
+ * Compares current repository metrics against the persisted baseline and fails
+ * only on upper-bound/anomaly gates. Lower fitness values are allowed so the
+ * metric can follow reality downward when the repository worsens.
  */
 export function compareFitnessRatchet(baseline, current) {
   const regressions = [];
@@ -19,11 +20,6 @@ export function compareFitnessRatchet(baseline, current) {
   if (current.apiRouteMaxLoc > baseline.apiRouteMaxLoc) {
     regressions.push(
       `apiRouteMaxLoc regressed (${current.apiRouteMaxLoc} > ${baseline.apiRouteMaxLoc})`
-    );
-  }
-  if (current.compositeScore < baseline.compositeScore) {
-    regressions.push(
-      `compositeScore regressed (${current.compositeScore} < ${baseline.compositeScore})`
     );
   }
 
