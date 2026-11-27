@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -199,6 +199,14 @@ function SettingsPageContent({
   const [storedPreferences] = useState<BoardPreferences>(readPreferences);
   const [preferenceDraft, setPreferenceDraft] = useState<Partial<BoardPreferences>>({});
   const [saved, setSaved] = useState(false);
+  const savedTimerRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
+  useEffect(() => {
+    return () => {
+      if (savedTimerRef.current !== null) {
+        window.clearTimeout(savedTimerRef.current);
+      }
+    };
+  }, []);
   const [changingPassword, setChangingPassword] = useState(false);
   const [paramDrafts, setParamDrafts] = useState<Record<number, string>>({});
   const [savingParamId, setSavingParamId] = useState<number | null>(null);
@@ -546,7 +554,10 @@ function SettingsPageContent({
       setPreferenceDraft({});
       setSaved(true);
       toast.success('Settings saved');
-      window.setTimeout(() => setSaved(false), 1800);
+      if (savedTimerRef.current !== null) {
+        window.clearTimeout(savedTimerRef.current);
+      }
+      savedTimerRef.current = window.setTimeout(() => setSaved(false), 1800);
     } catch (error) {
       if (isCurrentScopeQueryKey(mutationKey)) {
         toast.error(error instanceof Error ? error.message : 'Could not save settings');

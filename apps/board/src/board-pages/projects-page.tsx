@@ -151,7 +151,7 @@ export function ProjectsPage() {
           target.tagName === 'SELECT' ||
           target.isContentEditable);
 
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 'k') {
         event.preventDefault();
         searchInputRef.current?.focus();
         return;

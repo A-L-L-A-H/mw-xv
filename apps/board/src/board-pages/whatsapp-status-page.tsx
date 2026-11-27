@@ -10,6 +10,10 @@ import { ConfirmDialog } from '@moonwitness/ui/components/confirm-dialog';
 import { Input } from '@moonwitness/ui/components/input';
 import { Textarea } from '@moonwitness/ui/components/textarea';
 import { Breadcrumbs } from '@/components/layout/breadcrumbs';
+import {
+  applyMwEchoStatusEvent,
+  useMwEchoStatusStream,
+} from '@/components/whatsapp/mw-echo-stream';
 import { client } from '@/lib/client';
 import { formatDateTime } from '@/lib/date-format';
 import { scopedQueryKey } from '@/lib/query-scope';
@@ -81,16 +85,35 @@ export function WhatsAppStatusPage() {
   const [publishing, setPublishing] = useState(false);
   const [confirmPublishOpen, setConfirmPublishOpen] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
+  const echoStream = useMwEchoStatusStream({
+    onStatusUpdate: (item) => {
+      queryClient.setQueryData<WhatsAppStatusItem[]>(
+        scopedQueryKey(['whatsapp', 'statuses']),
+        (prev) => applyMwEchoStatusEvent(prev ?? [], { type: 'status.update', item })
+      );
+    },
+    onAccountState: (status, canSendFlag) => {
+      queryClient.setQueryData<StatusAccount>(
+        scopedQueryKey(['whatsapp', 'account']),
+        (prev) => ({
+          status,
+          permissions: {
+            send: canSendFlag ?? prev?.permissions?.send ?? false,
+          },
+        })
+      );
+    },
+  });
   const accountQuery = useQuery({
     queryKey: scopedQueryKey(['whatsapp', 'account']),
     queryFn: async () => (await client.request<{ data: StatusAccount }>('/whatsapp/account')).data,
-    refetchInterval: 5_000,
+    refetchInterval: echoStream.connectionState === 'live' ? 30_000 : 5_000,
   });
   const statusesQuery = useQuery({
     queryKey: scopedQueryKey(['whatsapp', 'statuses']),
     queryFn: async () =>
       (await client.request<{ data: WhatsAppStatusItem[] }>('/whatsapp/statuses')).data,
-    refetchInterval: 3_000,
+    refetchInterval: echoStream.connectionState === 'live' ? 30_000 : 3_000,
   });
   const account = accountQuery.data;
   const canSend = account?.permissions?.send === true;
@@ -172,9 +195,22 @@ export function WhatsAppStatusPage() {
             Create a text, image, or video Status for your connected account.
           </p>
         </div>
-        <Button asChild variant="outline">
-          <Link href="/board/whatsapp">Back to inbox</Link>
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <span
+            role="status"
+            className="border-2 border-ink px-2.5 py-1 font-mono text-xs uppercase"
+          >
+            mw-echo WS: {echoStream.connectionState}
+          </span>
+          {echoStream.connectionState !== 'live' ? (
+            <Button type="button" size="sm" variant="outline" onClick={echoStream.reconnect}>
+              Reconnect Stream
+            </Button>
+          ) : null}
+          <Button asChild variant="outline">
+            <Link href="/board/whatsapp">Back to inbox</Link>
+          </Button>
+        </div>
       </header>
 
       {!connected && (
