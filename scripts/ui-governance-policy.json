@@ -91,19 +91,6 @@
         }
       ]
     },
-    "apps/docs": {
-      "packageName": "@moonwitness/docs",
-      "classification": "publication-shell",
-      "browser": true,
-      "sourceRoots": ["src"],
-      "publicRoots": ["public"],
-      "sharedSourceRoots": [],
-      "routeRoots": [],
-      "entryFiles": ["src/main.tsx"],
-      "aliases": {},
-      "generatedAssets": ["public/generated/**"],
-      "runtimeEvidence": []
-    },
     "apps/agent-observability": {
       "packageName": "@moonwitness/agent-observability",
       "classification": "standalone-exempt",
@@ -214,17 +201,6 @@
     "reason": "Package source is outside the Phase 6 script ownership boundary; integration must update it."
   },
   "independentChecks": {
-    "apps/docs": [
-      {
-        "name": "docs-publication",
-        "command": "pnpm docs:publication:check",
-        "artifact": "apps/docs/dist"
-      },
-      {
-        "name": "docs-portal-tests",
-        "command": "pnpm --filter @moonwitness/docs test"
-      }
-    ],
     "apps/agent-observability": [
       {
         "name": "observability-tests",
