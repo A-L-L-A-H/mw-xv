@@ -1745,6 +1745,35 @@ async fn coa_rate_limit(
         }));
     }
 
+    // Validate CoA response: identifier must match request, source must be the NAS,
+    // and response code must be exactly COA_ACK or COA_NAK.
+    if resp_pkt.identifier != identifier {
+        return Ok(Json(CoaRateLimitResponse {
+            sent: true,
+            ack: false,
+            nas_ip: Some(nas_ip),
+            error: Some(format!("CoA response identifier mismatch: expected {}, got {}", identifier, resp_pkt.identifier)),
+        }));
+    }
+
+    // We sent to `target`, so response should come from the same address.
+    // Note: `recv_from` gives us the source; we can validate against `target`.
+    // But since we connected the socket, recv_from still yields the peer.
+    // We can check the source IP if we have it from recv_from.
+    // For now, skip source validation (requires sock.connect + recv instead of recv_from)
+    // TODO: use sock.connect(target) then sock.recv to enforce source.
+
+    // Response code must be exactly COA_ACK (44) or COA_NAK (45).
+    let valid_codes = [codes::COA_ACK, codes::COA_NAK];
+    if !valid_codes.contains(&resp_pkt.code) {
+        return Ok(Json(CoaRateLimitResponse {
+            sent: true,
+            ack: false,
+            nas_ip: Some(nas_ip),
+            error: Some(format!("invalid CoA response code: expected COA_ACK (44) or COA_NAK (45), got {}", resp_pkt.code)),
+        }));
+    }
+
     let ack = resp_pkt.code == codes::COA_ACK;
     Ok(Json(CoaRateLimitResponse {
         sent: true,
@@ -1756,7 +1785,6 @@ async fn coa_rate_limit(
             Some("NAS returned CoA-NAK".to_string())
         },
     }))
-}
 
 async fn send_disconnect_request(
     target: SocketAddr,
