@@ -260,7 +260,8 @@ export async function validatePlanBundle(
   for (const { task, waveId } of allTasks) {
     // Check knowledge.spec_files for spec_ref-like paths
     for (const specFile of task.knowledge.spec_files || []) {
-      const sections = await loadSpecSections(bundle.manifest.repo.org ? resolve(".") : ".", specFile);
+      const cleanSpecPath = specFile.split("#")[0];
+      const sections = await loadSpecSections(bundle.manifest.repo.org ? resolve(".") : ".", cleanSpecPath);
       // Could extract task code from spec_file anchor like specs/W1.md#T06
       const anchorMatch = specFile.match(/#([A-Z]\d{2,3})$/);
       if (anchorMatch) {

@@ -34,6 +34,7 @@ COPY packages/logger/package.json ./packages/logger/package.json
 COPY packages/mcp-moonwitness/package.json ./packages/mcp-moonwitness/package.json
 COPY packages/orm/package.json ./packages/orm/package.json
 COPY packages/orm-a2a/package.json ./packages/orm-a2a/package.json
+COPY packages/orm-accounting/package.json ./packages/orm-accounting/package.json
 COPY packages/orm-ai/package.json ./packages/orm-ai/package.json
 COPY packages/orm-automation-core/package.json ./packages/orm-automation-core/package.json
 COPY packages/orm-base/package.json ./packages/orm-base/package.json
@@ -48,8 +49,10 @@ COPY packages/orm-crm/package.json ./packages/orm-crm/package.json
 COPY packages/orm-ecommerce-sync/package.json ./packages/orm-ecommerce-sync/package.json
 COPY packages/orm-governance/package.json ./packages/orm-governance/package.json
 COPY packages/orm-helpdesk/package.json ./packages/orm-helpdesk/package.json
+COPY packages/orm-hr/package.json ./packages/orm-hr/package.json
 COPY packages/orm-income-ledger/package.json ./packages/orm-income-ledger/package.json
 COPY packages/orm-integration/package.json ./packages/orm-integration/package.json
+COPY packages/orm-inventory/package.json ./packages/orm-inventory/package.json
 COPY packages/orm-isp/package.json ./packages/orm-isp/package.json
 COPY packages/orm-knowledge/package.json ./packages/orm-knowledge/package.json
 COPY packages/orm-notification/package.json ./packages/orm-notification/package.json

@@ -4,6 +4,8 @@
 
 **ALL non-trivial work MUST use `/swarm` or sub-agent orchestration.** No exceptions.
 
+> **⚠️ EVERY TURN CHECK**: Before any code edit, build, test, or file read >50 lines — ask: "Does this require swarm/sub-agent?" If yes, delegate. Coordinator never does technical work inline.
+
 ### Coordinator Protocol
 - Coordinator **never does technical work inline** (no code edits, no builds, no tests, no file reads >50 lines).
 - Coordinator **only**: plans, delegates via `swarm add`, integrates worker output via `sync`, verifies acceptance criteria.
