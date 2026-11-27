@@ -1,0 +1,398 @@
+{
+  "schema_version": "1.0.0",
+  "plan_id": "sovereign-empire-v3",
+  "wave_id": "W6",
+  "title": "Wave 6 — Conversational AI Ops: WhatsApp Voice/Text & Email Autonomous Desk",
+  "tasks": [
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W6/V45",
+      "code": "V45",
+      "kind": "task",
+      "title": "Implement bilingual (ID/EN) WhatsApp intent classifier routing ISP/Billing/Ops/Chat",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "fleet/mw-echo/internal/whatsapp/intent_router.go"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": [
+          "V22",
+          "V40"
+        ]
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W6.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "go -C ../mw-echo test -p 2 -count=1 ./internal/whatsapp/...",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Classify incoming GoWA/Whisper transcribed messages deterministically before LLM fallback",
+          "Tag priority SLAs (outage, payment issue, sales inquiry, admin command)"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V45"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W6/V46",
+      "code": "V46",
+      "kind": "task",
+      "title": "Connect WhatsApp natural-language ops requests to R1 auto-execute / R3 confirmation bridge",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "neon",
+        "risk_tier": "R2",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "fleet/mw-echo/internal/whatsapp/action_bridge.go"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": [
+          "V42",
+          "V45"
+        ]
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W6.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "go -C ../mw-echo test -p 2 -count=1 ./internal/whatsapp/...",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Authorize sender JID against allowlist before querying mw-cp/mw-isp/mw-ww-cli status",
+          "Require explicit OTP/confirmation reply before restarting services or running cleanups"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V46"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W6/V47",
+      "code": "V47",
+      "kind": "task",
+      "title": "Add optional voice-note TTS responder (mw-studio Piper/XTTS -> OGG Opus PTT)",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "fleet/mw-echo/internal/whatsapp/voice_responder.go"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": [
+          "V45"
+        ]
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W6.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "go -C ../mw-echo test -p 2 -count=1 ./internal/whatsapp/...",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Synthesize crisp voice replies when inbound user sent a voice note, falling back cleanly to text if Studio is offline",
+          "Enforce max audio duration and temp file cleanup after upload"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V47"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W6/V48",
+      "code": "V48",
+      "kind": "task",
+      "title": "Bridge Cloudflare Email Worker inbound payloads into mw-xv Helpdesk tickets + Resend ACK",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "fleet/mw-echo/internal/comms/email_ticket_bridge.go"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": [
+          "V18",
+          "V45"
+        ]
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W6.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "go -C ../mw-echo test -p 2 -count=1 ./internal/comms/...",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Validate inbound webhook signature, create Helpdesk ticket via mw-xv API, and reply with ticket reference via Resend",
+          "Handle attachments metadata safely without oversized memory buffering"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V48"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W6/V49",
+      "code": "V49",
+      "kind": "task",
+      "title": "Add scheduled 07:00 WIB Morning Executive Brief summarizing MRR, ISP & disk health",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R0",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "fleet/mw-echo/internal/comms/morning_brief.go"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": [
+          "V21",
+          "V46"
+        ]
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W6.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "go -C ../mw-echo test -p 2 -count=1 ./internal/comms/...",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Aggregate settled IDR revenue, active/offline NAS routers, disk status, and backup drill timestamp",
+          "Dispatch single concise digest to founder WhatsApp/Telegram/Ntfy"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V49"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W6/V50",
+      "code": "V50",
+      "kind": "task",
+      "title": "Add MikroTik PPPoE/NAS link-down detector sending localized WA outage notices",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R2",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "fleet/mw-isp/src/outage_notifier.rs"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": [
+          "V20",
+          "V45"
+        ]
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W6.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "cargo test --manifest-path ../mw-isp/Cargo.toml",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Debounce transient flaps (60s hysteresis) before notifying impacted active subscribers once per incident",
+          "Record notification suppression & recovery clear message in isp_outage_events"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V50"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W6/V51",
+      "code": "V51",
+      "kind": "task",
+      "title": "Wire live mw-echo WhatsApp/GoWA telemetry into apps/board whatsapp-status-page",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "apps/board/src/board-pages/whatsapp-status-page.tsx"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": [
+          "V46"
+        ]
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W6.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --filter @moonwitness/board typecheck",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Remove placeholder static arrays and fetch live channel status, queue depth, and QR/session state from mw-echo",
+          "Keep build clean and pass TypeScript strict checks"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V51"
+      }
+    }
+  ]
+}

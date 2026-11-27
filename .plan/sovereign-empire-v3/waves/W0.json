@@ -1,0 +1,381 @@
+{
+  "schema_version": "1.0.0",
+  "plan_id": "sovereign-empire-v3",
+  "wave_id": "W0",
+  "title": "Wave 0 — Fleet CI Recovery, Workspace Hygiene & Plan-TaskOS Strict Proof Integrity",
+  "tasks": [
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W0/V01",
+      "code": "V01",
+      "kind": "task",
+      "title": "Fix Plan-TaskOS validator spec #anchor file lookup",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "packages/plan-taskos/src/core/validator.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W0.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --filter @moonwitness/plan-taskos test",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Strip #section anchor before join(repoRoot, specPath) in validator.ts",
+          "Add regression unit test proving specs/W0.md#T01 passes loadSpecSections"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V01"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W0/V02",
+      "code": "V02",
+      "kind": "task",
+      "title": "Fix mw-xv dev CI quality-and-build and unit-test lane failures",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "neon",
+        "risk_tier": "R2",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "scripts/ci/check-ga-readiness.mjs"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": [
+          "V01"
+        ]
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W0.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun run preflight:fast",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Identify root failure from run 45920336381 and patch check/build script",
+          "Verify bun run preflight:fast and bun run plan:lint exit 0 locally"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V02"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W0/V03",
+      "code": "V03",
+      "kind": "task",
+      "title": "Fix mw-pocket CI android-debug-apk prebuild and Gradle cache lane",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "fleet/mw-pocket/.github/workflows/ci.yml"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W0.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --cwd ../mw-pocket run typecheck && bun --cwd ../mw-pocket test",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Fix Android SDK/Gradle memory flags & Bun lockfile install in ci.yml",
+          "Confirm local APK build script and CI YAML validate with zero syntax errors"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V03"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W0/V04",
+      "code": "V04",
+      "kind": "task",
+      "title": "Stabilize mw-rocksoul-cli CI pipeline across Go 1.27 and Bun plugin tests",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "fleet/mw-rocksoul-cli/.github/workflows/ci.yml"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W0.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "go -C ../mw-rocksoul-cli test -p 2 -count=1 ./...",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Separate Go CLI and Bun plugin jobs with explicit GOMEMLIMIT & timeout",
+          "Verify go vet, go test, and bun test plugins/opencode-rocksoul pass"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V04"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W0/V05",
+      "code": "V05",
+      "kind": "task",
+      "title": "Add D12 non-operational & schema validation workflow to mw-core",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R0",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "fleet/mw-core/.github/workflows/validate.yml"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W0.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "node ../mw-stack/scripts/validate-core-registry.mjs",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Add .github/workflows/validate.yml running validate-core-registry checks on PR/push",
+          "Verify zero operational directories exist in mw-core (D12 strict)"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V05"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W0/V06",
+      "code": "V06",
+      "kind": "task",
+      "title": "Quarantine/clean non-git orphan folders in z:\\repo via safe audit script",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "fleet/mw-stack/scripts/cleanup-orphan-workdirs.ps1"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W0.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"[void][System.Management.Automation.Language.Parser]::ParseFile('../mw-stack/scripts/cleanup-orphan-workdirs.ps1', [ref]$null, [ref]$null)\"",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Support -DryRun default listing mw-control, mw-xv-review-7e964, mw-xv-sweep",
+          "Archive or prune only verified non-git orphan folders with disk savings report"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V06"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W0/V07",
+      "code": "V07",
+      "kind": "task",
+      "title": "Register scheduled auto-sweep task for low-disk Windows & Linux hosts",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "fleet/mw-ww/scripts/register-autosweep.ps1"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W0.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "go -C ../mw-ww test -p 2 -count=1 ./cmd/mw-ww-cli/...",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Support -ThresholdFreeGB (default 15) running mw-ww-cli --clean-safe --apply --json",
+          "Send optional ntfy.sh alert only when drive enters warn/critical status"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V07"
+      }
+    }
+  ]
+}

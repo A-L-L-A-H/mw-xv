@@ -1,0 +1,96 @@
+{
+  "schema_version": "1.0.0",
+  "plan_id": "sovereign-empire-v3",
+  "title": "Sovereign Empire v3 — Live VPS Cutover, IDR/QRIS Monetization, Zero-Trust & Autonomous Rocksoul",
+  "repo": {
+    "org": "A-L-L-A-H",
+    "name": "mw-xv",
+    "target_branch": "dev"
+  },
+  "adr_file": ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md",
+  "execution_policy": {
+    "max_attempts_per_task": 2,
+    "default_model_tier": "flash",
+    "escalation_chain": ["flash", "neon", "argon", "human"],
+    "require_clean_scope": true,
+    "auto_commit": false
+  },
+  "projections": {
+    "github_fold_mode": "wave",
+    "taskos_project": "sovereign-empire-v3",
+    "orm_project_code": "sovereign-empire-v3"
+  },
+  "waves": [
+    {
+      "id": "W0",
+      "title": "Wave 0 — Fleet CI Recovery, Workspace Hygiene & Plan-TaskOS Strict Proof Integrity",
+      "wave_file": ".plan/sovereign-empire-v3/waves/W0.json",
+      "spec_file": ".plan/sovereign-empire-v3/specs/W0.md",
+      "depends_on": []
+    },
+    {
+      "id": "W1",
+      "title": "Wave 1 — Production VPS Cutover (apps.mycocolink.com) & Private-Repo Zero-Auth Deploy",
+      "wave_file": ".plan/sovereign-empire-v3/waves/W1.json",
+      "spec_file": ".plan/sovereign-empire-v3/specs/W1.md",
+      "depends_on": ["W0"]
+    },
+    {
+      "id": "W2",
+      "title": "Wave 2 — Live Indonesian Monetization & Closed-Loop Order-to-Cash",
+      "wave_file": ".plan/sovereign-empire-v3/waves/W2.json",
+      "spec_file": ".plan/sovereign-empire-v3/specs/W2.md",
+      "depends_on": ["W1"]
+    },
+    {
+      "id": "W3",
+      "title": "Wave 3 — Multi-Repo Live Contract & Chaos E2E Test Harness",
+      "wave_file": ".plan/sovereign-empire-v3/waves/W3.json",
+      "spec_file": ".plan/sovereign-empire-v3/specs/W3.md",
+      "depends_on": ["W1"]
+    },
+    {
+      "id": "W4",
+      "title": "Wave 4 — Zero-Trust Security, Secret Rotation & Compliance Hardening",
+      "wave_file": ".plan/sovereign-empire-v3/waves/W4.json",
+      "spec_file": ".plan/sovereign-empire-v3/specs/W4.md",
+      "depends_on": ["W1"]
+    },
+    {
+      "id": "W5",
+      "title": "Wave 5 — Autonomous Rocksoul Self-Hosting (Plan-TaskOS Zero-Quota Execution)",
+      "wave_file": ".plan/sovereign-empire-v3/waves/W5.json",
+      "spec_file": ".plan/sovereign-empire-v3/specs/W5.md",
+      "depends_on": ["W0"]
+    },
+    {
+      "id": "W6",
+      "title": "Wave 6 — Conversational AI Ops: WhatsApp Voice/Text & Email Autonomous Desk",
+      "wave_file": ".plan/sovereign-empire-v3/waves/W6.json",
+      "spec_file": ".plan/sovereign-empire-v3/specs/W6.md",
+      "depends_on": ["W2", "W5"]
+    },
+    {
+      "id": "W7",
+      "title": "Wave 7 — Native Client Distribution & Polish (mw-dx, mw-ww, mw-pocket, rocksoul)",
+      "wave_file": ".plan/sovereign-empire-v3/waves/W7.json",
+      "spec_file": ".plan/sovereign-empire-v3/specs/W7.md",
+      "depends_on": ["W0", "W5"]
+    },
+    {
+      "id": "W8",
+      "title": "Wave 8 — Epistemic Knowledge Graph, Quranic/Academic Corpus & Media Studio",
+      "wave_file": ".plan/sovereign-empire-v3/waves/W8.json",
+      "spec_file": ".plan/sovereign-empire-v3/specs/W8.md",
+      "depends_on": ["W3", "W5"]
+    },
+    {
+      "id": "W9",
+      "title": "Wave 9 — Sovereign Growth Engine, DR Game Day & GA v3.0 Cutover",
+      "wave_file": ".plan/sovereign-empire-v3/waves/W9.json",
+      "spec_file": ".plan/sovereign-empire-v3/specs/W9.md",
+      "depends_on": ["W4", "W6", "W7", "W8"]
+    }
+  ],
+  "documents": []
+}

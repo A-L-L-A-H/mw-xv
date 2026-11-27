@@ -1,0 +1,393 @@
+{
+  "schema_version": "1.0.0",
+  "plan_id": "sovereign-empire-v3",
+  "wave_id": "W8",
+  "title": "Wave 8 — Epistemic Knowledge Graph, Quranic/Academic Corpus & Media Studio",
+  "tasks": [
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W8/V59",
+      "code": "V59",
+      "kind": "task",
+      "title": "Seed complete 114-Surah index & Asmaul Husna ontology embeddings into Qdrant Free",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "fleet/mw-corpus/src/quran-index-seeder.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": [
+          "V24"
+        ]
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W8.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --cwd ../mw-corpus test",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Idempotently upsert 114 Surah metadata & 99 Asmaul Husna vectors with deterministic batch hashing",
+          "Preserve pure SQLite/JSON local fallback when QDRANT_URL is unset"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V59"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W8/V60",
+      "code": "V60",
+      "kind": "task",
+      "title": "Implement daily scheduled arXiv / Crossref / OpenAlex frontier paper digest ingestor",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "fleet/mw-corpus/src/daily-scholar-cron.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": [
+          "V59"
+        ]
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W8.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --cwd ../mw-corpus test",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Fetch latest AI/systems/Sharia-fintech abstracts politely via free public APIs with ETag caching",
+          "Store deduplicated citations and vector summaries for Rocksoul research lookups"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V60"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W8/V61",
+      "code": "V61",
+      "kind": "task",
+      "title": "Add hybrid BM25 + Vector + Mizan ethical filter POST /api/mizan/search in mw-nexus",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "neon",
+        "risk_tier": "R2",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "fleet/mw-nexus/src/mizan_search.rs"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": [
+          "V59"
+        ]
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W8.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "cargo test --manifest-path ../mw-nexus/Cargo.toml",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Fuse lexical BM25 score with mw-corpus cosine similarity and apply Sharia/Mizan ethical constraints",
+          "Verify deterministic score ordering and latency bounds in Rust unit tests"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V61"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W8/V62",
+      "code": "V62",
+      "kind": "task",
+      "title": "Implement canonical timeline & contradiction detector for mw-lore world rules",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "fleet/mw-lore/src/consistency-checker.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": [
+          "V40"
+        ]
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W8.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --cwd ../mw-lore test",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Scan era timelines, entity attributes, and immutable rules returning structured conflict locations",
+          "Expose CLI/HTTP check usable before publishing worldbuilding docs"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V62"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W8/V63",
+      "code": "V63",
+      "kind": "task",
+      "title": "Build automated Markdown -> vertical 9:16 video reel / audio brief generator in mw-studio",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "fleet/mw-studio/app/reel_generator.py"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": [
+          "V60"
+        ]
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W8.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "python -m unittest discover -s ../mw-studio/tests",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Convert research/marketing Markdown into Edge-TTS/Piper voiceover + FFmpeg burned-caption MP4",
+          "Run offline cleanly with graceful dependency probe in unit tests"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V63"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W8/V64",
+      "code": "V64",
+      "kind": "task",
+      "title": "Build parametric OG social card & invoice header PNG compiler in mw-design",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "fleet/mw-design/src/social-card-compiler.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": [
+          "V22"
+        ]
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W8.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --cwd ../mw-design test",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Render deterministic SVG -> PNG brand templates preserving MoonWitness grunge palette & typography",
+          "Expose HTTP endpoint consumed by mw-mylove OG routes and mw-echo marketing blasts"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V64"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W8/V65",
+      "code": "V65",
+      "kind": "task",
+      "title": "Add Ask Epistemic Empire omnibar in apps/board querying mw-corpus + mw-nexus live",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "apps/board/src/components/ai/epistemic-omnibar.tsx"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": [
+          "V61"
+        ]
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W8.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --filter @moonwitness/board typecheck",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Wire Cmd+K omnibar calling mw-nexus /api/mizan/search + mw-corpus passage previews cleanly",
+          "Render Mizan verdict badges and exact citation URNs without UI freezes"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V65"
+      }
+    }
+  ]
+}

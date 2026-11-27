@@ -1,0 +1,453 @@
+{
+  "schema_version": "1.0.0",
+  "plan_id": "sovereign-empire-v3",
+  "wave_id": "W1",
+  "title": "Wave 1 — Production VPS Cutover (apps.mycocolink.com) & Private-Repo Zero-Auth Deploy",
+  "tasks": [
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W1/V08",
+      "code": "V08",
+      "kind": "task",
+      "title": "Fix private-repo raw.githubusercontent 404 in deploy-remote-vps.sh via SCP/tar pipe",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "neon",
+        "risk_tier": "R2",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "fleet/mw-stack/scripts/deploy-remote-vps.sh"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": [
+          "V02",
+          "V05"
+        ]
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W1.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "& \"C:\\Program Files\\Git\\bin\\bash.exe\" -n ../mw-stack/scripts/deploy-remote-vps.sh",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Replace unauthenticated curl of private raw GitHub URLs with tar|ssh upload of local mw-stack + mw-templates",
+          "Pass bash -n syntax check and support --port 22022 and --key cleanly"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V08"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W1/V09",
+      "code": "V09",
+      "kind": "task",
+      "title": "Align compose business profile: include mw-mylove, JWKS envs for ISP/Mission, and healthchecks",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "neon",
+        "risk_tier": "R2",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "fleet/mw-stack/docker-compose.yml"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": [
+          "V08"
+        ]
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W1.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "docker compose -f ../mw-stack/docker-compose.yml --profile business config -q",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Add business profile to mw-mylove and MW_RID_JWKS_URL to mw-isp and mw-mission",
+          "Add Docker healthcheck blocks to mw-echo, mw-lab, mw-mission, mw-cp, mw-isp, mw-mylove"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V09"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W1/V10",
+      "code": "V10",
+      "kind": "task",
+      "title": "Isolate Docker daemon access via docker-socket-proxy for mw-cp PaaS deployments",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "neon",
+        "risk_tier": "R2",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "fleet/mw-stack/docker-compose.proxy.yml"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": [
+          "V09"
+        ]
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W1.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "docker compose -f ../mw-stack/docker-compose.yml -f ../mw-stack/docker-compose.proxy.yml --profile business config -q",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Add tecnativa/docker-socket-proxy restricting CONTAINERS/IMAGES/NETWORKS/VOLUMES without privileged host root access",
+          "Point mw-cp DOCKER_HOST to tcp://docker-socket-proxy:2375 in compose overlay"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V10"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W1/V11",
+      "code": "V11",
+      "kind": "task",
+      "title": "Parameterize portal domain & wildcard PaaS/subdomains in Caddyfile.template",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "fleet/mw-stack/Caddyfile.template"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": [
+          "V09"
+        ]
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W1.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "node -e \"const fs=require('fs');const t=fs.readFileSync('../mw-stack/Caddyfile.template','utf8');if(!t.includes('MW_PORTAL_DOMAIN'))process.exit(1)\"",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Replace hardcoded a-l-l-a-h.com block with {$MW_PORTAL_DOMAIN:a-l-l-a-h.com}",
+          "Preserve on_demand_tls ask endpoint http://mw-cp:4440/paas/caddy/ask"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V11"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W1/V12",
+      "code": "V12",
+      "kind": "task",
+      "title": "Install mw-ww-cli binary and disk watchdog cron inside install-business-vps.sh",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "fleet/mw-stack/scripts/install-business-vps.sh"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": [
+          "V07",
+          "V08"
+        ]
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W1.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "& \"C:\\Program Files\\Git\\bin\\bash.exe\" -n ../mw-stack/scripts/install-business-vps.sh",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Install mw-ww-cli Linux amd64 binary into /usr/local/bin/mw-ww-cli",
+          "Schedule 02:30 daily cron running mw-ww-cli --clean-safe --apply with ntfy alert on <2GB free"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V12"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W1/V13",
+      "code": "V13",
+      "kind": "task",
+      "title": "Add mwctl load-images tar-pipe command for zero-card private VPS deployments",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R2",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "fleet/mw-stack/mwctl"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": [
+          "V09",
+          "V10"
+        ]
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W1.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "& \"C:\\Program Files\\Git\\bin\\bash.exe\" -n ../mw-stack/mwctl",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Add mwctl save-images / load-images streaming locally built images to VPS via gzip+ssh",
+          "Integrate optional GHCR_TOKEN login without storing plaintext PATs in git"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V13"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W1/V14",
+      "code": "V14",
+      "kind": "task",
+      "title": "Execute initial live VPS cutover & health verification on apps.mycocolink.com:22022",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "neon",
+        "risk_tier": "R3",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "fleet/mw-stack/scripts/verify-vps-live.sh"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": [
+          "V11",
+          "V12",
+          "V13"
+        ]
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W1.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "& \"C:\\Program Files\\Git\\bin\\bash.exe\" -n ../mw-stack/scripts/verify-vps-live.sh",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Run non-destructive preflight, compose up --profile business, UFW check, and HTTP probe across active endpoints",
+          "Emit signed JSON deployment report to stdout and optional ntfy alert"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V14"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W1/V15",
+      "code": "V15",
+      "kind": "task",
+      "title": "Configure automated 3-2-1 encrypted off-site backups via rclone crypt + VPS restore drill",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "neon",
+        "risk_tier": "R2",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "fleet/mw-stack/scripts/setup-offsite-backup.sh"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": [
+          "V14"
+        ]
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W1.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "& \"C:\\Program Files\\Git\\bin\\bash.exe\" -n ../mw-stack/scripts/setup-offsite-backup.sh",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Configure encrypted backup export compatible with 15GB free Google Drive remote",
+          "Run mwctl restore-drill against latest snapshot verifying Postgres/SQLite row counts"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V15"
+      }
+    }
+  ]
+}

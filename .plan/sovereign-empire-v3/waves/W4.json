@@ -1,0 +1,393 @@
+{
+  "schema_version": "1.0.0",
+  "plan_id": "sovereign-empire-v3",
+  "wave_id": "W4",
+  "title": "Wave 4 — Zero-Trust Security, Secret Rotation & Compliance Hardening",
+  "tasks": [
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W4/V31",
+      "code": "V31",
+      "kind": "task",
+      "title": "Implement zero-downtime secret & RS256 JWKS key rotation script (mwctl rotate-keys)",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "argon",
+        "risk_tier": "R3",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "fleet/mw-stack/scripts/rotate-keys.sh"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": [
+          "V14"
+        ]
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W4.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "& \"C:\\Program Files\\Git\\bin\\bash.exe\" -n ../mw-stack/scripts/rotate-keys.sh",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Back up active .env atomically before generating new 256-bit API/JWT/AES secrets and triggering rolling reload",
+          "Keep rollback backup snapshot for 7 days under root-only mode 600"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V31"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W4/V32",
+      "code": "V32",
+      "kind": "task",
+      "title": "Support overlapping RS256 JWKS key IDs (kid) & token revocation list sync in mw-rid",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "argon",
+        "risk_tier": "R3",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "fleet/mw-rid/src/jwks-rotation.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": [
+          "V31"
+        ]
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W4.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --cwd ../mw-rid test",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Publish both active + previous public JWKS during configurable grace window",
+          "Persist revoked jti entries cleanly in SQLite with TTL pruning"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V32"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W4/V33",
+      "code": "V33",
+      "kind": "task",
+      "title": "Add adaptive IP rate limiter and brute-force lockout middleware to mw-echo",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R2",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "fleet/mw-echo/internal/middleware/ratelimit.go"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": [
+          "V14"
+        ]
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W4.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "go -C ../mw-echo test -p 2 -count=1 ./internal/middleware/...",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Enforce token-bucket limits on proxy/auth routes with X-RateLimit-* headers and trusted-proxy support",
+          "Emit security event metric to Observatory when block threshold trips"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V33"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W4/V34",
+      "code": "V34",
+      "kind": "task",
+      "title": "Enforce hardened container defaults (cap-drop ALL, no-new-privileges, PID/mem limits) in mw-cp",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "neon",
+        "risk_tier": "R2",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "fleet/mw-cp/security_profile.go"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": [
+          "V10"
+        ]
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W4.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "go -C ../mw-cp test -p 2 -count=1 ./...",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Apply SecurityOpt no-new-privileges, CapDrop ALL, PidsLimit, and memory ceiling on every PaaS deploy",
+          "Reject compose templates attempting host-network or privileged escalation unless admin-signed"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V34"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W4/V35",
+      "code": "V35",
+      "kind": "task",
+      "title": "Implement UU PDP Data Subject Right (DSR) export & account anonymization API route",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R2",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "apps/api/src/routes/privacy-dsr.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": [
+          "V18"
+        ]
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W4.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bunx --cwd apps/api vitest run tests/privacy-dsr.test.ts",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Allow authenticated tenant user to export JSON personal data archive cleanly",
+          "Support soft/crypto-shredded anonymization preserving immutable Sharia financial ledger references"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V35"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W4/V36",
+      "code": "V36",
+      "kind": "task",
+      "title": "Add zero-card Trivy + Gitleaks vulnerability & secret scanner across all 25 repos",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "fleet/mw-stack/scripts/audit-vulns-zero-card.sh"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": [
+          "V14"
+        ]
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W4.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "& \"C:\\Program Files\\Git\\bin\\bash.exe\" -n ../mw-stack/scripts/audit-vulns-zero-card.sh",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Scan container images and git working trees using local trivy/gitleaks binaries (fallback deterministic regex + dep check)",
+          "Fail on CRITICAL unpatched CVEs or exposed private keys and write CycloneDX/SARIF summary"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V36"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v3:W4/V37",
+      "code": "V37",
+      "kind": "task",
+      "title": "Add SSRF & metadata IP (169.254.169.254 / RFC1918) guard to sandbox command network calls",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R2",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "fleet/mw-rocksoul-sandbox/src/ssrf-guard.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files",
+          "Never import @moonwitness/orm-* into mw-rocksoul-* repositories",
+          "Never introduce credit-card-required SaaS dependencies"
+        ]
+      },
+      "graph": {
+        "depends_on": [
+          "V27"
+        ]
+      },
+      "knowledge": {
+        "spec_files": [
+          ".plan/sovereign-empire-v3/specs/W4.md"
+        ],
+        "adr_files": [
+          ".plan/sovereign-empire-v3/ADR-001-sovereign-empire-v3.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --cwd ../mw-rocksoul-sandbox test",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Reject outbound requests/URLs targeting link-local metadata, loopback-bypass encodings, or private LAN CIDRs unless allowlisted",
+          "Cover decimal/IPv6-mapped IPv4 bypass vectors in unit tests"
+        ]
+      },
+      "projections": {
+        "taskos_code": "V37"
+      }
+    }
+  ]
+}
