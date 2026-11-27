@@ -93,4 +93,20 @@ export {
   type OverdueSubscriberSuspensionInput,
   type OverdueSubscriberSuspensionResult,
 } from './provisioning-loop.js';
+export {
+  DEFAULT_ISP_DUNNING_POLICY,
+  computeDaysPastDue,
+  evaluateSubscriberDunning,
+  planIspDunningBatch,
+  type DunningActionKind,
+  type DunningStage,
+  type EvaluateSubscriberDunningOptions,
+  type IspDunningBatchResult,
+  type IspDunningCandidate,
+  type IspDunningDecision,
+  type IspDunningDisconnectPayload,
+  type IspDunningNotice,
+  type IspDunningPolicy,
+  type ResolvedIspDunningPolicy,
+} from './billing-dunning.js';
 export { ispSeedManifest } from './seed-manifest.js';
