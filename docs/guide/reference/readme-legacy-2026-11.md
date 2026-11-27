@@ -1,6 +1,6 @@
 # MoonWitness
 
-![MoonWitness — every model, one board](packages/assets/brand/readme-banner.svg)
+![MoonWitness — every model, one board](../../../packages/assets/brand/readme-banner.svg)
 
 <p align="center">
   <a href="https://pnpm.io"><img alt="pnpm 11.17" src="https://img.shields.io/badge/pnpm-11.17.0-F69220?logo=pnpm&logoColor=white" /></a>
@@ -19,12 +19,12 @@ dideklarasikan sekali di addon; `@moonwitness/orm` menurunkan tipe, validasi, ta
 akses, REST/JSON-RPC, dan tampilan data dari deklarasi yang sama. API, Board, audit, job queue, dan
 operasi produksi bergerak dari satu sumber kebenaran.
 
-> **Status rilis:** `1.0.0-rc.1` · [Changelog](CHANGELOG.md) · [Master Roadmap](ROADMAP.md) ·
-> [Kebijakan kompatibilitas](docs/engineering/compatibility.md)
+> **Status rilis:** `1.0.0-rc.1` · [Changelog](../../../CHANGELOG.md) · [Master Roadmap](../../../ROADMAP.md) ·
+> [Kebijakan kompatibilitas](../../../docs/engineering/compatibility.md)
 
-Mulai cepat: [Quickstart](#quickstart) · [Panduan developer](../../guide/index.md) ·
-[Arsitektur](#arsitektur) · [Kontrak API](docs/guide/reference/api.md) ·
-[WhatsApp gateway](docs/operations/whatsapp.md)
+Mulai cepat: [Quickstart](#quickstart) · [Panduan developer](../../../docs/guide/index.md) ·
+[Arsitektur](#arsitektur) · [Kontrak API](../../../docs/guide/reference/api.md) ·
+[WhatsApp gateway](../../../docs/operations/whatsapp.md)
 
 ## Daftar isi
 
@@ -113,19 +113,19 @@ Login lokal memakai username `superadmin` dan password yang Anda isi di `.env`. 
 partner, negara, dan contoh data lain untuk eksplorasi; jangan dipakai di production.
 
 Panduan langkah demi langkah, termasuk tes PostgreSQL terisolasi, ada di
-[quickstart](docs/guide/tutorials/quickstart.md).
+[quickstart](../../../docs/guide/tutorials/quickstart.md).
 
 
 ## Moon City Visual Universe — Status Terkini
 
 | Fase | Capaian | Bukti |
 |------|---------|-------|
-| **W9-001** | Moon City scene definition disetujui | [Scene JSON](packages/assets/scenes/moon-city-scene.json) |
-| **W9-002** | Homepage hero vertical slice immersif | [home-hero-art.tsx](apps/board/src/components/home/home-hero-art.tsx) |
-| **W9-003** | Cinematic transitions siap | [SceneLab.tsx](apps/ui-catalog/src/SceneLab.tsx) |
-| **W9-004** | Route-gap decision terdokumentasi | [evidence](docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md) |
-| **W9-005** | Crew integration & idle animation | [crew-01](packages/assets/source/world/characters/character-registry.json) |
-| **W9-006** ✅ | **Operational Board visual gate — 42/42 lulus** | [Matrix run](docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md) |
+| **W9-001** | Moon City scene definition disetujui | [Scene JSON](../../../packages/assets/scenes/moon-city-scene.json) |
+| **W9-002** | Homepage hero vertical slice immersif | [home-hero-art.tsx](../../../apps/board/src/components/home/home-hero-art.tsx) |
+| **W9-003** | Cinematic transitions siap | [SceneLab.tsx](../../../apps/ui-catalog/src/SceneLab.tsx) |
+| **W9-004** | Route-gap decision terdokumentasi | [evidence](../../../docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md) |
+| **W9-005** | Crew integration & idle animation | [crew-01](../../../packages/assets/source/world/characters/character-registry.json) |
+| **W9-006** ✅ | **Operational Board visual gate — 42/42 lulus** | [Matrix run](../../../docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md) |
 
 > **Matrix detail**: 14 kasus × 3 browser (Chromium, Firefox, WebKit) = 42 total. Semua lulus tanpa skip/disable.
 > Perbaikan kunci: deterministic 1440×680 clips untuk story-workbench baselines (mirip strategi dashboard KPI) + toBeCloseTo(36, 0) untuk crown bounding-box WebKit sub-pixel tolerance.
@@ -158,11 +158,11 @@ gagal tertutup dengan HTTP 503. Pembacaan telemetry di `/api/observability/*` me
 role `system` atau `superadmin`.
 
 Helper TypeScript tersedia melalui `@moonwitness/agent-observability/instrumentation`; lihat
-[contoh agent](apps/agent-observability/examples/demo-agent.ts).
+[contoh agent](../../../apps/agent-observability/examples/demo-agent.ts).
 
 ### Qoder CLI
 
-Konfigurasi project [`.qoder/settings.json`](.qoder/settings.json) mengirim hook HTTP Qoder ke
+Konfigurasi project [`.qoder/settings.json`](../../../.qoder/settings.json) mengirim hook HTTP Qoder ke
 `POST /v1/qoder` pada API. Ekspor `OBSERVABILITY_INGEST_TOKEN` ke proses Qoder agar interpolasi header
 `Authorization` bekerja. Satu prompt menjadi satu trace dengan child span untuk tool call dan
 subagent; kegagalan tool/turn juga muncul sebagai error span dan log.
@@ -203,8 +203,8 @@ flowchart LR
   Board, katalog, dan dokumentasi.
 
 Diagram dependency workspace, relasi model, auth refresh, jobs/outbox, dan instalasi addon tersedia
-di [diagram arsitektur](docs/architecture/diagrams/README.md); penjelasan batas komponen ada di
-[arsitektur sistem](docs/guide/explanations/architecture.md).
+di [diagram arsitektur](../../../docs/architecture/diagrams/README.md); penjelasan batas komponen ada di
+[arsitektur sistem](../../../docs/guide/explanations/architecture.md).
 
 ## Peta workspace
 
@@ -472,8 +472,8 @@ origin yang sama. Di development, Next.js meneruskan `/api`, `/auth`, `/jsonrpc`
 | `/board/whatsapp`                              | pairing dan inbox WhatsApp       |
 
 URL lama (`/profile`, `/settings`, `/m/...`) diarahkan ke route `/board/...`. Board memakai
-`@moonwitness/ui` untuk kontrol, token, dan pola komposisi; lihat [UI Bible](packages/ui/README.md)
-dan [TOKENS.md](packages/ui/TOKENS.md).
+`@moonwitness/ui` untuk kontrol, token, dan pola komposisi; lihat [UI Bible](../../../packages/ui/README.md)
+dan [TOKENS.md](../../../packages/ui/TOKENS.md).
 
 Build production memakai `output: 'standalone'`. Set `NEXT_PUBLIC_SITE_URL` ke origin kanonik
 sebelum build agar metadata, sitemap, dan robots benar. Halaman login dan area utama dipisah agar
@@ -494,18 +494,18 @@ data Board.
 Homepage juga memakai mode statis saat browser meminta `Save-Data`, tanpa menyembunyikan ilustrasi,
 pilot, copy, atau tautan. Aset plane Moon City memakai cache satu jam dengan stale revalidation;
 pengukuran build produksi cold-cache mencatat 6.1 kB untuk sembilan SVG lingkungan dan 1.4 kB untuk
-frame idle pertama. Lihat [baseline performa](docs/bundles/visual-universe-pack/evidence/W10-001-runtime-performance-baseline.md)
-dan [kebijakan loading/cache](docs/bundles/visual-universe-pack/evidence/W10-002-scene-loading-and-cache.md).
+frame idle pertama. Lihat [baseline performa](../../../docs/bundles/visual-universe-pack/evidence/W10-001-runtime-performance-baseline.md)
+dan [kebijakan loading/cache](../../../docs/bundles/visual-universe-pack/evidence/W10-002-scene-loading-and-cache.md).
 
 | Artefak                                                                                                                    | Tujuan                                                  |
 | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| [Visual Universe pack](docs/bundles/visual-universe-pack/README-FIRST.md)                                                  | Arsitektur, backlog, aturan kontribusi, dan verifikasi. |
-| [Task board Visual Universe](docs/bundles/visual-universe-pack/TASKS.md)                                                   | Proyeksi 109 task (106 done, 3 skipped, 0 blocked).     |
-| [Approval dan batas artwork](docs/decisions/moon-city-production-approval.md)                                              | Keputusan owner dan ruang lingkup artwork Moon City.    |
-| [Bukti scene dan route gap](docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md)               | Hasil W9-001–W9-004 beserta validasinya.                |
-| [Bukti Board visual gate](docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md)                | Status kru/editorial dan matrix 42/42 lintas-browser.   |
-| [Bukti mode motion dan Save-Data](docs/bundles/visual-universe-pack/evidence/W10-003-motion-and-save-data.md)              | Preferensi gerak/data diuji di tiga browser.            |
-| [Bukti visual dan aksesibilitas homepage](docs/bundles/visual-universe-pack/evidence/W10-004-home-accessibility-matrix.md) | Cakupan homepage (27/27) dan matrix operasional (42/42).|
+| [Visual Universe pack](../../../docs/bundles/visual-universe-pack/README-FIRST.md)                                                  | Arsitektur, backlog, aturan kontribusi, dan verifikasi. |
+| [Task board Visual Universe](../../../docs/bundles/visual-universe-pack/TASKS.md)                                                   | Proyeksi 109 task (106 done, 3 skipped, 0 blocked).     |
+| [Approval dan batas artwork](../../../docs/decisions/moon-city-production-approval.md)                                              | Keputusan owner dan ruang lingkup artwork Moon City.    |
+| [Bukti scene dan route gap](../../../docs/bundles/visual-universe-pack/evidence/W9-001-W9-004-hero-route-blockers.md)               | Hasil W9-001–W9-004 beserta validasinya.                |
+| [Bukti Board visual gate](../../../docs/bundles/visual-universe-pack/evidence/W9-005-W9-006-operational-coverage.md)                | Status kru/editorial dan matrix 42/42 lintas-browser.   |
+| [Bukti mode motion dan Save-Data](../../../docs/bundles/visual-universe-pack/evidence/W10-003-motion-and-save-data.md)              | Preferensi gerak/data diuji di tiga browser.            |
+| [Bukti visual dan aksesibilitas homepage](../../../docs/bundles/visual-universe-pack/evidence/W10-004-home-accessibility-matrix.md) | Cakupan homepage (27/27) dan matrix operasional (42/42).|
 
 Seluruh **109 task Visual Universe** (`W0`–`W10`) telah selesai di TaskOS kanonik (**106 `done`, 3
 `skipped`, 0 `blocked`, 0 `todo`**). Matrix visual dan aksesibilitas WCAG 2.1 A/AA lintas-browser
@@ -515,7 +515,7 @@ Firefox (14/14), dan WebKit (14/14), serta suite homepage publik (`e2e/public-ho
 menampilkan status review dan provenance secara fail-closed dari `manifest.json` dan
 `licenses.json`. Route Signals dan Archive belum tersedia di Board; konsep visualnya tetap berada
 di UI Catalog sebagai spesimen non-produksi. Status lengkap dan bukti verifikasi tersedia di
-[Visual Universe README](docs/bundles/visual-universe-pack/README-FIRST.md).
+[Visual Universe README](../../../docs/bundles/visual-universe-pack/README-FIRST.md).
 
 ## WhatsApp gateway
 
@@ -532,7 +532,7 @@ receipt real-time, set `WHATSAPP_WEBHOOK_URL` ke origin HTTPS publik API dan
 Tanpa webhook, Board memakai polling REST sebagai jalur refresh.
 
 Panduan pairing, webhook, dan batasan volume ada di
-[WhatsApp gateway](docs/operations/whatsapp.md).
+[WhatsApp gateway](../../../docs/operations/whatsapp.md).
 
 ## Perintah penting
 
@@ -575,7 +575,7 @@ pnpm test:integration
 `pnpm test` menjalankan unit test dengan SQLite. Tanpa `POSTGRES_TEST_URL`, tes PostgreSQL dilewati.
 Gunakan database kosong bernama `test`/`e2e`/`ci` dan jangan arahkan ke database berisi data penting.
 Untuk memilih tes terkecil yang relevan, lihat
-[panduan verifikasi lokal](docs/testing/FLAKY-TESTS.md#choose-the-smallest-useful-local-check).
+[panduan verifikasi lokal](../../../docs/testing/FLAKY-TESTS.md#choose-the-smallest-useful-local-check).
 
 ### Artefak generated
 
@@ -671,34 +671,34 @@ baru masih kompatibel, karena hook upgrade tidak dibalik otomatis. Pemulihan dat
 terpisah dan destruktif: lakukan ke target terpilih dengan backup teruji, ikuti konfirmasi nama
 database, lalu smoke test sebelum membuka traffic.
 
-Panduan lanjutan: [attachment storage](docs/operations/attachment-storage.md),
-[runtime operations](docs/engineering/runtime-operations.md),
-[security incident response](docs/operations/security-incident-response.md), dan
-[release artifact flow](docs/operations/release-artifact-flow.md).
+Panduan lanjutan: [attachment storage](../../../docs/operations/attachment-storage.md),
+[runtime operations](../../../docs/engineering/runtime-operations.md),
+[security incident response](../../../docs/operations/security-incident-response.md), dan
+[release artifact flow](../../../docs/operations/release-artifact-flow.md).
 
 ## Dokumentasi
 
 | Mulai di sini                                                                         | Isi                                                            |
 | ------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| [Indeks dokumentasi](docs/README.md)                                                  | Peta seluruh `docs/`, including source & planning bundles.     |
-| [Developer guide](../../guide/index.md)                                                | Quickstart, how-to, reference, dan explanation.                |
-| [Quickstart](docs/guide/tutorials/quickstart.md)                                      | Menjalankan PostgreSQL, API, dan Board.                        |
-| [Arsitektur sistem](docs/guide/explanations/architecture.md)                          | Batas komponen dan alur request.                               |
-| [Diagram arsitektur](docs/architecture/diagrams/README.md)                            | Dependency workspace, relasi model, auth, jobs, addon install. |
-| [Panduan addon](docs/guide/how-to/addon-development.md)                               | Model, view, menu, seed, dependency, dan upgrade.              |
-| [Kontrak API](docs/guide/reference/api.md)                                            | REST, JSON-RPC, filter, pagination, dan error.                 |
-| [Model dan metadata](docs/guide/reference/models.md)                                  | Field, relasi, view, dan akses.                                |
-| [Jobs dan outbox](docs/guide/how-to/jobs-outbox.md)                                   | Worker, scheduler, retry, dan dead letter.                     |
-| [WhatsApp gateway](docs/operations/whatsapp.md)                                       | Pairing GoWA, webhook, dan inbox.                              |
-| [Attachment storage](docs/operations/attachment-storage.md)                           | Storage lokal dan Garage S3.                                   |
-| [Local AI](docs/guide/how-to/local-ai-hardware.md)                                    | Runtime loopback-only dan kebutuhan hardware.                  |
-| [Kebijakan kompatibilitas](docs/engineering/compatibility.md)                         | Aturan perubahan kontrak dan addon.                            |
-| [Feature coverage](docs/engineering/feature-coverage.md)                              | Bukti tes per fitur, role, dan company.                        |
-| [Roadmap](ROADMAP.md) · [Changelog](CHANGELOG.md) · [Security](SECURITY.md)           | Rencana, riwayat rilis, dan kebijakan keamanan.                |
-| [Brand assets](docs/design/brand-assets.md) · [UI catalog](docs/design/ui-catalog.md) | Sumber brand, token, dan katalog komponen.                     |
+| [Indeks dokumentasi](../../../docs/README.md)                                                  | Peta seluruh `docs/`, including source & planning bundles.     |
+| [Developer guide](../../../docs/guide/index.md)                                                | Quickstart, how-to, reference, dan explanation.                |
+| [Quickstart](../../../docs/guide/tutorials/quickstart.md)                                      | Menjalankan PostgreSQL, API, dan Board.                        |
+| [Arsitektur sistem](../../../docs/guide/explanations/architecture.md)                          | Batas komponen dan alur request.                               |
+| [Diagram arsitektur](../../../docs/architecture/diagrams/README.md)                            | Dependency workspace, relasi model, auth, jobs, addon install. |
+| [Panduan addon](../../../docs/guide/how-to/addon-development.md)                               | Model, view, menu, seed, dependency, dan upgrade.              |
+| [Kontrak API](../../../docs/guide/reference/api.md)                                            | REST, JSON-RPC, filter, pagination, dan error.                 |
+| [Model dan metadata](../../../docs/guide/reference/models.md)                                  | Field, relasi, view, dan akses.                                |
+| [Jobs dan outbox](../../../docs/guide/how-to/jobs-outbox.md)                                   | Worker, scheduler, retry, dan dead letter.                     |
+| [WhatsApp gateway](../../../docs/operations/whatsapp.md)                                       | Pairing GoWA, webhook, dan inbox.                              |
+| [Attachment storage](../../../docs/operations/attachment-storage.md)                           | Storage lokal dan Garage S3.                                   |
+| [Local AI](../../../docs/guide/how-to/local-ai-hardware.md)                                    | Runtime loopback-only dan kebutuhan hardware.                  |
+| [Kebijakan kompatibilitas](../../../docs/engineering/compatibility.md)                         | Aturan perubahan kontrak dan addon.                            |
+| [Feature coverage](../../../docs/engineering/feature-coverage.md)                              | Bukti tes per fitur, role, dan company.                        |
+| [Roadmap](../../../ROADMAP.md) · [Changelog](../../../CHANGELOG.md) · [Security](../../../SECURITY.md)           | Rencana, riwayat rilis, dan kebijakan keamanan.                |
+| [Brand assets](../../../docs/design/brand-assets.md) · [UI catalog](../../../docs/design/ui-catalog.md) | Sumber brand, token, dan katalog komponen.                     |
 
 Referensi model, field, relasi, akses, environment, dan endpoint yang dihasilkan otomatis ada di
-[generated platform reference](generated-platform.md).
+[generated platform reference](../../../docs/guide/reference/generated-platform.md).
 
 ---
 
@@ -783,6 +783,6 @@ Monorepo version: `1.0.0-rc.1` · metadata fingerprint: `4078b3dd3adda57019e6e1c
 
 Root commands: `pnpm addon:create`, `pnpm addon:scaffold`, `pnpm agent:boundary:check`, `pnpm ai:watchdog`, `pnpm api:addon:check`, `pnpm architecture:check`, `pnpm architecture:check:built`, `pnpm architecture:generate`, `pnpm assets:check:bounds`, `pnpm assets:check:docs`, `pnpm assets:export:docs`, `pnpm assets:generate`, `pnpm assets:generate:illustrations`, `pnpm assets:render`, `pnpm assets:validate`, `pnpm attachments:reconcile`, `pnpm audit:workspace`, `pnpm automation:check:action-pins`, `pnpm automation:check:action-tags`, `pnpm automation:check:roadmap`, `pnpm automation:check:secrets`, `pnpm automation:check:ubuntu-runner-candidate`, `pnpm automation:check:vulnerability-policy`, `pnpm automation:check:workflow-trust`, `pnpm board:budget`, `pnpm board:ui:check`, `pnpm board:visual:update`, `pnpm build`, `pnpm check:complexity`, `pnpm check:ui-consistency`, `pnpm ci:affected`, `pnpm control-plane:build`, `pnpm control-plane:dev`, `pnpm db:migrate`, `pnpm dependency:candidate`, `pnpm dependency:plan`, `pnpm desktop:build`, `pnpm desktop:mcp`, `pnpm desktop:observatory`, `pnpm desktop:serve`, `pnpm desktop:test`, `pnpm desktop:ui:check`, `pnpm desktop:web`, `pnpm dev`, `pnpm dev:api`, `pnpm dev:board`, `pnpm docs:build`, `pnpm docs:build:built`, `pnpm docs:change:classify`, `pnpm docs:check`, `pnpm docs:check:built`, `pnpm docs:examples:check`, `pnpm docs:examples:check:built`, `pnpm docs:generate`, `pnpm docs:links`, `pnpm docs:links:external`, `pnpm docs:publication:check`, `pnpm dx:test`, `pnpm evolution:check`, `pnpm evolution:fitness`, `pnpm evolution:postmortem`, `pnpm evolution:prune`, `pnpm evolution:signals`, `pnpm format`, `pnpm format:check`, `pnpm governance:check`, `pnpm hooks:install`, `pnpm interactive-session:boundary:check`, `pnpm jobs:outbox`, `pnpm jobs:scheduler`, `pnpm jobs:worker`, `pnpm lint`, `pnpm lint:fix`, `pnpm lint:ui`, `pnpm local-ai:eval`, `pnpm local-ai:register-model`, `pnpm local-ai:tournament`, `pnpm node:parity`, `pnpm orm:check:seeds`, `pnpm orm:codegen`, `pnpm orm:inspect`, `pnpm plan:lint`, `pnpm plan:mcp`, `pnpm plan:next`, `pnpm plan:reindex`, `pnpm plan:sync`, `pnpm platform:audit`, `pnpm preflight:fast`, `pnpm prepare`, `pnpm promotion:approval-check`, `pnpm promotion:risk`, `pnpm radius:build`, `pnpm radius:dev`, `pnpm radius:migrate`, `pnpm readme:check`, `pnpm readme:generate`, `pnpm release:changelog`, `pnpm release:check`, `pnpm release:classify`, `pnpm release:dry-run`, `pnpm release:plan`, `pnpm release:preflight:built`, `pnpm release:prepare`, `pnpm release:verify-attestations`, `pnpm reset:superadmin-password`, `pnpm revoke:auth-sessions`, `pnpm roadmap:issues:audit`, `pnpm roadmap:issues:plan`, `pnpm roadmap:progress`, `pnpm start`, `pnpm start:built`, `pnpm swarm-observability:boundary:check`, `pnpm tasks:validate`, `pnpm test`, `pnpm test:action-pins`, `pnpm test:action-tags`, `pnpm test:addon-conformance`, `pnpm test:affected`, `pnpm test:architecture`, `pnpm test:artifact-safety`, `pnpm test:assets`, `pnpm test:assets:source`, `pnpm test:board-budget`, `pnpm test:board-csv`, `pnpm test:ci-gate`, `pnpm test:coverage-policy`, `pnpm test:dependency-candidate`, `pnpm test:dependency-plan`, `pnpm test:docs-navigation`, `pnpm test:docs-portal`, `pnpm test:docs-publication`, `pnpm test:e2e`, `pnpm test:e2e:built`, `pnpm test:e2e:diagnostics`, `pnpm test:e2e:visual`, `pnpm test:e2e:visual:matrix`, `pnpm test:expected-ref`, `pnpm test:flaky-policy`, `pnpm test:integration`, `pnpm test:integration:built`, `pnpm test:isp`, `pnpm test:knowledge-cli:built`, `pnpm test:maintenance-incidents`, `pnpm test:package-manager`, `pnpm test:pipeline-gates`, `pnpm test:platform-audit`, `pnpm test:promotion-policy`, `pnpm test:promotion-report`, `pnpm test:release-asset-reconcile`, `pnpm test:release-classification`, `pnpm test:release-dry-run`, `pnpm test:release-image-publish`, `pnpm test:release-latest-policy`, `pnpm test:release-orchestration`, `pnpm test:release-plan`, `pnpm test:release-preflight`, `pnpm test:release-prepare`, `pnpm test:release-prepare-workflow`, `pnpm test:release-provenance`, `pnpm test:release-verify-attestations`, `pnpm test:release-workflow`, `pnpm test:render-changelog`, `pnpm test:restore-drill`, `pnpm test:roadmap`, `pnpm test:secrets`, `pnpm test:security-policy`, `pnpm test:taskos`, `pnpm test:ubuntu-runner-candidate`, `pnpm test:ui`, `pnpm test:ui-budget`, `pnpm test:ui-catalog`, `pnpm test:ui-design-check`, `pnpm test:unit`, `pnpm test:unit-runner-policy`, `pnpm test:unit:built`, `pnpm test:unit:ci`, `pnpm test:versioned-docs`, `pnpm test:whatsapp`, `pnpm test:workflow-trust`, `pnpm test:workspace-version-policy`, `pnpm timezone:check`, `pnpm typecheck`, `pnpm ui:budget`, `pnpm ui:check`, `pnpm ui:design:audit`, `pnpm ui:design:check`, `pnpm ui:design:report`, `pnpm ui:visual:update`, `pnpm verify`.
 
-Generated model, field, relation, access, environment-name, and endpoint references are in the [developer guide](../../guide/index.md).
+Generated model, field, relation, access, environment-name, and endpoint references are in the [developer guide](../../../docs/guide/index.md).
 
 <!-- END GENERATED WORKSPACE REFERENCE -->
