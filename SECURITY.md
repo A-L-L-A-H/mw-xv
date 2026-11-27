@@ -8,7 +8,16 @@ Passwords are hashed with `scrypt` using `N = 2^17` (131072), `r = 8`, `p = 1`, 
 
 ## CI security gates
 
-Pull requests are gated by full-history gitleaks, CodeQL static analysis for JavaScript/TypeScript and Go, a CRITICAL-level dependency advisory audit, registry signature verification for every installed package, and a deterministic release-provenance policy check. Release builds additionally block on CRITICAL Trivy findings and attest the exact verified artifact, image digests, and SPDX SBOMs. All external actions are pinned to immutable commit SHAs and checked against their upstream version tags.
+Pull requests and integration pushes on `dev` and `main` run `.github/workflows/ci.yml`, which enforces:
+
+- Conventional commit linting (`commitlint`).
+- Full-history secret scanning (`gitleaks` pinned by version and SHA-256 checksum, capped baseline).
+- Dependency advisory auditing at `high` and `critical` severity (`bun audit --audit-level high`).
+- Immutable commit-SHA pinning checks for GitHub Actions and `persist-credentials: false`.
+- Static architecture and boundary verification (`dependency-cruiser`, `api:addon:check`, `agent:boundary:check`, `standard:check`, `constitution`).
+- TypeScript linting, typechecking, unit tests (`test:unit:ci`), and PostgreSQL integration tests.
+
+Container runtime defaults enforce non-root `node`, read-only root filesystems, dropped capabilities (`cap_drop: [ALL]`), `no-new-privileges`, and `RATE_LIMIT_STORE=postgres` in production.
 
 ## Supported versions
 
@@ -20,4 +29,4 @@ Do not disclose suspected vulnerabilities in public issues, discussions, pull re
 
 Include the affected commit or release, impact, prerequisites, reproducible steps, and a safe proof of concept. Remove real tokens, personal data, and production records. Do not test against systems or data you do not own. The maintainers will acknowledge reports as soon as practical, coordinate a fix and disclosure with the reporter, and publish a correction notice when appropriate. There is no guaranteed response time or bounty program.
 
-The repository owner must verify and enable GitHub private vulnerability reporting and configure an actively monitored private contact before claiming this channel is operational. See [the incident-response runbook](docs/operations/security-incident-response.md) for containment and release correction.
+The repository owner must verify and enable GitHub private vulnerability reporting and configure an actively monitored private contact before claiming this channel is operational. See [the incident-response runbook](../mw-docs/operations/security-incident-response.md) for containment and release correction.

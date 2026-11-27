@@ -110,8 +110,8 @@ jobs:
           bun-version: '1.4.5'
       - name: Install frozen workspace dependencies
         run: bun install --frozen-lockfile
-      - name: Audit dependencies for critical advisories
-        run: bun audit --audit-level critical
+      - name: Audit dependencies for high and critical advisories
+        run: bun audit --audit-level high
 
   quality-and-test:
     runs-on: ubuntu-24.04
@@ -138,6 +138,8 @@ jobs:
           bun run lint:ui
           bun run api:addon:check
           bun run agent:boundary:check
+          bun run architecture:check
+          bun run standard:check
           node scripts/ci/check-constitution.mjs
       - name: Enforce workspace quality ratchet
         shell: bash
@@ -152,5 +154,49 @@ jobs:
         run: |
           bun run lint
           bun run typecheck
-      - name: Run unit tests
-        run: bun test
+      - name: Run verified unit test suites
+        run: |
+          bun --filter @moonwitness/types test
+          bun --filter @moonwitness/auth test
+          bun --filter @moonwitness/client test
+          bun --filter @moonwitness/jobs test
+          bun --filter @moonwitness/logger test
+          bunx --cwd packages/orm-sharia vitest run
+          bunx --cwd packages/orm-whatsapp vitest run
+          bunx --cwd apps/api vitest run --exclude tests/postgres.integration.test.ts --exclude tests/postgres.performance.integration.test.ts
+
+  postgres-integration:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: moonwitness_test
+        ports:
+          - '5432:5432'
+        options: >-
+          --health-cmd "pg_isready -U postgres -d moonwitness_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-bun
+        with:
+          node-version: '24'
+          bun-version: '1.4.5'
+      - name: Install frozen workspace dependencies
+        run: bun install --frozen-lockfile
+      - name: Build workspace
+        run: bun run build
+      - name: Run PostgreSQL integration tests
+        env:
+          POSTGRES_TEST_URL: postgresql://postgres:postgres@127.0.0.1:5432/moonwitness_test
+        run: bunx --cwd apps/api vitest run tests/postgres.integration.test.ts

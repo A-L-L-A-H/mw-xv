@@ -53,8 +53,12 @@ describe('resolveTrustProxy', () => {
 });
 
 describe('resolveRateLimitStore', () => {
-  it('defaults to the in-memory store and accepts both explicit values', () => {
+  it('defaults to memory in dev, postgres in production, and accepts explicit values', () => {
     expect(resolveRateLimitStore({})).toBe('memory');
+    expect(resolveRateLimitStore({ NODE_ENV: 'production' })).toBe('postgres');
+    expect(resolveRateLimitStore({ NODE_ENV: 'production', RATE_LIMIT_STORE: 'memory' })).toBe(
+      'memory'
+    );
     expect(resolveRateLimitStore({ RATE_LIMIT_STORE: 'memory' })).toBe('memory');
     expect(resolveRateLimitStore({ RATE_LIMIT_STORE: 'POSTGRES' })).toBe('postgres');
   });

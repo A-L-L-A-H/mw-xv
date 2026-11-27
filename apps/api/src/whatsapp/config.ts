@@ -1,3 +1,5 @@
+export type WhatsAppDriver = 'cloud-api' | 'baileys' | 'gowa';
+
 export interface WhatsAppGatewayConfig {
   url: string;
   username: string;
@@ -7,6 +9,26 @@ export interface WhatsAppGatewayConfig {
 
 const DEV_USERNAME = 'moonwitness';
 const DEV_PASSWORD = 'moonwitness';
+
+export function allowUnofficialWhatsAppInProd(env: NodeJS.ProcessEnv = process.env): boolean {
+  return env.WHATSAPP_ALLOW_UNOFFICIAL_IN_PROD?.trim().toLowerCase() !== 'false';
+}
+
+export function resolveWhatsAppDriver(env: NodeJS.ProcessEnv = process.env): WhatsAppDriver {
+  const explicit = env.WHATSAPP_DRIVER?.trim().toLowerCase();
+  if (explicit === 'cloud-api' || explicit === 'baileys' || explicit === 'gowa') {
+    return explicit;
+  }
+  if (
+    env.WHATSAPP_CLOUD_API_ACCESS_TOKEN?.trim() &&
+    env.WHATSAPP_CLOUD_API_PHONE_NUMBER_ID?.trim()
+  ) {
+    return 'cloud-api';
+  }
+  return env.WHATSAPP_GOWA_BASE_URL?.trim() || env.WHATSAPP_GATEWAY_URL?.trim()
+    ? 'gowa'
+    : 'baileys';
+}
 
 function parseTimeout(value: string | undefined): number {
   if (!value) return 20_000;
@@ -55,8 +77,23 @@ export function readWhatsAppGatewayConfig(
   };
 }
 
-export function validateWhatsAppProductionConfig(env: NodeJS.ProcessEnv = process.env): void {
-  if (env.NODE_ENV === 'production') readWhatsAppGatewayConfig(env);
+function assertWebhookOrigin(rawUrl: string, isProd: boolean): void {
+  let url: URL;
+  try {
+    url = new URL(rawUrl);
+  } catch {
+    throw new Error('WHATSAPP_WEBHOOK_URL must be a valid public http or https origin');
+  }
+  const hasCredsOrQuery =
+    Boolean(url.username) || Boolean(url.password) || Boolean(url.search) || Boolean(url.hash);
+  const badProto =
+    !['http:', 'https:'].includes(url.protocol) || (isProd && url.protocol !== 'https:');
+  if (badProto || hasCredsOrQuery || url.pathname !== '/') {
+    throw new Error('WHATSAPP_WEBHOOK_URL must be an origin; production requires https');
+  }
+}
+
+function validateWebhookUrlConfig(env: NodeJS.ProcessEnv): void {
   const webhookUrl = env.WHATSAPP_WEBHOOK_URL;
   const webhookSecret = env.WHATSAPP_WEBHOOK_SECRET;
   if (Boolean(webhookUrl) !== Boolean(webhookSecret)) {
@@ -66,21 +103,27 @@ export function validateWhatsAppProductionConfig(env: NodeJS.ProcessEnv = proces
   if (webhookSecret.length < 32) {
     throw new Error('WHATSAPP_WEBHOOK_SECRET must contain at least 32 characters');
   }
-  let url: URL;
-  try {
-    url = new URL(webhookUrl);
-  } catch {
-    throw new Error('WHATSAPP_WEBHOOK_URL must be a valid public http or https origin');
+  assertWebhookOrigin(webhookUrl, env.NODE_ENV === 'production');
+}
+
+export function validateWhatsAppProductionConfig(env: NodeJS.ProcessEnv = process.env): void {
+  if (env.NODE_ENV === 'production') {
+    const driver = resolveWhatsAppDriver(env);
+    if (driver === 'cloud-api') {
+      const hasToken = Boolean(env.WHATSAPP_CLOUD_API_ACCESS_TOKEN?.trim());
+      const hasPhone = Boolean(env.WHATSAPP_CLOUD_API_PHONE_NUMBER_ID?.trim());
+      if (!hasToken || !hasPhone) {
+        throw new Error(
+          'WHATSAPP_CLOUD_API_ACCESS_TOKEN and WHATSAPP_CLOUD_API_PHONE_NUMBER_ID are required'
+        );
+      }
+    } else if (!allowUnofficialWhatsAppInProd(env)) {
+      throw new Error(
+        'Unofficial WhatsApp drivers are disabled in production (set WHATSAPP_DRIVER=cloud-api)'
+      );
+    } else {
+      readWhatsAppGatewayConfig(env);
+    }
   }
-  if (
-    !['http:', 'https:'].includes(url.protocol) ||
-    url.username ||
-    url.password ||
-    url.pathname !== '/' ||
-    url.search ||
-    url.hash ||
-    (env.NODE_ENV === 'production' && url.protocol !== 'https:')
-  ) {
-    throw new Error('WHATSAPP_WEBHOOK_URL must be an origin; production requires https');
-  }
+  validateWebhookUrlConfig(env);
 }

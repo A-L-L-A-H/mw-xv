@@ -120,6 +120,22 @@ describe('graceful process shutdown', () => {
     await shutdown;
   });
 
+  it('invokes forceExit when close remains hung past the post-close grace window', async () => {
+    const forceExit = vi.fn();
+    let finishClose: () => void = () => undefined;
+    const closeResult = new Promise<void>((resolve) => {
+      finishClose = resolve;
+    });
+    const app = { ...target(() => closeResult), forceExit };
+    const shutdown = gracefulShutdown(app, 'SIGTERM', 10, 15);
+    await new Promise((resolve) => setTimeout(resolve, 45));
+
+    expect(app.closeConnections).toHaveBeenCalledOnce();
+    expect(forceExit).toHaveBeenCalledWith(1);
+    finishClose();
+    await shutdown;
+  });
+
   it('does not claim shutdown succeeded when Fastify close fails', async () => {
     const app = target(async () => {
       throw new Error('close failed');

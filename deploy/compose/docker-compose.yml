@@ -1,7 +1,7 @@
 # Local base stack. Run from the repository root with
 #   docker compose -f deploy/compose/docker-compose.yml up -d postgres
-# Relative paths resolve from this file's directory (deploy/compose/), so build contexts use ../..
-# to reach the repository root. Do not pass --project-directory .; it would break those contexts.
+# Standalone WhatsApp, ISP/RADIUS, and Control Plane services were extracted to sibling repositories
+# tracked in the workspace manifest (workspace.json).
 services:
   postgres:
     image: postgres:16-alpine
@@ -9,7 +9,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: moonwitness_db
     ports:
       - '127.0.0.1:5432:5432'
@@ -21,81 +21,5 @@ services:
       timeout: 5s
       retries: 10
 
-  whatsapp:
-    build:
-      context: ../..
-      dockerfile: apps/whatsapp/Dockerfile
-    container_name: moonwitness_whatsapp
-    restart: unless-stopped
-    ports:
-      - '127.0.0.1:3001:3000'
-    environment:
-      NODE_ENV: production
-      WHATSAPP_DRIVER: baileys
-      WHATSAPP_SERVICE_HOST: 0.0.0.0
-      WHATSAPP_SERVICE_PORT: 3000
-      WHATSAPP_GATEWAY_USERNAME: ${WHATSAPP_GATEWAY_USERNAME:-moonwitness}
-      WHATSAPP_GATEWAY_PASSWORD: ${WHATSAPP_GATEWAY_PASSWORD:-moonwitness}
-      WHATSAPP_BAILEYS_AUTH_DIR: /var/lib/moonwitness/whatsapp-auth
-      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/moonwitness_db}
-    volumes:
-      - whatsapp_auth_data:/var/lib/moonwitness/whatsapp-auth
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      default:
-        aliases:
-          - gowa
-          - whatsapp
-
-  radius:
-    build:
-      context: ../..
-      dockerfile: apps/isp/Dockerfile
-    container_name: moonwitness_isp
-    restart: unless-stopped
-    ports:
-      - '1812:1812/udp'
-      - '1813:1813/udp'
-      - '127.0.0.1:3002:3000'
-    environment:
-      - MW_ISP_DB_PATH=/data/isp.db
-      - MW_ISP_RADIUS_SECRET=testing123
-      - MW_INTERNAL_SECRET=${MW_INTERNAL_SECRET:-${JWT_SECRET:-}}
-      - RUST_LOG=info
-    depends_on:
-      postgres:
-        condition: service_healthy
-    volumes:
-      - isp_data:/data
-
-  control-plane:
-    build:
-      context: ../../apps/control-plane
-      dockerfile: Dockerfile
-    container_name: moonwitness-control-plane
-    restart: unless-stopped
-    ports:
-      - '127.0.0.1:3003:3003'
-    environment:
-      - MW_CONTROL_PLANE_ADDR=0.0.0.0:3003
-      - MW_CONTROL_PLANE_DB_PATH=/data/control-plane.db
-      - MW_INTERNAL_SECRET=${MW_INTERNAL_SECRET:-${JWT_SECRET:-}}
-      - DOCKER_BIN=docker
-    # The Docker socket is intentionally not mounted: it grants host-root equivalent access.
-    # Opt in explicitly with:
-    #   docker compose -f deploy/compose/docker-compose.yml -f deploy/compose/docker-compose.docker-socket.yml \
-    #     --profile docker-in-docker up control-plane-docker
-    volumes:
-      - control-plane_data:/data
-    depends_on:
-      - postgres
-      - whatsapp
-      - radius
-
 volumes:
   pgdata:
-  whatsapp_auth_data:
-  isp_data:
-  control-plane_data:

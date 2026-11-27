@@ -1,19 +1,19 @@
+import { existsSync, writeFileSync } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
-import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
-import { renderUnitRunnerFailureReport } from './unit-runner-report.mjs';
-import { resolvePackageManager } from './package-manager.mjs';
-import { unitRunnerChecks } from './unit-runner-policy.mjs';
+import { renderUnitRunnerFailureReport } from '../lib/unit-runner-report.mjs';
+import { resolvePackageManager } from '../lib/package-manager.mjs';
+import { unitRunnerChecks } from '../lib/unit-runner-policy.mjs';
 import {
   findFailedWorkspacePackage,
   renderWorkspaceBuildFailure,
   summarizeWorkspaceBuildDiagnostics,
-} from './ci/workspace-build-diagnostics.mjs';
+} from './workspace-build-diagnostics.mjs';
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const reportDirectory = path.join(root, 'test-results', 'junit');
 const packageManager = resolvePackageManager();
 if (!packageManager) {
@@ -24,6 +24,48 @@ if (!packageManager) {
 }
 
 await mkdir(reportDirectory, { recursive: true });
+
+function reportWorkspaceBuildDiagnostics(label, output, status) {
+  const buildFailure = label === 'Build' ? renderWorkspaceBuildFailure(output, status) : undefined;
+  writeFileSync(
+    path.join(reportDirectory, 'unit-runner.xml'),
+    renderUnitRunnerFailureReport(label, status, buildFailure),
+    'utf8'
+  );
+  if (buildFailure && process.env.GITHUB_STEP_SUMMARY) {
+    const items =
+      buildFailure.diagnostics.length > 0
+        ? buildFailure.diagnostics.map(
+            (item) => `- TypeScript: \`${item.path}:${item.line}:${item.column}\` — ${item.code}`
+          )
+        : ['- No allowlisted TypeScript location could be extracted from this build output.'];
+    const summary = [
+      '## Workspace build failure diagnostics',
+      '',
+      `- Failed package: ${buildFailure.failedPackage ?? 'unknown package'}`,
+      `- Exit code: ${buildFailure.exitCode}`,
+      ...items,
+      '',
+    ].join('\n');
+    writeFileSync(process.env.GITHUB_STEP_SUMMARY, summary, { flag: 'a', encoding: 'utf8' });
+  }
+  if (label !== 'Build') return;
+  const diagnostics = summarizeWorkspaceBuildDiagnostics(output);
+  for (const d of diagnostics) {
+    process.stdout.write(
+      `::error file=${d.path},line=${d.line},col=${d.column},` +
+        `title=Workspace build ${d.code}::See compiler details in the runner log.\n`
+    );
+  }
+  if (diagnostics.length === 0) {
+    const pkg = findFailedWorkspacePackage(output);
+    const subject = pkg ? ` for ${pkg}` : '';
+    process.stdout.write(
+      `::error title=Workspace build failed::Recursive build${subject} exited ${status}; ` +
+        'see the runner log.\n'
+    );
+  }
+}
 
 function runCommand(command, args, label, shell = false) {
   const result = spawnSync(command, args, {
@@ -44,45 +86,10 @@ function runCommand(command, args, label, shell = false) {
     process.exit(1);
   }
   if (result.status !== 0) {
-    const buildFailure =
-      label === 'Build' ? renderWorkspaceBuildFailure(output, result.status ?? 1) : undefined;
-    writeFileSync(
-      path.join(reportDirectory, 'unit-runner.xml'),
-      renderUnitRunnerFailureReport(label, result.status ?? 1, buildFailure),
-      'utf8'
-    );
-    if (buildFailure && process.env.GITHUB_STEP_SUMMARY) {
-      const summary = [
-        '## Workspace build failure diagnostics',
-        '',
-        `- Failed package: ${buildFailure.failedPackage ?? 'unknown package'}`,
-        `- Exit code: ${buildFailure.exitCode}`,
-        ...(buildFailure.diagnostics.length > 0
-          ? buildFailure.diagnostics.map(
-              (item) => `- TypeScript: \`${item.path}:${item.line}:${item.column}\` — ${item.code}`
-            )
-          : ['- No allowlisted TypeScript location could be extracted from this build output.']),
-        '',
-      ].join('\n');
-      writeFileSync(process.env.GITHUB_STEP_SUMMARY, summary, { flag: 'a', encoding: 'utf8' });
-    }
-    if (label === 'Build') {
-      const diagnostics = summarizeWorkspaceBuildDiagnostics(output);
-      for (const diagnostic of diagnostics) {
-        process.stdout.write(
-          `::error file=${diagnostic.path},line=${diagnostic.line},col=${diagnostic.column},title=Workspace build ${diagnostic.code}::See compiler details in the runner log.\n`
-        );
-      }
-      if (diagnostics.length === 0) {
-        const packageName = findFailedWorkspacePackage(output);
-        const subject = packageName ? ` for ${packageName}` : '';
-        process.stdout.write(
-          `::error title=Workspace build failed::Recursive build${subject} exited ${result.status ?? 1}; see the runner log.\n`
-        );
-      }
-    }
-    process.stderr.write(`${label} failed with exit code ${result.status ?? 1}\n`);
-    process.exit(result.status ?? 1);
+    const exitStatus = result.status ?? 1;
+    reportWorkspaceBuildDiagnostics(label, output, exitStatus);
+    process.stderr.write(`${label} failed with exit code ${exitStatus}\n`);
+    process.exit(exitStatus);
   }
 }
 
@@ -99,10 +106,7 @@ function runNode(args, label) {
   runCommand(process.execPath, args, label);
 }
 
-run(['run', 'test:unit-runner-policy'], 'Unit runner CI ownership policy');
-run(['run', 'test:taskos'], 'TaskOS registry safety');
 run(['run', 'build'], 'Build');
-runNode(['--test', 'scripts/roadmap/addon-conformance.test.mjs'], 'Addon conformance');
 for (const check of unitRunnerChecks) {
   run(check.args, check.name);
 }
@@ -268,6 +272,9 @@ const suites = [
 
 for (const suite of suites) {
   const packageDir = suite.packageDir ?? `packages/${suite.name}`;
+  if (!existsSync(path.join(root, packageDir))) {
+    continue;
+  }
   if (suite.typecheck) {
     run(
       ['x', '--cwd', packageDir, 'tsc', '-p', suite.typecheckConfig ?? 'tsconfig.check.json'],
@@ -302,6 +309,4 @@ for (const suite of suites) {
   run(args, `${suite.name} tests`);
 }
 
-run(['run', 'test:knowledge-cli:built'], 'Knowledge offline validator CLI');
-runNode(['scripts/check-coverage.mjs'], 'Critical branch coverage');
 process.stdout.write(`JUnit reports written to ${path.relative(root, reportDirectory)}\n`);

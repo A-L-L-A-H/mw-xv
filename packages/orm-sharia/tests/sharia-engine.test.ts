@@ -119,9 +119,41 @@ describe('Sharia Contract Validator', () => {
   });
 });
 
+type WaqfRow = {
+  id: number;
+  merkle_root: string | null;
+  merkle_trail: string | null;
+  write_uid?: number;
+};
+
+function queryWaqfRow(rows: Map<number, WaqfRow>, query: { id: number }) {
+  return {
+    async first() {
+      return rows.get(query.id) ?? null;
+    },
+    async update(patch: Record<string, unknown>) {
+      const current = rows.get(query.id);
+      if (!current) return 0;
+      rows.set(query.id, { ...current, ...patch });
+      return 1;
+    },
+  };
+}
+
+function createWaqfDbStub(seedIds: number[] = [1]) {
+  const rows = new Map<number, WaqfRow>();
+  for (const id of seedIds) rows.set(id, { id, merkle_root: null, merkle_trail: null });
+  const db = ((_table: string) => ({
+    where: (query: { id: number }) => queryWaqfRow(rows, query),
+  })) as unknown as Knex;
+  return { db, rows };
+}
+
 describe('Waqf Asset Merkle Trail', () => {
   it('computes deterministic merkle root from event trail and detects tampering on verify', async () => {
+    const { db, rows } = createWaqfDbStub([1]);
     const assetId = 1;
+    const actorUserId = 42;
     const trailInput = [
       {
         event: 'acquisition',
@@ -137,24 +169,48 @@ describe('Waqf Asset Merkle Trail', () => {
       },
     ] as const;
 
-    const appended = await appendWaqfMerkleEvent(DB_MOCK, assetId, trailInput[0]);
+    const appended = await appendWaqfMerkleEvent(db, assetId, trailInput[0], actorUserId);
     expect(appended.verified).toBe(true);
     expect(appended.trail).toHaveLength(1);
     expect(appended.trail[0].hash).toHaveLength(64);
+    expect(rows.get(assetId)?.write_uid).toBe(actorUserId);
 
-    const appended2 = await appendWaqfMerkleEvent(DB_MOCK, assetId, trailInput[1]);
+    const appended2 = await appendWaqfMerkleEvent(db, assetId, trailInput[1], actorUserId);
     expect(appended2.trail).toHaveLength(2);
     expect(appended2.merkleRoot).toHaveLength(64);
 
-    const verified = await computeWaqfMerkle(DB_MOCK, { assetId, trail: appended2.trail });
+    const verified = await computeWaqfMerkle(db, { assetId, trail: appended2.trail });
     expect(verified.verified).toBe(true);
     expect(verified.merkleRoot).toBe(appended2.merkleRoot);
 
-    const tampered = await computeWaqfMerkle(DB_MOCK, {
-      assetId,
-      trail: appended2.trail.map((node, idx) => (idx === 0 ? { ...node, valueMinor: 999 } : node)),
-    });
+    const tamperedNodes = appended2.trail.map((node, idx) =>
+      idx === 0 ? { ...node, valueMinor: 999 } : node
+    );
+    const tampered = await computeWaqfMerkle(db, { assetId, trail: tamperedNodes });
     expect(tampered.verified).toBe(false);
     expect(tampered.merkleRoot).not.toBe(appended2.merkleRoot);
+  });
+
+  it('fails closed when the waqf asset does not exist or has no merkle root', async () => {
+    const { db } = createWaqfDbStub([1]);
+    const missing = await computeWaqfMerkle(db, { assetId: 999, trail: [] });
+    expect(missing.verified).toBe(false);
+
+    const unsealed = await computeWaqfMerkle(db, { assetId: 1, trail: [] });
+    expect(unsealed.verified).toBe(false);
+
+    await expect(
+      appendWaqfMerkleEvent(
+        db,
+        999,
+        {
+          event: 'acquisition',
+          timestamp: '2024-01-01T00:00:00.000Z',
+          valueMinor: 100,
+          description: 'missing',
+        },
+        42
+      )
+    ).rejects.toThrow('WaqfAsset 999 not found');
   });
 });

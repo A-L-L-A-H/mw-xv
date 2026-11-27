@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
+  allowUnofficialWhatsAppInProd,
   readWhatsAppGatewayConfig,
   validateWhatsAppProductionConfig,
 } from '../src/whatsapp/config.js';
@@ -84,6 +85,22 @@ describe('WhatsApp gateway configuration', () => {
         ...base,
         WHATSAPP_WEBHOOK_URL: 'https://api.example.test',
         WHATSAPP_WEBHOOK_SECRET: 'a'.repeat(40),
+      })
+    ).not.toThrow();
+
+    expect(allowUnofficialWhatsAppInProd({})).toBe(true);
+    expect(() =>
+      validateWhatsAppProductionConfig({
+        ...base,
+        WHATSAPP_ALLOW_UNOFFICIAL_IN_PROD: 'false',
+      })
+    ).toThrow('Unofficial WhatsApp drivers are disabled');
+    expect(() =>
+      validateWhatsAppProductionConfig({
+        NODE_ENV: 'production',
+        WHATSAPP_DRIVER: 'cloud-api',
+        WHATSAPP_CLOUD_API_ACCESS_TOKEN: 'meta-token',
+        WHATSAPP_CLOUD_API_PHONE_NUMBER_ID: '123456',
       })
     ).not.toThrow();
   });

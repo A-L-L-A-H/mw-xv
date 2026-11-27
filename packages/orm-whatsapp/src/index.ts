@@ -60,7 +60,19 @@ export {
   createAttachmentScanner,
 } from './runtime/clamav-scanner.js';
 export { GowaError, gowaRequest, gowaBinary, gowaOriginPath } from './runtime/gowa-client.js';
-export { whatsappDriver, baileysAuthDir, type WhatsAppDriver } from './runtime/config.js';
+export {
+  whatsappDriver,
+  baileysAuthDir,
+  allowUnofficialWhatsAppInProd,
+  readWhatsAppCloudApiConfig,
+  type WhatsAppDriver,
+  type WhatsAppCloudApiConfig,
+} from './runtime/config.js';
+export {
+  CUSTOMER_SERVICE_WINDOW_MS,
+  isWithinCustomerServiceWindow,
+  cloudApiRequest,
+} from './runtime/cloud-api-client.js';
 export {
   BaileysGatewayManager,
   type BaileysSessionLifecycleStatus,
