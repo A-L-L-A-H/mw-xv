@@ -79,7 +79,6 @@ export default [
       '**/node_modules/**',
       '.qoder-tmp/**',
       'services/**',
-      'apps/desktop/src-tauri/target/**',
       '.claude/**',
       'vendor/**',
       'pnpm-lock.yaml',

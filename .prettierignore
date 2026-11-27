@@ -1,7 +1,6 @@
 node_modules
 dist
 apps/board/.next*
-apps/isp/target
 *.tsbuildinfo
 *.vitest
 .vitest

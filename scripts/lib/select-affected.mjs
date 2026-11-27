@@ -70,7 +70,7 @@ export function expandWorkspaceDependencies(changedNames, projects) {
 export function ciProjectsForAffectedPackages(affectedPackages, changedFiles = []) {
   const affected = new Set(affectedPackages);
   const projects = new Set();
-  const uiPackages = new Set(['@moonwitness/assets', '@moonwitness/ui', '@moonwitness/ui-catalog']);
+  const uiPackages = new Set(['@moonwitness/assets', '@moonwitness/ui']);
   const specializedPackages = new Set([...uiPackages, '@moonwitness/api', '@moonwitness/board']);
   if (affected.has('@moonwitness/board')) {
     projects.add('quality');

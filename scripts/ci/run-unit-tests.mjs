@@ -237,18 +237,6 @@ const suites = [
   { name: 'orm-sim', packageName: '@moonwitness/orm-sim', typecheck: true },
   { name: 'orm-subscription', packageName: '@moonwitness/orm-subscription' },
   {
-    name: 'agent-observability',
-    packageName: '@moonwitness/agent-observability',
-    packageDir: 'apps/agent-observability',
-    typecheck: true,
-  },
-  {
-    name: 'whatsapp',
-    packageName: '@moonwitness/whatsapp',
-    packageDir: 'apps/whatsapp',
-    typecheck: true,
-  },
-  {
     name: 'ai-mcp',
     packageName: '@moonwitness/ai-mcp',
     typecheck: true,

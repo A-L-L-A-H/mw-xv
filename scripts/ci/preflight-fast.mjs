@@ -169,7 +169,7 @@ export function mapChangedFilesToPackages(changedFiles, workspaceProjects) {
 }
 
 /**
- * Runs the 3 fast AST/source boundary gates across `apps/api/src`, `apps/board/src`, and `apps/desktop/src`.
+ * Runs the fast AST/source boundary gates across `apps/api/src` and `apps/board/src`.
  */
 export async function runBoundaryGates(workspaceRoot = defaultRoot) {
   const apiDir = path.join(workspaceRoot, 'apps/api/src');

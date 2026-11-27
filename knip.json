@@ -8,15 +8,7 @@
     "apps/board": {
       "entry": ["src/**/*.tsx", "src/**/*.ts"]
     },
-    "apps/ui-catalog": {
-      "entry": ["src/**/*.tsx"]
-    },
-    "apps/desktop": {},
-    "apps/api": {},
-    "apps/docs": {},
-    "apps/control-plane": {},
-    "apps/isp": {},
-    "apps/whatsapp": {}
+    "apps/api": {}
   },
   "rules": {
     "files": "warn",

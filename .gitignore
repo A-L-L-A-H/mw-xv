@@ -20,10 +20,6 @@ apps/board/next-env.d.ts
 playwright-report/
 .playwright-mcp/
 .qoder-tmp/
-apps/desktop/src-tauri/resources/
-apps/desktop/src-tauri/target/
-apps/desktop/src-tauri/gen/
-apps/desktop/dist-board/
 .DS_Store
 eslint-output.txt
 eslint-output.json
@@ -32,7 +28,6 @@ depcruise-report.txt
 .plan/.brain/
 .plan/*/.leases.local.json
 gitleaks-report.json
-apps/control-plane/control-plane
 .next/
 .next*/
 .next-*
