@@ -209,8 +209,7 @@
   },
   "workspaces": [
     "apps/*",
-    "packages/*",
-    "../mw-taskos"
+    "packages/*"
   ],
   "overrides": {
     "fast-jwt": "6.3.4",

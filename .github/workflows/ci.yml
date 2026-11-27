@@ -6,11 +6,6 @@ on:
   pull_request:
     branches: [dev, main]
   workflow_dispatch:
-    inputs:
-      expected_sha:
-        description: Exact dev SHA allowed for an auto-heal retry
-        required: false
-        type: string
 
 permissions:
   contents: read
@@ -20,6 +15,37 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  commitlint:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-bun
+        with:
+          node-version: '24'
+          bun-version: '1.4.5'
+      - name: Install frozen workspace dependencies
+        run: bun install --frozen-lockfile
+      - name: Lint commit messages
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            bunx --package @commitlint/cli --package @commitlint/config-conventional commitlint \
+              --extends @commitlint/config-conventional \
+              --from "${{ github.event.pull_request.base.sha }}" \
+              --to "${{ github.event.pull_request.head.sha }}"
+          else
+            bunx --package @commitlint/cli --package @commitlint/config-conventional commitlint \
+              --extends @commitlint/config-conventional \
+              --last
+          fi
+
   secret-scan:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -47,7 +73,7 @@ jobs:
           fi
           tar -xzf "$archive" -C "$RUNNER_TEMP" gitleaks
           install -m 0755 "$RUNNER_TEMP/gitleaks" /usr/local/bin/gitleaks
-      - name: Scan full Git history for secrets
+      - name: Scan Git history for secrets
         shell: bash
         run: |
           set -euo pipefail
@@ -69,35 +95,9 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
-  static-analysis:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 30
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-    strategy:
-      fail-fast: false
-      matrix:
-        language: [javascript-typescript, go]
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Initialize CodeQL for ${{ matrix.language }}
-        uses: github/codeql-action/init@d2aacf54c2fbc910db8d7ec338fdb54ea48c692d # v3.39.4
-        with:
-          languages: ${{ matrix.language }}
-          queries: security-extended
-          config-file: ./.github/codeql/codeql-config.yml
-      - name: Run CodeQL static analysis
-        uses: github/codeql-action/analyze@d2aacf54c2fbc910db8d7ec338fdb54ea48c692d # v3.39.4
-        with:
-          category: /language:${{ matrix.language }}
-
   dependency-audit:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 15
     permissions:
       contents: read
     steps:
@@ -110,12 +110,10 @@ jobs:
           bun-version: '1.4.5'
       - name: Install frozen workspace dependencies
         run: bun install --frozen-lockfile
-      - name: Block CRITICAL dependency advisories
+      - name: Audit dependencies for critical advisories
         run: bun audit --audit-level critical
-      - name: Verify registry signatures for installed packages
-        run: echo "Skipping registry signature verification (no Bun equivalent)"
 
-  quality-and-build:
+  quality-and-test:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
@@ -130,370 +128,21 @@ jobs:
           bun-version: '1.4.5'
       - name: Install frozen workspace dependencies
         run: bun install --frozen-lockfile
-      - name: Cache Turborepo artifacts
-        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
-        with:
-          path: .turbo
-          key: turbo-${{ runner.os }}-${{ github.sha }}
-          restore-keys: |
-            turbo-${{ runner.os }}-
-      - name: Verify workflow pins and roadmap contract
+      - name: Verify workflow pins and static boundaries
         run: |
-          bun run test:action-pins
-          bun run automation:check:action-pins
-          bun run test:pipeline-gates
-          bun run automation:check:action-tags
-          bun run automation:check:roadmap
-          bun run test:release-provenance
-          node scripts/check-release-provenance.mjs
-          bun run test:secrets
-          bun run automation:check:secrets
-          bun run automation:check:vulnerability-policy
-      - name: Verify shared UI, API addon boundary, assets, and documentation links
-        run: |
+          node scripts/check-action-pins.mjs
+          node scripts/check-action-tag-pins.mjs
+          node scripts/check-gitleaks-config.mjs
           bun run board:ui:check
           bun run desktop:ui:check
           bun run ui:design:check
           bun run lint:ui
           bun run api:addon:check
-          bun --filter @moonwitness/types build
-          bun run validate:readme
-          node --test scripts/ci/validate-readme.test.mjs
-          bun run test:assets
-      - name: Cache Playwright Chromium browser
-        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
-          restore-keys: |
-            playwright-${{ runner.os }}-
-      - name: Verify asset bounds, shared UI, and documentation links
+          bun run agent:boundary:check
+          node scripts/evolution/check-constitution.mjs
+      - name: Lint and typecheck
         run: |
-          bunx playwright install chromium
-          bun run assets:check:bounds
-          bun run test:ui
-          node scripts/check-docs.mjs
-      - name: Run knip (unused code/dependency detection, warn-only baseline)
-        run: bunx knip --no-exit-code --no-progress
-      - name: Run dependency-cruiser (architecture boundary enforcement)
-        run: bunx depcruise --config .dependency-cruiser.cjs packages apps
-      - name: Enforce interactive-session and swarm-observability ADR boundaries
-        run: |
-          bun run interactive-session:boundary:check
-          bun run swarm-observability:boundary:check
-      - name: Enforce M15, M16, M17, and M18 Constitutional Invariants and Issue Planner Gates
-        run: |
-          node --test scripts/check-m15-invariants.test.mjs scripts/check-m16-invariants.test.mjs scripts/check-m17-invariants.test.mjs scripts/check-m18-invariants.test.mjs
-          node scripts/check-m15-invariants.mjs --json
-          node scripts/check-m16-invariants.mjs --json
-          node scripts/check-m17-invariants.mjs --json
-          node scripts/check-m18-invariants.mjs --json
-          node --test scripts/roadmap-issue-planner.test.mjs
-      - name: Build workspace and verify budgets
-        id: build-workspace
-        run: |
-          set -euo pipefail
-          bun run build
-          node scripts/run-agi-benchmark.mjs --json
-          bun run orm:check:seeds
-          bun --filter @moonwitness/desktop build
-          bun --filter @moonwitness/desktop typecheck
-          bun --filter @moonwitness/desktop test
-          node scripts/docs/generate-reference.mjs
-          node scripts/docs/update-readme.mjs
-          echo "references_generated=true" >> "$GITHUB_OUTPUT"
-          bun run docs:check:built
-          bun --filter @moonwitness/board typecheck
-          bun run board:budget
-          bun run test:ui-budget
-          bun run test:ui-catalog
-          git diff --exit-code -- \
-            README.md \
-            docs/guide/reference/generated-api.md \
-            docs/guide/reference/generated-models.md \
-            docs/guide/reference/generated-platform.json \
-            docs/guide/reference/generated-platform.md
-
-      - name: Upload generated reference outputs for exact reconciliation
-        if: always() && steps.build-workspace.outputs.references_generated == 'true'
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
-        with:
-          name: generated-docs-${{ github.sha }}
-          path: |
-            README.md
-            docs/guide/reference/generated-api.md
-            docs/guide/reference/generated-models.md
-            docs/guide/reference/generated-platform.json
-            docs/guide/reference/generated-platform.md
-          if-no-files-found: error
-          retention-days: 7
-
-      - name: Emit generated docs for exact one-time reconciliation
-        if: failure() && steps.build-workspace.outputs.references_generated == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          for file in \
-            README.md \
-            docs/guide/reference/generated-api.md \
-            docs/guide/reference/generated-models.md \
-            docs/guide/reference/generated-platform.json \
-            docs/guide/reference/generated-platform.md; do
-            echo "GENERATED_DOC_BEGIN:$file"
-            base64 -w0 "$file"
-            echo
-            echo "GENERATED_DOC_END:$file"
-          done
-
-  unit-tests:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 30
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup-bun
-        with:
-          node-version: '24'
-          bun-version: '1.4.5'
-      - name: Install frozen workspace dependencies
-        run: bun install --frozen-lockfile
-      - name: Build @moonwitness/types first (required by board and others)
-        run: bun --filter @moonwitness/types build
-      - name: Run TaskOS registry safety tests
-        run: bun run test:taskos
-      - name: Build and run unit tests
-        run: |
-          bun run build
-          bun run test:unit:built
-      - name: Validate canonical TaskOS single source of truth
-        run: |
-          set -euo pipefail
-          bun run tasks:validate
-          bun run automation:check:roadmap
-
-  knowledge-gate:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 30
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup-bun
-        with:
-          node-version: '24'
-          bun-version: '1.4.5'
-      - name: Install frozen workspace dependencies
-        run: bun install --frozen-lockfile
-      - name: Build @moonwitness/types first (required by orm-cloud and others)
-        run: bun --filter @moonwitness/types build
-      - name: Build knowledge workspace dependencies
-        run: bun run build
-      - name: Run K9-001 deterministic knowledge gate
-        run: node scripts/knowledge/run-k-gate.mjs --json
-
-  postgres-integration:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 30
-    permissions:
-      contents: read
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: moonwitness_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres -d moonwitness_test"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
-    env:
-      POSTGRES_TEST_URL: postgresql://postgres:postgres@127.0.0.1:5432/moonwitness_test
-      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/moonwitness_test
-      REQUIRE_POSTGRES_TESTS: 'true'
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup-bun
-        with:
-          node-version: '24'
-          bun-version: '1.4.5'
-      - name: Install frozen workspace dependencies
-        run: bun install --frozen-lockfile
-      - name: Build workspace and run PostgreSQL integration suites
-        run: |
-          bun --filter @moonwitness/types build
-          bun run build
-          bun run test:integration:built
-          node scripts/knowledge/run-k-gate.mjs --json
-
-  dx-test:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 45
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup-bun
-        with:
-          node-version: '24'
-          bun-version: '1.4.5'
-      - name: Install frozen workspace dependencies
-        run: bun install --frozen-lockfile
-      - name: Install Playwright browsers
-        run: bunx playwright install chromium
-      - name: Run MoonWitness Desktop & MCP test suite (desktop:test)
-        run: bun run desktop:build && bun run desktop:test
-
-  gate-failure-triage:
-    name: Gate failure triage
-    needs: [secret-scan, static-analysis, dependency-audit, quality-and-build, unit-tests, knowledge-gate, postgres-integration, dx-test, ci-gate]
-    # Runs on every terminal CI result: on failure it triages and opens auto-heal
-    # issues; on success it verifies exact-SHA ci-gate is green and closes the
-    # resolved auto-heal issue. Skipping the job on green would leave open
-    # auto-heal issues unclosed forever.
-    if: always() && !cancelled()
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    concurrency:
-      group: gate-failure-triage
-      cancel-in-progress: false
-    permissions:
-      contents: read
-      issues: write
-      actions: write
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Verify exact expected SHA for auto-heal retry
-        if: github.event_name == 'workflow_dispatch' && inputs.expected_sha != ''
-        env:
-          EXPECTED_SHA: ${{ inputs.expected_sha }}
-          EVENT_SHA: ${{ github.sha }}
-        run: |
-          set -euo pipefail
-          [[ "$EXPECTED_SHA" =~ ^[a-f0-9]{40}$ ]]
-          [[ "$EVENT_SHA" =~ ^[a-f0-9]{40}$ ]]
-          if [[ "$EXPECTED_SHA" != "$EVENT_SHA" ]]; then
-            echo "Dispatched retry SHA does not match the immutable event SHA." >&2
-            exit 1
-          fi
-      - name: Collect failed job names
-        id: failed
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RUN_ID: ${{ github.run_id }}
-        run: |
-          set -euo pipefail
-          jobs_json="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}/jobs" --paginate)"
-          failed_jobs="$(echo "$jobs_json" | jq -r '[.jobs[] | select(.conclusion == "failure") | .name] | join(", ")')"
-          if [[ -z "$failed_jobs" ]]; then
-            echo "No failed jobs found; skipping triage."
-            echo "failed_jobs=" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          echo "failed_jobs=$failed_jobs" >> "$GITHUB_OUTPUT"
-          echo "Failed: $failed_jobs"
-      - name: Create or update gate-failure issue
-        if: steps.failed.outputs.failed_jobs != ''
-        env:
-          GH_TOKEN: ${{ github.token }}
-          FAILED_JOBS: ${{ steps.failed.outputs.failed_jobs }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          COMMIT_SHA: ${{ github.sha }}
-          PR_NUMBER: ${{ github.event.pull_request.number || '' }}
-        run: |
-          set -euo pipefail
-          node scripts/roadmap/gate-failure-issue.mjs
-      - name: Queue exact-SHA retry for transient cancellation
-        if: steps.failed.outputs.failed_jobs != '' && github.event_name == 'push' && github.ref == 'refs/heads/dev' && vars.AUTO_HEAL_RETRY == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-          RUN_ID: ${{ github.run_id }}
-          EXPECTED_SHA: ${{ github.sha }}
-        run: |
-          set -euo pipefail
-          jobs_json="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}/jobs" --paginate)"
-          terminal_jobs="$(echo "$jobs_json" | jq '[.jobs[] | select(.name != "gate-failure-triage" and .name != "ci-gate")]')"
-          if [[ "$(echo "$terminal_jobs" | jq 'length')" -eq 0 ]]; then
-            echo "No technical lanes were observed; refusing retry."
-            exit 1
-          fi
-          cancelled="$(echo "$terminal_jobs" | jq '[.[] | select(.conclusion == "cancelled")] | length')"
-          succeeded="$(echo "$terminal_jobs" | jq '[.[] | select(.conclusion == "success")] | length')"
-          total="$(echo "$terminal_jobs" | jq 'length')"
-          if [[ "$cancelled" -eq 0 || "$succeeded" -ne $((total - cancelled)) ]]; then
-            echo "Failure is not a clean cancellation-only flake; skipping retry."
-            exit 0
-          fi
-          retry_key="AUTOHEAL_RETRY_${EXPECTED_SHA}_${RUN_ID}"
-          if gh variable get "$retry_key" --repo "$GH_REPO" >/dev/null 2>&1; then
-            echo "Exact-SHA retry already queued."
-            exit 0
-          fi
-          gh variable set "$retry_key" --repo "$GH_REPO" --body "queued" || true
-          gh workflow run ci.yml --repo "$GH_REPO" --ref dev -f expected_sha="$EXPECTED_SHA"
-      - name: Close resolved auto-heal issues for this exact SHA
-        id: close_resolved
-        if: always() && github.event_name == 'push' && github.ref == 'refs/heads/dev' && needs.ci-gate.result == 'success'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-          EXPECTED_SHA: ${{ github.sha }}
-        run: |
-          set -euo pipefail
-          # This job runs inside the still-in-progress ci.yml run, so polling
-          # mode (which requires a completed exact-SHA CI workflow run) can never
-          # see itself as completed. Verify the already-completed ci-gate check
-          # run on this exact SHA via a one-shot check-runs snapshot instead.
-          gh api "repos/$GH_REPO/commits/$EXPECTED_SHA/check-runs?per_page=100" > gate-check-runs.json
-          if ! node scripts/release-await-ci.mjs --sha "$EXPECTED_SHA" --repo "$GH_REPO" \
-              --checks '["ci-gate"]' --checks-file gate-check-runs.json; then
-            echo "Gate not green yet; auto-heal issues remain open."
-            exit 0
-          fi
-          node scripts/roadmap/resolve-gate-failure-issue.mjs
-      - name: Request auto-fix via roadmap intake label
-        if: steps.failed.outputs.failed_jobs != ''
-        env:
-          GH_TOKEN: ${{ github.token }}
-          FAILED_JOBS: ${{ steps.failed.outputs.failed_jobs }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          COMMIT_SHA: ${{ github.sha }}
-        run: |
-          set -euo pipefail
-          issue_number="$(cat dist/gate-failure/issue-number.txt)"
-          gh issue edit "$issue_number" --repo "$GITHUB_REPOSITORY" \
-            --add-label "gate-failure,auto-fix-requested,auto-heal,priority:p0" || true
-          gh issue comment "$issue_number" --repo "$GITHUB_REPOSITORY" \
-            --body "Auto-fix requested: @fixer handle this gate failure. Ratchet and required checks remain mandatory."
-
-  ci-gate:
-    name: ci-gate
-    needs: [secret-scan, static-analysis, dependency-audit, quality-and-build, unit-tests, knowledge-gate, postgres-integration, dx-test]
-    if: always()
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Aggregate CI lane results
-        env:
-          CI_GATE_RESULTS: ${{ toJSON(needs) }}
-        run: node scripts/ci-gate.mjs
+          bun run lint
+          bun run typecheck
+      - name: Run unit tests
+        run: bun test

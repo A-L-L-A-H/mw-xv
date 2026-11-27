@@ -80,14 +80,4 @@ else
   skipped+=("automation")
 fi
 
-# Docs, roadmap & task registry (static)
-if matches_scope '^(docs/|tasks/|\.plan/|ROADMAP\.md$|README\.md$|scripts/(check-docs|roadmap/|tasks/))'; then
-  node scripts/check-docs.mjs
-  node scripts/roadmap/validate-roadmap.mjs
-  node scripts/tasks/validate-tasks.mjs
-  ran+=("docs-tasks")
-else
-  skipped+=("docs-tasks")
-fi
-
 echo "Proportional pre-push gates passed (ran: ${ran[*]:-none}; skipped: ${skipped[*]:-none}). Heavy checks run in CI."

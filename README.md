@@ -29,7 +29,7 @@ bun run verify
 
 ## Notes
 
-The README deliberately keeps only the maintained summary. The previous long-form guide is archived at [`docs/guide/reference/readme-legacy-2026-11.md`](docs/guide/reference/readme-legacy-2026-11.md); the developer guide remains at [`docs/guide/index.md`](docs/guide/index.md). The generated block below is maintained by `bun run docs:generate`; do not edit it by hand.
+The README deliberately keeps only the maintained summary. Run `bun run preflight:fast` for fast local static boundary checks before pushing.
 
 ---
 

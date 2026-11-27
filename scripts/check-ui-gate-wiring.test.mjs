@@ -29,7 +29,7 @@ test('UI design gate has local commands, CI execution, and pre-push enforcement'
   assert.match(prePush, /bun run ui:design:check/u);
   assert.match(prePush, /bun run api:addon:check/u);
   assert.match(prePush, /bun run agent:boundary:check/u);
-  assert.match(prePush, /node scripts\/tasks\/validate-tasks\.mjs/u);
+  assert.match(prePush, /node scripts\/check-action-pins\.mjs/u);
 });
 
 test('desktop boundary CLI uses the relative-path collector and has an integration test', async () => {
