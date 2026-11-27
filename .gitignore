@@ -33,3 +33,7 @@ depcruise-report.txt
 .plan/*/.leases.local.json
 gitleaks-report.json
 apps/control-plane/control-plane
+.next/
+.next*/
+.next-*
+
