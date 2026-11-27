@@ -288,6 +288,12 @@ export {
   type UsageThresholdAlert,
 } from './usage-metering.js';
 export {
+  PaasBillingBridge,
+  type PaasBillingBridgeOptions,
+  type PaasTenantBillingReport,
+} from './paas-billing-bridge.js';
+
+export {
   HA_DRILL_RUNBOOK,
   runDeterministicHaDrill,
   runMeshHaFailoverDrill,

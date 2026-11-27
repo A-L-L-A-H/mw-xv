@@ -1,0 +1,248 @@
+{
+  "schema_version": "1.0.0",
+  "plan_id": "sovereign-empire-v2",
+  "wave_id": "W8",
+  "title": "Wave 8 — Epistemic AI & Knowledge Memory",
+  "tasks": [
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v2:W8/T46",
+      "code": "T46",
+      "kind": "task",
+      "title": "Epistemic Tool Registry & Claim Verifier",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "packages/knowledge/src/verifier.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [],
+        "adr_files": [
+          ".plan/sovereign-empire-v2/ADR-001-sovereign-empire-v2.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --version",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Verify T46: Epistemic Tool Registry & Claim Verifier delivers clean TypeScript implementation"
+        ]
+      },
+      "projections": {
+        "taskos_code": "T46"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v2:W8/T47",
+      "code": "T47",
+      "kind": "task",
+      "title": "Corpus Semantic Search & Embedding Vector",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "packages/corpus/src/search.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [],
+        "adr_files": [
+          ".plan/sovereign-empire-v2/ADR-001-sovereign-empire-v2.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --version",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Verify T47: Corpus Semantic Search & Embedding Vector delivers clean TypeScript implementation"
+        ]
+      },
+      "projections": {
+        "taskos_code": "T47"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v2:W8/T48",
+      "code": "T48",
+      "kind": "task",
+      "title": "Lore Provenance & Traceability Ledger",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "packages/knowledge/src/provenance.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [],
+        "adr_files": [
+          ".plan/sovereign-empire-v2/ADR-001-sovereign-empire-v2.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --version",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Verify T48: Lore Provenance & Traceability Ledger delivers clean TypeScript implementation"
+        ]
+      },
+      "projections": {
+        "taskos_code": "T48"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v2:W8/T49",
+      "code": "T49",
+      "kind": "task",
+      "title": "TaskOS Epistemic Knowledge Bridge",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "packages/plan-taskos/src/adapters/knowledge.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [],
+        "adr_files": [
+          ".plan/sovereign-empire-v2/ADR-001-sovereign-empire-v2.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --version",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Verify T49: TaskOS Epistemic Knowledge Bridge delivers clean TypeScript implementation"
+        ]
+      },
+      "projections": {
+        "taskos_code": "T49"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v2:W8/T50",
+      "code": "T50",
+      "kind": "task",
+      "title": "AI Model Quota Guard & Watermark Monitor",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "packages/ai-runtime/src/quota-guard.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [],
+        "adr_files": [
+          ".plan/sovereign-empire-v2/ADR-001-sovereign-empire-v2.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --version",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Verify T50: AI Model Quota Guard & Watermark Monitor delivers clean TypeScript implementation"
+        ]
+      },
+      "projections": {
+        "taskos_code": "T50"
+      }
+    }
+  ]
+}

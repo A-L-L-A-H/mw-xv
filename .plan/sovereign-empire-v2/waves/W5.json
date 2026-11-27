@@ -1,0 +1,344 @@
+{
+  "schema_version": "1.0.0",
+  "plan_id": "sovereign-empire-v2",
+  "wave_id": "W5",
+  "title": "Wave 5 — Order-to-Cash & Sharia Mizan Ledger",
+  "tasks": [
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v2:W5/T29",
+      "code": "T29",
+      "kind": "task",
+      "title": "ISP Order-to-Cash Double Entry Bridge",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "packages/orm-isp/src/ledger-revenue-bridge.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [],
+        "adr_files": [
+          ".plan/sovereign-empire-v2/ADR-001-sovereign-empire-v2.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --version",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Verify T29: ISP Order-to-Cash Double Entry Bridge delivers clean TypeScript implementation"
+        ]
+      },
+      "projections": {
+        "taskos_code": "T29"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v2:W5/T30",
+      "code": "T30",
+      "kind": "task",
+      "title": "Sharia Mizan Ledger & 2.5% Zakat Engine",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "packages/orm-sharia/src/sharia-engine.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [],
+        "adr_files": [
+          ".plan/sovereign-empire-v2/ADR-001-sovereign-empire-v2.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --version",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Verify T30: Sharia Mizan Ledger & 2.5% Zakat Engine delivers clean TypeScript implementation"
+        ]
+      },
+      "projections": {
+        "taskos_code": "T30"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v2:W5/T31",
+      "code": "T31",
+      "kind": "task",
+      "title": "HTML Invoice Renderer & Formatting",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "packages/orm-isp/src/invoice-renderer.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [],
+        "adr_files": [
+          ".plan/sovereign-empire-v2/ADR-001-sovereign-empire-v2.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --version",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Verify T31: HTML Invoice Renderer & Formatting delivers clean TypeScript implementation"
+        ]
+      },
+      "projections": {
+        "taskos_code": "T31"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v2:W5/T32",
+      "code": "T32",
+      "kind": "task",
+      "title": "Customer Billing Portal Static Asset View",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "packages/orm-isp/src/views.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [],
+        "adr_files": [
+          ".plan/sovereign-empire-v2/ADR-001-sovereign-empire-v2.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --version",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Verify T32: Customer Billing Portal Static Asset View delivers clean TypeScript implementation"
+        ]
+      },
+      "projections": {
+        "taskos_code": "T32"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v2:W5/T33",
+      "code": "T33",
+      "kind": "task",
+      "title": "General Ledger Balancing Audit Invariant",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "packages/orm-accounting/src/order-to-cash-bridge.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [],
+        "adr_files": [
+          ".plan/sovereign-empire-v2/ADR-001-sovereign-empire-v2.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --version",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Verify T33: General Ledger Balancing Audit Invariant delivers clean TypeScript implementation"
+        ]
+      },
+      "projections": {
+        "taskos_code": "T33"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v2:W5/T34",
+      "code": "T34",
+      "kind": "task",
+      "title": "Subscription Invoice Aggregation & Metering",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "packages/orm-isp/src/metering.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [],
+        "adr_files": [
+          ".plan/sovereign-empire-v2/ADR-001-sovereign-empire-v2.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --version",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Verify T34: Subscription Invoice Aggregation & Metering delivers clean TypeScript implementation"
+        ]
+      },
+      "projections": {
+        "taskos_code": "T34"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v2:W5/T35",
+      "code": "T35",
+      "kind": "task",
+      "title": "PPN Tax Calculation & Withholding Ledger",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "packages/orm-accounting/src/tax.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [],
+        "adr_files": [
+          ".plan/sovereign-empire-v2/ADR-001-sovereign-empire-v2.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --version",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Verify T35: PPN Tax Calculation & Withholding Ledger delivers clean TypeScript implementation"
+        ]
+      },
+      "projections": {
+        "taskos_code": "T35"
+      }
+    }
+  ]
+}

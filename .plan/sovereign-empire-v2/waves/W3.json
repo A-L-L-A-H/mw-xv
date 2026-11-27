@@ -1,0 +1,392 @@
+{
+  "schema_version": "1.0.0",
+  "plan_id": "sovereign-empire-v2",
+  "wave_id": "W3",
+  "title": "Wave 3 — PlanTaskOS Engine & Workgraph",
+  "tasks": [
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v2:W3/T14",
+      "code": "T14",
+      "kind": "task",
+      "title": "PlanTaskOS Cognitive Workgraph Engine",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "packages/plan-taskos/src/core/workgraph.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [],
+        "adr_files": [
+          ".plan/sovereign-empire-v2/ADR-001-sovereign-empire-v2.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --version",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Verify T14: PlanTaskOS Cognitive Workgraph Engine delivers clean TypeScript implementation"
+        ]
+      },
+      "projections": {
+        "taskos_code": "T14"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v2:W3/T15",
+      "code": "T15",
+      "kind": "task",
+      "title": "Merkle DAG Proof-Carrying Completion",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "packages/plan-taskos/src/core/prover.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [],
+        "adr_files": [
+          ".plan/sovereign-empire-v2/ADR-001-sovereign-empire-v2.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --version",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Verify T15: Merkle DAG Proof-Carrying Completion delivers clean TypeScript implementation"
+        ]
+      },
+      "projections": {
+        "taskos_code": "T15"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v2:W3/T16",
+      "code": "T16",
+      "kind": "task",
+      "title": "SQLite Cognitive Brain Memory Layer",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "packages/plan-taskos/src/brain/sqlite.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [],
+        "adr_files": [
+          ".plan/sovereign-empire-v2/ADR-001-sovereign-empire-v2.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --version",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Verify T16: SQLite Cognitive Brain Memory Layer delivers clean TypeScript implementation"
+        ]
+      },
+      "projections": {
+        "taskos_code": "T16"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v2:W3/T17",
+      "code": "T17",
+      "kind": "task",
+      "title": "PlanTaskOS Multi-Plane Projection Engine",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "packages/plan-taskos/src/adapters/markdown.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [],
+        "adr_files": [
+          ".plan/sovereign-empire-v2/ADR-001-sovereign-empire-v2.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --version",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Verify T17: PlanTaskOS Multi-Plane Projection Engine delivers clean TypeScript implementation"
+        ]
+      },
+      "projections": {
+        "taskos_code": "T17"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v2:W3/T18",
+      "code": "T18",
+      "kind": "task",
+      "title": "TaskOS CLI & Stdio MCP Server",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "packages/plan-taskos/src/cli.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [],
+        "adr_files": [
+          ".plan/sovereign-empire-v2/ADR-001-sovereign-empire-v2.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --version",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Verify T18: TaskOS CLI & Stdio MCP Server delivers clean TypeScript implementation"
+        ]
+      },
+      "projections": {
+        "taskos_code": "T18"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v2:W3/T19",
+      "code": "T19",
+      "kind": "task",
+      "title": "CI Plan Freshness Check Script",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "scripts/ci/check-plan-freshness.mjs"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [],
+        "adr_files": [
+          ".plan/sovereign-empire-v2/ADR-001-sovereign-empire-v2.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --version",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Verify T19: CI Plan Freshness Check Script delivers clean TypeScript implementation"
+        ]
+      },
+      "projections": {
+        "taskos_code": "T19"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v2:W3/T20",
+      "code": "T20",
+      "kind": "task",
+      "title": "Plan Schema Linter & Cycle Detector",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "packages/plan-taskos/src/core/linter.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [],
+        "adr_files": [
+          ".plan/sovereign-empire-v2/ADR-001-sovereign-empire-v2.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --version",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Verify T20: Plan Schema Linter & Cycle Detector delivers clean TypeScript implementation"
+        ]
+      },
+      "projections": {
+        "taskos_code": "T20"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v2:W3/T21",
+      "code": "T21",
+      "kind": "task",
+      "title": "Autonomous Swarm Task Projection Adapter",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "packages/plan-taskos/src/adapters/swarm.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [],
+        "adr_files": [
+          ".plan/sovereign-empire-v2/ADR-001-sovereign-empire-v2.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --version",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Verify T21: Autonomous Swarm Task Projection Adapter delivers clean TypeScript implementation"
+        ]
+      },
+      "projections": {
+        "taskos_code": "T21"
+      }
+    }
+  ]
+}

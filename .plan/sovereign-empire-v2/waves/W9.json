@@ -1,0 +1,296 @@
+{
+  "schema_version": "1.0.0",
+  "plan_id": "sovereign-empire-v2",
+  "wave_id": "W9",
+  "title": "Wave 9 — Sovereign Fleet Final Verification & Cutover",
+  "tasks": [
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v2:W9/T51",
+      "code": "T51",
+      "kind": "task",
+      "title": "End-to-End Multi-Repo Contract Gate",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "scripts/ci/check-ga-readiness.mjs"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [],
+        "adr_files": [
+          ".plan/sovereign-empire-v2/ADR-001-sovereign-empire-v2.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --version",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Verify T51: End-to-End Multi-Repo Contract Gate delivers clean TypeScript implementation"
+        ]
+      },
+      "projections": {
+        "taskos_code": "T51"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v2:W9/T52",
+      "code": "T52",
+      "kind": "task",
+      "title": "Disjoint File Ownership Static Linter",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "scripts/ci/check-ownership.mjs"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [],
+        "adr_files": [
+          ".plan/sovereign-empire-v2/ADR-001-sovereign-empire-v2.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --version",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Verify T52: Disjoint File Ownership Static Linter delivers clean TypeScript implementation"
+        ]
+      },
+      "projections": {
+        "taskos_code": "T52"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v2:W9/T53",
+      "code": "T53",
+      "kind": "task",
+      "title": "Vitest Unit Test Suite Final Pass",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "packages/orm-cloud/tests/paas-billing-bridge.test.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [],
+        "adr_files": [
+          ".plan/sovereign-empire-v2/ADR-001-sovereign-empire-v2.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --version",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Verify T53: Vitest Unit Test Suite Final Pass delivers clean TypeScript implementation"
+        ]
+      },
+      "projections": {
+        "taskos_code": "T53"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v2:W9/T54",
+      "code": "T54",
+      "kind": "task",
+      "title": "TypeScript Compilation Strictness Pass",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "tsconfig.json"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [],
+        "adr_files": [
+          ".plan/sovereign-empire-v2/ADR-001-sovereign-empire-v2.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --version",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Verify T54: TypeScript Compilation Strictness Pass delivers clean TypeScript implementation"
+        ]
+      },
+      "projections": {
+        "taskos_code": "T54"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v2:W9/T55",
+      "code": "T55",
+      "kind": "task",
+      "title": "Sovereign Fleet Release Tag Preparation",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "package.json"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [],
+        "adr_files": [
+          ".plan/sovereign-empire-v2/ADR-001-sovereign-empire-v2.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --version",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Verify T55: Sovereign Fleet Release Tag Preparation delivers clean TypeScript implementation"
+        ]
+      },
+      "projections": {
+        "taskos_code": "T55"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v2:W9/T67",
+      "code": "T67",
+      "kind": "task",
+      "title": "Sovereign Empire v2 Final Sync & Verification",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "scripts/ci/check-plan-taskos-freshness.mjs"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [],
+        "adr_files": [
+          ".plan/sovereign-empire-v2/ADR-001-sovereign-empire-v2.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --version",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Verify T67: Sovereign Empire v2 Final Sync & Verification delivers clean TypeScript implementation"
+        ]
+      },
+      "projections": {
+        "taskos_code": "T67"
+      }
+    }
+  ]
+}

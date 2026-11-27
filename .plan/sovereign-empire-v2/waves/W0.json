@@ -1,0 +1,296 @@
+{
+  "schema_version": "1.0.0",
+  "plan_id": "sovereign-empire-v2",
+  "wave_id": "W0",
+  "title": "Wave 0 — Core Foundation & Identity",
+  "tasks": [
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v2:W0/T01",
+      "code": "T01",
+      "kind": "task",
+      "title": "Email OTP & Identity Verification Service",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "packages/auth/src/index.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [],
+        "adr_files": [
+          ".plan/sovereign-empire-v2/ADR-001-sovereign-empire-v2.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --version",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Verify T01: Email OTP & Identity Verification Service delivers clean TypeScript implementation"
+        ]
+      },
+      "projections": {
+        "taskos_code": "T01"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v2:W0/T02",
+      "code": "T02",
+      "kind": "task",
+      "title": "Google OAuth & Tenant API Key Provider",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "packages/auth/src/oauth.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [],
+        "adr_files": [
+          ".plan/sovereign-empire-v2/ADR-001-sovereign-empire-v2.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --version",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Verify T02: Google OAuth & Tenant API Key Provider delivers clean TypeScript implementation"
+        ]
+      },
+      "projections": {
+        "taskos_code": "T02"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v2:W0/T03",
+      "code": "T03",
+      "kind": "task",
+      "title": "Storefront Catalog & Pricing Routes",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "apps/api/src/routes/storefront.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [],
+        "adr_files": [
+          ".plan/sovereign-empire-v2/ADR-001-sovereign-empire-v2.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --version",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Verify T03: Storefront Catalog & Pricing Routes delivers clean TypeScript implementation"
+        ]
+      },
+      "projections": {
+        "taskos_code": "T03"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v2:W0/T04",
+      "code": "T04",
+      "kind": "task",
+      "title": "Tenant Quota Middleware & Limits",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "apps/api/src/middleware/tenant-quota.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [],
+        "adr_files": [
+          ".plan/sovereign-empire-v2/ADR-001-sovereign-empire-v2.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --version",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Verify T04: Tenant Quota Middleware & Limits delivers clean TypeScript implementation"
+        ]
+      },
+      "projections": {
+        "taskos_code": "T04"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v2:W0/T05",
+      "code": "T05",
+      "kind": "task",
+      "title": "Identity Principal Repository & RBAC",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "packages/orm-identity/src/repository.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [],
+        "adr_files": [
+          ".plan/sovereign-empire-v2/ADR-001-sovereign-empire-v2.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --version",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Verify T05: Identity Principal Repository & RBAC delivers clean TypeScript implementation"
+        ]
+      },
+      "projections": {
+        "taskos_code": "T05"
+      }
+    },
+    {
+      "urn": "urn:mw:work:A-L-L-A-H/mw-xv:sovereign-empire-v2:W0/T06",
+      "code": "T06",
+      "kind": "task",
+      "title": "JWT Session Hardening & RS256 Verification",
+      "lifecycle": {
+        "status": "backlog",
+        "delivery_stage": "local",
+        "model_tier": "flash",
+        "risk_tier": "R1",
+        "attempts": 0
+      },
+      "governance": {
+        "owner_files": [
+          "packages/auth/src/jwt.ts"
+        ],
+        "owner_globs": [],
+        "invariants": [],
+        "do_not": [
+          "Never edit files outside owner_files"
+        ]
+      },
+      "graph": {
+        "depends_on": []
+      },
+      "knowledge": {
+        "spec_files": [],
+        "adr_files": [
+          ".plan/sovereign-empire-v2/ADR-001-sovereign-empire-v2.md"
+        ],
+        "invariant_urns": [],
+        "doc_urns": []
+      },
+      "verification": {
+        "commands": [
+          {
+            "cmd": "bun --version",
+            "expected_exit_code": 0
+          }
+        ],
+        "acceptance_criteria": [
+          "Verify T06: JWT Session Hardening & RS256 Verification delivers clean TypeScript implementation"
+        ]
+      },
+      "projections": {
+        "taskos_code": "T06"
+      }
+    }
+  ]
+}

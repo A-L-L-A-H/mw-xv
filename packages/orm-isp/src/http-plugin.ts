@@ -13,6 +13,12 @@ import {
   type RadiusAcctStatusType,
   type SubscriberQuotaSpec,
 } from './accounting-aggregator.js';
+import {
+  processPaymentWebhook,
+  type PaymentGatewayProvider,
+} from './payment-webhooks.js';
+import { OrderToCashBridge } from './ledger-revenue-bridge.js';
+import { renderInvoiceHtml, type InvoiceRenderData } from './invoice-renderer.js';
 
 function parseCoaPlanInput(item: unknown): CoaPlanInput | null {
   if (!isRecord(item)) return null;
@@ -251,4 +257,89 @@ export const ispHardeningHttpPlugin: AddonHttpPlugin = async (app) => {
 
     return reply.code(200).send({ success: true, data: result });
   });
+
+  // T26-T29: Customer Portal & Payment Webhook Routes
+  const o2cBridge = new OrderToCashBridge();
+
+  app.post<{
+    Params: { provider: string };
+    Body: unknown;
+  }>('/api/isp/webhooks/payment/:provider', async (req, reply) => {
+    const provider = req.params.provider as PaymentGatewayProvider;
+    if (!['midtrans', 'xendit', 'tripay', 'duitku'].includes(provider)) {
+      return reply.code(400).send({ success: false, error: `Unsupported gateway provider: ${provider}` });
+    }
+
+    const secretKey = (process.env[`ISP_${provider.toUpperCase()}_SECRET`] ??
+      process.env[`${provider.toUpperCase()}_SERVER_KEY`] ??
+      'test-webhook-secret') as string;
+
+    const rawBody = typeof req.body === 'string' ? req.body : JSON.stringify(req.body ?? {});
+    const parsedBody = isRecord(req.body) ? req.body : {};
+
+    const result = processPaymentWebhook({
+      provider,
+      headers: req.headers as Record<string, string | string[] | undefined>,
+      rawBody,
+      parsedBody,
+      secretKey,
+    });
+
+    if (!result.isAuthentic) {
+      return reply.code(401).send({ success: false, error: result.reason });
+    }
+
+    if (result.event && result.shouldUnsuspend) {
+      // Auto unsuspend & record double-entry settlement
+      o2cBridge.postSettlement({
+        settlementId: result.event.eventId,
+        invoiceId: result.event.invoiceId,
+        username: result.event.subscriberUsername,
+        amountMinor: result.event.amountMinor,
+        settlementDate: result.event.settledAt ?? new Date().toISOString().slice(0, 10),
+        idempotencyKey: `webhook-${provider}-${result.event.eventId}`,
+        calculateZakat: true,
+      });
+    }
+
+    return reply.code(200).send({ success: true, data: result });
+  });
+
+  app.get<{
+    Params: { invoiceId: string };
+  }>('/api/isp/portal/invoices/:invoiceId/html', async (req, reply) => {
+    const auth = requireAuth(req, reply);
+    if (!auth) return;
+
+    const invoiceId = req.params.invoiceId;
+    const sampleInvoice: InvoiceRenderData = {
+      invoiceId,
+      companyName: 'MoonWitness ISP Sovereign Network',
+      companyAddress: 'Jl. Jenderal Sudirman Kav. 1, Jakarta Pusat',
+      companyTaxId: '01.234.567.8-901.000',
+      subscriberId: 'SUB-101',
+      subscriberName: 'Customer Demo',
+      billingPeriod: 'November 2026',
+      issueDate: '2026-11-01',
+      dueDate: '2026-11-10',
+      items: [
+        {
+          description: 'Internet Dedicated 100Mbps Bandwidth',
+          quantity: 1,
+          unitPriceMinor: 500_000,
+          amountMinor: 500_000,
+        },
+      ],
+      subtotalMinor: 500_000,
+      taxMinor: 55_000,
+      totalMinor: 555_000,
+      currency: 'IDR',
+      paymentInstructions: 'Transfer BCA 1234567890 a.n. MoonWitness Sovereign Network',
+    };
+
+    const html = renderInvoiceHtml(sampleInvoice);
+    reply.header('content-type', 'text/html; charset=utf-8');
+    return reply.code(200).send(html);
+  });
 };
+
