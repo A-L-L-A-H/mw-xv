@@ -14,11 +14,11 @@
     "desktop:observatory": "node apps/desktop/dist/cli.js serve --serve-web --api-port 4242",
     "desktop:test": "bun --filter @moonwitness/ai-mcp test && bun --filter @moonwitness/desktop test",
     "desktop:mcp": "node apps/desktop/dist/cli.js mcp",
-    "plan:lint": "node packages/plan-taskos/dist/cli.js lint",
-    "plan:reindex": "node packages/plan-taskos/dist/cli.js reindex",
-    "plan:next": "node packages/plan-taskos/dist/cli.js next",
-    "plan:sync": "node packages/plan-taskos/dist/cli.js sync",
-    "plan:mcp": "node packages/plan-taskos/dist/cli.js mcp",
+    "plan:lint": "plan-taskos lint",
+    "plan:reindex": "plan-taskos reindex",
+    "plan:next": "plan-taskos next",
+    "plan:sync": "plan-taskos sync",
+    "plan:mcp": "plan-taskos mcp",
     "dx:test": "bun run desktop:test",
     "start": "node scripts/run-local-services.mjs start",
     "start:built": "node scripts/run-local-services.mjs start:built",
@@ -209,7 +209,8 @@
   },
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "../mw-taskos"
   ],
   "overrides": {
     "fast-jwt": "6.3.4",
