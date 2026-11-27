@@ -157,6 +157,8 @@ jobs:
           bun run lint:ui
           bun run api:addon:check
           bun --filter @moonwitness/types build
+          bun run validate:readme
+          node --test scripts/ci/validate-readme.test.mjs
           bun run test:assets
       - name: Cache Playwright Chromium browser
         uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
