@@ -275,6 +275,19 @@ export {
   type VerifyBillingWebhookResult,
 } from './billing-meter.js';
 export {
+  BYTES_PER_GIB,
+  CloudUsageMeteringLedger,
+  MS_PER_HOUR,
+  aggregateCloudUsageSamples,
+  type BuildTenantInvoiceOptions,
+  type CloudUsageAggregationResult,
+  type CloudUsageMeteringOptions,
+  type ContainerUsageSample,
+  type LedgerSampleRecordResult,
+  type TenantUsageRollup,
+  type UsageThresholdAlert,
+} from './usage-metering.js';
+export {
   HA_DRILL_RUNBOOK,
   runDeterministicHaDrill,
   runMeshHaFailoverDrill,
