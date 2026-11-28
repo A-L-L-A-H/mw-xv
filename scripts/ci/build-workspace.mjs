@@ -5,7 +5,7 @@ import {
   renderWorkspaceBuildFailure,
   summarizeWorkspaceBuildDiagnostics,
 } from './workspace-build-diagnostics.mjs';
-import { resolvePackageManager } from '../package-manager.mjs';
+import { resolvePackageManager } from '../lib/package-manager.mjs';
 
 const packageManager = resolvePackageManager();
 const buildFilter = process.argv[2];

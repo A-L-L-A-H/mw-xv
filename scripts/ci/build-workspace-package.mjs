@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
-import { resolvePackageManager } from '../package-manager.mjs';
+import { resolvePackageManager } from '../lib/package-manager.mjs';
 import { summarizeTypeScriptDiagnostics } from './typescript-diagnostics.mjs';
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');

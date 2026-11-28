@@ -1,5 +1,4 @@
 *.go text eol=lf
-apps/ui-catalog/tests/catalog.spec.ts-snapshots/*.txt text eol=lf
 # Corpus bytes are content-addressed; an eol filter would break every pinned digest.
 corpus/** -text
 # The docs generator emits LF and its checker compares raw bytes, so these must check out as LF everywhere.

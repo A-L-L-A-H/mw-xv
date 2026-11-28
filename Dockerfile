@@ -8,16 +8,8 @@ RUN apt-get update \
     && ln -s /root/.bun/bin/bunx /usr/local/bin/bunx
 WORKDIR /workspace
 COPY package.json bun.lock bunfig.toml ./
-COPY apps/agent-observability/package.json ./apps/agent-observability/package.json
-COPY apps/agent-sandbox/package.json ./apps/agent-sandbox/package.json
 COPY apps/api/package.json ./apps/api/package.json
 COPY apps/board/package.json ./apps/board/package.json
-COPY apps/control-plane/package.json ./apps/control-plane/package.json
-COPY apps/desktop/package.json ./apps/desktop/package.json
-COPY apps/docs/package.json ./apps/docs/package.json
-COPY apps/isp/package.json ./apps/isp/package.json
-COPY apps/ui-catalog/package.json ./apps/ui-catalog/package.json
-COPY apps/whatsapp/package.json ./apps/whatsapp/package.json
 COPY packages/ai-evaluation/package.json ./packages/ai-evaluation/package.json
 COPY packages/ai-mcp/package.json ./packages/ai-mcp/package.json
 COPY packages/ai-runtime/package.json ./packages/ai-runtime/package.json
@@ -33,6 +25,7 @@ COPY packages/logger/package.json ./packages/logger/package.json
 COPY packages/mcp-moonwitness/package.json ./packages/mcp-moonwitness/package.json
 COPY packages/orm-ai/package.json ./packages/orm-ai/package.json
 COPY packages/orm-a2a/package.json ./packages/orm-a2a/package.json
+COPY packages/orm-accounting/package.json ./packages/orm-accounting/package.json
 COPY packages/orm-automation-core/package.json ./packages/orm-automation-core/package.json
 COPY packages/orm-base/package.json ./packages/orm-base/package.json
 COPY packages/orm-bot-orchestrator/package.json ./packages/orm-bot-orchestrator/package.json
@@ -46,8 +39,10 @@ COPY packages/orm-crm/package.json ./packages/orm-crm/package.json
 COPY packages/orm-ecommerce-sync/package.json ./packages/orm-ecommerce-sync/package.json
 COPY packages/orm-governance/package.json ./packages/orm-governance/package.json
 COPY packages/orm-helpdesk/package.json ./packages/orm-helpdesk/package.json
+COPY packages/orm-hr/package.json ./packages/orm-hr/package.json
 COPY packages/orm-income-ledger/package.json ./packages/orm-income-ledger/package.json
 COPY packages/orm-integration/package.json ./packages/orm-integration/package.json
+COPY packages/orm-inventory/package.json ./packages/orm-inventory/package.json
 COPY packages/orm-identity/package.json ./packages/orm-identity/package.json
 COPY packages/orm-isp/package.json ./packages/orm-isp/package.json
 COPY packages/orm-knowledge/package.json ./packages/orm-knowledge/package.json

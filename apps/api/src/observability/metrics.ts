@@ -19,12 +19,29 @@ const pollMetrics = new Map<string, HttpMetric>();
 const mediaMetrics = new Map<string, { transfers: number; bytes: number }>();
 let gatewayRequestsInFlight = 0;
 
+const MAX_HTTP_METRIC_KEYS = 2_000;
+const WHATSAPP_DB_METRICS_CACHE_TTL_MS = 10_000;
+const DB_ERROR_LOG_INTERVAL_MS = 30_000;
+
+let cachedWhatsAppMetrics: { lines: string[]; expiresAt: number } | null = null;
+let inflightWhatsAppMetrics: Promise<string[]> | null = null;
+let lastDbErrorLoggedAt = 0;
+
+export function resetWhatsAppDatabaseMetricsCache(): void {
+  cachedWhatsAppMetrics = null;
+  inflightWhatsAppMetrics = null;
+  lastDbErrorLoggedAt = 0;
+}
+
 function escapeLabel(value: string): string {
   return value.replaceAll('\\', '\\\\').replaceAll('"', '\\"').replaceAll('\n', '\\n');
 }
 
 export function recordHttpRequest(method: string, route: string, status: number, seconds: number) {
-  const key = [method, route, String(status)].join('\u0000');
+  let key = [method, route, String(status)].join('\u0000');
+  if (!httpMetrics.has(key) && httpMetrics.size >= MAX_HTTP_METRIC_KEYS) {
+    key = [method, '__overflow__', String(status)].join('\u0000');
+  }
   const current = httpMetrics.get(key) ?? { count: 0, seconds: 0 };
   current.count += 1;
   current.seconds += seconds;
@@ -151,7 +168,14 @@ function appendDurationMetrics(
     lines.push(`${prefix}_seconds_count{${labels(key)}} ${metric.count}`);
 }
 
-export async function readWhatsAppDatabaseMetrics(db: Knex): Promise<string[]> {
+export interface WhatsAppDbMetricsOptions {
+  logger?: { warn: (obj: unknown, msg: string) => void };
+}
+
+async function queryWhatsAppDatabaseMetrics(
+  db: Knex,
+  options?: WhatsAppDbMetricsOptions
+): Promise<string[]> {
   try {
     const eventTypes = ['whatsapp.message.send', 'whatsapp.status.publish'];
     const [accountRows, queueRows, retryRows, oldestRows] = (await Promise.all([
@@ -221,18 +245,54 @@ export async function readWhatsAppDatabaseMetrics(db: Knex): Promise<string[]> {
       const ageSeconds = oldest
         ? Math.max(0, (Date.now() - new Date(String(oldest)).getTime()) / 1000)
         : 0;
-      lines.push(
-        `moonwitness_whatsapp_outbox_oldest_active_seconds{kind="${kind}"} ${Number.isFinite(ageSeconds) ? ageSeconds : 0}`
-      );
+      const safeAge = Number.isFinite(ageSeconds) ? ageSeconds : 0;
+      lines.push(`moonwitness_whatsapp_outbox_oldest_active_seconds{kind="${kind}"} ${safeAge}`);
     }
     return lines;
-  } catch {
+  } catch (error) {
+    const now = Date.now();
+    if (now - lastDbErrorLoggedAt >= DB_ERROR_LOG_INTERVAL_MS) {
+      lastDbErrorLoggedAt = now;
+      const msg = error instanceof Error ? error.message : String(error);
+      if (options?.logger) options.logger.warn({ err: msg }, 'WhatsApp metrics DB query failed');
+      else console.warn(`WhatsApp metrics DB query failed: ${msg}`);
+    }
     return [
       '# HELP moonwitness_whatsapp_database_metrics_available Whether database metrics were read.',
       '# TYPE moonwitness_whatsapp_database_metrics_available gauge',
       'moonwitness_whatsapp_database_metrics_available 0',
     ];
   }
+}
+
+export async function readWhatsAppDatabaseMetrics(
+  db: Knex,
+  options?: WhatsAppDbMetricsOptions
+): Promise<string[]> {
+  const now = Date.now();
+  if (cachedWhatsAppMetrics && cachedWhatsAppMetrics.expiresAt > now) {
+    return cachedWhatsAppMetrics.lines;
+  }
+  if (!inflightWhatsAppMetrics) {
+    inflightWhatsAppMetrics = queryWhatsAppDatabaseMetrics(db, options)
+      .then((lines) => {
+        cachedWhatsAppMetrics = { lines, expiresAt: Date.now() + WHATSAPP_DB_METRICS_CACHE_TTL_MS };
+        return lines;
+      })
+      .finally(() => {
+        inflightWhatsAppMetrics = null;
+      });
+  }
+  return inflightWhatsAppMetrics;
+}
+
+function formatHttpLabels(key: string): string {
+  const [method = '', route = '', status = ''] = key.split('\u0000');
+  return [
+    `method="${escapeLabel(method)}"`,
+    `route="${escapeLabel(route)}"`,
+    `status="${escapeLabel(status)}"`,
+  ].join(',');
 }
 
 export function renderMetrics(
@@ -244,27 +304,25 @@ export function renderMetrics(
     '# TYPE moonwitness_http_requests_total counter',
   ];
   for (const [key, metric] of httpMetrics) {
-    const [method, route, status] = key.split('\u0000');
-    const labels = `method="${escapeLabel(method ?? '')}",route="${escapeLabel(route ?? '')}",status="${escapeLabel(status ?? '')}"`;
-    lines.push(`moonwitness_http_requests_total{${labels}} ${metric.count}`);
+    lines.push(`moonwitness_http_requests_total{${formatHttpLabels(key)}} ${metric.count}`);
   }
   lines.push(
     '# HELP moonwitness_http_request_duration_seconds_sum Total HTTP request duration.',
     '# TYPE moonwitness_http_request_duration_seconds_sum counter'
   );
   for (const [key, metric] of httpMetrics) {
-    const [method, route, status] = key.split('\u0000');
-    const labels = `method="${escapeLabel(method ?? '')}",route="${escapeLabel(route ?? '')}",status="${escapeLabel(status ?? '')}"`;
-    lines.push(`moonwitness_http_request_duration_seconds_sum{${labels}} ${metric.seconds}`);
+    lines.push(
+      `moonwitness_http_request_duration_seconds_sum{${formatHttpLabels(key)}} ${metric.seconds}`
+    );
   }
   lines.push(
     '# HELP moonwitness_http_request_duration_seconds_count Completed request duration observations.',
     '# TYPE moonwitness_http_request_duration_seconds_count counter'
   );
   for (const [key, metric] of httpMetrics) {
-    const [method, route, status] = key.split('\u0000');
-    const labels = `method="${escapeLabel(method ?? '')}",route="${escapeLabel(route ?? '')}",status="${escapeLabel(status ?? '')}"`;
-    lines.push(`moonwitness_http_request_duration_seconds_count{${labels}} ${metric.count}`);
+    lines.push(
+      `moonwitness_http_request_duration_seconds_count{${formatHttpLabels(key)}} ${metric.count}`
+    );
   }
   lines.push(
     '# HELP moonwitness_process_uptime_seconds Process uptime.',

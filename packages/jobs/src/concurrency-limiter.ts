@@ -1,6 +1,6 @@
 import type { Transaction } from 'objection';
-import { Company, CompanyMembership } from '@moonwitness/orm-base';
-import { Environment } from '@moonwitness/orm';
+import { Company } from '@moonwitness/orm-base';
+import { Job } from './models.js';
 
 export interface ConcurrencyQuota {
   companyId: number;
@@ -15,8 +15,13 @@ export interface TokenBucketState {
   lastRefill: number;
 }
 
-const quotaCache = new Map<number, ConcurrencyQuota>();
+const QUOTA_CACHE_TTL_MS = 60_000;
+const quotaCache = new Map<number, { quota: ConcurrencyQuota; expiresAt: number }>();
 const tokenBucketCache = new Map<number, TokenBucketState>();
+
+function positiveIntOr(value: unknown, fallback: number): number {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value > 0 ? value : fallback;
+}
 
 export function getDefaultQuota(companyId: number): ConcurrencyQuota {
   return {
@@ -32,21 +37,27 @@ export async function loadCompanyQuota(
   companyId: number,
   trx?: Transaction
 ): Promise<ConcurrencyQuota> {
+  const now = Date.now();
   const cached = quotaCache.get(companyId);
-  if (cached) return cached;
+  if (cached && cached.expiresAt > now) return cached.quota;
 
-  const company = await Company.query(trx).findById(companyId);
+  const company = (await Company.query(trx).findById(companyId)) as
+    Record<string, unknown> | undefined;
   if (!company) return getDefaultQuota(companyId);
 
+  const defaults = getDefaultQuota(companyId);
   const quota: ConcurrencyQuota = {
     companyId,
-    maxConcurrentJobs: 10,
-    maxJobsPerMinute: 60,
-    tokenBucketCapacity: 100,
-    tokenBucketRefillRate: 10,
+    maxConcurrentJobs: positiveIntOr(company.max_concurrent_jobs, defaults.maxConcurrentJobs),
+    maxJobsPerMinute: positiveIntOr(company.max_jobs_per_minute, defaults.maxJobsPerMinute),
+    tokenBucketCapacity: positiveIntOr(company.token_bucket_capacity, defaults.tokenBucketCapacity),
+    tokenBucketRefillRate: positiveIntOr(
+      company.token_bucket_refill_rate,
+      defaults.tokenBucketRefillRate
+    ),
   };
 
-  quotaCache.set(companyId, quota);
+  quotaCache.set(companyId, { quota, expiresAt: now + QUOTA_CACHE_TTL_MS });
   return quota;
 }
 
@@ -139,7 +150,19 @@ export async function canAcquireJobSlot(
   return { allowed: true };
 }
 
-export async function releaseJobSlot(companyId: number): Promise<void> {}
+export async function releaseJobSlot(companyId: number, jobId?: number): Promise<void> {
+  if (jobId !== undefined) {
+    unregisterActiveJob(jobId);
+    globalFairShareLimiter.release(companyId, jobId);
+    return;
+  }
+  for (const [id, ctx] of activeJobs.entries()) {
+    if (ctx.companyId === companyId) {
+      activeJobs.delete(id);
+      globalFairShareLimiter.release(companyId, id);
+    }
+  }
+}
 
 export interface FairShareContext {
   companyId: number;
@@ -244,8 +267,6 @@ export class FairShareLimiter {
     return this.tokenBuckets.get(companyId);
   }
 }
-
-import { Job } from './models.js';
 
 export const globalFairShareLimiter = new FairShareLimiter();
 

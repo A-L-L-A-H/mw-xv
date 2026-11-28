@@ -1,0 +1,13 @@
+export * as ai from '@moonwitness/orm-ai';
+export { manifest as aiManifest } from '@moonwitness/orm-ai';
+export * as a2a from '@moonwitness/orm-a2a';
+export { manifest as a2aManifest } from '@moonwitness/orm-a2a';
+export * as automation_core from '@moonwitness/orm-automation-core';
+export { automationCoreSeedManifest as automation_coreManifest } from '@moonwitness/orm-automation-core';
+export * as bot_orchestrator from '@moonwitness/orm-bot-orchestrator';
+export { manifest as bot_orchestratorManifest } from '@moonwitness/orm-bot-orchestrator';
+export * as storage from '@moonwitness/orm-storage';
+export { manifest as storageManifest } from '@moonwitness/orm-storage';
+export * as observability from '@moonwitness/orm-observability';
+export { manifest as observabilityManifest } from '@moonwitness/orm-observability';
+export type { AddonSeedManifest } from '@moonwitness/orm-base';

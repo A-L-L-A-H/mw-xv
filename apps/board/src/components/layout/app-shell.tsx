@@ -70,6 +70,11 @@ import { DesktopLogDrawer } from '@/components/ai/desktop-log-drawer';
 import { WorkspaceAssistantDrawer } from '@/components/ai/workspace-assistant-drawer';
 import { QuickCaptureModal } from '@/components/desktop/quick-capture-modal';
 import { AI_MISSION_CONTROL_ROUTES } from '@/components/ai/ai-api';
+import {
+  normalizeEpistemicAnswer,
+  parseEpistemicQuery,
+  type EpistemicAnswer,
+} from './epistemic-omnibar';
 import { UpdateBanner, type UpdateBannerStatus } from '@moonwitness/ui/components/update-banner';
 import { ModePicker } from '@moonwitness/ui/components/mode-picker';
 import { getDesktopBridge, useDesktopBridge } from '@/lib/desktop-bridge';
@@ -294,6 +299,30 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [paletteQuery, setPaletteQuery] = useState('');
+  const [epistemicAnswer, setEpistemicAnswer] = useState<EpistemicAnswer | null>(null);
+  const [epistemicLoading, setEpistemicLoading] = useState(false);
+  const [epistemicError, setEpistemicError] = useState<string | null>(null);
+  const parsedEpistemic = useMemo(() => parseEpistemicQuery(paletteQuery), [paletteQuery]);
+
+  const askEpistemicEmpire = useCallback(async (rawQuestion: string) => {
+    const parsed = parseEpistemicQuery(rawQuestion);
+    if (!parsed.normalizedQuery) return;
+    setEpistemicLoading(true);
+    setEpistemicError(null);
+    try {
+      const response = await client.request<unknown>('/api/ai/epistemic/ask', {
+        method: 'POST',
+        body: { query: parsed.normalizedQuery },
+      });
+      setEpistemicAnswer(normalizeEpistemicAnswer(parsed.normalizedQuery, response));
+    } catch (error) {
+      setEpistemicError(
+        error instanceof Error ? error.message : 'Unable to reach Epistemic Empire.'
+      );
+    } finally {
+      setEpistemicLoading(false);
+    }
+  }, []);
   const [activeCompanyId, setActiveCompanyId] = useState<number | undefined>(() =>
     client.getCompanyId()
   );
@@ -777,11 +806,84 @@ export function AppShell({ children }: { children: ReactNode }) {
         }}
       >
         <CommandInput
-          placeholder="Search models or records (e.g. Acme, Alice, base.partner)…"
+          placeholder="Search models, records, or Ask Epistemic Empire (e.g. ? why did invoice fail)…"
           value={paletteQuery}
-          onValueChange={setPaletteQuery}
+          onValueChange={(value) => {
+            setPaletteQuery(value);
+            if (!value.trim()) {
+              setEpistemicAnswer(null);
+              setEpistemicError(null);
+            }
+          }}
         />
         <CommandList>
+          {parsedEpistemic.normalizedQuery ? (
+            <CommandGroup heading="Ask Epistemic Empire">
+              <CommandItem
+                value={`ask epistemic empire ${paletteQuery}`}
+                onSelect={() => void askEpistemicEmpire(paletteQuery)}
+                className="flex cursor-pointer items-center gap-2"
+              >
+                <SparkleIcon className="size-4 text-magenta" />
+                <span className="truncate font-semibold">
+                  Ask Epistemic Empire: &ldquo;{parsedEpistemic.normalizedQuery}&rdquo;
+                </span>
+                <span className="ml-auto font-mono text-[10px] uppercase text-ink-faint">
+                  {epistemicLoading ? 'Thinking…' : 'Enter'}
+                </span>
+              </CommandItem>
+              {epistemicError ? (
+                <div
+                  role="alert"
+                  className="mx-2 my-1 border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive"
+                >
+                  {epistemicError}
+                </div>
+              ) : null}
+              {epistemicAnswer ? (
+                <div className="mx-2 my-1 space-y-2 border-2 border-ink bg-paper p-3 text-xs">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono font-bold uppercase text-ink">
+                      Epistemic Synthesis
+                    </span>
+                    <span className="border border-ink px-1.5 py-0.5 font-mono text-[10px] uppercase">
+                      {epistemicAnswer.confidence}
+                    </span>
+                  </div>
+                  <p className="whitespace-pre-wrap text-ink">{epistemicAnswer.answer}</p>
+                  {epistemicAnswer.citations.length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {epistemicAnswer.citations.map((citation, index) =>
+                        citation.href ? (
+                          <Button
+                            key={`${citation.source}-${index}`}
+                            type="button"
+                            size="xs"
+                            variant="outline"
+                            onClick={() => {
+                              setPaletteOpen(false);
+                              setPaletteQuery('');
+                              router.push(citation.href!);
+                            }}
+                            className="font-mono text-[10px] underline"
+                          >
+                            {citation.title}
+                          </Button>
+                        ) : (
+                          <span
+                            key={`${citation.source}-${index}`}
+                            className="border border-ink/30 bg-card px-1.5 py-0.5 font-mono text-[10px] text-ink-soft"
+                          >
+                            {citation.title}
+                          </span>
+                        )
+                      )}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+            </CommandGroup>
+          ) : null}
           {searchQuery.isFetching ? (
             <div
               role="status"

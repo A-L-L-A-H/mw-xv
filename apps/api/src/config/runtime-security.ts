@@ -42,6 +42,20 @@ function parseCidrs(raw: string): string[] {
   return entries;
 }
 
+function resolveTrustProxyMode(mode: string, env: NodeJS.ProcessEnv): TrustProxySetting {
+  if (!mode || mode === 'false') return false;
+  if (mode === 'true') return true;
+  if (mode === 'hops') {
+    throw new Error('TRUST_PROXY=hops requires TRUST_PROXY_HOPS');
+  }
+  if (mode === 'cidrs') {
+    throw new Error('TRUST_PROXY=cidrs requires TRUST_PROXY_CIDRS');
+  }
+  if (/^\d+$/u.test(mode)) return trustHops(readInteger('TRUST_PROXY', mode, 1, 255));
+  void env;
+  throw new Error('TRUST_PROXY must be false, true, hops, cidrs, or a hop count');
+}
+
 /**
  * Proxy trust must be explicit. Production no longer trusts X-Forwarded-For by default:
  * either a hop count or an allowlist of proxy addresses/CIDRs is required.
@@ -56,24 +70,13 @@ export function resolveTrustProxy(env: NodeJS.ProcessEnv = process.env): TrustPr
   }
   if (cidrs) return parseCidrs(cidrs);
   if (hops) return trustHops(readInteger('TRUST_PROXY_HOPS', hops, 1, 255));
-
-  if (!mode || mode === 'false') return false;
-  if (mode === 'true') return true;
-  if (mode === 'hops') {
-    if (!hops) throw new Error('TRUST_PROXY=hops requires TRUST_PROXY_HOPS');
-    return trustHops(readInteger('TRUST_PROXY_HOPS', hops, 1, 255));
-  }
-  if (mode === 'cidrs') {
-    if (!cidrs) throw new Error('TRUST_PROXY=cidrs requires TRUST_PROXY_CIDRS');
-    return parseCidrs(cidrs);
-  }
-  if (/^\d+$/u.test(mode)) return trustHops(readInteger('TRUST_PROXY', mode, 1, 255));
-  throw new Error('TRUST_PROXY must be false, true, hops, cidrs, or a hop count');
+  return resolveTrustProxyMode(mode, env);
 }
 
 export function resolveRateLimitStore(env: NodeJS.ProcessEnv = process.env): RateLimitStore {
   const store = env.RATE_LIMIT_STORE?.trim().toLowerCase() ?? '';
-  if (!store || store === 'memory') return 'memory';
+  if (!store) return env.NODE_ENV === 'production' ? 'postgres' : 'memory';
+  if (store === 'memory') return 'memory';
   if (store === 'postgres') return 'postgres';
   throw new Error('RATE_LIMIT_STORE must be memory or postgres');
 }

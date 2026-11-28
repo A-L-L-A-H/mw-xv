@@ -29,11 +29,13 @@ import {
 import { useAiArtifacts, useAiObligations, useAiWorkContracts } from '@/components/ai/ai-api';
 import { EvolutionObligationsPanel } from '@/components/ai/evolution-obligations-panel';
 import { MissionControlShell, ProvenanceBadge } from '@/components/ai/mission-control-chrome';
+import { useRocksoulContinuitySse } from '@/components/ai/rocksoul-sse';
 
 export default function AiContinuityPage() {
   const artifactsQuery = useAiArtifacts();
   const obligationsQuery = useAiObligations();
   const contractsQuery = useAiWorkContracts();
+  const rocksoulSse = useRocksoulContinuitySse();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [artifactStatusFilter, setArtifactStatusFilter] = useState('all');
@@ -406,6 +408,74 @@ export default function AiContinuityPage() {
         )}
       </Panel>
       <EvolutionObligationsPanel />
+
+      {/* Live Rocksoul Core SSE Telemetry (V44) */}
+      <Panel
+        title="Rocksoul Core Live Telemetry (SSE)"
+        description="Real-time continuity heartbeats, SHA-256 verification events, and obligation triggers streamed from Rocksoul Core."
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge
+              variant={
+                rocksoulSse.status === 'live'
+                  ? 'primary'
+                  : rocksoulSse.status === 'reconnecting'
+                    ? 'destructive'
+                    : 'default'
+              }
+            >
+              {rocksoulSse.status === 'live'
+                ? 'LIVE SSE'
+                : rocksoulSse.status === 'reconnecting'
+                  ? `RECONNECTING (#${rocksoulSse.reconnectAttempt})`
+                  : rocksoulSse.status.toUpperCase()}
+            </Badge>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => rocksoulSse.setPaused((prev) => !prev)}
+            >
+              {rocksoulSse.paused ? 'Resume Stream' : 'Pause Stream'}
+            </Button>
+            <Button type="button" variant="outline" size="sm" onClick={rocksoulSse.reconnect}>
+              Reconnect
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-3 font-mono text-xs">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink/15 pb-2 text-ink-soft">
+            <span>
+              Last Heartbeat: {rocksoulSse.lastHeartbeatAt ?? 'Waiting for Rocksoul Core frame…'}
+            </span>
+            <span>Buffered Events: {rocksoulSse.events.length}</span>
+          </div>
+          {rocksoulSse.events.length === 0 ? (
+            <p className="text-ink-soft">
+              Listening on <code>/api/ai/rocksoul/continuity/sse</code> for live Rocksoul Core
+              telemetry frames.
+            </p>
+          ) : (
+            <ul className="max-h-60 divide-y divide-ink/15 overflow-y-auto">
+              {rocksoulSse.events.slice(0, 12).map((evt) => (
+                <li key={evt.id} className="flex flex-wrap items-center justify-between gap-2 py-1.5">
+                  <div className="min-w-0">
+                    <span className="font-bold text-ink">[{evt.kind}]</span>{' '}
+                    <span className="text-ink">{evt.summary}</span>
+                    {evt.latencyMs !== undefined ? (
+                      <span className="ml-2 text-ink-faint">({evt.latencyMs}ms)</span>
+                    ) : null}
+                  </div>
+                  <span className="text-ink-faint">
+                    {evt.nodeId} · {evt.timestamp}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </Panel>
     </MissionControlShell>
   );
 }

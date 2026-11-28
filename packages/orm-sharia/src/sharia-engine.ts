@@ -9,97 +9,33 @@ import {
   HalalComplianceAudit,
 } from './models/index.js';
 import type { ConfigParameterValueType } from '@moonwitness/orm-base';
-import { Company, Partner, User, ConfigParameter } from '@moonwitness/orm-base';
+import {
+  type ContractValidationInput,
+  type ContractValidationResult,
+  type JournalLine,
+  type MerkleTrailNode,
+  type ProfitSharingInput,
+  type ProfitSharingResult,
+  type ShariaContractType,
+  type WaqfMerkleInput,
+  type WaqfMerkleResult,
+  type ZakatCalculationInput,
+  type ZakatCalculationResult,
+} from './sharia-types.js';
 
-const MOCK_WAQF_TRAILS = new Map<number, string[]>();
-
-export interface ZakatCalculationInput {
-  companyId: number;
-  assessmentDate: string;
-  hijriYear: number;
-  zakatType: 'maal' | 'fitrah' | 'profession' | 'trade' | 'agriculture' | 'livestock' | 'rikaz';
-  assetCategory:
-    'gold' | 'silver' | 'cash' | 'receivables' | 'inventory' | 'investment' | 'property' | 'other';
-  grossAssetsMinor: number;
-  deductibleLiabilitiesMinor: number;
-  nisabGoldPricePerGramMinor?: number;
-  zakatRateBps?: number;
-}
-
-export interface ZakatCalculationResult {
-  nisabThresholdMinor: number;
-  netZakatableMinor: number;
-  zakatDueMinor: number;
-  nisabMet: boolean;
-  grossAssetsMinor: number;
-  deductibleLiabilitiesMinor: number;
-  zakatRateBps: number;
-}
-
-export interface ProfitSharingInput {
-  contractId: number;
-  periodStart: string;
-  periodEnd: string;
-  grossProfitMinor: number;
-  operatingExpensesMinor: number;
-  distributionDate: string;
-  approvedById: number;
-  notes?: string;
-}
-
-export interface ProfitSharingResult {
-  netProfitMinor: number;
-  customerShareMinor: number;
-  companyShareMinor: number;
-  journalEntryRef: string;
-  journalLines: JournalLine[];
-  merkleRoot: string;
-}
-
-export interface JournalLine {
-  accountCode: string;
-  accountName: string;
-  debitMinor: number;
-  creditMinor: number;
-  description: string;
-}
-
-export interface ContractValidationInput {
-  type: ShariaContractType;
-  assetValueMinor: number;
-  profitMarginMinor?: number;
-  profitSharingRatio?: string;
-  financingAmountMinor?: number;
-  tenorMonths?: number;
-  dsnMuiReference: string;
-  ribaFreeConfirmed: boolean;
-  ghararFreeConfirmed: boolean;
-}
-
-export interface ContractValidationResult {
-  valid: boolean;
-  violations: string[];
-  contractType: ShariaContractType;
-}
-
-export interface MerkleTrailNode {
-  event: 'acquisition' | 'valuation' | 'yield_distribution' | 'transfer' | 'disbursement';
-  timestamp: string;
-  valueMinor: number;
-  description: string;
-  hash: string;
-}
-
-export interface WaqfMerkleInput {
-  assetId: number;
-  trail: MerkleTrailNode[];
-}
-
-export interface WaqfMerkleResult {
-  merkleRoot: string;
-  trail: MerkleTrailNode[];
-  verified: boolean;
-}
+export type {
+  ContractValidationInput,
+  ContractValidationResult,
+  JournalLine,
+  MerkleTrailNode,
+  ProfitSharingInput,
+  ProfitSharingResult,
+  ShariaContractType,
+  WaqfMerkleInput,
+  WaqfMerkleResult,
+  ZakatCalculationInput,
+  ZakatCalculationResult,
+} from './sharia-types.js';
 
 function parseProfitSharingRatio(ratio: string): { customerBps: number; companyBps: number } {
   const [customer, company] = ratio.split(':').map(Number);
@@ -205,7 +141,7 @@ export async function distributeProfitSharing(
       accountName: 'Profit Sharing Expense',
       debitMinor: netProfitMinor,
       creditMinor: 0,
-      description: `Profit sharing distribution for contract ${contract.contract_no} (${input.periodStart} to ${input.periodEnd})`,
+      description: `Profit sharing for ${contract.contract_no} (${input.periodStart} to ${input.periodEnd})`,
     },
     {
       accountCode:
@@ -276,51 +212,51 @@ export async function distributeProfitSharing(
   };
 }
 
+const CONTRACT_VALIDATORS: Record<
+  ShariaContractType,
+  (input: ContractValidationInput, violations: string[]) => void
+> = {
+  murabahah(input, violations) {
+    if (!input.profitMarginMinor || input.profitMarginMinor <= 0) {
+      violations.push('Murabahah requires positive profit_margin_minor');
+    }
+    if (input.assetValueMinor <= 0)
+      violations.push('Murabahah requires positive asset_value_minor');
+  },
+  mudharabah(input, violations) {
+    validateSharingContract('Mudharabah', input, violations);
+  },
+  musyarakah(input, violations) {
+    validateSharingContract('Musyarakah', input, violations);
+  },
+  ijarah(input, violations) {
+    if (!input.tenorMonths || input.tenorMonths <= 0) {
+      violations.push('Ijarah requires positive tenor_months');
+    }
+    if (input.assetValueMinor <= 0) violations.push('Ijarah requires positive asset_value_minor');
+  },
+};
+
+function validateSharingContract(
+  label: string,
+  input: ContractValidationInput,
+  violations: string[]
+): void {
+  if (!input.profitSharingRatio || !/^\d+:\d+$/u.test(input.profitSharingRatio)) {
+    violations.push(`${label} requires profit_sharing_ratio in format "customer:company"`);
+  }
+  if (!input.financingAmountMinor || input.financingAmountMinor <= 0) {
+    violations.push(`${label} requires positive financing_amount_minor`);
+  }
+}
+
 export function validateShariaContract(input: ContractValidationInput): ContractValidationResult {
   const violations: string[] = [];
-
   if (!input.ribaFreeConfirmed) violations.push('Riba-free confirmation is required');
   if (!input.ghararFreeConfirmed) violations.push('Gharar-free confirmation is required');
   if (input.assetValueMinor <= 0) violations.push('Asset value must be positive');
-  if (!input.dsnMuiReference || !input.dsnMuiReference.trim())
-    violations.push('DSN-MUI reference is required');
-
-  switch (input.type) {
-    case 'murabahah': {
-      if (input.profitMarginMinor === undefined || input.profitMarginMinor <= 0) {
-        violations.push('Murabahah requires positive profit_margin_minor');
-      }
-      if (input.assetValueMinor <= 0)
-        violations.push('Murabahah requires positive asset_value_minor');
-      break;
-    }
-    case 'mudharabah': {
-      if (!input.profitSharingRatio || !/^\d+:\d+$/.test(input.profitSharingRatio)) {
-        violations.push('Mudharabah requires profit_sharing_ratio in format "customer:company"');
-      }
-      if (input.financingAmountMinor === undefined || input.financingAmountMinor <= 0) {
-        violations.push('Mudharabah requires positive financing_amount_minor');
-      }
-      break;
-    }
-    case 'musyarakah': {
-      if (!input.profitSharingRatio || !/^\d+:\d+$/.test(input.profitSharingRatio)) {
-        violations.push('Musyarakah requires profit_sharing_ratio in format "customer:company"');
-      }
-      if (input.financingAmountMinor === undefined || input.financingAmountMinor <= 0) {
-        violations.push('Musyarakah requires positive financing_amount_minor');
-      }
-      break;
-    }
-    case 'ijarah': {
-      if (input.tenorMonths === undefined || input.tenorMonths <= 0) {
-        violations.push('Ijarah requires positive tenor_months');
-      }
-      if (input.assetValueMinor <= 0) violations.push('Ijarah requires positive asset_value_minor');
-      break;
-    }
-  }
-
+  if (!input.dsnMuiReference?.trim()) violations.push('DSN-MUI reference is required');
+  CONTRACT_VALIDATORS[input.type](input, violations);
   return { valid: violations.length === 0, violations, contractType: input.type };
 }
 
@@ -338,7 +274,7 @@ export async function computeWaqfMerkle(
   const hashes = trail.map((n) => n.hash);
   const merkleRoot = buildMerkleRoot(hashes);
 
-  const verified = asset === null || asset.merkle_root === merkleRoot;
+  const verified = asset !== null && Boolean(asset.merkle_root) && asset.merkle_root === merkleRoot;
 
   return { merkleRoot, trail, verified };
 }
@@ -346,33 +282,30 @@ export async function computeWaqfMerkle(
 export async function appendWaqfMerkleEvent(
   db: Knex,
   assetId: number,
-  event: Omit<MerkleTrailNode, 'hash'>
+  event: Omit<MerkleTrailNode, 'hash'>,
+  actorUserId: number
 ): Promise<WaqfMerkleResult> {
+  if (!Number.isSafeInteger(actorUserId) || actorUserId <= 0) {
+    throw new Error('actorUserId must be a positive integer');
+  }
   const asset = await findWaqfAsset(db, assetId);
+  if (!asset) {
+    throw new Error(`WaqfAsset ${assetId} not found`);
+  }
 
-  const existingTrailStr =
-    asset?.merkle_trail ??
-    (MOCK_WAQF_TRAILS.get(assetId) ? JSON.stringify(MOCK_WAQF_TRAILS.get(assetId)) : '[]');
-  const existingTrail: MerkleTrailNode[] = existingTrailStr ? JSON.parse(existingTrailStr) : [];
+  const existingTrail: MerkleTrailNode[] = asset.merkle_trail ? JSON.parse(asset.merkle_trail) : [];
   const newNode: MerkleTrailNode = { ...event, hash: sha256Hex(JSON.stringify(event)) };
   const updatedTrail = [...existingTrail, newNode];
   const hashes = updatedTrail.map((n) => n.hash);
   const merkleRoot = buildMerkleRoot(hashes);
 
-  if (typeof db === 'function') {
-    await db(WaqfAsset.tableName)
-      .where({ id: assetId })
-      .update({
-        merkle_trail: JSON.stringify(updatedTrail),
-        merkle_root: merkleRoot,
-        write_uid: 1,
-      });
-  } else {
-    MOCK_WAQF_TRAILS.set(
-      assetId,
-      updatedTrail.map((n) => JSON.stringify(n))
-    );
-  }
+  await db(WaqfAsset.tableName)
+    .where({ id: assetId })
+    .update({
+      merkle_trail: JSON.stringify(updatedTrail),
+      merkle_root: merkleRoot,
+      write_uid: actorUserId,
+    });
 
   return { merkleRoot, trail: updatedTrail, verified: true };
 }
@@ -382,14 +315,7 @@ async function findWaqfAsset(
   assetId: number
 ): Promise<{ merkle_root?: string | null; merkle_trail?: string | null } | null> {
   if (typeof db !== 'function') {
-    const trail = MOCK_WAQF_TRAILS.get(assetId);
-    if (trail) {
-      return {
-        merkle_root: buildMerkleRoot(trail.map((n) => JSON.parse(n).hash)),
-        merkle_trail: JSON.stringify(trail.map((n) => JSON.parse(n))),
-      };
-    }
-    return null;
+    throw new Error('Database connection is required for Waqf asset queries');
   }
   const asset = await db(WaqfAsset.tableName).where({ id: assetId }).first();
   return asset ?? null;
@@ -414,5 +340,3 @@ function parseTypedConfigValue(raw: string, valueType: ConfigParameterValueType)
       return raw;
   }
 }
-
-export type ShariaContractType = 'murabahah' | 'mudharabah' | 'musyarakah' | 'ijarah';

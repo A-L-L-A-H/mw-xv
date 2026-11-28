@@ -1,0 +1,40 @@
+{
+  "name": "@moonwitness/pack-verticals",
+  "version": "1.0.0-rc.1",
+  "private": true,
+  "description": "Consolidated vertical addon pack for MoonWitness ORM",
+  "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "tsc -p tsconfig.check.json && vitest run"
+  },
+  "dependencies": {
+    "@moonwitness/orm-accounting": "workspace:*",
+    "@moonwitness/orm-base": "workspace:*",
+    "@moonwitness/orm-clinical": "workspace:*",
+    "@moonwitness/orm-content-factory": "workspace:*",
+    "@moonwitness/orm-hr": "workspace:*",
+    "@moonwitness/orm-inventory": "workspace:*",
+    "@moonwitness/orm-public-services": "workspace:*",
+    "@moonwitness/orm-rnd": "workspace:*",
+    "@moonwitness/orm-sensor": "workspace:*",
+    "@moonwitness/orm-signal": "workspace:*",
+    "@moonwitness/orm-sim": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "typescript": "~5.7.3",
+    "vitest": "^5.0.3"
+  }
+}
